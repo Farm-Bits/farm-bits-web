@@ -1,0 +1,13 @@
+attributes:
+  - content
+  - foreign_keys
+  - inheritance
+exclude:
+  - Audited::Audit
+  - AdminUser
+filename: erd
+indirect: true
+inheritance: true
+notation: bachman
+sort: false
+title: ERD

@@ -1,0 +1,45 @@
+{
+  "devDependencies": {
+    "@types/google.maps": "^3.58.1",
+    "@types/node": "^22.10.5",
+    "@vue/tsconfig": "^0.7.0",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.15",
+    "typescript": "^5.7.3",
+    "vite": "^5.0.0",
+    "vite-plugin-full-reload": "^1.1.0",
+    "vite-plugin-ruby": "^5.1.0",
+    "vite-plugin-vue-devtools": "^7.7.0",
+    "vue-tsc": "^2.2.0"
+  },
+  "name": "farm-bits",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Jeremy Khalfa <khalfa.jeremy@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@coreui/coreui-pro": "^5.9.0",
+    "@coreui/icons": "^3.0.1",
+    "@coreui/icons-vue": "^2.2.0",
+    "@coreui/vue-pro": "^5.10.0",
+    "@googlemaps/js-api-loader": "^1.16.8",
+    "@inertiajs/vue3": "^1.2.0",
+    "@js-from-routes/client": "^1.0.4",
+    "@js-from-routes/inertia": "^1.10.2",
+    "@types/pluralize": "^0.0.33",
+    "@vitejs/plugin-vue": "^5.0.3",
+    "@vuelidate/core": "^2.0.3",
+    "@vuelidate/validators": "^2.0.4",
+    "axios": "^1.7.9",
+    "pinia": "^2.1.7",
+    "pinia-plugin-persistedstate": "^4.2.0",
+    "pluralize": "^8.0.0",
+    "vue": "^3.4.21"
+  },
+  "type": "module",
+  "scripts": {
+    "type-check": "vue-tsc --noEmit",
+    "build-check": "vue-tsc --noEmit && vite build"
+  }
+}

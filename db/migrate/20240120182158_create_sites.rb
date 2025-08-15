@@ -1,0 +1,16 @@
+class CreateSites < ActiveRecord::Migration[7.0]
+  def change
+    create_table :sites do |t|
+      t.string :name, null: false
+      t.string :country, null: false
+      t.string :city
+      t.float :latitude
+      t.float :longitude
+      t.float :altitude
+      t.references :client, null: false, foreign_key: { on_delete: :cascade }
+      t.boolean :active, null: false, default: true
+
+      t.timestamps
+    end
+  end
+end

@@ -1,0 +1,10 @@
+default_schedule: &default_schedule
+  enabled: <%= ENV['RAILS_ENV'] == 'production' ? true : false %>
+
+scheduler:
+  schedule:
+    # First Task
+    first_task:
+      <<: *default_schedule
+      cron: '0 * * * *'
+      class: FirstTaskWorker

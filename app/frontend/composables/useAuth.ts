@@ -1,0 +1,64 @@
+import { computed } from 'vue';
+import { usePage } from '@inertiajs/vue3'
+
+export default function useAuth() {
+  const page = usePage();
+
+  const userScope = computed(() => page.props.userScope ? page.props.userScope : 'users');
+
+  const user = computed(() => page.props.user);
+
+  const client = computed(() => page.props.client);
+
+  const clients = computed(() => page.props.clients || []);
+
+  const sites = computed(() => page.props.sites);
+
+  const rootObjectName = computed(() => {
+    switch (userScope.value) {
+      case 'users':
+        return 'user';
+      case 'admin_users':
+        return 'admin_user';
+      default:
+        throw new Error(`Unknown user scope: ${userScope}`);
+    }
+  });
+
+  const paths = computed(() => ({
+    pages: {
+      signIn: `/${userScope.value}/sign_in`,
+      signUp: `/${userScope.value}/sign_up`,
+      forgotPassword: `/${userScope.value}/password/new`,
+      confirmation: `/${userScope.value}/confirmation/new`,
+      unlock: `/${userScope.value}/unlock/new`,
+      newClient: `/${rootObjectName.value}/client_setup`
+    },
+    actions: {
+      signIn: `/${userScope.value}/sign_in`,
+      signUp: `/${userScope.value}`,
+      signOut: `/${userScope.value}/sign_out`,
+      resetPassword: `/${userScope.value}/password`,
+      confirmation: `/${userScope.value}/confirmation`,
+      unlock: `/${userScope.value}/unlock`
+    }
+  }));
+
+  const features = computed(() => ({
+    canRegister: userScope.value === 'users',
+    canConfirm: true,
+    canUnlock: true,
+    canRecover: true
+  }));
+
+  return {
+    userScope,
+    user,
+    client,
+    clients,
+    sites,
+    rootObjectName,
+    paths,
+    features
+  };
+}

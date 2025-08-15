@@ -1,0 +1,914 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Generated Theme Variables: DO NOT EDIT OR REMOVE THIS SECTION */
+:root {
+  --primary-color: #059669;
+  --primary-color-rgb: 5, 150, 105;
+  --cui-primary: #059669;
+  --cui-primary-rgb: 5, 150, 105;
+
+  --secondary-color: #2563eb;
+  --secondary-color-rgb: 37, 99, 235;
+  --cui-secondary: #2563eb;
+  --cui-secondary-rgb: 37, 99, 235;
+
+  --brand-green-light-color: #f0fdf4;
+  --brand-green-light-color-rgb: 240, 253, 244;
+  --cui-brand-green-light: #f0fdf4;
+  --cui-brand-green-light-rgb: 240, 253, 244;
+  --brand-green-color: #059669;
+  --brand-green-color-rgb: 5, 150, 105;
+  --cui-brand-green: #059669;
+  --cui-brand-green-rgb: 5, 150, 105;
+  --brand-green-dark-color: #047857;
+  --brand-green-dark-color-rgb: 4, 120, 87;
+  --cui-brand-green-dark: #047857;
+  --cui-brand-green-dark-rgb: 4, 120, 87;
+  --brand-green-darker-color: #065f46;
+  --brand-green-darker-color-rgb: 6, 95, 70;
+  --cui-brand-green-darker: #065f46;
+  --cui-brand-green-darker-rgb: 6, 95, 70;
+
+  --brand-blue-light-color: #eff6ff;
+  --brand-blue-light-color-rgb: 239, 246, 255;
+  --cui-brand-blue-light: #eff6ff;
+  --cui-brand-blue-light-rgb: 239, 246, 255;
+  --brand-blue-color: #2563eb;
+  --brand-blue-color-rgb: 37, 99, 235;
+  --cui-brand-blue: #2563eb;
+  --cui-brand-blue-rgb: 37, 99, 235;
+  --brand-blue-dark-color: #1d4ed8;
+  --brand-blue-dark-color-rgb: 29, 78, 216;
+  --cui-brand-blue-dark: #1d4ed8;
+  --cui-brand-blue-dark-rgb: 29, 78, 216;
+
+  --feature-green-color: #22c55e;
+  --feature-green-color-rgb: 34, 197, 94;
+  --cui-feature-green: #22c55e;
+  --cui-feature-green-rgb: 34, 197, 94;
+  --feature-blue-color: #3b82f6;
+  --feature-blue-color-rgb: 59, 130, 246;
+  --cui-feature-blue: #3b82f6;
+  --cui-feature-blue-rgb: 59, 130, 246;
+  --feature-purple-color: #7c3aed;
+  --feature-purple-color-rgb: 124, 58, 237;
+  --cui-feature-purple: #7c3aed;
+  --cui-feature-purple-rgb: 124, 58, 237;
+
+}
+
+/* Utility classes for colors */
+.bg-primary { background-color: var(--primary-color); }
+.bg-secondary { background-color: var(--secondary-color); }
+.text-primary { color: var(--primary-color); }
+.text-secondary { color: var(--secondary-color); }
+.border-primary { border-color: var(--primary-color); }
+.border-secondary { border-color: var(--secondary-color); }
+
+.bg-brand-green { background-color: var(--brand-green-color); }
+.bg-brand-green-light { background-color: var(--brand-green-light-color); }
+.bg-brand-green-dark { background-color: var(--brand-green-dark-color); }
+.text-brand-green { color: var(--brand-green-color); }
+.border-brand-green { border-color: var(--brand-green-color); }
+
+.bg-brand-blue { background-color: var(--brand-blue-color); }
+.bg-brand-blue-light { background-color: var(--brand-blue-light-color); }
+.bg-brand-blue-dark { background-color: var(--brand-blue-dark-color); }
+.text-brand-blue { color: var(--brand-blue-color); }
+.border-brand-blue { border-color: var(--brand-blue-color); }
+
+/* Utility classes for colors */
+.bg-primary { background-color: var(--primary-color); }
+.bg-secondary { background-color: var(--secondary-color); }
+.text-primary { color: var(--primary-color); }
+.text-secondary { color: var(--secondary-color); }
+.border-primary { border-color: var(--primary-color); }
+.border-secondary { border-color: var(--secondary-color); }
+
+.bg-brand-green { background-color: var(--brand-green-color); }
+.bg-brand-green-light { background-color: var(--brand-green-light-color); }
+.bg-brand-green-dark { background-color: var(--brand-green-dark-color); }
+.text-brand-green { color: var(--brand-green-color); }
+.border-brand-green { border-color: var(--brand-green-color); }
+
+.bg-brand-blue { background-color: var(--brand-blue-color); }
+.bg-brand-blue-light { background-color: var(--brand-blue-light-color); }
+.bg-brand-blue-dark { background-color: var(--brand-blue-dark-color); }
+.text-brand-blue { color: var(--brand-blue-color); }
+.border-brand-blue { border-color: var(--brand-blue-color); }
+
+/* Utility classes for colors */
+.bg-primary { background-color: var(--primary-color); }
+.bg-secondary { background-color: var(--secondary-color); }
+.text-primary { color: var(--primary-color); }
+.text-secondary { color: var(--secondary-color); }
+.border-primary { border-color: var(--primary-color); }
+.border-secondary { border-color: var(--secondary-color); }
+
+.bg-brand-green { background-color: var(--brand-green-color); }
+.bg-brand-green-light { background-color: var(--brand-green-light-color); }
+.bg-brand-green-dark { background-color: var(--brand-green-dark-color); }
+.text-brand-green { color: var(--brand-green-color); }
+.border-brand-green { border-color: var(--brand-green-color); }
+
+.bg-brand-blue { background-color: var(--brand-blue-color); }
+.bg-brand-blue-light { background-color: var(--brand-blue-light-color); }
+.bg-brand-blue-dark { background-color: var(--brand-blue-dark-color); }
+.text-brand-blue { color: var(--brand-blue-color); }
+.border-brand-blue { border-color: var(--brand-blue-color); }
+
+/* Utility classes for colors */
+.bg-primary { background-color: var(--primary-color); }
+.bg-secondary { background-color: var(--secondary-color); }
+.text-primary { color: var(--primary-color); }
+.text-secondary { color: var(--secondary-color); }
+.border-primary { border-color: var(--primary-color); }
+.border-secondary { border-color: var(--secondary-color); }
+
+.bg-brand-green { background-color: var(--brand-green-color); }
+.bg-brand-green-light { background-color: var(--brand-green-light-color); }
+.bg-brand-green-dark { background-color: var(--brand-green-dark-color); }
+.text-brand-green { color: var(--brand-green-color); }
+.border-brand-green { border-color: var(--brand-green-color); }
+
+.bg-brand-blue { background-color: var(--brand-blue-color); }
+.bg-brand-blue-light { background-color: var(--brand-blue-light-color); }
+.bg-brand-blue-dark { background-color: var(--brand-blue-dark-color); }
+.text-brand-blue { color: var(--brand-blue-color); }
+.border-brand-blue { border-color: var(--brand-blue-color); }
+
+/* Utility classes for colors */
+.bg-primary { background-color: var(--primary-color); }
+.bg-secondary { background-color: var(--secondary-color); }
+.text-primary { color: var(--primary-color); }
+.text-secondary { color: var(--secondary-color); }
+.border-primary { border-color: var(--primary-color); }
+.border-secondary { border-color: var(--secondary-color); }
+
+.bg-brand-green { background-color: var(--brand-green-color); }
+.bg-brand-green-light { background-color: var(--brand-green-light-color); }
+.bg-brand-green-dark { background-color: var(--brand-green-dark-color); }
+.text-brand-green { color: var(--brand-green-color); }
+.border-brand-green { border-color: var(--brand-green-color); }
+
+.bg-brand-blue { background-color: var(--brand-blue-color); }
+.bg-brand-blue-light { background-color: var(--brand-blue-light-color); }
+.bg-brand-blue-dark { background-color: var(--brand-blue-dark-color); }
+.text-brand-blue { color: var(--brand-blue-color); }
+.border-brand-blue { border-color: var(--brand-blue-color); }
+
+/* Utility classes for colors */
+.bg-primary { background-color: var(--primary-color); }
+.bg-secondary { background-color: var(--secondary-color); }
+.text-primary { color: var(--primary-color); }
+.text-secondary { color: var(--secondary-color); }
+.border-primary { border-color: var(--primary-color); }
+.border-secondary { border-color: var(--secondary-color); }
+
+.bg-brand-green { background-color: var(--brand-green-color); }
+.bg-brand-green-light { background-color: var(--brand-green-light-color); }
+.bg-brand-green-dark { background-color: var(--brand-green-dark-color); }
+.text-brand-green { color: var(--brand-green-color); }
+.border-brand-green { border-color: var(--brand-green-color); }
+
+.bg-brand-blue { background-color: var(--brand-blue-color); }
+.bg-brand-blue-light { background-color: var(--brand-blue-light-color); }
+.bg-brand-blue-dark { background-color: var(--brand-blue-dark-color); }
+.text-brand-blue { color: var(--brand-blue-color); }
+.border-brand-blue { border-color: var(--brand-blue-color); }
+
+/* Utility classes for colors */
+.bg-primary { background-color: var(--primary-color); }
+.bg-secondary { background-color: var(--secondary-color); }
+.text-primary { color: var(--primary-color); }
+.text-secondary { color: var(--secondary-color); }
+.border-primary { border-color: var(--primary-color); }
+.border-secondary { border-color: var(--secondary-color); }
+
+.bg-brand-green { background-color: var(--brand-green-color); }
+.bg-brand-green-light { background-color: var(--brand-green-light-color); }
+.bg-brand-green-dark { background-color: var(--brand-green-dark-color); }
+.text-brand-green { color: var(--brand-green-color); }
+.border-brand-green { border-color: var(--brand-green-color); }
+
+.bg-brand-blue { background-color: var(--brand-blue-color); }
+.bg-brand-blue-light { background-color: var(--brand-blue-light-color); }
+.bg-brand-blue-dark { background-color: var(--brand-blue-dark-color); }
+.text-brand-blue { color: var(--brand-blue-color); }
+.border-brand-blue { border-color: var(--brand-blue-color); }
+
+/* Utility classes for colors */
+.bg-primary { background-color: var(--primary-color); }
+.bg-secondary { background-color: var(--secondary-color); }
+.text-primary { color: var(--primary-color); }
+.text-secondary { color: var(--secondary-color); }
+.border-primary { border-color: var(--primary-color); }
+.border-secondary { border-color: var(--secondary-color); }
+
+.bg-brand-green { background-color: var(--brand-green-color); }
+.bg-brand-green-light { background-color: var(--brand-green-light-color); }
+.bg-brand-green-dark { background-color: var(--brand-green-dark-color); }
+.text-brand-green { color: var(--brand-green-color); }
+.border-brand-green { border-color: var(--brand-green-color); }
+
+.bg-brand-blue { background-color: var(--brand-blue-color); }
+.bg-brand-blue-light { background-color: var(--brand-blue-light-color); }
+.bg-brand-blue-dark { background-color: var(--brand-blue-dark-color); }
+.text-brand-blue { color: var(--brand-blue-color); }
+.border-brand-blue { border-color: var(--brand-blue-color); }
+
+/* Utility classes for colors */
+.bg-primary { background-color: var(--primary-color); }
+.bg-secondary { background-color: var(--secondary-color); }
+.text-primary { color: var(--primary-color); }
+.text-secondary { color: var(--secondary-color); }
+.border-primary { border-color: var(--primary-color); }
+.border-secondary { border-color: var(--secondary-color); }
+
+.bg-brand-green { background-color: var(--brand-green-color); }
+.bg-brand-green-light { background-color: var(--brand-green-light-color); }
+.bg-brand-green-dark { background-color: var(--brand-green-dark-color); }
+.text-brand-green { color: var(--brand-green-color); }
+.border-brand-green { border-color: var(--brand-green-color); }
+
+.bg-brand-blue { background-color: var(--brand-blue-color); }
+.bg-brand-blue-light { background-color: var(--brand-blue-light-color); }
+.bg-brand-blue-dark { background-color: var(--brand-blue-dark-color); }
+.text-brand-blue { color: var(--brand-blue-color); }
+.border-brand-blue { border-color: var(--brand-blue-color); }
+
+/* Utility classes for colors */
+.bg-primary { background-color: var(--primary-color); }
+.bg-secondary { background-color: var(--secondary-color); }
+.text-primary { color: var(--primary-color); }
+.text-secondary { color: var(--secondary-color); }
+.border-primary { border-color: var(--primary-color); }
+.border-secondary { border-color: var(--secondary-color); }
+
+.bg-brand-green { background-color: var(--brand-green-color); }
+.bg-brand-green-light { background-color: var(--brand-green-light-color); }
+.bg-brand-green-dark { background-color: var(--brand-green-dark-color); }
+.text-brand-green { color: var(--brand-green-color); }
+.border-brand-green { border-color: var(--brand-green-color); }
+
+.bg-brand-blue { background-color: var(--brand-blue-color); }
+.bg-brand-blue-light { background-color: var(--brand-blue-light-color); }
+.bg-brand-blue-dark { background-color: var(--brand-blue-dark-color); }
+.text-brand-blue { color: var(--brand-blue-color); }
+.border-brand-blue { border-color: var(--brand-blue-color); }
+
+/* Utility classes for colors */
+.bg-primary { background-color: var(--primary-color); }
+.bg-secondary { background-color: var(--secondary-color); }
+.text-primary { color: var(--primary-color); }
+.text-secondary { color: var(--secondary-color); }
+.border-primary { border-color: var(--primary-color); }
+.border-secondary { border-color: var(--secondary-color); }
+
+.bg-brand-green { background-color: var(--brand-green-color); }
+.bg-brand-green-light { background-color: var(--brand-green-light-color); }
+.bg-brand-green-dark { background-color: var(--brand-green-dark-color); }
+.text-brand-green { color: var(--brand-green-color); }
+.border-brand-green { border-color: var(--brand-green-color); }
+
+.bg-brand-blue { background-color: var(--brand-blue-color); }
+.bg-brand-blue-light { background-color: var(--brand-blue-light-color); }
+.bg-brand-blue-dark { background-color: var(--brand-blue-dark-color); }
+.text-brand-blue { color: var(--brand-blue-color); }
+.border-brand-blue { border-color: var(--brand-blue-color); }
+
+/* Utility classes for colors */
+.bg-primary { background-color: var(--primary-color); }
+.bg-secondary { background-color: var(--secondary-color); }
+.text-primary { color: var(--primary-color); }
+.text-secondary { color: var(--secondary-color); }
+.border-primary { border-color: var(--primary-color); }
+.border-secondary { border-color: var(--secondary-color); }
+
+.bg-brand-green { background-color: var(--brand-green-color); }
+.bg-brand-green-light { background-color: var(--brand-green-light-color); }
+.bg-brand-green-dark { background-color: var(--brand-green-dark-color); }
+.text-brand-green { color: var(--brand-green-color); }
+.border-brand-green { border-color: var(--brand-green-color); }
+
+.bg-brand-blue { background-color: var(--brand-blue-color); }
+.bg-brand-blue-light { background-color: var(--brand-blue-light-color); }
+.bg-brand-blue-dark { background-color: var(--brand-blue-dark-color); }
+.text-brand-blue { color: var(--brand-blue-color); }
+.border-brand-blue { border-color: var(--brand-blue-color); }
+
+/* Utility classes for colors */
+.bg-primary { background-color: var(--primary-color); }
+.bg-secondary { background-color: var(--secondary-color); }
+.text-primary { color: var(--primary-color); }
+.text-secondary { color: var(--secondary-color); }
+.border-primary { border-color: var(--primary-color); }
+.border-secondary { border-color: var(--secondary-color); }
+
+.bg-brand-green { background-color: var(--brand-green-color); }
+.bg-brand-green-light { background-color: var(--brand-green-light-color); }
+.bg-brand-green-dark { background-color: var(--brand-green-dark-color); }
+.text-brand-green { color: var(--brand-green-color); }
+.border-brand-green { border-color: var(--brand-green-color); }
+
+.bg-brand-blue { background-color: var(--brand-blue-color); }
+.bg-brand-blue-light { background-color: var(--brand-blue-light-color); }
+.bg-brand-blue-dark { background-color: var(--brand-blue-dark-color); }
+.text-brand-blue { color: var(--brand-blue-color); }
+.border-brand-blue { border-color: var(--brand-blue-color); }
+
+/* Utility classes for colors */
+.bg-primary { background-color: var(--primary-color); }
+.bg-secondary { background-color: var(--secondary-color); }
+.text-primary { color: var(--primary-color); }
+.text-secondary { color: var(--secondary-color); }
+.border-primary { border-color: var(--primary-color); }
+.border-secondary { border-color: var(--secondary-color); }
+
+.bg-brand-green { background-color: var(--brand-green-color); }
+.bg-brand-green-light { background-color: var(--brand-green-light-color); }
+.bg-brand-green-dark { background-color: var(--brand-green-dark-color); }
+.text-brand-green { color: var(--brand-green-color); }
+.border-brand-green { border-color: var(--brand-green-color); }
+
+.bg-brand-blue { background-color: var(--brand-blue-color); }
+.bg-brand-blue-light { background-color: var(--brand-blue-light-color); }
+.bg-brand-blue-dark { background-color: var(--brand-blue-dark-color); }
+.text-brand-blue { color: var(--brand-blue-color); }
+.border-brand-blue { border-color: var(--brand-blue-color); }
+
+:root {
+  --cui-success:            var(--brand-green-color);
+  --cui-success-rgb:        var(--brand-green-color-rgb);
+  --cui-info:               var(--brand-blue-color);
+  --cui-info-rgb:           var(--brand-blue-color-rgb);
+  --cui-warning:            var(--feature-purple-color);
+  --cui-warning-rgb:        var(--feature-purple-color-rgb);
+  --cui-danger:             #ef4444; /* Keep standard red for danger */
+  --cui-danger-rgb:         239, 68, 68;
+  --cui-light:              var(--brand-green-light-color);
+  --cui-light-rgb:          var(--brand-green-light-color-rgb);
+  --cui-dark:               var(--brand-green-darker-color);
+  --cui-dark-rgb:           var(--brand-green-darker-color-rgb);
+  --cui-body-color:         #4b5563; /* Gray 600 for text */
+  --cui-body-color-rgb:     75, 85, 99;
+  --cui-body-bg:            white;
+  --cui-body-bg-rgb:        255, 255, 255;
+
+  --cui-border-color:       #d1d5db; /* Light gray for borders */
+  --cui-border-color-translucent: rgba(0, 0, 21, 0.175);
+  --cui-heading-color:      #1f2937; /* Dark gray for headings */
+  --cui-link-color:         var(--primary-color);
+  --cui-link-hover-color:   var(--brand-green-dark-color);
+  --cui-code-color:         var(--feature-purple-color);
+  --cui-highlight-bg:       var(--brand-green-light-color);
+
+  --cui-font-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --cui-font-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --cui-body-font-family: var(--cui-font-sans-serif);
+  --cui-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
+}
+
+/* =================================
+   GLOBAL STYLES
+   ================================= */
+
+h1, h2, h3, h4, h5, h6 {
+  @apply text-xl font-semibold;
+}
+
+/* =================================
+   COREUI FRAMEWORK OVERRIDES
+   ================================= */
+
+.alert {
+  --cui-alert-color: var(--brand-green-darker-color);
+  --cui-alert-padding-x: 0;
+  --cui-alert-padding-y: 0;
+  --cui-alert-margin-bottom: 0;
+}
+
+.header {
+  --cui-border-color: none;
+  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.2);
+}
+
+.footer {
+  --cui-border-color: none;
+}
+
+.btn {
+  --cui-btn-color: white;
+  --cui-btn-bg: var(--primary-color);
+  --cui-btn-border-color: transparent;
+  --cui-btn-hover-color: white;
+  --cui-btn-hover-bg: var(--brand-green-dark-color);
+  --cui-btn-hover-border-color: transparent;
+}
+
+.btn-close {
+  --cui-btn-hover-bg: transparent;
+}
+
+.btn-link {
+  --cui-btn-color: var(--primary-color);
+  --cui-btn-bg: transparent;
+  --cui-btn-border-color: transparent;
+  --cui-btn-active-border-color: transparent;
+  --cui-btn-disabled-color: #9ca3af; /* Gray 400 for disabled */
+  --cui-btn-disabled-border-color: transparent;
+  --cui-btn-box-shadow: none;
+  --cui-btn-focus-shadow-rgb: var(--primary-color-rgb);
+  --cui-btn-hover-bg: none;
+  --cui-btn-hover-color: var(--brand-green-dark-color);
+  --cui-btn-hover-border-color: transparent;
+  @apply p-0;
+}
+
+.btn-primary {
+  --cui-btn-color: white;
+  --cui-btn-bg: var(--primary-color);
+  --cui-btn-border-color: var(--primary-color);
+  --cui-btn-hover-color: white;
+  --cui-btn-hover-bg: var(--brand-green-dark-color);
+  --cui-btn-hover-border-color: var(--brand-green-dark-color);
+}
+
+.btn-secondary {
+  --cui-btn-color: white;
+  --cui-btn-bg: var(--secondary-color);
+  --cui-btn-border-color: var(--secondary-color);
+  --cui-btn-hover-color: white;
+  --cui-btn-hover-bg: var(--brand-blue-dark-color);
+  --cui-btn-hover-border-color: var(--brand-blue-dark-color);
+}
+
+.btn-feature-green {
+  --cui-btn-color: white;
+  --cui-btn-bg: var(--feature-green-color);
+  --cui-btn-border-color: var(--feature-green-color);
+}
+
+.btn-feature-blue {
+  --cui-btn-color: white;
+  --cui-btn-bg: var(--feature-blue-color);
+  --cui-btn-border-color: var(--feature-blue-color);
+}
+
+.card {
+  --cui-card-title-color: #1f2937; /* Dark gray for titles */
+  --cui-card-subtitle-color: #6b7280; /* Medium gray for subtitles */
+  --cui-card-border-color: #e5e7eb; /* Light gray for borders */
+  --cui-card-color: #4b5563; /* Gray for card text */
+}
+
+.form-control:focus {
+  color: var(--cui-body-color);
+  background-color: var(--cui-body-bg);
+  border-color: var(--primary-color);
+  outline: 0;
+  box-shadow: 0 0 0 .25rem rgba(var(--primary-color-rgb), 0.25);
+}
+
+.form-check-input:focus {
+  border-color: var(--primary-color);
+  outline: 0;
+  box-shadow: 0 0 0 .25rem rgba(var(--primary-color-rgb), 0.25);
+}
+
+.form-label, .form-check {
+  margin-bottom: 0;
+  min-height: unset;
+}
+
+.toast {
+  --cui-toast-color: #4b5563; /* Gray text */
+  --cui-toast-bg: white;
+  --cui-toast-border-color: #e5e7eb; /* Light gray border */
+  --cui-toast-box-shadow: .25rem .25rem 0 0 rgba(229, 231, 235, 0.5);
+  --cui-toast-header-color: #1f2937; /* Dark gray header */
+  --cui-toast-header-bg: transparent;
+  --cui-toast-header-border-color: #f3f4f6; /* Very light gray */
+  --cui-toast-max-width: 18rem;
+  --cui-toast-spacing: 0.5rem;
+  --cui-toast-padding-x: 0.5rem;
+  --cui-toast-padding-y: 0.2rem;
+  margin-top: 0.5rem;
+}
+
+.invalid-feedback {
+  display: block;
+  margin-top: 0;
+}
+
+/* =================================
+   BUTTONS
+   ================================= */
+
+.btn-primary {
+  @apply bg-primary hover:bg-brand-green-dark text-white;
+  @apply font-semibold px-8 py-4 text-lg;
+  @apply rounded-xl shadow-lg;
+  @apply transform hover:scale-105 transition-all duration-200;
+}
+
+.btn-secondary {
+  @apply bg-secondary hover:bg-brand-blue-dark text-white;
+  @apply font-semibold px-8 py-4 text-lg;
+  @apply rounded-xl shadow-lg;
+  @apply transform hover:scale-105 transition-all duration-200;
+}
+
+.btn-outline {
+  @apply border-2 border-primary text-primary;
+  @apply hover:bg-primary hover:text-white;
+  @apply font-semibold px-8 py-4 text-lg;
+  @apply rounded-xl transition-all duration-200;
+}
+
+.btn-outline-secondary {
+  @apply border-2 border-secondary text-secondary hover:bg-secondary hover:text-white font-semibold px-8 py-4 text-lg rounded-xl transition-all duration-200;
+}
+
+.btn-gradient-green {
+  @apply bg-gradient-green hover:bg-brand-green-dark text-white font-semibold py-3 px-4 rounded-xl transform hover:scale-[1.02] transition-all duration-200 shadow-lg;
+}
+
+.btn-gradient-blue {
+  @apply bg-gradient-blue hover:bg-brand-blue-dark text-white font-semibold py-3 px-4 rounded-xl transform hover:scale-[1.02] transition-all duration-200 shadow-lg;
+}
+
+.btn-full-width {
+  @apply w-full;
+}
+
+.btn-small {
+  @apply px-4 py-2 text-sm;
+}
+
+.btn-large {
+  @apply px-12 py-6 text-xl;
+}
+
+.btn, .dropdown-item {
+  @apply cursor-pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+/* =================================
+   FORM INPUTS
+   ================================= */
+
+.form-input {
+  @apply rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary py-3;
+}
+
+.form-input-secondary {
+  @apply rounded-xl border-gray-300 shadow-sm focus:border-secondary focus:ring-secondary py-3;
+}
+
+.form-input-with-icon {
+  @apply pl-10 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary py-3;
+}
+
+.form-input-with-icon-secondary {
+  @apply pl-10 block w-full rounded-xl border-gray-300 shadow-sm focus:border-secondary focus:ring-secondary py-3;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-700;
+}
+
+.form-error {
+  @apply text-red-600 text-sm;
+}
+
+.form-help-text {
+  @apply text-sm text-gray-500;
+}
+
+.form-icon {
+  @apply h-5 w-5 text-gray-400;
+}
+
+.form-icon-container {
+  @apply absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none;
+}
+
+/* =================================
+   LAYOUT CONTAINERS
+   ================================= */
+
+.page-container {
+  @apply min-h-screen bg-gradient-hero;
+}
+
+.auth-container {
+  @apply min-h-screen bg-gradient-hero flex items-center justify-center p-4;
+}
+
+.auth-card {
+  @apply bg-white rounded-3xl shadow-2xl p-8;
+}
+
+.auth-card-narrow {
+  @apply w-full max-w-md;
+}
+
+.auth-card-wide {
+  @apply w-full max-w-2xl;
+}
+
+.registration-header {
+  @apply bg-gradient-primary px-8 py-6;
+}
+
+/* =================================
+   HEADERS & ICONS
+   ================================= */
+
+.auth-header {
+  @apply text-center mb-8;
+}
+
+.auth-icon-primary {
+  @apply w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-4;
+}
+
+.auth-icon-blue {
+  @apply w-16 h-16 bg-gradient-blue rounded-2xl flex items-center justify-center mx-auto mb-4;
+}
+
+.auth-icon-svg {
+  @apply w-8 h-8 text-white;
+}
+
+.auth-title {
+  @apply text-3xl font-bold text-gray-800 mb-2;
+}
+
+.auth-subtitle {
+  @apply text-gray-600;
+}
+
+.registration-title {
+  @apply text-3xl font-bold text-white text-center;
+}
+
+.registration-subtitle {
+  @apply text-green-100 text-center mt-2;
+}
+
+/* =================================
+   HERO SECTION
+   ================================= */
+
+.hero-section {
+  @apply relative overflow-hidden;
+}
+
+.hero-overlay {
+  @apply absolute inset-0 bg-gradient-overlay;
+}
+
+.hero-container {
+  @apply relative px-4 py-20;
+}
+
+.hero-content {
+  @apply text-center max-w-4xl mx-auto;
+}
+
+.hero-title {
+  @apply text-5xl md:text-7xl font-bold mb-8 bg-gradient-primary bg-clip-text text-transparent;
+}
+
+.hero-subtitle {
+  @apply text-xl md:text-2xl text-gray-600 mb-12 leading-relaxed;
+}
+
+.hero-buttons {
+  @apply flex flex-col sm:flex-row gap-4 justify-center;
+}
+
+/* =================================
+   FEATURE CARDS
+   ================================= */
+
+.feature-grid {
+  @apply grid md:grid-cols-3 gap-8 mb-16;
+}
+
+.feature-card {
+  @apply bg-white rounded-2xl p-8 shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300;
+}
+
+.feature-icon-green {
+  @apply w-16 h-16 bg-gradient-green rounded-2xl flex items-center justify-center mb-6;
+}
+
+.feature-icon-blue {
+  @apply w-16 h-16 bg-gradient-blue rounded-2xl flex items-center justify-center mb-6;
+}
+
+.feature-icon-svg {
+  @apply w-8 h-8 text-white;
+}
+
+.feature-title {
+  @apply text-2xl font-bold text-gray-800 mb-4;
+}
+
+.feature-description {
+  @apply text-gray-600 leading-relaxed;
+}
+
+.feature-large-card-green {
+  @apply bg-gradient-green rounded-3xl overflow-hidden shadow-2xl;
+}
+
+.feature-large-card-blue {
+  @apply bg-gradient-blue rounded-3xl overflow-hidden shadow-2xl;
+}
+
+.feature-large-content {
+  @apply p-8 text-white;
+}
+
+.feature-large-title {
+  @apply text-3xl font-bold mb-4;
+}
+
+.feature-large-description {
+  @apply mb-6 text-lg leading-relaxed;
+}
+
+/* =================================
+   SECTIONS
+   ================================= */
+
+.section {
+  @apply py-20;
+}
+
+.section-header {
+  @apply text-center mb-16;
+}
+
+.section-title {
+  @apply text-4xl font-bold text-gray-800 mb-4;
+}
+
+.section-subtitle {
+  @apply text-xl text-gray-600 max-w-2xl mx-auto;
+}
+
+.section-header-small {
+  @apply text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2;
+}
+
+/* =================================
+   CTA SECTION
+   ================================= */
+
+.cta-card {
+  @apply bg-white rounded-3xl shadow-2xl p-12 text-center max-w-4xl mx-auto;
+}
+
+.cta-title {
+  @apply text-4xl font-bold text-gray-800 mb-6;
+}
+
+.cta-subtitle {
+  @apply text-xl text-gray-600 mb-8;
+}
+
+.cta-buttons {
+  @apply flex flex-col sm:flex-row gap-4 justify-center;
+}
+
+/* =================================
+   INFO BOXES
+   ================================= */
+
+.info-box-blue {
+  @apply mt-6 p-4 bg-brand-blue-light rounded-xl;
+}
+
+.info-box-green {
+  @apply mt-6 p-4 bg-brand-green-light rounded-xl;
+}
+
+.info-box-content {
+  @apply flex;
+}
+
+.info-box-icon-blue {
+  @apply w-5 h-5 text-secondary mt-0.5 mr-3 flex-shrink-0;
+}
+
+.info-box-icon-green {
+  @apply w-5 h-5 text-primary mt-0.5 mr-3 flex-shrink-0;
+}
+
+.info-box-title-blue {
+  @apply text-brand-blue-dark font-medium mb-1;
+}
+
+.info-box-title-green {
+  @apply text-brand-green-dark font-medium mb-1;
+}
+
+.info-box-text-blue {
+  @apply text-brand-blue-dark;
+}
+
+.info-box-text-green {
+  @apply text-brand-green-dark;
+}
+
+.info-box-text {
+  @apply text-sm;
+}
+
+/* =================================
+   FORMS
+   ================================= */
+
+.form-section {
+  @apply space-y-6;
+}
+
+.form-grid {
+  @apply grid md:grid-cols-2 gap-6;
+}
+
+.form-grid-3 {
+  @apply grid lg:grid-cols-3 gap-6;
+}
+
+.form-field {
+  @apply space-y-2;
+}
+
+.form-submit-section {
+  @apply pt-4;
+}
+
+/* =================================
+   NAVIGATION LINKS
+   ================================= */
+
+.nav-link-primary {
+  @apply text-sm font-medium text-primary hover:text-brand-green-dark transition-colors;
+}
+
+.nav-link-secondary {
+  @apply text-sm font-medium text-secondary hover:text-brand-blue-dark transition-colors;
+}
+
+.nav-link-neutral {
+  @apply text-sm text-gray-500 hover:text-gray-700 transition-colors;
+}
+
+.nav-link-with-icon {
+  @apply inline-flex items-center;
+}
+
+.nav-icon {
+  @apply w-4 h-4 mr-2;
+}
+
+/* =================================
+   DIVIDERS
+   ================================= */
+
+.form-divider {
+  @apply text-center pt-4 border-t border-gray-200;
+}
+
+.nav-divider {
+  @apply mt-8 space-y-4;
+}
+
+.nav-links-grid {
+  @apply flex justify-center space-x-6 text-sm;
+}
+
+/* =================================
+   UTILITY CLASSES
+   ================================= */
+
+.gradient-text-primary {
+  @apply bg-gradient-primary bg-clip-text text-transparent;
+}
+
+.loading-spinner {
+  @apply animate-spin rounded-full h-8 w-8 border-b-2 border-primary;
+}
+
+.map-container {
+  @apply w-full h-80 rounded-xl border border-gray-200 shadow-sm bg-gray-100;
+}
