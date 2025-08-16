@@ -8,29 +8,53 @@ class UserArea::ClientSetupController < UserArea::ApplicationController
     }
   end
 
-  def create
-    @client = Client.new(client_params)
-    @client.client_users_attributes = [{ user: current_user, role: RoleManageable.highest_role }]
+  def edit
+    if current_client.role_for(current_user).can_manage_client_settings?
+      render inertia: 'UserArea/Settings'
+    else
+      redirect_to root_path, alert: 'You do not have permission to edit this company.'
+    end
+  end
 
-    if @client.save
-      session[:current_client_id] = @client.id
+  def create
+    client = Client.new(client_params)
+    client.client_users_attributes = [{ user: current_user, role: RoleManageable.highest_role }]
+
+    if client.save
+      session[:current_client_id] = client.id
       redirect_to root_path, notice: 'Company created successfully!'
     else
       render inertia: 'UserArea/ClientSetup', props: {
-        errors: @client.errors.full_messages
+        errors: client.errors.full_messages
       }
     end
   end
 
-  protected
-    def ensure_user_has_no_client_access
-      if current_user.active_clients_connections.any?
-        redirect_to root_path
+  def update
+    if current_client.role_for(current_user).can_manage_client_settings?
+      if current_client.update(client_params)
+        redirect_to user_client_setup_edit_path, notice: 'Client was successfully updated.'
+      else
+        render inertia: 'UserArea/ClientSetup', props: {
+          errors: current_client.errors
+        }
       end
+    else
+      redirect_to root_path, alert: 'You do not have permission to edit this company.'
     end
+  end
+
+  def destroy
+    if current_client.role_for(current_user).can_manage_client_settings?
+      current_client.destroy
+      redirect_to root_path, notice: 'Client was successfully destroyed.'
+    else
+      redirect_to root_path, alert: 'You do not have permission to edit this company.'
+    end
+  end
 
   private
     def client_params
-      params.require(:client).permit(:name, site_attributes: [:country, :city, :latitude, :longitude, :altitude])
+      params.require(:client).permit(:name, :color, site_attributes: [:country, :city, :latitude, :longitude, :altitude])
     end
 end

@@ -32,7 +32,8 @@ export default function useAuth() {
       forgotPassword: `/${userScope.value}/password/new`,
       confirmation: `/${userScope.value}/confirmation/new`,
       unlock: `/${userScope.value}/unlock/new`,
-      newClient: `/${rootObjectName.value}/client_setup`
+      newClient: `/${rootObjectName.value}/client_setup`,
+      editClient: `/${rootObjectName.value}/client_setup/edit`
     },
     actions: {
       signIn: `/${userScope.value}/sign_in`,
@@ -40,7 +41,8 @@ export default function useAuth() {
       signOut: `/${userScope.value}/sign_out`,
       resetPassword: `/${userScope.value}/password`,
       confirmation: `/${userScope.value}/confirmation`,
-      unlock: `/${userScope.value}/unlock`
+      unlock: `/${userScope.value}/unlock`,
+      clientSetup: `/${rootObjectName.value}/client_setup`
     }
   }));
 

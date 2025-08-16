@@ -14,15 +14,20 @@ class Client < ApplicationRecord
 
   validates :name, presence: true, uniqueness: { case_sensitive: false }
   validates :subdomain, presence: true, uniqueness: { case_sensitive: false }, format: { with: /\A[a-z0-9\-]+\z/ }
+  validates :color, presence: true, format: { with: /\A#[0-9a-fA-F]{6}\z/, message: 'must be a valid hex color (e.g., #FF0000)' }
   validate :must_have_at_least_one_active_owner
   validate :must_have_at_least_one_active_site
 
   attr_accessor :site_attributes
 
   before_validation :set_default_subdomain, on: :create
-  before_validation :set_default_color, on: :create
   before_validation :create_site_from_attributes, on: :create
+  before_validation :handle_color_assignment
   before_destroy :handle_orphaned_users, prepend: true
+
+  def role_for(user)
+    client_users.find_by(user: user)
+  end
 
   private
     def must_have_at_least_one_active_owner
@@ -53,23 +58,27 @@ class Client < ApplicationRecord
       self.subdomain = name.parameterize
     end
 
-    def set_default_color
-      if color.present?
-        return
-      end
-
-      red = 128 + rand(128)
-      green = 128 + rand(128)
-      blue = 128 + rand(128)
-      self.color = "#%02x%02x%02x" % [red, green, blue]
-    end
-
     def create_site_from_attributes
       if !site_attributes.present?
         return
       end
 
       sites.build(site_attributes)
+    end
+
+    def handle_color_assignment
+      if new_record?
+        if color.blank?
+          red = 128 + rand(128)
+          green = 128 + rand(128)
+          blue = 128 + rand(128)
+          self.color = "#%02x%02x%02x" % [red, green, blue]
+        end
+      else
+        if color.blank?
+          self.color = color_was
+        end
+      end
     end
 
     def handle_orphaned_users

@@ -6,6 +6,7 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 
 // Components
 import {
+  CAlert,
   CAvatar,
   CBadge,
   CButton,
@@ -39,6 +40,7 @@ import {
   CInputGroupText,
   CLoadingButton,
   CMultiSelect,
+  CNav,
   CNavbar,
   CNavbarBrand,
   CNavbarNav,
@@ -126,6 +128,7 @@ export default function () {
         cilSpeedometer,
         cilUser
       });
+      app.component('CAlert', CAlert);
       app.component('CAvatar', CAvatar);
       app.component('CBadge', CBadge);
       app.component('CButton', CButton);
@@ -160,6 +163,7 @@ export default function () {
       app.component('CIcon', CIcon);
       app.component('CLoadingButton', CLoadingButton);
       app.component('CMultiSelect', CMultiSelect);
+      app.component('CNav', CNav);
       app.component('CNavbar', CNavbar);
       app.component('CNavbarBrand', CNavbarBrand);
       app.component('CNavbarNav', CNavbarNav);

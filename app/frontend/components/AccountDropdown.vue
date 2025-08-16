@@ -23,7 +23,7 @@
             Profile
           </CDropdownItem>
 
-          <CDropdownItem href="#" class="d-flex align-items-center">
+          <CDropdownItem :href="paths.pages.editClient" class="d-flex align-items-center">
             <CIcon icon="cilSettings" class="me-2" />
             Settings
           </CDropdownItem>

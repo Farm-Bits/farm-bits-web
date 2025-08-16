@@ -146,7 +146,7 @@
             <!-- Location Section -->
             <div class="form-section">
               <h3 class="section-header-small">
-                Farm Location
+                Site Location
               </h3>
 
               <LocationSelector

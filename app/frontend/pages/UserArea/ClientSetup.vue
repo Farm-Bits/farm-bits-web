@@ -10,13 +10,13 @@
             ref="form"
             @submit.prevent="handleSubmit"
             novalidate
-            action="/user/client_setup"
+            :action="paths.actions.clientSetup"
             method="post"
             class="form-section">
-            <!-- Personal Information -->
+            <!-- Company Information -->
             <div class="form-section">
               <h3 class="section-header-small">
-                Personal Information
+                Company Information
               </h3>
 
               <div class="form-field">
@@ -40,7 +40,7 @@
             <!-- Location Section -->
             <div class="form-section">
               <h3 class="section-header-small">
-                Farm Location
+                Site Location
               </h3>
 
               <LocationSelector
@@ -88,7 +88,10 @@
   import { useVuelidate } from '@vuelidate/core';
   import { required, numeric, decimal, between, minValue, maxValue } from '@vuelidate/validators';
   import LocationSelector from '@/components/LocationSelector.vue';
+  import useAuth from '@/composables/useAuth';
   import useAuthStore from '@/stores/auth';
+
+  const { paths } = useAuth();
 
   const { formState, saveFormState } = useAuthStore();
 

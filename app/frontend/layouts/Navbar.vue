@@ -72,8 +72,8 @@
       <CCollapse
         :visible="mobileMenuOpen"
         class="d-md-none w-100 mt-3"
-        horizontal="false">
-        <CNav variant="pills" layout="vertical" class="border-top pt-3">
+        :horizontal="false">
+        <CNav variant="pills" layout="justified" class="border-top pt-3">
           <!-- Not logged in mobile menu -->
           <template v-if="!user">
             <CNavItem>
