@@ -6,9 +6,9 @@
     <div v-if="flash.notice" class="notice">
       {{ flash.notice }}
     </div>
-    <div v-if="errors" class="alert">
+    <div v-if="flash.errors" class="alert">
       <ul class="list-disc pl-5">
-        <li v-for="(error, index) in errors" :key="index">
+        <li v-for="(error, index) in flash.errors" :key="index">
           {{ error }}
         </li>
       </ul>
@@ -20,11 +20,12 @@
   import { computed } from 'vue';
   import { usePage } from '@inertiajs/vue3';
 
-  type FlashType = 'alert' | 'notice' | string;
+  type FlashType = 'alert' | 'notice' | 'errors' | string;
   interface FlashHash {
-    [key: FlashType]: string | null | undefined;
+    [key: FlashType]: string | string[] | null | undefined;
     alert?: string;
     notice?: string;
+    errors?: string[];
   };
   interface PageProps {
     flash: FlashHash;
@@ -34,7 +35,6 @@
 
   const page = usePage<PageProps>();
   const flash = computed(() => page.props.flash);
-  const errors = computed(() => page.props.errors);
 </script>
 
 <style scoped>

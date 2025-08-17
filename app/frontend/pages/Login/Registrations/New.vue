@@ -13,11 +13,8 @@
           <FlashMessages class="mb-6" />
 
           <CForm
-            ref="form"
-            @submit.prevent="handleSubmit"
             novalidate
-            :action="paths.actions.signUp"
-            method="post"
+            @submit.prevent="handleSubmit"
             class="form-section">
             <!-- Personal Information -->
             <div class="form-section">
@@ -33,13 +30,12 @@
                   <CFormInput
                     id="name"
                     placeholder="Enter your full name"
-                    :name="`${rootObjectName}[name]`"
-                    v-model="formData.name"
-                    :invalid="v$.name.$error"
-                    @blur="v$.name.$touch()"
+                    v-model="formData.user.name"
+                    :invalid="v$.user.name.$error"
+                    @blur="v$.user.name.$touch()"
                     class="form-input" />
-                  <div class="form-error" v-if="v$.name.$error">
-                    {{ v$.name.$errors[0].$message }}
+                  <div class="form-error" v-if="v$.user.name.$error">
+                    {{ v$.user.name.$errors[0].$message }}
                   </div>
                 </div>
 
@@ -51,13 +47,12 @@
                     id="email"
                     placeholder="Enter your email"
                     type="email"
-                    :name="`${rootObjectName}[email]`"
-                    v-model="formData.email"
-                    :invalid="v$.email.$error"
-                    @blur="v$.email.$touch()"
+                    v-model="formData.user.email"
+                    :invalid="v$.user.email.$error"
+                    @blur="v$.user.email.$touch()"
                     class="form-input" />
-                  <div class="form-error" v-if="v$.email.$error">
-                    {{ v$.email.$errors[0].$message }}
+                  <div class="form-error" v-if="v$.user.email.$error">
+                    {{ v$.user.email.$errors[0].$message }}
                   </div>
                 </div>
               </div>
@@ -69,13 +64,12 @@
                 <CFormInput
                   id="company"
                   placeholder="Enter your company name"
-                  :name="`${rootObjectName}[client_attributes][name]`"
-                  v-model="formData.company"
-                  :invalid="v$.company.$error"
-                  @blur="v$.company.$touch()"
+                  v-model="formData.user.client_attributes.name"
+                  :invalid="v$.user.client_attributes.name.$error"
+                  @blur="v$.user.client_attributes.name.$touch()"
                   class="form-input" />
-                <div class="form-error" v-if="v$.company.$error">
-                  {{ v$.company.$errors[0].$message }}
+                <div class="form-error" v-if="v$.user.client_attributes.name.$error">
+                  {{ v$.user.client_attributes.name.$errors[0].$message }}
                 </div>
               </div>
             </div>
@@ -95,14 +89,13 @@
                     id="password"
                     placeholder="Create a strong password"
                     type="password"
-                    :name="`${rootObjectName}[password]`"
-                    v-model="formData.password"
-                    :invalid="v$.password.$error"
-                    @blur="v$.password.$touch()"
+                    v-model="formData.user.password"
+                    :invalid="v$.user.password.$error"
+                    @blur="v$.user.password.$touch()"
                     class="form-input" />
 
                   <!-- Password Strength Indicator -->
-                  <div v-if="formData.password" class="mt-2">
+                  <div v-if="formData.user.password" class="mt-2">
                     <div class="flex items-center space-x-2">
                       <div class="flex-1 bg-gray-200 rounded-full h-2">
                         <div
@@ -118,8 +111,8 @@
                     </div>
                   </div>
 
-                  <div class="form-error" v-if="v$.password.$error">
-                    {{ v$.password.$errors[0].$message }}
+                  <div class="form-error" v-if="v$.user.password.$error">
+                    {{ v$.user.password.$errors[0].$message }}
                   </div>
                 </div>
 
@@ -131,13 +124,12 @@
                     id="passwordConfirmation"
                     placeholder="Confirm your password"
                     type="password"
-                    :name="`${rootObjectName}[password_confirmation]`"
-                    v-model="formData.passwordConfirmation"
-                    :invalid="v$.passwordConfirmation.$error"
-                    @blur="v$.passwordConfirmation.$touch()"
+                    v-model="formData.user.password_confirmation"
+                    :invalid="v$.user.password_confirmation.$error"
+                    @blur="v$.user.password_confirmation.$touch()"
                     class="form-input" />
-                  <div class="form-error" v-if="v$.passwordConfirmation.$error">
-                    {{ v$.passwordConfirmation.$errors[0].$message }}
+                  <div class="form-error" v-if="v$.user.password_confirmation.$error">
+                    {{ v$.user.password_confirmation.$errors[0].$message }}
                   </div>
                 </div>
               </div>
@@ -150,28 +142,27 @@
               </h3>
 
               <LocationSelector
-                :nameAttribute="`${rootObjectName}[client_attributes][site_attributes]`"
-                v-model:country="formData.country"
-                v-model:city="formData.city"
-                v-model:latitude="formData.latitude"
-                v-model:longitude="formData.longitude"
-                v-model:altitude="formData.altitude" />
+                v-model:country="formData.user.client_attributes.site_attributes.country"
+                v-model:city="formData.user.client_attributes.site_attributes.city"
+                v-model:latitude="formData.user.client_attributes.site_attributes.latitude"
+                v-model:longitude="formData.user.client_attributes.site_attributes.longitude"
+                v-model:altitude="formData.user.client_attributes.site_attributes.altitude" />
 
               <div class="form-field">
-                <div class="form-error" v-if="v$.country.$error">
-                  {{ v$.country.$errors[0].$message }}
+                <div class="form-error" v-if="v$.user.client_attributes.site_attributes.country.$error">
+                  {{ v$.user.client_attributes.site_attributes.country.$errors[0].$message }}
                 </div>
-                <div class="form-error" v-if="v$.city.$error">
-                  {{ v$.city.$errors[0].$message }}
+                <div class="form-error" v-if="v$.user.client_attributes.site_attributes.city.$error">
+                  {{ v$.user.client_attributes.site_attributes.city.$errors[0].$message }}
                 </div>
-                <div class="form-error" v-if="v$.latitude.$error">
-                  {{ v$.latitude.$errors[0].$message }}
+                <div class="form-error" v-if="v$.user.client_attributes.site_attributes.latitude.$error">
+                  {{ v$.user.client_attributes.site_attributes.latitude.$errors[0].$message }}
                 </div>
-                <div class="form-error" v-if="v$.longitude.$error">
-                  {{ v$.longitude.$errors[0].$message }}
+                <div class="form-error" v-if="v$.user.client_attributes.site_attributes.longitude.$error">
+                  {{ v$.user.client_attributes.site_attributes.longitude.$errors[0].$message }}
                 </div>
-                <div class="form-error" v-if="v$.altitude.$error">
-                  {{ v$.altitude.$errors[0].$message }}
+                <div class="form-error" v-if="v$.user.client_attributes.site_attributes.altitude.$error">
+                  {{ v$.user.client_attributes.site_attributes.altitude.$errors[0].$message }}
                 </div>
               </div>
             </div>
@@ -200,35 +191,45 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed, reactive, ref } from 'vue';
+  import { computed } from 'vue';
+  import { useForm } from '@inertiajs/vue3';
   import { useVuelidate } from '@vuelidate/core';
   import { required, email, minLength, sameAs, numeric, decimal, between, minValue, maxValue } from '@vuelidate/validators';
   import LocationSelector from '@/components/LocationSelector.vue';
   import useAuth from '@/composables/useAuth';
-  import useAuthStore from '@/stores/auth';
 
-  const { paths, rootObjectName, features } = useAuth();
+  const { paths, features } = useAuth();
 
-  const { formState, saveFormState } = useAuthStore();
-
-  const form = ref<HTMLFormElement>();
-  const formData = reactive({
-    ...formState,
-    password: '',
-    passwordConfirmation: ''
+  const formData = useForm({
+    user: {
+      name: null,
+      email: null,
+      password: '',
+      password_confirmation: '',
+      client_attributes: {
+        name: null,
+        site_attributes: {
+          country: null,
+          city: null,
+          latitude: null,
+          longitude: null,
+          altitude: null
+        }
+      }
+    }
   });
 
   const passwordStrength = computed(() => {
     let strength = 0;
-    if (formData.password.length >= 8)
+    if (formData.user.password.length >= 8)
       strength += 20;
-    if (formData.password.match(/[A-Z]/))
+    if (formData.user.password.match(/[A-Z]/))
       strength += 20;
-    if (formData.password.match(/[a-z]/))
+    if (formData.user.password.match(/[a-z]/))
       strength += 20;
-    if (formData.password.match(/[0-9]/))
+    if (formData.user.password.match(/[0-9]/))
       strength += 20;
-    if (formData.password.match(/[^A-Za-z0-9]/))
+    if (formData.user.password.match(/[^A-Za-z0-9]/))
       strength += 20;
     return strength;
   });
@@ -253,28 +254,34 @@
 
   function rules() {
     return {
-      name: { required },
-      email: { required, email },
-      password: { required, minLength: minLength(8) },
-      passwordConfirmation: { required, sameAs: sameAs(formData.password) },
-      company: { required },
-      country: { required },
-      city: {},
-      latitude: {
-        numeric,
-        decimal,
-        between: between(-90, 90)
-      },
-      longitude: {
-        numeric,
-        decimal,
-        between: between(-180, 180)
-      },
-      altitude: {
-        numeric,
-        decimal,
-        minValue: minValue(-431),
-        maxValue: maxValue(8849)
+      user: {
+        name: { required },
+        email: { required, email },
+        password: { required, minLength: minLength(8) },
+        password_confirmation: { required, sameAs: sameAs(formData.user.password) },
+        client_attributes: {
+          name: { required }, // This is your company field
+          site_attributes: {
+            country: { required },
+            city: {},
+            latitude: {
+              numeric,
+              decimal,
+              between: between(-90, 90)
+            },
+            longitude: {
+              numeric,
+              decimal,
+              between: between(-180, 180)
+            },
+            altitude: {
+              numeric,
+              decimal,
+              minValue: minValue(-431),
+              maxValue: maxValue(8849)
+            }
+          }
+        }
       }
     };
   }
@@ -283,12 +290,14 @@
     if (!features.value.canRegister)
       return;
 
-    saveFormState(formData);
     const isValid = await v$.value.$validate();
     if (!isValid)
       return;
 
-    form.value?.$el.submit();
+    formData.post(paths.value.actions.signUp, {
+      preserveScroll: true,
+      preserveState: true
+    });
   }
 </script>
 

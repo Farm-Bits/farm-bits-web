@@ -28,7 +28,6 @@
             search="external"
             search-no-results-label=""
             options-style="text"
-            :name="`${nameAttribute}[country]`"
             :multiple="false"
             :options="countries"
             :loading="loadingCountries"
@@ -51,7 +50,6 @@
             search="external"
             search-no-results-label=""
             options-style="text"
-            :name="`${nameAttribute}[city]`"
             :multiple="false"
             :options="cities"
             :loading="loadingCities"
@@ -75,7 +73,6 @@
             <CFormInput
               id="latitude"
               placeholder="e.g., 40.7128"
-              :name="`${nameAttribute}[latitude]`"
               type="number"
               step="any"
               v-model="latitudeModel"
@@ -92,7 +89,6 @@
             <CFormInput
               id="longitude"
               placeholder="e.g., -74.0060"
-              :name="`${nameAttribute}[longitude]`"
               type="number"
               step="any"
               v-model="longitudeModel"
@@ -109,7 +105,6 @@
             <CFormInput
               id="altitude"
               placeholder="e.g., 150"
-              :name="`${nameAttribute}[altitude]`"
               type="number"
               step="any"
               v-model="altitudeModel"
@@ -171,7 +166,6 @@
   import useToastStore from '@/stores/toast';
 
   const props = defineProps<{
-    nameAttribute: string;
     country: string | null;
     city: string | null;
     latitude: number | null;

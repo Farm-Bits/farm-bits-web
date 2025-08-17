@@ -30,10 +30,10 @@ class Login::Users::RegistrationsController < Devise::RegistrationsController
     else
       clean_up_passwords resource
       set_minimum_password_length
-      render inertia: 'Login/Registrations/New', props: {
-        userScope: 'users',
-        errors: resource.errors.full_messages
-      }
+      redirect_back(
+        fallback_location: new_user_registration_path,
+        flash: { errors: resource.errors.full_messages }
+      )
     end
   end
 
