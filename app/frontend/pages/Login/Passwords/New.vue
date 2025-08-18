@@ -16,8 +16,8 @@
         <FlashMessages class="mb-6" />
 
         <CForm
-          :action="paths.actions.resetPassword"
-          method="post"
+          novalidate
+          @submit.prevent="handleSubmit"
           class="form-section">
           <div class="form-field">
             <label for="email" class="form-label">
@@ -29,12 +29,16 @@
               </div>
               <CFormInput
                 id="email"
+                name="email"
                 placeholder="Enter your email address"
                 autocomplete="email"
                 type="email"
-                :name="`${rootObjectName}[email]`"
                 required
+                v-model="formData[rootObjectName].email"
                 class="form-input-with-icon" />
+              <div class="form-error" v-if="v$[rootObjectName].email.$error">
+                {{ v$[rootObjectName].email.$errors[0].$message }}
+              </div>
             </div>
           </div>
 
@@ -48,9 +52,41 @@
 </template>
 
 <script lang="ts" setup>
+  import { useForm } from '@inertiajs/vue3';
+  import { useVuelidate } from '@vuelidate/core';
+  import { email, required } from '@vuelidate/validators';
   import useAuth from '@/composables/useAuth';
 
-  const { paths, rootObjectName } = useAuth();
+  const { paths, rootObjectName, features } = useAuth();
+
+  const formData = useForm({
+    [rootObjectName.value]: {
+      email: null
+    }
+  });
+
+  function rules() {
+    return {
+      [rootObjectName.value]: {
+        email: { required, email }
+      }
+    };
+  }
+
+  const v$ = useVuelidate(rules, formData);
+
+  async function handleSubmit() {
+    if (!features.value.canRecover)
+      return;
+
+    const isValid = await v$.value.$validate();
+    if (!isValid)
+      return;
+
+    formData.post(paths.value.actions.resetPassword, {
+      preserveState: true
+    });
+  }
 </script>
 
 <style scoped>

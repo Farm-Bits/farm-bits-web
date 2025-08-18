@@ -16,10 +16,10 @@ class Login::AdminUsers::ConfirmationsController < Devise::ConfirmationsControll
     if successfully_sent?(resource)
       respond_with({}, location: after_resending_confirmation_instructions_path_for(resource_name))
     else
-      render inertia: 'Login/Confirmations/New', props: {
-        userScope: 'admin_users',
-        errors: resource.errors.full_messages
-      }
+      redirect_back(
+        fallback_location: new_confirmation_path(resource_name),
+        flash: { errors: resource.errors.full_messages }
+      )
     end
   end
 
@@ -33,10 +33,10 @@ class Login::AdminUsers::ConfirmationsController < Devise::ConfirmationsControll
       set_flash_message!(:notice, :confirmed)
       respond_with_navigational(resource){ redirect_to after_confirmation_path_for(resource_name, resource) }
     else
-      render inertia: 'Login/Confirmations/New', props: {
-        userScope: 'admin_users',
-        errors: resource.errors.full_messages
-      }
+      redirect_back(
+        fallback_location: new_confirmation_path(resource_name),
+        flash: { errors: resource.errors.full_messages }
+      )
     end
   end
 

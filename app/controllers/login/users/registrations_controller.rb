@@ -31,7 +31,7 @@ class Login::Users::RegistrationsController < Devise::RegistrationsController
       clean_up_passwords resource
       set_minimum_password_length
       redirect_back(
-        fallback_location: new_user_registration_path,
+        fallback_location: new_registration_path(resource_name),
         flash: { errors: resource.errors.full_messages }
       )
     end

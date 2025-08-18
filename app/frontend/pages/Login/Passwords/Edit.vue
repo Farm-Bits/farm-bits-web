@@ -16,10 +16,8 @@
         <FlashMessages class="mb-6" />
 
         <CForm
-          ref="form"
+          novalidate
           @submit.prevent="handleSubmit"
-          :action="paths.actions.resetPassword"
-          method="post"
           class="form-section">
           <div class="form-field">
             <label for="password" class="form-label">
@@ -31,16 +29,16 @@
               </div>
               <CFormInput
                 id="password"
+                name="password"
                 placeholder="Enter new password"
                 type="password"
-                :name="`${rootObjectName}[password]`"
                 required
-                v-model="password"
+                v-model="formData[rootObjectName].password"
                 class="form-input-with-icon" />
             </div>
 
             <!-- Password Strength Indicator -->
-            <div v-if="password" class="mt-2">
+            <div v-if="formData[rootObjectName].password" class="mt-2">
               <div class="flex items-center space-x-2">
                 <div class="flex-1 bg-gray-200 rounded-full h-2">
                   <div
@@ -58,6 +56,10 @@
                 Use at least 8 characters with a mix of letters, numbers, and symbols.
               </p>
             </div>
+
+            <div class="form-error" v-if="v$[rootObjectName].password.$error">
+              {{ v$[rootObjectName].password.$errors[0].$message }}
+            </div>
           </div>
 
           <div class="form-field">
@@ -70,15 +72,15 @@
               </div>
               <CFormInput
                 id="passwordConfirmation"
+                name="passwordConfirmation"
                 placeholder="Confirm new password"
                 type="password"
-                :name="`${rootObjectName}[password_confirmation]`"
                 required
-                v-model="passwordConfirmation"
+                v-model="formData[rootObjectName].password_confirmation"
                 class="form-input-with-icon" />
             </div>
-            <div v-if="passwordConfirmation && password !== passwordConfirmation" class="form-error">
-              Passwords do not match
+            <div class="form-error" v-if="v$[rootObjectName].password_confirmation.$error">
+              {{ v$[rootObjectName].password_confirmation.$errors[0].$message }}
             </div>
           </div>
 
@@ -112,29 +114,40 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed, ref } from 'vue';
+  import { computed } from 'vue';
+  import { usePage, useForm } from '@inertiajs/vue3';
+  import { useVuelidate } from '@vuelidate/core';
+  import { minLength, required, sameAs } from '@vuelidate/validators';
   import useAuth from '@/composables/useAuth';
 
-  const { paths, rootObjectName } = useAuth();
+  const { paths, rootObjectName, features } = useAuth();
 
-  const form = ref<HTMLFormElement>();
-  const password = ref('');
-  const passwordConfirmation = ref('');
+  const page = usePage<{
+    reset_password_token: string;
+  }>();
+
+  const formData = useForm({
+    [rootObjectName.value]: {
+      password: '',
+      password_confirmation: '',
+      reset_password_token: page.props.reset_password_token
+    }
+  });
 
   const passwordStrength = computed(() => {
     let strength = 0;
-    if (password.value.length >= 8)
+    if (formData[rootObjectName.value].password.length >= 8)
       strength += 20;
-    if (password.value.match(/[A-Z]/))
+    if (formData[rootObjectName.value].password.match(/[A-Z]/))
       strength += 20;
-    if (password.value.match(/[a-z]/))
+    if (formData[rootObjectName.value].password.match(/[a-z]/))
       strength += 20;
-    if (password.value.match(/[0-9]/))
+    if (formData[rootObjectName.value].password.match(/[0-9]/))
       strength += 20;
-    if (password.value.match(/[^A-Za-z0-9]/))
+    if (formData[rootObjectName.value].password.match(/[^A-Za-z0-9]/))
       strength += 20;
     return strength;
-  })
+  });
 
   const passwordStrengthInfo = computed(() => {
     if (passwordStrength.value <= 20)
@@ -146,22 +159,38 @@
     if (passwordStrength.value <= 80)
       return { color: 'bg-blue-500', textColor: 'text-blue-600', text: 'Strong' };
     return { color: 'bg-green-500', textColor: 'text-green-600', text: 'Very Strong' };
-  })
+  });
 
   const passwordStrengthColorClass = computed(() => passwordStrengthInfo.value.color);
   const passwordStrengthTextClass = computed(() => passwordStrengthInfo.value.textColor);
   const passwordStrengthText = computed(() => passwordStrengthInfo.value.text);
 
+  function rules() {
+    return {
+      [rootObjectName.value]: {
+        password: { required, minLength: minLength(8) },
+        password_confirmation: { required, sameAs: sameAs(formData[rootObjectName.value].password) }
+      }
+    };
+  }
+
+  const v$ = useVuelidate(rules, formData);
+
   const isFormValid = computed(() => {
-    return password.value.length >= 8 &&
-      password.value === passwordConfirmation.value &&
-      passwordStrength.value >= 40
+    return !v$.value.$invalid;
   });
 
-  function handleSubmit() {
-    if (!isFormValid.value)
+  async function handleSubmit() {
+    if (!features.value.canRecover)
       return;
-    form.value?.$el.submit();
+
+    const isValid = await v$.value.$validate();
+    if (!isValid)
+      return;
+
+    formData.put(paths.value.actions.resetPassword, {
+      preserveState: true
+    });
   }
 </script>
 

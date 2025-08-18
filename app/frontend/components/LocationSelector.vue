@@ -24,6 +24,7 @@
         <div class="relative">
           <CMultiSelect
             id="country"
+            name="country"
             placeholder="Type to search country..."
             search="external"
             search-no-results-label=""
@@ -46,6 +47,7 @@
         <div class="relative">
           <CMultiSelect
             id="city"
+            name="city"
             :placeholder="!country ? 'Select country first' : 'Type to search city...'"
             search="external"
             search-no-results-label=""
@@ -72,6 +74,7 @@
           <div class="relative">
             <CFormInput
               id="latitude"
+              name="latitude"
               placeholder="e.g., 40.7128"
               type="number"
               step="any"
@@ -88,6 +91,7 @@
           <div class="relative">
             <CFormInput
               id="longitude"
+              name="longitude"
               placeholder="e.g., -74.0060"
               type="number"
               step="any"
@@ -104,6 +108,7 @@
           <div class="relative">
             <CFormInput
               id="altitude"
+              name="altitude"
               placeholder="e.g., 150"
               type="number"
               step="any"

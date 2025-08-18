@@ -16,10 +16,10 @@ class Login::Users::UnlocksController < Devise::UnlocksController
     if successfully_sent?(resource)
       respond_with({}, location: after_sending_unlock_instructions_path_for(resource))
     else
-      render inertia: 'Login/Unlocks/New', props: {
-        userScope: 'users',
-        errors: resource.errors.full_messages
-      }
+      redirect_back(
+        fallback_location: new_unlock_path(resource_name),
+        flash: { errors: resource.errors.full_messages }
+      )
     end
   end
 
@@ -32,10 +32,10 @@ class Login::Users::UnlocksController < Devise::UnlocksController
       set_flash_message! :notice, :unlocked
       respond_with_navigational(resource){ redirect_to after_unlock_path_for(resource) }
     else
-      render inertia: 'Login/Unlocks/New', props: {
-        userScope: 'users',
-        errors: resource.errors.full_messages
-      }
+      redirect_back(
+        fallback_location: new_unlock_path(resource_name),
+        flash: { errors: resource.errors.full_messages }
+      )
     end
   end
 

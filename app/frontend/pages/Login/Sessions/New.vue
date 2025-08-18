@@ -24,10 +24,8 @@
           <FlashMessages class="mb-6" />
 
           <CForm
-            ref="form"
+            novalidate
             @submit.prevent="handleSubmit"
-            :action="paths.actions.signIn"
-            method="post"
             class="form-section">
             <div class="form-field">
               <label for="email" class="form-label">
@@ -39,13 +37,16 @@
                 </div>
                 <CFormInput
                   id="email"
+                  name="email"
                   placeholder="Enter your email"
                   autocomplete="email"
                   type="email"
-                  :name="`${rootObjectName}[email]`"
                   required
-                  v-model="email"
+                  v-model="formData[rootObjectName].email"
                   class="form-input-with-icon" />
+                <div class="form-error" v-if="v$[rootObjectName].email.$error">
+                  {{ v$[rootObjectName].email.$errors[0].$message }}
+                </div>
               </div>
             </div>
 
@@ -59,18 +60,24 @@
                 </div>
                 <CFormInput
                   id="password"
+                  name="password"
                   placeholder="Enter your password"
                   type="password"
-                  :name="`${rootObjectName}[password]`"
                   required
+                  v-model="formData[rootObjectName].password"
                   class="form-input-with-icon" />
+                <div class="form-error" v-if="v$[rootObjectName].password.$error">
+                  {{ v$[rootObjectName].password.$errors[0].$message }}
+                </div>
               </div>
             </div>
 
             <div class="flex items-center justify-between">
               <CFormCheck
                 label="Remember me"
-                :name="`${rootObjectName}[remember_me]`"
+                id="remember_me"
+                name="remember_me"
+                v-model="formData[rootObjectName].remember_me"
                 class="text-sm text-gray-600" />
               <a v-if="features.canRecover" :href="paths.pages.forgotPassword" class="nav-link-primary">
                 Forgot password?
@@ -112,20 +119,40 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref } from 'vue';
+  import { useForm } from '@inertiajs/vue3';
+  import { useVuelidate } from '@vuelidate/core';
+  import { email, minLength, required } from '@vuelidate/validators';
   import useAuth from '@/composables/useAuth';
-  import useAuthStore from '@/stores/auth';
 
   const { paths, rootObjectName, features } = useAuth();
 
-  const { formState, saveFormState } = useAuthStore();
+  const formData = useForm({
+    [rootObjectName.value]: {
+      email: null,
+      password: null,
+      remember_me: false
+    }
+  });
 
-  const form = ref<HTMLFormElement>();
-  const email = ref(formState.email);
+  function rules() {
+    return {
+      [rootObjectName.value]: {
+        email: { required, email },
+        password: { required, minLength: minLength(8) }
+      }
+    };
+  }
 
-  function handleSubmit() {
-    saveFormState({ email: email.value });
-    form.value?.$el.submit();
+  const v$ = useVuelidate(rules, formData);
+
+  async function handleSubmit() {
+    const isValid = await v$.value.$validate();
+    if (!isValid)
+      return;
+
+    formData.post(paths.value.actions.signIn, {
+      preserveState: true
+    });
   }
 </script>
 

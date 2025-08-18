@@ -16,10 +16,8 @@
         <FlashMessages class="mb-6" />
 
         <CForm
-          ref="form"
+          novalidate
           @submit.prevent="handleSubmit"
-          :action="paths.actions.confirmation"
-          method="post"
           class="form-section">
           <div class="form-field">
             <label for="email" class="form-label">
@@ -31,13 +29,16 @@
               </div>
               <CFormInput
                 id="email"
+                name="email"
                 placeholder="Enter your email address"
                 autocomplete="email"
                 type="email"
-                :name="`${rootObjectName}[email]`"
                 required
-                v-model="email"
+                v-model="formData[rootObjectName].email"
                 class="form-input-with-icon-secondary" />
+            </div>
+            <div class="form-error" v-if="v$[rootObjectName].email.$error">
+              {{ v$[rootObjectName].email.$errors[0].$message }}
             </div>
             <p class="form-help-text">
               Enter the email address you used to register your account.
@@ -69,20 +70,40 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref } from 'vue';
+  import { useForm } from '@inertiajs/vue3';
+  import { useVuelidate } from '@vuelidate/core';
+  import { required, email } from '@vuelidate/validators';
   import useAuth from '@/composables/useAuth';
-  import useAuthStore from '@/stores/auth';
 
-  const { paths, rootObjectName } = useAuth();
+  const { paths, rootObjectName, features } = useAuth();
 
-  const { formState, saveFormState } = useAuthStore();
+  const formData = useForm({
+    [rootObjectName.value]: {
+      email: null
+    }
+  });
 
-  const form = ref<HTMLFormElement>();
-  const email = ref(formState.email);
+  function rules() {
+    return {
+      [rootObjectName.value]: {
+        email: { required, email }
+      }
+    };
+  }
 
-  function handleSubmit() {
-    saveFormState({ email: email.value });
-    form.value?.$el.submit();
+  const v$ = useVuelidate(rules, formData);
+
+  async function handleSubmit() {
+    if (!features.value.canConfirm)
+      return;
+
+    const isValid = await v$.value.$validate();
+    if (!isValid)
+      return;
+
+    formData.post(paths.value.actions.confirmation, {
+      preserveState: true
+    });
   }
 </script>
 

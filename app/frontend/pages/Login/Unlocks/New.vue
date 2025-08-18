@@ -16,10 +16,8 @@
         <FlashMessages class="mb-6" />
 
         <CForm
-          ref="form"
+          novalidate
           @submit.prevent="handleSubmit"
-          :action="paths.actions.unlock"
-          method="post"
           class="form-section">
           <div class="form-field">
             <label for="email" class="form-label">
@@ -31,14 +29,17 @@
               </div>
               <CFormInput
                 id="email"
+                name="email"
                 placeholder="Enter your email address"
                 autocomplete="email"
                 type="email"
-                :name="`${rootObjectName}[email]`"
                 required
-                v-model="email"
+                v-model="formData[rootObjectName].email"
                 class="pl-10 block w-full rounded-xl border-gray-300 shadow-sm py-3"
                 style="border-color: var(--feature-purple-color) !important; --tw-ring-color: var(--feature-purple-color) !important;" />
+                <div class="form-error" v-if="v$[rootObjectName].email.$error">
+                  {{ v$[rootObjectName].email.$errors[0].$message }}
+                </div>
             </div>
             <p class="form-help-text">
               Enter the email address associated with your locked account.
@@ -70,20 +71,40 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref } from 'vue';
+  import { useForm } from '@inertiajs/vue3';
+  import { useVuelidate } from '@vuelidate/core';
+  import { email, required } from '@vuelidate/validators';
   import useAuth from '@/composables/useAuth';
-  import useAuthStore from '@/stores/auth'
 
-  const { paths, rootObjectName } = useAuth();
+  const { paths, rootObjectName, features } = useAuth();
 
-  const { formState, saveFormState } = useAuthStore();
+  const formData = useForm({
+    [rootObjectName.value]: {
+      email: null
+    }
+  });
 
-  const form = ref<HTMLFormElement>();
-  const email = ref(formState.email);
+  function rules() {
+    return {
+      [rootObjectName.value]: {
+        email: { required, email }
+      }
+    };
+  }
 
-  function handleSubmit() {
-    saveFormState({ email: email.value });
-    form.value?.$el.submit();
+  const v$ = useVuelidate(rules, formData);
+
+  async function handleSubmit() {
+    if (!features.value.canUnlock)
+      return;
+
+    const isValid = await v$.value.$validate();
+    if (!isValid)
+      return;
+
+    formData.post(paths.value.actions.unlock, {
+      preserveState: true
+    });
   }
 </script>
 
