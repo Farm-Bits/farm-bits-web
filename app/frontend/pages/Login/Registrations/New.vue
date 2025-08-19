@@ -147,29 +147,8 @@
               </h3>
 
               <LocationSelector
-                v-model:country="formData[rootObjectName].client_attributes.site_attributes.country"
-                v-model:city="formData[rootObjectName].client_attributes.site_attributes.city"
-                v-model:latitude="formData[rootObjectName].client_attributes.site_attributes.latitude"
-                v-model:longitude="formData[rootObjectName].client_attributes.site_attributes.longitude"
-                v-model:altitude="formData[rootObjectName].client_attributes.site_attributes.altitude" />
-
-              <div class="form-field">
-                <div class="form-error" v-if="v$[rootObjectName].client_attributes.site_attributes.country.$error">
-                  {{ v$[rootObjectName].client_attributes.site_attributes.country.$errors[0].$message }}
-                </div>
-                <div class="form-error" v-if="v$[rootObjectName].client_attributes.site_attributes.city.$error">
-                  {{ v$[rootObjectName].client_attributes.site_attributes.city.$errors[0].$message }}
-                </div>
-                <div class="form-error" v-if="v$[rootObjectName].client_attributes.site_attributes.latitude.$error">
-                  {{ v$[rootObjectName].client_attributes.site_attributes.latitude.$errors[0].$message }}
-                </div>
-                <div class="form-error" v-if="v$[rootObjectName].client_attributes.site_attributes.longitude.$error">
-                  {{ v$[rootObjectName].client_attributes.site_attributes.longitude.$errors[0].$message }}
-                </div>
-                <div class="form-error" v-if="v$[rootObjectName].client_attributes.site_attributes.altitude.$error">
-                  {{ v$[rootObjectName].client_attributes.site_attributes.altitude.$errors[0].$message }}
-                </div>
-              </div>
+                v-model="formData[rootObjectName].client_attributes.site_attributes"
+                :errors="v$[rootObjectName].client_attributes.site_attributes" />
             </div>
 
             <!-- Submit Button -->
@@ -293,8 +272,14 @@
       return;
 
     const isValid = await v$.value.$validate();
-    if (!isValid)
+    if (!isValid) {
+      const firstInvalidElement = document.querySelector('.is-invalid');
+      firstInvalidElement?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
       return;
+    }
 
     formData.post(paths.value.actions.signUp, {
       preserveState: true

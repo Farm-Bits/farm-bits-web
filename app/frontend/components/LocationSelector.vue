@@ -36,6 +36,9 @@
             @change="onCountryChange"
             @filter-change="searchCountries"
             class="form-input" />
+          <div class="form-error" v-if="errors.country.$error">
+            {{ errors.country.$errors[0].$message }}
+          </div>
         </div>
       </div>
 
@@ -48,23 +51,26 @@
           <CMultiSelect
             id="city"
             name="city"
-            :placeholder="!country ? 'Select country first' : 'Type to search city...'"
+            :placeholder="!countryModel ? 'Select country first' : 'Type to search city...'"
             search="external"
             search-no-results-label=""
             options-style="text"
             :multiple="false"
             :options="cities"
             :loading="loadingCities"
-            :disabled="!autocompleteService || !country"
+            :disabled="!autocompleteService || !countryModel"
             @change="onCityChange"
             @filter-change="searchCities"
             class="form-input" />
+          <div class="form-error" v-if="errors.city.$error">
+            {{ errors.city.$errors[0].$message }}
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Coordinates and Map Section -->
-    <div class="">
+    <div>
       <div class="form-grid-3">
         <!-- Coordinate Inputs -->
         <div class="form-field">
@@ -76,11 +82,13 @@
               id="latitude"
               name="latitude"
               placeholder="e.g., 40.7128"
-              type="number"
-              step="any"
+              inputmode="numeric"
+              class="form-input"
               v-model="latitudeModel"
-              @change="manualCoordinateChanges"
-              class="form-input" />
+              @change="manualCoordinateChanges" />
+            <div class="form-error" v-if="errors.latitude.$error">
+              {{ errors.latitude.$errors[0].$message }}
+            </div>
           </div>
         </div>
 
@@ -93,11 +101,13 @@
               id="longitude"
               name="longitude"
               placeholder="e.g., -74.0060"
-              type="number"
-              step="any"
+              inputmode="numeric"
+              class="form-input"
               v-model="longitudeModel"
-              @change="manualCoordinateChanges"
-              class="form-input" />
+              @change="manualCoordinateChanges"/>
+            <div class="form-error" v-if="errors.longitude.$error">
+              {{ errors.longitude.$errors[0].$message }}
+            </div>
           </div>
         </div>
 
@@ -110,10 +120,12 @@
               id="altitude"
               name="altitude"
               placeholder="e.g., 150"
-              type="number"
-              step="any"
-              v-model="altitudeModel"
-              class="form-input" />
+              inputmode="numeric"
+              class="form-input"
+              v-model="altitudeModel" />
+            <div class="form-error" v-if="errors.altitude.$error">
+              {{ errors.altitude.$errors[0].$message }}
+            </div>
           </div>
         </div>
       </div>
@@ -168,19 +180,24 @@
 <script lang="ts" setup>
   import { computed, onMounted, ref, watch } from 'vue';
   import { Loader } from '@googlemaps/js-api-loader';
+  import { type Validation, type ValidationArgs } from '@vuelidate/core'
   import useToastStore from '@/stores/toast';
 
-  const props = defineProps<{
+  interface Location {
     country: string | null;
     city: string | null;
-    latitude: number | null;
-    longitude: number | null;
-    altitude: number | null;
+    latitude: string | number | null;
+    longitude: string | number | null;
+    altitude: string | number | null;
+  };
+  const props = defineProps<{
+    modelValue: Location;
+    errors: Validation<ValidationArgs<Location>, Location>;
   }>();
 
   const API_KEY = '***REMOVED***';
 
-  const preSelectedCity = ref(props.city);
+  const preSelectedCity = ref(props.modelValue.city);
   const mapContainer = ref<HTMLElement | null>(null);
   const map = ref<google.maps.Map | null>(null);
   const marker = ref<google.maps.marker.AdvancedMarkerElement | null>(null);
@@ -199,60 +216,52 @@
   const { addToast } = useToastStore();
 
   const emit = defineEmits<{
-    'update:country': [value: string | null];
-    'update:city': [value: string | null];
-    'update:latitude': [value: number | null];
-    'update:longitude': [value: number | null];
-    'update:altitude': [value: number | null];
+    'update:modelValue': [value: Location];
   }>();
 
   const countryModel = computed({
-    get: () => props.country,
-    set: (value: string | null) => emit('update:country', value)
+    get: () => props.modelValue.country,
+    set: (value: string | null) => emit('update:modelValue', { ...props.modelValue, country: value })
   });
 
   const cityModel = computed({
-    get: () => props.city,
-    set: (value: string | null) => emit('update:city', value)
+    get: () => props.modelValue.city,
+    set: (value: string | null) => emit('update:modelValue', { ...props.modelValue, city: value })
   });
 
   const latitudeModel = computed({
-    get: () => props.latitude,
+    get: () => props.modelValue.latitude,
     set: (value: string | number | null) => {
-      if (value == null) {
-        emit('update:latitude', value);
-      } else {
-        const newValue = typeof value === 'string' ? parseFloat(value) : value;
-        if (isNaN(newValue)) {
-          emit('update:latitude', null);
-        } else {
-          emit('update:latitude', newValue);
-        }
-      }
+      let newValue: string | number | null = null;
+
+      if (value !== null)
+        newValue = typeof value === 'string' && value !== '' ? parseFloat(value) : value;
+
+      emit('update:modelValue', { ...props.modelValue, latitude: newValue });
     }
   });
 
   const longitudeModel = computed({
-    get: () => props.longitude,
+    get: () => props.modelValue.longitude,
     set: (value: string | number | null) => {
-      if (value == null) {
-        emit('update:longitude', value);
-      } else {
-        const newValue = typeof value === 'string' ? parseFloat(value) : value;
-        if (isNaN(newValue)) {
-          emit('update:longitude', null);
-        } else {
-          emit('update:longitude', newValue);
-        }
-      }
+      let newValue: string | number | null = null;
+
+      if (value !== null)
+        newValue = typeof value === 'string' && value !== '' ? parseFloat(value) : value;
+
+      emit('update:modelValue', { ...props.modelValue, longitude: newValue });
     }
   });
 
   const altitudeModel = computed({
-    get: () => props.altitude,
+    get: () => props.modelValue.altitude,
     set: (value: string | number | null) => {
-      const newValue = typeof value === 'string' ? parseFloat(value) : value;
-      emit('update:altitude', newValue);
+      let newValue: string | number | null = null;
+
+      if (value !== null)
+        newValue = typeof value === 'string' && value !== '' ? parseFloat(value) : value;
+
+      emit('update:modelValue', { ...props.modelValue, altitude: newValue });
     }
   });
 
@@ -262,6 +271,19 @@
       locations: [position]
     });
     return elevation.results[0]?.elevation;
+  }
+
+  function isValidCoordinate(value: string | number | null): value is number {
+    return value != null && typeof value === 'number' && !isNaN(value);
+  }
+
+  function updateCoordinates(latitude: number, longitude: number, altitude: number) {
+    emit('update:modelValue', {
+      ...props.modelValue,
+      latitude,
+      longitude,
+      altitude
+    });
   }
 
   async function initMap() {
@@ -276,7 +298,7 @@
       let mapZoom = 2;
       let markerPosition: google.maps.LatLng | null = null;
 
-      if (latitudeModel.value != null && longitudeModel.value != null) {
+      if (isValidCoordinate(latitudeModel.value) && isValidCoordinate(longitudeModel.value)) {
         const position = new google.maps.LatLng(latitudeModel.value, longitudeModel.value);
         mapCenter = position;
         mapZoom = 12;
@@ -303,9 +325,12 @@
       markerInstance.addListener('dragend', async () => {
         const newPosition = markerInstance.position;
         if (newPosition) {
-          latitudeModel.value = newPosition.lat as number;
-          longitudeModel.value = newPosition.lng as number;
-          altitudeModel.value = await getElevation(newPosition);
+          const elevation = await getElevation(newPosition);
+          updateCoordinates(
+            newPosition.lat as number,
+            newPosition.lng as number,
+            elevation
+          );
         }
       });
 
@@ -448,9 +473,12 @@
             return;
           }
 
-          latitudeModel.value = position.lat;
-          longitudeModel.value = position.lng;
-          altitudeModel.value = await getElevation(position);
+          const elevation = await getElevation(position);
+          updateCoordinates(
+            position.lat as number,
+            position.lng as number,
+            elevation
+          );
 
           if (marker.value)
             marker.value.position = new google.maps.LatLng(position.lat, position.lng);
@@ -496,7 +524,7 @@
 
   function manualCoordinateChanges() {
     if (marker.value) {
-      if (latitudeModel.value != null && longitudeModel.value != null) {
+      if (isValidCoordinate(latitudeModel.value) && isValidCoordinate(longitudeModel.value)) {
         const position = new google.maps.LatLng(latitudeModel.value, longitudeModel.value);
         marker.value.position = position;
 

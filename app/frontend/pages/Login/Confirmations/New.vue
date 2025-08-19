@@ -98,8 +98,14 @@
       return;
 
     const isValid = await v$.value.$validate();
-    if (!isValid)
+    if (!isValid) {
+      const firstInvalidElement = document.querySelector('.is-invalid');
+      firstInvalidElement?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
       return;
+    }
 
     formData.post(paths.value.actions.confirmation, {
       preserveState: true
