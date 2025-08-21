@@ -1,8 +1,8 @@
 <template>
-  <div class="mb-3">
-    <div class="position-relative" ref="triggerRef">
+  <div class="w-full block">
+    <div ref="triggerRef">
       <!-- Color Display Button -->
-      <CButton
+      <button
         variant="outline"
         @click="togglePicker"
         class="d-flex align-items-center justify-content-between w-100 text-start bg-transparent p-2"
@@ -21,7 +21,7 @@
             {{ displayValue }}
           </span>
         </div>
-      </CButton>
+      </button>
     </div>
 
     <!-- Color Picker Dropdown - Teleported to body -->
@@ -53,11 +53,7 @@
 
           <!-- Actions -->
           <div class="d-flex justify-content-between align-items-center pt-2 border-top">
-            <CButton
-              size="sm"
-              color="danger"
-              variant="ghost"
-              @click="clearColor">
+            <CButton color="secondary" @click="clearColor">
               Clear
             </CButton>
           </div>

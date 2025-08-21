@@ -13,28 +13,32 @@ export default {
       },
       colors: {
         // Semantic brand colors - much easier to remember!
-        'brand': {
-          'green': {
-            'light': '#f0fdf4',
-            'base': '#059669',
-            'dark': '#047857',
-            'darker': '#065f46',
+        brand: {
+          green: {
+            light: '#f0fdf4',
+            base: '#059669',
+            dark: '#047857',
+            darker: '#065f46',
           },
-          'blue': {
-            'light': '#eff6ff',
-            'base': '#2563eb',
-            'dark': '#1d4ed8',
+          blue: {
+            light: '#eff6ff',
+            base: '#2563eb',
+            dark: '#1d4ed8',
           }
         },
         // Feature colors
-        'feature': {
-          'green': '#22c55e',
-          'blue': '#3b82f6',
-          'purple': '#7c3aed',
+        feature: {
+          green: '#22c55e',
+          blue: '#3b82f6',
+          purple: '#7c3aed',
         },
         // Quick access - your most used colors
-        'primary': '#059669',
-        'secondary': '#2563eb',
+        primary: '#059669',
+        secondary: '#2563eb',
+        danger: '#dc2626',
+        warning: '#d97706',
+        success: '#16a34a',
+        info: '#0ea5e9'
       },
       backgroundImage: {
         // Gradients from your design

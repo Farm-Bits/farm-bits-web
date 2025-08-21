@@ -1,12 +1,12 @@
 export type UserScope = 'admin_users' | 'users';
 
-export interface Client {
+export type Client = {
   id: number;
   name: string;
   color: string;
 };
 
-export interface User {
+export type User = {
   id: number;
   name: string;
   email: string;

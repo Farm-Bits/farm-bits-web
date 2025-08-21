@@ -1,7 +1,7 @@
 import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
 
-interface FormState {
+type FormState = {
   name?: string | null;
   email?: string | null;
   company?: string | null;

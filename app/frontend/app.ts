@@ -29,7 +29,9 @@ import {
   CFooter,
   CForm,
   CFormCheck,
+  CFormFeedback,
   CFormInput,
+  CFormLabel,
   CFormSelect,
   CHeader,
   CHeaderBrand,
@@ -38,8 +40,11 @@ import {
   CHeaderToggler,
   CInputGroup,
   CInputGroupText,
-  CLoadingButton,
-  CMultiSelect,
+  CModal,
+  CModalBody,
+  CModalFooter,
+  CModalHeader,
+  CModalTitle,
   CNav,
   CNavbar,
   CNavbarBrand,
@@ -57,12 +62,23 @@ import {
   CSidebarHeader,
   CSidebarNav,
   CSidebarToggler,
+  CTab,
+  CTable,
+  CTableBody,
+  CTabContent,
+  CTableDataCell,
+  CTableHead,
+  CTableHeaderCell,
+  CTableRow,
+  CTabList,
+  CTabPanel,
+  CTabs,
   CToast,
   CToastBody,
   CToastClose,
   CToaster,
   CToastHeader
-} from '@coreui/vue-pro';
+} from '@coreui/vue';
 import { CIcon } from '@coreui/icons-vue';
 import {
   cilAccountLogout,
@@ -70,20 +86,31 @@ import {
   cilArrowLeft,
   cilBarChart,
   cilBellExclamation,
+  cilBuilding,
+  cilCheck,
   cilCheckAlt,
   cilDescription,
+  cilEnvelopeClosed,
   cilGem,
   cilLockLocked,
   cilMenu,
+  cilOptions,
+  cilPencil,
   cilPeople,
   cilPlus,
   cilPuzzle,
   cilSettings,
   cilSpeedometer,
-  cilUser
+  cilTrash,
+  cilUser,
+  cilUserPlus,
+  cilUserX,
+  cilWarning,
+  cilX
 } from '@coreui/icons';
-import '@coreui/coreui-pro/dist/css/coreui.min.css';
-import FlashMessages from './components/FlashMessages.vue';
+import '@coreui/coreui/dist/css/coreui.min.css';
+import FlashErrorMessages from './components/FlashErrorMessages.vue';
+import VueSelect from 'vue3-select-component';
 
 // Configuration
 import { resolvePage } from './pages';
@@ -116,17 +143,27 @@ export default function () {
         cilArrowLeft,
         cilBarChart,
         cilBellExclamation,
+        cilBuilding,
+        cilCheck,
         cilCheckAlt,
         cilDescription,
+        cilEnvelopeClosed,
         cilGem,
         cilLockLocked,
         cilMenu,
+        cilOptions,
+        cilPencil,
         cilPeople,
         cilPlus,
         cilPuzzle,
         cilSettings,
         cilSpeedometer,
-        cilUser
+        cilTrash,
+        cilUser,
+        cilUserPlus,
+        cilUserX,
+        cilWarning,
+        cilX
       });
       app.component('CAlert', CAlert);
       app.component('CAvatar', CAvatar);
@@ -151,7 +188,9 @@ export default function () {
       app.component('CFooter', CFooter);
       app.component('CForm', CForm);
       app.component('CFormCheck', CFormCheck);
+      app.component('CFormFeedback', CFormFeedback);
       app.component('CFormInput', CFormInput);
+      app.component('CFormLabel', CFormLabel);
       app.component('CFormSelect', CFormSelect);
       app.component('CHeader', CHeader);
       app.component('CHeaderBrand', CHeaderBrand);
@@ -161,8 +200,11 @@ export default function () {
       app.component('CInputGroup', CInputGroup);
       app.component('CInputGroupText', CInputGroupText);
       app.component('CIcon', CIcon);
-      app.component('CLoadingButton', CLoadingButton);
-      app.component('CMultiSelect', CMultiSelect);
+      app.component('CModal', CModal);
+      app.component('CModalBody', CModalBody);
+      app.component('CModalFooter', CModalFooter);
+      app.component('CModalHeader', CModalHeader);
+      app.component('CModalTitle', CModalTitle);
       app.component('CNav', CNav);
       app.component('CNavbar', CNavbar);
       app.component('CNavbarBrand', CNavbarBrand);
@@ -180,14 +222,26 @@ export default function () {
       app.component('CSidebarHeader', CSidebarHeader);
       app.component('CSidebarNav', CSidebarNav);
       app.component('CSidebarToggler', CSidebarToggler);
+      app.component('CTab', CTab);
+      app.component('CTable', CTable);
+      app.component('CTableBody', CTableBody);
+      app.component('CTabContent', CTabContent);
+      app.component('CTableDataCell', CTableDataCell);
+      app.component('CTableHead', CTableHead);
+      app.component('CTableHeaderCell', CTableHeaderCell);
+      app.component('CTableRow', CTableRow);
+      app.component('CTabList', CTabList);
+      app.component('CTabPanel', CTabPanel);
+      app.component('CTabs', CTabs);
       app.component('CToast', CToast);
       app.component('CToastBody', CToastBody);
       app.component('CToastClose', CToastClose);
       app.component('CToaster', CToaster);
       app.component('CToastHeader', CToastHeader);
+      app.component('VueSelect', VueSelect);
 
       // Custom
-      app.component('FlashMessages', FlashMessages);
+      app.component('FlashErrorMessages', FlashErrorMessages);
 
       app.mount(el);
     }

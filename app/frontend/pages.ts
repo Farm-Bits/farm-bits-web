@@ -18,7 +18,7 @@
 import { type DefineComponent } from 'vue';
 import Layout from './layouts/Default.vue';
 
-interface PageModule {
+type PageModule = {
   default: DefineComponent & {
     layout?: DefineComponent;
   };

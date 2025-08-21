@@ -10,7 +10,7 @@ class UserArea::ClientSetupController < UserArea::ApplicationController
 
   def edit
     if current_client.role_for(current_user).can_manage_client_settings?
-      render inertia: 'UserArea/Settings'
+      render inertia: 'UserArea/Settings/index'
     else
       redirect_to root_path, alert: 'You do not have permission to edit this company.'
     end
@@ -22,7 +22,7 @@ class UserArea::ClientSetupController < UserArea::ApplicationController
 
     if client.save
       session[:current_client_id] = client.id
-      redirect_to root_path, notice: 'Company created successfully!'
+      redirect_to root_path
     else
       render inertia: 'UserArea/ClientSetup', props: {
         errors: client.errors.full_messages
@@ -33,7 +33,7 @@ class UserArea::ClientSetupController < UserArea::ApplicationController
   def update
     if current_client.role_for(current_user).can_manage_client_settings?
       if current_client.update(client_params)
-        redirect_to user_client_setup_edit_path, notice: 'Client was successfully updated.'
+        redirect_to user_client_setup_edit_path
       else
         render inertia: 'UserArea/ClientSetup', props: {
           errors: current_client.errors
@@ -47,7 +47,7 @@ class UserArea::ClientSetupController < UserArea::ApplicationController
   def destroy
     if current_client.role_for(current_user).can_manage_client_settings?
       current_client.destroy
-      redirect_to root_path, notice: 'Client was successfully destroyed.'
+      redirect_to root_path
     else
       redirect_to root_path, alert: 'You do not have permission to edit this company.'
     end

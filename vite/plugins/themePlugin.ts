@@ -2,7 +2,7 @@ import type { Plugin } from 'vite';
 import fs from 'fs';
 import path from 'path';
 
-interface ColorShades {
+type ColorShades = {
   light?: string;
   base?: string;
   dark?: string;
@@ -10,7 +10,7 @@ interface ColorShades {
   [key: string]: string | undefined;
 };
 
-interface ColorConfig {
+type ColorConfig = {
   brand?: {
     green?: ColorShades;
     blue?: ColorShades;
@@ -92,8 +92,23 @@ function generateCSSVariables(colors: ColorConfig): string {
     css += '\n';
   }
 
-  // Add utility classes for easier usage
+  // Handle any other color definitions at the root level
+  Object.entries(colors).forEach(([colorName, value]) => {
+    // Skip already processed colors and nested objects
+    if (['primary', 'secondary', 'brand', 'feature'].includes(colorName) || typeof value !== 'string') {
+      return;
+    }
+
+    const rgb = getRGBValues(value).join(', ');
+    css += `  --${colorName}-color: ${value};\n`;
+    css += `  --${colorName}-color-rgb: ${rgb};\n`;
+    css += `  --cui-${colorName}: ${value};\n`;
+    css += `  --cui-${colorName}-rgb: ${rgb};\n`;
+  });
+
   css += '}\n\n';
+
+  // Add utility classes for easier usage
   css += '/* Utility classes for colors */\n';
   css += '.bg-primary { background-color: var(--primary-color); }\n';
   css += '.bg-secondary { background-color: var(--secondary-color); }\n';
@@ -118,6 +133,74 @@ function generateCSSVariables(colors: ColorConfig): string {
     css += '.border-brand-blue { border-color: var(--brand-blue-color); }\n\n';
   }
 
+  // Add CoreUI button overrides for custom colors
+  css += '/* CoreUI Button Overrides */\n';
+
+  // Fix base button class to not interfere with outline buttons
+  css += '.btn {\n';
+  css += '  --cui-btn-color: var(--cui-body-color);\n';
+  css += '  --cui-btn-bg: transparent;\n';
+  css += '  --cui-btn-border-color: transparent;\n';
+  css += '  --cui-btn-hover-color: var(--cui-body-color);\n';
+  css += '  --cui-btn-hover-bg: transparent;\n';
+  css += '  --cui-btn-hover-border-color: transparent;\n';
+  css += '}\n\n';
+
+  // Generate button styles for all defined colors
+  const allColors = {
+    ...(colors.primary && { primary: colors.primary }),
+    ...(colors.secondary && { secondary: colors.secondary }),
+    // Add other root level colors that are strings
+    ...Object.fromEntries(
+      Object.entries(colors).filter(([key, value]) => 
+        !['primary', 'secondary', 'brand', 'feature'].includes(key) && typeof value === 'string'
+      )
+    )
+  };
+
+  Object.entries(allColors).forEach(([colorName, colorValue]) => {
+    if (typeof colorValue === 'string') {
+      const darkColorVar = colorName === 'primary' ? 'var(--brand-green-dark-color)' :
+                          colorName === 'secondary' ? 'var(--brand-blue-dark-color)' :
+                          `var(--${colorName}-dark-color, ${colorValue})`;
+
+      // Solid button
+      css += `.btn-${colorName} {\n`;
+      css += `  --cui-btn-color: white !important;\n`;
+      css += `  --cui-btn-bg: var(--${colorName}-color) !important;\n`;
+      css += `  --cui-btn-border-color: var(--${colorName}-color) !important;\n`;
+      css += `  --cui-btn-hover-color: white !important;\n`;
+      css += `  --cui-btn-hover-bg: ${darkColorVar} !important;\n`;
+      css += `  --cui-btn-hover-border-color: ${darkColorVar} !important;\n`;
+      css += `  --cui-btn-focus-shadow-rgb: var(--${colorName}-color-rgb) !important;\n`;
+      css += `  --cui-btn-active-color: white !important;\n`;
+      css += `  --cui-btn-active-bg: ${darkColorVar} !important;\n`;
+      css += `  --cui-btn-active-border-color: ${darkColorVar} !important;\n`;
+      css += `}\n\n`;
+
+      // Outline button
+      css += `.btn-outline-${colorName} {\n`;
+      css += `  --cui-btn-color: var(--${colorName}-color) !important;\n`;
+      css += `  --cui-btn-bg: transparent !important;\n`;
+      css += `  --cui-btn-border-color: var(--${colorName}-color) !important;\n`;
+      css += `  --cui-btn-hover-color: white !important;\n`;
+      css += `  --cui-btn-hover-bg: var(--${colorName}-color) !important;\n`;
+      css += `  --cui-btn-hover-border-color: var(--${colorName}-color) !important;\n`;
+      css += `  --cui-btn-focus-shadow-rgb: var(--${colorName}-color-rgb) !important;\n`;
+      css += `  --cui-btn-active-color: white !important;\n`;
+      css += `  --cui-btn-active-bg: ${darkColorVar} !important;\n`;
+      css += `  --cui-btn-active-border-color: ${darkColorVar} !important;\n`;
+      css += `  --cui-btn-disabled-color: var(--${colorName}-color) !important;\n`;
+      css += `  --cui-btn-disabled-bg: transparent !important;\n`;
+      css += `  --cui-btn-disabled-border-color: var(--${colorName}-color) !important;\n`;
+      css += `  --cui-gradient: none !important;\n`;
+      css += `}\n\n`;
+    }
+  });
+
+  // Always add the end boundary marker at the very end
+  css += '/* End Generated Theme Variables */';
+
   return css;
 }
 
@@ -138,11 +221,22 @@ export default function themePlugin(): Plugin {
         const existingCSS = fs.readFileSync(cssPath, 'utf8');
         const themeCSS = generateCSSVariables(colors);
 
-        const themeRegex = /\/\* Generated Theme Variables: DO NOT EDIT OR REMOVE THIS SECTION \*\/[\s\S]*?\}/;
+        // Updated regex to match the entire generated section from start marker to end marker
+        const themeRegex = /\/\* Generated Theme Variables: DO NOT EDIT OR REMOVE THIS SECTION \*\/[\s\S]*?\/\* End Generated Theme Variables \*\/\n?/;
 
-        const updatedCSS = themeRegex.test(existingCSS)
-          ? existingCSS.replace(themeRegex, themeCSS.trim())
-          : existingCSS + themeCSS;
+        let updatedCSS = '';
+        if (themeRegex.test(existingCSS)) {
+          // Replace existing theme section
+          updatedCSS = existingCSS.replace(themeRegex, themeCSS.trim() + '\n');
+        } else {
+          // Add theme section at the beginning (after @tailwind directives)
+          const tailwindRegex = /(@tailwind[^;]*;[\s\S]*?)(\n\n|$)/;
+          if (tailwindRegex.test(existingCSS)) {
+            updatedCSS = existingCSS.replace(tailwindRegex, `$1\n${themeCSS}`);
+          } else {
+            updatedCSS = themeCSS + existingCSS;
+          }
+        }
 
         fs.writeFileSync(cssPath, updatedCSS);
         console.log('Theme CSS variables generated successfully!');

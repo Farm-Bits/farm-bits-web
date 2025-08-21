@@ -1,7 +1,7 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
 
-interface Toast {
+type Toast = {
   type: string;
   title: string;
   message: string;

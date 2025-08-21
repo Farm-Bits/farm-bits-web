@@ -13,7 +13,7 @@
           <p class="auth-subtitle">We'll send you a new confirmation email to activate your account.</p>
         </div>
 
-        <FlashMessages class="mb-6" />
+        <FlashErrorMessages class="mb-6" />
 
         <CForm
           novalidate

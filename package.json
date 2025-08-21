@@ -19,10 +19,10 @@
   "author": "Jeremy Khalfa <khalfa.jeremy@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@coreui/coreui-pro": "^5.9.0",
+    "@coreui/coreui": "^5.4.2",
     "@coreui/icons": "^3.0.1",
     "@coreui/icons-vue": "^2.2.0",
-    "@coreui/vue-pro": "^5.10.0",
+    "@coreui/vue": "^5.5.0",
     "@googlemaps/js-api-loader": "^1.16.8",
     "@inertiajs/vue3": "^1.2.0",
     "@js-from-routes/client": "^1.0.4",
@@ -35,7 +35,8 @@
     "pinia": "^2.1.7",
     "pinia-plugin-persistedstate": "^4.2.0",
     "pluralize": "^8.0.0",
-    "vue": "^3.4.21"
+    "vue": "^3.5.19",
+    "vue3-select-component": "^0.11.8"
   },
   "type": "module",
   "scripts": {

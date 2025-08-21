@@ -13,7 +13,7 @@
           <p class="auth-subtitle">No worries! Enter your email and we'll send you reset instructions.</p>
         </div>
 
-        <FlashMessages class="mb-6" />
+        <FlashErrorMessages class="mb-6" />
 
         <CForm
           novalidate

@@ -13,7 +13,7 @@
           <p class="auth-subtitle">Create a new secure password for your account.</p>
         </div>
 
-        <FlashMessages class="mb-6" />
+        <FlashErrorMessages class="mb-6" />
 
         <CForm
           novalidate

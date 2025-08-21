@@ -4,14 +4,11 @@
       <div class="auth-card overflow-hidden">
         <!-- Form -->
         <div class="p-8">
-          <FlashMessages class="mb-6" />
+          <FlashErrorMessages class="mb-6" />
 
           <CForm
-            ref="form"
-            @submit.prevent="handleSubmit"
             novalidate
-            :action="paths.actions.clientSetup"
-            method="post"
+            @submit.prevent="handleSubmit"
             class="form-section">
             <!-- Company Information -->
             <div class="form-section">
@@ -25,14 +22,14 @@
                 </label>
                 <CFormInput
                   id="company"
+                  name="company"
                   placeholder="Enter your company name"
-                  name="client[name]"
-                  v-model="formData.company"
-                  :invalid="v$.company.$error"
-                  @blur="v$.company.$touch()"
+                  v-model="formData.client.name"
+                  :invalid="v$.client.name.$error"
+                  @blur="v$.client.name.$touch()"
                   class="form-input" />
-                <div class="form-error" v-if="v$.company.$error">
-                  {{ v$.company.$errors[0].$message }}
+                <div class="form-error" v-if="v$.client.name.$error">
+                  {{ v$.client.name.$errors[0].$message }}
                 </div>
               </div>
             </div>
@@ -44,30 +41,8 @@
               </h3>
 
               <LocationSelector
-                nameAttribute="client[site_attributes]"
-                v-model:country="formData.country"
-                v-model:city="formData.city"
-                v-model:latitude="formData.latitude"
-                v-model:longitude="formData.longitude"
-                v-model:altitude="formData.altitude" />
-
-              <div class="form-field">
-                <div class="form-error" v-if="v$.country.$error">
-                  {{ v$.country.$errors[0].$message }}
-                </div>
-                <div class="form-error" v-if="v$.city.$error">
-                  {{ v$.city.$errors[0].$message }}
-                </div>
-                <div class="form-error" v-if="v$.latitude.$error">
-                  {{ v$.latitude.$errors[0].$message }}
-                </div>
-                <div class="form-error" v-if="v$.longitude.$error">
-                  {{ v$.longitude.$errors[0].$message }}
-                </div>
-                <div class="form-error" v-if="v$.altitude.$error">
-                  {{ v$.altitude.$errors[0].$message }}
-                </div>
-              </div>
+                v-model="formData.client.site_attributes"
+                :errors="v$.client.site_attributes" />
             </div>
 
             <!-- Submit Button -->
@@ -84,53 +59,68 @@
 </template>
 
 <script lang="ts" setup>
-  import { reactive, ref } from 'vue';
+  import { useForm } from '@inertiajs/vue3';
   import { useVuelidate } from '@vuelidate/core';
-  import { required, numeric, decimal, between, minValue, maxValue } from '@vuelidate/validators';
+  import { between, decimal, maxValue, minValue, required } from '@vuelidate/validators';
   import LocationSelector from '@/components/LocationSelector.vue';
   import useAuth from '@/composables/useAuth';
-  import useAuthStore from '@/stores/auth';
 
   const { paths } = useAuth();
 
-  const { formState, saveFormState } = useAuthStore();
-
-  const form = ref<HTMLFormElement>();
-  const formData = reactive({ ...formState });
-
-  const v$ = useVuelidate(rules, formData);
+  const formData = useForm({
+    client: {
+      name: null,
+      site_attributes: {
+        country: null,
+        city: null,
+        latitude: null,
+        longitude: null,
+        altitude: null
+      }
+    }
+  });
 
   function rules() {
     return {
-      company: { required },
-      country: { required },
-      city: {},
-      latitude: {
-        numeric,
-        decimal,
-        between: between(-90, 90)
-      },
-      longitude: {
-        numeric,
-        decimal,
-        between: between(-180, 180)
-      },
-      altitude: {
-        numeric,
-        decimal,
-        minValue: minValue(-431),
-        maxValue: maxValue(8849)
+      client: {
+        name: { required },
+        site_attributes: {
+          country: { required },
+          city: {},
+          latitude: {
+            decimal,
+            between: between(-90, 90)
+          },
+          longitude: {
+            decimal,
+            between: between(-180, 180)
+          },
+          altitude: {
+            decimal,
+            minValue: minValue(-431),
+            maxValue: maxValue(8849)
+          }
+        }
       }
     };
   }
 
-  async function handleSubmit() {
-    saveFormState(formData);
-    const isValid = await v$.value.$validate();
-    if (!isValid)
-      return;
+  const v$ = useVuelidate(rules, formData);
 
-    form.value?.$el.submit();
+  async function handleSubmit() {
+    const isValid = await v$.value.$validate();
+    if (!isValid) {
+      const firstInvalidElement = document.querySelector('.is-invalid');
+      firstInvalidElement?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+      return;
+    }
+
+    formData.post(paths.value.actions.clientSetup, {
+      preserveState: true
+    });
   }
 </script>
 

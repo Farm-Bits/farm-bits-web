@@ -2,7 +2,7 @@
   <div class="form-section">
     <!-- Current Location Button -->
     <div class="flex justify-start">
-      <CLoadingButton
+      <LoadingButton
         class="btn-gradient-blue btn-small transform hover:scale-[1.02] inline-flex items-center"
         @click="getCurrentPosition"
         :loading="loadingPosition">
@@ -11,7 +11,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
         </svg>
         Use Current Location
-      </CLoadingButton>
+      </LoadingButton>
     </div>
 
     <!-- Location Selection Grid -->
@@ -22,20 +22,15 @@
           Country *
         </label>
         <div class="relative">
-          <CMultiSelect
+          <VueSelect
             id="country"
             name="country"
             placeholder="Type to search country..."
-            search="external"
-            search-no-results-label=""
-            options-style="text"
-            :multiple="false"
+            v-model="countryModel"
             :options="countries"
-            :loading="loadingCountries"
-            :disabled="!autocompleteService"
-            @change="onCountryChange"
-            @filter-change="searchCountries"
-            class="form-input" />
+            :isLoading="loadingCountries"
+            :isDisabled="!autocompleteService"
+            @search="searchCountries" />
           <div class="form-error" v-if="errors.country.$error">
             {{ errors.country.$errors[0].$message }}
           </div>
@@ -48,20 +43,15 @@
           City
         </label>
         <div class="relative">
-          <CMultiSelect
+          <VueSelect
             id="city"
             name="city"
+            v-model="cityModel"
             :placeholder="!countryModel ? 'Select country first' : 'Type to search city...'"
-            search="external"
-            search-no-results-label=""
-            options-style="text"
-            :multiple="false"
             :options="cities"
-            :loading="loadingCities"
-            :disabled="!autocompleteService || !countryModel"
-            @change="onCityChange"
-            @filter-change="searchCities"
-            class="form-input" />
+            :isLoading="loadingCities"
+            :isDisabled="!autocompleteService || !countryModel"
+            @search="searchCities" />
           <div class="form-error" v-if="errors.city.$error">
             {{ errors.city.$errors[0].$message }}
           </div>
@@ -178,12 +168,13 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed, onMounted, ref, watch } from 'vue';
+  import { computed, nextTick, onMounted, ref } from 'vue';
   import { Loader } from '@googlemaps/js-api-loader';
   import { type Validation, type ValidationArgs } from '@vuelidate/core'
+  import LoadingButton from './LoadingButton.vue';
   import useToastStore from '@/stores/toast';
 
-  interface Location {
+  type Location = {
     country: string | null;
     city: string | null;
     latitude: string | number | null;
@@ -197,7 +188,6 @@
 
   const API_KEY = '***REMOVED***';
 
-  const preSelectedCity = ref(props.modelValue.city);
   const mapContainer = ref<HTMLElement | null>(null);
   const map = ref<google.maps.Map | null>(null);
   const marker = ref<google.maps.marker.AdvancedMarkerElement | null>(null);
@@ -205,8 +195,8 @@
   const countries = ref<{ value: string; label: string }[]>([]);
   const cities = ref<{ value: string; label: string }[]>([]);
   const loadingPosition = ref(false);
-  const loadingCountries = ref(true);
-  const loadingCities = ref(true);
+  const loadingCountries = ref(false);
+  const loadingCities = ref(false);
 
   const loader = new Loader({
     apiKey: API_KEY,
@@ -221,7 +211,10 @@
 
   const countryModel = computed({
     get: () => props.modelValue.country,
-    set: (value: string | null) => emit('update:modelValue', { ...props.modelValue, country: value })
+    set: (value: string | null) => {
+      emit('update:modelValue', { ...props.modelValue, country: value, city: null });
+      cities.value = [];
+    }
   });
 
   const cityModel = computed({
@@ -340,26 +333,9 @@
     }
   }
 
-  function onCountryChange(selectedOptions: { value: string; label: string }[]) {
-    cityModel.value = null;
-    cities.value = [];
-    if (selectedOptions.length === 1)
-      countryModel.value = selectedOptions[0].value;
-    else
-      countryModel.value = null;
-  }
-
-  function onCityChange(selectedOptions: { value: string; label: string }[]) {
-    if (selectedOptions.length === 1)
-      cityModel.value = selectedOptions[0].value;
-    else
-      cityModel.value = null;
-  }
-
-  async function searchCountries(searchCountry: string, selectExactMatch: boolean = false) {
+  async function searchCountries(searchCountry: string) {
     if (!searchCountry) {
-      loadingCountries.value = true;
-      countries.value = [];
+      loadingCountries.value = false;
       return;
     }
 
@@ -377,11 +353,9 @@
 
       const suggestions = await AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
       countries.value = suggestions.suggestions.map((suggestion) => {
-        const selected = selectExactMatch && suggestion.placePrediction.text.text === searchCountry;
         return {
           value: suggestion.placePrediction.text.text,
-          label: suggestion.placePrediction.text.text,
-          selected
+          label: suggestion.placePrediction.text.text
         };
       });
     } catch (err) {
@@ -412,10 +386,9 @@
     return countryCode;
   }
 
-  async function searchCities(searchCity: string, selectExactMatch: boolean = false) {
+  async function searchCities(searchCity: string) {
     if (!searchCity) {
-      loadingCities.value = true;
-      cities.value = [];
+      loadingCities.value = false;
       return;
     }
 
@@ -437,11 +410,9 @@
         const suggestions = await AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
         cities.value = suggestions.suggestions.map((suggestion) => {
           const cityName = suggestion.placePrediction.mainText?.text;
-          const selected = selectExactMatch && cityName === searchCity;
           return {
             value: cityName,
-            label: cityName,
-            selected
+            label: cityName
           };
         });
       }
@@ -490,10 +461,15 @@
           if (geocoderPosition.results.length > 0) {
             const country = geocoderPosition.results[0].address_components.find((component) => component.types.includes('country'));
             if (country) {
+              await searchCountries(country.long_name);
+              countryModel.value = country.long_name;
+
               const city = geocoderPosition.results[0].address_components.find((component) => component.types.includes('locality'));
-              if (city)
-                preSelectedCity.value = city.long_name;
-              searchCountries(country.long_name, true);
+              if (city) {
+                await nextTick();
+                await searchCities(city.long_name);
+                cityModel.value = city.long_name;
+              }
             }
           }
 
@@ -535,24 +511,11 @@
     }
   }
 
-  function initCity(country: string | null) {
-    if (country && preSelectedCity.value)
-      searchCities(preSelectedCity.value, true);
-    preSelectedCity.value = null;
-  }
-
-  watch(() => countryModel.value, initCity);
-
   onMounted(async () => {
     await loader.importLibrary('places');
     autocompleteService.value = true;
 
     await initMap();
-
-    if (countryModel.value) {
-      await searchCountries(countryModel.value, true);
-      initCity(countryModel.value);
-    }
   });
 </script>
 

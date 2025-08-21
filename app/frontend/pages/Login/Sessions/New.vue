@@ -21,7 +21,7 @@
             <p class="auth-subtitle">Sign in to your account</p>
           </div>
 
-          <FlashMessages class="mb-6" />
+          <FlashErrorMessages class="mb-6" />
 
           <CForm
             novalidate

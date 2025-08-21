@@ -23,6 +23,12 @@
 
         <!-- Page content slot -->
         <div class="content">
+          <div v-if="flash.alert" class="alert">
+            {{ flash.alert }}
+          </div>
+          <div v-if="flash.notice" class="notice">
+            {{ flash.notice }}
+          </div>
           <slot />
         </div>
       </div>
@@ -34,10 +40,20 @@
 </template>
 
 <script lang="ts" setup>
-  import useToastStore from '@/stores/toast';
+  import { computed } from 'vue';
   import Navbar from './Navbar.vue';
   import Sidebar from './Sidebar.vue';
   import Footer from './Footer.vue';
+  import { usePage } from '@inertiajs/vue3';
+  import useToastStore from '@/stores/toast';
+
+  const page = usePage<{
+    flash: {
+      alert?: string;
+      notice?: string;
+    };
+  }>();
+  const flash = computed(() => page.props.flash);
 
   const { toasts } = useToastStore();
 </script>

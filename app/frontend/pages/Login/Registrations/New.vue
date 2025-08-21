@@ -10,7 +10,7 @@
 
         <!-- Form -->
         <div class="p-8">
-          <FlashMessages class="mb-6" />
+          <FlashErrorMessages class="mb-6" />
 
           <CForm
             novalidate

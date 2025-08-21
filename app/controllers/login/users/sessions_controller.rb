@@ -22,7 +22,7 @@ class Login::Users::SessionsController < Devise::SessionsController
     else
       redirect_back(
         fallback_location: new_session_path(resource_name),
-        alert: 'Invalid email or password.'
+        flash: { errors: ['Invalid email or password.'] }
       )
     end
   end

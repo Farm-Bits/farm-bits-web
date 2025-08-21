@@ -1,8 +1,11 @@
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3'
+import { type PageProps } from '@inertiajs/core';
 
-export default function useAuth() {
-  const page = usePage();
+export default function useAuth<T extends PageProps>() {
+  const page = usePage<T>();
+
+  const pageProps = computed(() => page.props);
 
   const userScope = computed(() => page.props.userScope ? page.props.userScope : 'users');
 
@@ -54,6 +57,7 @@ export default function useAuth() {
   }));
 
   return {
+    pageProps,
     userScope,
     user,
     client,
