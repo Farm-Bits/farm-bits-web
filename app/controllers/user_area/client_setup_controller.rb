@@ -3,7 +3,7 @@ class UserArea::ClientSetupController < UserArea::ApplicationController
 
   def new
     errors = current_user.active_clients_connections.any? ? nil : ['You do not have access to any company. Create one now.']
-    render inertia: 'UserArea/ClientSetup', props: {
+    render inertia: 'UserArea/ClientSetupForm', props: {
       errors: errors
     }
   end
@@ -24,7 +24,7 @@ class UserArea::ClientSetupController < UserArea::ApplicationController
       session[:current_client_id] = client.id
       redirect_to root_path
     else
-      render inertia: 'UserArea/ClientSetup', props: {
+      render inertia: 'UserArea/ClientSetupForm', props: {
         errors: client.errors.full_messages
       }
     end
@@ -35,7 +35,7 @@ class UserArea::ClientSetupController < UserArea::ApplicationController
       if current_client.update(client_params)
         redirect_to user_client_setup_edit_path
       else
-        render inertia: 'UserArea/ClientSetup', props: {
+        render inertia: 'UserArea/ClientSetupForm', props: {
           errors: current_client.errors
         }
       end
