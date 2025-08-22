@@ -20,7 +20,7 @@ class User < ApplicationRecord
   validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :email, uniqueness: { case_sensitive: false }
 
-  attr_accessor :client_attributes
+  attr_accessor :client_attributes, :current_client_user
 
   after_create :create_client_and_site_from_attributes
 
@@ -50,6 +50,13 @@ class User < ApplicationRecord
         "created_at",
         "updated_at"
       ]
+    end
+
+    def with_client_context(client)
+      includes(:client_users)
+        .joins(:client_users)
+        .where(client_users: { client: client, active: true })
+        .map { |user| user.with_client_context(client) }
     end
   end
 
@@ -85,6 +92,52 @@ class User < ApplicationRecord
            .where(client: client, active: true)
            .where(site_users: { active: true })
     end
+  end
+
+  def client_user_for(client)
+    client_id = client.is_a?(Client) ? client.id : client.to_i
+
+    @client_user_cache ||= {}
+
+    if @client_user_cache.key?(client_id)
+      return @client_user_cache[client_id]
+    end
+
+    if client_users.loaded?
+      client_user = client_users.find { |cu| cu.client_id == client_id }
+    else
+      client_user = client_users.find_by(client_id: client_id)
+    end
+
+    @client_user_cache[client_id] = client_user
+    client_user
+  end
+
+  def with_client_context(client)
+    self.current_client_user = client_user_for(client)
+    self
+  end
+
+  def role_for_current_client
+    current_client_user&.role
+  end
+
+  def active_for_current_client?
+    current_client_user&.active? || false
+  end
+
+  def role_for_client(client)
+    client_user_for(client)&.role
+  end
+
+  def active_for_client?(client)
+    client_user_for(client)&.active? || false
+  end
+
+  def role_config_for_client(client)
+    role = role_for_client(client)
+    return {} unless role
+    ROLES[role] || {}
   end
 
   private

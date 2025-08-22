@@ -62,13 +62,13 @@
                 </CDropdownItem>
                 <CDropdownItem
                   v-if="user.status !== 'joined'"
-                  @click="resendInvitation(user)">
+                  @click="handleResendInvitation(user)">
                   <CIcon name="cilEnvelopeClosed" class="me-2" />
                   Resend Invitation
                 </CDropdownItem>
                 <CDropdownDivider />
                 <CDropdownItem
-                  @click="removeUser(user)"
+                  @click="handleUserRemove(user)"
                   :disabled="user.role === 'owner'"
                   class="text-danger">
                   <CIcon name="cilUserX" class="me-2" />
@@ -90,7 +90,7 @@
         <CModalTitle>Invite User</CModalTitle>
       </CModalHeader>
       <CModalBody>
-        <CForm @submit.prevent="sendInvitation">
+        <CForm @submit.prevent="handleUserInvite">
           <div class="mb-3">
             <CFormLabel for="inviteEmail">Email Address *</CFormLabel>
             <CFormInput
@@ -128,7 +128,7 @@
         </CButton>
         <CButton
           color="primary"
-          @click="sendInvitation"
+          @click="handleUserInvite"
           :disabled="!inviteForm.email || !inviteForm.role">
           Send Invitation
         </CButton>
@@ -170,7 +170,7 @@
         </CButton>
         <CButton
           color="primary"
-          @click="updateUserRole"
+          @click="handleUserRoleUpdate"
           :disabled="!hasRoleChanged">
           Update Role
         </CButton>
@@ -180,54 +180,46 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, reactive, computed } from 'vue';
+  import { ref, reactive, computed, onMounted } from 'vue';
+  import useAuth from '@/composables/useAuth';
+  import { type User } from '@/types/inertia';
 
   type InvitationStatus = 'pending' | 'expired' | 'joined';
 
   type KeyRole = 'owner' | 'admin' | 'manager' | 'viewer';
 
-  interface User {
-    id: number;
-    name: string;
-    email: string;
+  type ClientUser = User & {
     role: KeyRole;
     status: InvitationStatus;
   };
 
-  interface Role {
-    key: KeyRole;
-    label: string;
-  };
+  const { paths } = useAuth();
 
-  interface Props {
-    users: User[];
-    availableRoles: Role[];
-  };
+  const users = ref<ClientUser[]>([]);
 
-  const props = defineProps<Props>();
-
-  const emit = defineEmits<{
-    inviteUser: [data: { email: string; role: string }];
-    updateUserRole: [userId: number, role: string];
-    removeUser: [userId: number];
-    resendInvitation: [userId: number];
-  }>();
+  const availableRoles = [
+    { key: 'viewer', label: 'Viewer - Read-only access' },
+    { key: 'manager', label: 'Manager - Edit access to assigned sites' },
+    { key: 'admin', label: 'Admin - Full access except billing' },
+    { key: 'owner', label: 'Owner - Full access including billing' }
+  ];
 
   const showInviteModal = ref(false);
   const showRoleModal = ref(false);
 
   const inviteForm = reactive({
     email: '',
-    role: 'viewer'
+    role: 'viewer' as KeyRole
   });
-
   const inviteFormErrors = reactive({
     email: ''
   });
 
-  const selectedUser = ref<User | null>(null);
-  const roleChangeForm = reactive({
-    role: ''
+  const selectedUser = ref<ClientUser | null>(null);
+  const roleChangeForm = reactive<{
+    role: KeyRole | null
+  }>({
+    role: null
   });
 
   const hasRoleChanged = computed(() => {
@@ -253,30 +245,66 @@
     return colors[status] || 'secondary';
   }
 
-  function changeUserRole(user: User) {
+  function changeUserRole(user: ClientUser) {
     selectedUser.value = user;
     roleChangeForm.role = user.role;
     showRoleModal.value = true;
   }
 
-  function updateUserRole() {
-    if (selectedUser.value && hasRoleChanged.value) {
-      emit('updateUserRole', selectedUser.value.id, roleChangeForm.role);
+  async function handleUserRoleUpdate() {
+    if (!selectedUser.value || !hasRoleChanged.value)
+      return;
+
+    selectedUser.value.id, roleChangeForm.role
+    try {
+      // Make API call to update user role
+      console.log(`Updating user ${selectedUser.value.id} role to:`, roleChangeForm.role);
+
+      // Update local state
+      const user = users.value.find(u => u.id === selectedUser.value!.id);
+      if (user && roleChangeForm.role)
+        user.role = roleChangeForm.role;
+
+      // You can add success notification here
       closeRoleModal();
+    } catch (error) {
+      console.error('Failed to update user role:', error);
+      // Handle error
     }
   }
 
-  function removeUser(user: User) {
+  async function handleUserRemove(user: ClientUser) {
     if (confirm(`Are you sure you want to remove ${user.name} from the company?`)) {
-      emit('removeUser', user.id);
+      try {
+        // Make API call to remove user
+        console.log('Removing user:', user.id);
+
+        // Remove from local state
+        const index = users.value.findIndex(u => u.id === user.id);
+        if (index > -1)
+          users.value.splice(index, 1);
+
+        // You can add success notification here
+      } catch (error) {
+        console.error('Failed to remove user:', error);
+        // Handle error
+      }
     }
   }
 
-  function resendInvitation(user: User) {
-    emit('resendInvitation', user.id);
+  async function handleResendInvitation(user: ClientUser) {
+    try {
+      // Make API call to resend invitation
+      console.log('Resending invitation for user:', user.id);
+
+      // You can add success notification here
+    } catch (error) {
+      console.error('Failed to resend invitation:', error);
+      // Handle error
+    }
   }
 
-  function sendInvitation() {
+  async function handleUserInvite() {
     inviteFormErrors.email = '';
 
     if (!inviteForm.email) {
@@ -289,17 +317,33 @@
       return;
     }
 
-    if (props.users.some(u => u.email === inviteForm.email)) {
+    if (users.value.some(u => u.email === inviteForm.email)) {
       inviteFormErrors.email = 'User with this email already exists';
       return;
     }
 
-    emit('inviteUser', {
-      email: inviteForm.email,
-      role: inviteForm.role
-    });
+    try {
+      // Make API call to invite user
+      console.log('Inviting user:', inviteForm);
 
-    closeInviteModal();
+      // Add to local users list with pending status
+      const newUser = {
+        id: Date.now(),
+        name: inviteForm.email.split('@')[0],
+        email: inviteForm.email,
+        role: inviteForm.role,
+        status: 'pending' as InvitationStatus,
+        avatar: null
+      };
+
+      users.value.push(newUser);
+
+      // You can add success notification here
+      closeInviteModal();
+    } catch (error) {
+      console.error('Failed to invite user:', error);
+      // Handle error
+    }
   }
 
   function closeInviteModal() {
@@ -312,8 +356,20 @@
   function closeRoleModal() {
     showRoleModal.value = false;
     selectedUser.value = null;
-    roleChangeForm.role = '';
+    roleChangeForm.role = null;
   }
+
+  function fetchUsers() {
+    fetch(paths.value.api.users)
+      .then(response => response.json())
+      .then(data => {
+        users.value = data;
+      });
+  }
+
+  onMounted(() => {
+    fetchUsers();
+  });
 </script>
 
 <style scoped>

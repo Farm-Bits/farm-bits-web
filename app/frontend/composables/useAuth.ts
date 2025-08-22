@@ -46,6 +46,9 @@ export default function useAuth<T extends PageProps>() {
       confirmation: `/${userScope.value}/confirmation`,
       unlock: `/${userScope.value}/unlock`,
       clientSetup: `/${rootObjectName.value}/client_setup`
+    },
+    api: {
+      users: `/${rootObjectName.value}/users`
     }
   }));
 

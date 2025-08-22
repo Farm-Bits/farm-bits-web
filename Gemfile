@@ -70,3 +70,6 @@ gem "rack-attack"
 
 # Makes http fun again! Ain't no party like a httparty, because a httparty don't stop.
 gem "httparty"
+
+# Blueprinter is a JSON Object Presenter for Ruby that takes business objects and breaks them down into simple hashes and serializes them to JSON
+gem "blueprinter"

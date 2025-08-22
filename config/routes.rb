@@ -44,6 +44,8 @@ Rails.application.routes.draw do
       get 'client_setup', to: 'client_setup#new'
       post 'client_setup', to: 'client_setup#create'
 
+      get 'users', to: 'users#index'
+
       get 'dashboard', to: 'dashboard#index'
     end
   end
