@@ -46,15 +46,18 @@ Rails.application.routes.draw do
 
       get 'users', to: 'users#index'
 
+      get 'roles', to: 'roles#index'
+
+      resources :invitations, only: [:index, :create, :destroy]
+      put 'invitations/:id/resend', to: 'invitations#resend'
+      get 'invitations/:token/accept', to: 'invitations#accept'
+
       get 'dashboard', to: 'dashboard#index'
     end
   end
 
   match '/home',                        to: 'static_pages#home',               via: 'get'
   match '/privacy_policy',              to: 'static_pages#privacy_policy',     via: 'get'
-
-  resources :invitations, only: [:index, :create]
-  get 'invitations/:token/accept', to: 'invitations#accept', as: 'accept_invitation'
 
   resources :plc_manufacturers
   resources :plc_models

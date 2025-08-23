@@ -53,6 +53,11 @@
 </script>
 
 <style scoped>
+  .page-container {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+  }
+
   .nav-tabs-custom .tab-item {
     padding: 1rem 1.5rem;
     border-bottom: 2px solid transparent;
@@ -84,10 +89,5 @@
   .nav-tabs-custom .tab-danger.active {
     color: #dc3545;
     border-bottom-color: #dc3545;
-  }
-
-  .page-container {
-    background-color: #f8f9fa;
-    min-height: 100vh;
   }
 </style>

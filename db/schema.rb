@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_08_13_095154) do
+ActiveRecord::Schema[7.2].define(version: 2025_08_23_182030) do
   create_table "action_mailbox_inbound_emails", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "status", default: 0, null: false
     t.string "message_id", null: false
@@ -171,18 +171,20 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_13_095154) do
   end
 
   create_table "invitations", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
-    t.bigint "client_id", null: false
-    t.bigint "inviter_id", null: false
     t.string "email", null: false
+    t.string "role", null: false
+    t.string "status", default: "pending", null: false
     t.string "token", null: false
-    t.string "role", default: "viewer"
-    t.integer "status", default: 0
-    t.datetime "expired_at"
+    t.datetime "expires_at", null: false
+    t.datetime "accepted_at"
+    t.string "inviter_type", null: false
+    t.bigint "inviter_id", null: false
+    t.bigint "client_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["client_id", "email"], name: "index_invitations_on_client_id_and_email", unique: true
     t.index ["client_id"], name: "index_invitations_on_client_id"
-    t.index ["inviter_id"], name: "index_invitations_on_inviter_id"
+    t.index ["email"], name: "index_invitations_on_email"
+    t.index ["inviter_type", "inviter_id"], name: "index_invitations_on_inviter"
     t.index ["token"], name: "index_invitations_on_token", unique: true
   end
 
@@ -377,7 +379,6 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_13_095154) do
   add_foreign_key "interfaces", "plc_versions", on_delete: :cascade
   add_foreign_key "interfaces", "registers", on_delete: :cascade
   add_foreign_key "invitations", "clients", on_delete: :cascade
-  add_foreign_key "invitations", "users", column: "inviter_id", on_delete: :cascade
   add_foreign_key "measurement_points", "devices", on_delete: :cascade
   add_foreign_key "measurement_points", "measurement_subtypes"
   add_foreign_key "measurement_points", "segments", on_delete: :cascade

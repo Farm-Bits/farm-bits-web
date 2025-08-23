@@ -1,0 +1,23 @@
+System Administrator Invitation
+
+<%= @inviter.name %> has invited you to become a System Administrator.
+
+⚠️ IMPORTANT: System administrators have full access to all organizations and system settings. This is a high-privilege role with significant responsibilities.
+
+As a System Administrator, you will be able to:
+- Access and manage all client organizations
+- Manage other administrators
+- Configure system-wide settings
+- Monitor system performance and usage
+- Handle billing and subscription management
+
+To accept your invitation, visit this link:
+<%= @accept_url %>
+
+This invitation will expire on <%= @expires_at.strftime("%B %d, %Y at %I:%M %p") %>.
+
+If you don't want to accept this invitation, you can simply ignore this email.
+
+---
+This system administrator invitation was sent by <%= @inviter.name %>.
+If you have any questions about this invitation, please contact the sender directly.

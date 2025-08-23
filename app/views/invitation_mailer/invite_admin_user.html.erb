@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>System Administrator Invitation</title>
+    <style>
+      body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+      .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+      .header { background-color: #dc3545; color: white; padding: 20px; text-align: center; }
+      .content { padding: 20px; background-color: #f9f9f9; }
+      .button { display: inline-block; padding: 12px 24px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 4px; margin: 20px 0; }
+      .footer { padding: 20px; text-align: center; color: #666; font-size: 14px; }
+      .admin-badge { background-color: #dc3545; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+      .warning { background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 4px; margin: 15px 0; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🔐 System Administrator Invitation</h1>
+      </div>
+
+      <div class="content">
+        <h2>You're invited as a <span class="admin-badge">System Administrator</span></h2>
+
+        <p><strong><%= @inviter.name %></strong> has invited you to become a System Administrator.</p>
+
+        <div class="warning">
+          <strong>⚠️ Important:</strong> System administrators have full access to all organizations and system settings. This is a high-privilege role with significant responsibilities.
+        </div>
+
+        <p>As a System Administrator, you will be able to:</p>
+        <ul>
+          <li>Access and manage all client organizations</li>
+          <li>Manage other administrators</li>
+          <li>Configure system-wide settings</li>
+          <li>Monitor system performance and usage</li>
+          <li>Handle billing and subscription management</li>
+        </ul>
+
+        <p>Click the button below to accept your invitation:</p>
+
+        <div style="text-align: center;">
+          <a href="<%= @accept_url %>" class="button">Accept Admin Invitation</a>
+        </div>
+
+        <p><small>Or copy and paste this link into your browser:</small><br>
+           <small><%= @accept_url %></small></p>
+
+        <hr>
+
+        <p><strong>This invitation will expire on <%= @expires_at.strftime("%B %d, %Y at %I:%M %p") %>.</strong></p>
+
+        <p>If you don't want to accept this invitation, you can simply ignore this email.</p>
+      </div>
+
+      <div class="footer">
+        <p>This system administrator invitation was sent by <%= @inviter.name %>.</p>
+        <p>If you have any questions about this invitation, please contact the sender directly.</p>
+      </div>
+    </div>
+  </body>
+</html>

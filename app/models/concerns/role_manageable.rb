@@ -2,18 +2,9 @@ module RoleManageable
   extend ActiveSupport::Concern
 
   ROLES = {
-    'owner' => {
-      level: 4,
-      description: 'Full access, billing, delete client',
-      can_access_all_sites: true,
-      can_manage_users: true,
-      can_manage_billing: true,
-      can_create_sites: true,
-      can_manage_client_settings: true
-    },
     'admin' => {
       level: 3,
-      description: 'All sites, manage users',
+      description: 'Full access to all sites, management of company settings',
       can_access_all_sites: true,
       can_manage_users: true,
       can_manage_billing: false,
@@ -45,12 +36,19 @@ module RoleManageable
       ROLES.max_by { |_, config| config[:level] }.first
     end
 
-    def invitable_roles
-      ROLES.select { |_, config| config[:level] < ROLES[highest_role][:level] }.keys
-    end
-
     def valid_role?(role)
       ROLES.key?(role.to_s)
+    end
+
+    def roles_array
+      ROLES.map do |key, config|
+        {
+          id: key,
+          name: "#{key.titleize} - #{config[:description]}",
+          level: config[:level],
+          permissions: config.except(:level, :description)
+        }
+      end
     end
   end
 

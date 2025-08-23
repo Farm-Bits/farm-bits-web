@@ -76,8 +76,8 @@
                 placeholder="Confirm new password"
                 type="password"
                 required
-                v-model="formData[rootObjectName].password_confirmation"
-                class="form-input-with-icon" />
+                class="form-input-with-icon"
+                v-model="formData[rootObjectName].password_confirmation" />
             </div>
             <div class="form-error" v-if="v$[rootObjectName].password_confirmation.$error">
               {{ v$[rootObjectName].password_confirmation.$errors[0].$message }}

@@ -126,20 +126,6 @@ class User < ApplicationRecord
     current_client_user&.active? || false
   end
 
-  def role_for_client(client)
-    client_user_for(client)&.role
-  end
-
-  def active_for_client?(client)
-    client_user_for(client)&.active? || false
-  end
-
-  def role_config_for_client(client)
-    role = role_for_client(client)
-    return {} unless role
-    ROLES[role] || {}
-  end
-
   private
     def create_client_and_site_from_attributes
       if !client_attributes.present?

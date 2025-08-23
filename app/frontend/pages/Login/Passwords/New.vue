@@ -34,8 +34,8 @@
                 autocomplete="email"
                 type="email"
                 required
-                v-model="formData[rootObjectName].email"
-                class="form-input-with-icon" />
+                class="form-input-with-icon"
+                v-model="formData[rootObjectName].email" />
               <div class="form-error" v-if="v$[rootObjectName].email.$error">
                 {{ v$[rootObjectName].email.$errors[0].$message }}
               </div>

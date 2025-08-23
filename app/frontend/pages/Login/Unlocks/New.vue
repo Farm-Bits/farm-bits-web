@@ -34,9 +34,9 @@
                 autocomplete="email"
                 type="email"
                 required
-                v-model="formData[rootObjectName].email"
                 class="pl-10 block w-full rounded-xl border-gray-300 shadow-sm py-3"
-                style="border-color: var(--feature-purple-color) !important; --tw-ring-color: var(--feature-purple-color) !important;" />
+                style="border-color: var(--feature-purple-color) !important; --tw-ring-color: var(--feature-purple-color) !important;"
+                v-model="formData[rootObjectName].email" />
                 <div class="form-error" v-if="v$[rootObjectName].email.$error">
                   {{ v$[rootObjectName].email.$errors[0].$message }}
                 </div>

@@ -1,0 +1,23 @@
+You're Invited to Join <%= @client.name %>!
+
+<%= @inviter.name %> has invited you to join <%= @client.name %> with the role of <%= @role.titleize %>.
+
+<% case @role %>
+<% when 'admin' %>
+As an Admin, you'll have full access to all sites and can manage company settings.
+<% when 'manager' %>
+As a Manager, you'll have edit access to assigned sites and can create new sites.
+<% when 'viewer' %>
+As a Viewer, you'll have read-only access to assigned sites.
+<% end %>
+
+To accept your invitation, visit this link:
+<%= @accept_url %>
+
+This invitation will expire on <%= @expires_at.strftime("%B %d, %Y at %I:%M %p") %>.
+
+If you don't want to accept this invitation, you can simply ignore this email.
+
+---
+This invitation was sent by <%= @inviter.name %> from <%= @client.name %>.
+If you have any questions, please contact your inviter directly.

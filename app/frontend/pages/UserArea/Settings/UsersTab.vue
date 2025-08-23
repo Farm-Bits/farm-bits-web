@@ -23,6 +23,7 @@
         </CTableRow>
       </CTableHead>
       <CTableBody>
+        <!-- Users -->
         <CTableRow v-for="user in users" :key="user.id">
           <CTableDataCell>
             <div class="d-flex align-items-center">
@@ -31,18 +32,10 @@
           </CTableDataCell>
           <CTableDataCell>{{ user.email }}</CTableDataCell>
           <CTableDataCell>
-            <CBadge
-              :color="getRoleColor(user.role)"
-              class="text-capitalize">
-              {{ user.role }}
-            </CBadge>
+            {{ user.role }}
           </CTableDataCell>
           <CTableDataCell>
-            <CBadge
-              :color="getStatusColor(user.status)"
-              class="text-capitalize">
-              {{ user.status }}
-            </CBadge>
+            Joined
           </CTableDataCell>
           <CTableDataCell>
             <CDropdown
@@ -56,20 +49,54 @@
               <CDropdownMenu>
                 <CDropdownItem
                   @click="changeUserRole(user)"
-                  :disabled="user.role === 'owner'">
+                  :disabled="false">
                   <CIcon name="cilPeople" class="me-2" />
                   Change Role
                 </CDropdownItem>
+                <CDropdownDivider />
                 <CDropdownItem
-                  v-if="user.status !== 'joined'"
-                  @click="handleResendInvitation(user)">
+                  @click="handleUserRemove(user)"
+                  :disabled="false"
+                  class="text-danger">
+                  <CIcon name="cilUserX" class="me-2" />
+                  Remove User
+                </CDropdownItem>
+              </CDropdownMenu>
+            </CDropdown>
+          </CTableDataCell>
+        </CTableRow>
+
+        <!-- Invitations -->
+        <CTableRow v-for="invitation in invitations" :key="invitation.id">
+          <CTableDataCell>
+            <div class="d-flex align-items-center">
+              <!-- {{ invitation.name }} -->
+            </div>
+          </CTableDataCell>
+          <CTableDataCell>{{ invitation.email }}</CTableDataCell>
+          <CTableDataCell>
+            {{ invitation.role }}
+          </CTableDataCell>
+          <CTableDataCell>
+            {{ invitation.status }}
+          </CTableDataCell>
+          <CTableDataCell>
+            <CDropdown
+              variant="btn-group"
+              placement="bottom-end">
+              <CDropdownToggle
+                size="sm"
+                :caret="false">
+                <CIcon name="cilOptions" />
+              </CDropdownToggle>
+              <CDropdownMenu>
+                <CDropdownItem @click="handleResendInvitation(invitation)">
                   <CIcon name="cilEnvelopeClosed" class="me-2" />
                   Resend Invitation
                 </CDropdownItem>
                 <CDropdownDivider />
                 <CDropdownItem
-                  @click="handleUserRemove(user)"
-                  :disabled="user.role === 'owner'"
+                  @click="handleInvitationRemove(invitation)"
                   class="text-danger">
                   <CIcon name="cilUserX" class="me-2" />
                   Remove User
@@ -95,27 +122,31 @@
             <CFormLabel for="inviteEmail">Email Address *</CFormLabel>
             <CFormInput
               id="inviteEmail"
-              v-model="inviteForm.email"
+              name="email"
+              placeholder="Enter email"
               type="email"
-              placeholder="user@example.com"
-              :invalid="!!inviteFormErrors.email"
-              required />
-            <CFormFeedback :invalid="true" v-if="inviteFormErrors.email">
-              {{ inviteFormErrors.email }}
-            </CFormFeedback>
+              required
+              v-model="inviteForm.invitation.email"
+              :invalid="v$.invitation.email.$error" />
+            <div class="form-error" v-if="v$.invitation.email.$error">
+              {{ v$.invitation.email.$errors[0].$message }}
+            </div>
           </div>
           <div class="mb-3">
             <CFormLabel>Role *</CFormLabel>
             <div class="mt-2">
               <CFormCheck
-                v-for="role in availableRoles"
-                :key="role.key"
-                :id="`role-${role.key}`"
-                v-model="inviteForm.role"
-                :value="role.key"
+                v-for="role in roles"
+                :key="role.id"
+                :id="`role-${role.id}`"
+                v-model="inviteForm.invitation.role"
+                :value="role.id"
+                :label="role.name"
                 type="radio"
-                :label="role.label"
                 class="mb-2" />
+              <div class="form-error" v-if="v$.invitation.role.$error">
+                {{ v$.invitation.role.$errors[0].$message }}
+              </div>
             </div>
           </div>
         </CForm>
@@ -129,7 +160,7 @@
         <CButton
           color="primary"
           @click="handleUserInvite"
-          :disabled="!inviteForm.email || !inviteForm.role">
+          :disabled="!isInviteFormValid">
           Send Invitation
         </CButton>
       </CModalFooter>
@@ -151,13 +182,13 @@
           <CFormLabel>Select Role</CFormLabel>
           <div class="mt-2">
             <CFormCheck
-              v-for="role in availableRoles"
-              :key="role.key"
-              :id="`change-role-${role.key}`"
+              v-for="role in roles"
+              :key="role.id"
+              :id="`change-role-${role.id}`"
               v-model="roleChangeForm.role"
-              :value="role.key"
+              :value="role.id"
               type="radio"
-              :label="role.label"
+              :label="role.name"
               class="mb-2" />
           </div>
         </div>
@@ -170,7 +201,7 @@
         </CButton>
         <CButton
           color="primary"
-          @click="handleUserRoleUpdate"
+          @click="handleUpdateUserRole"
           :disabled="!hasRoleChanged">
           Update Role
         </CButton>
@@ -181,43 +212,70 @@
 
 <script lang="ts" setup>
   import { ref, reactive, computed, onMounted } from 'vue';
+  import { useForm } from '@inertiajs/vue3';
+  import { useVuelidate } from '@vuelidate/core';
+  import axios from 'axios';
+  import { email, required } from '@vuelidate/validators';
   import useAuth from '@/composables/useAuth';
   import { type User } from '@/types/inertia';
 
-  type InvitationStatus = 'pending' | 'expired' | 'joined';
-
-  type KeyRole = 'owner' | 'admin' | 'manager' | 'viewer';
+  type Role = {
+    id: 'admin' | 'manager' | 'viewer';
+    name: string;
+    level: number;
+    permissions: {
+      [key: string]: boolean;
+    };
+  };
 
   type ClientUser = User & {
-    role: KeyRole;
+    role: Role['id'];
     status: InvitationStatus;
   };
 
-  const { paths } = useAuth();
+  type InvitationStatus = 'pending' | 'expired' | 'cancelled';
+  type Invitation = {
+    id: number;
+    email: string;
+    role: Role['id'];
+    status: InvitationStatus;
+    expired: boolean;
+  };
+
+  const { paths, features } = useAuth();
 
   const users = ref<ClientUser[]>([]);
-
-  const availableRoles = [
-    { key: 'viewer', label: 'Viewer - Read-only access' },
-    { key: 'manager', label: 'Manager - Edit access to assigned sites' },
-    { key: 'admin', label: 'Admin - Full access except billing' },
-    { key: 'owner', label: 'Owner - Full access including billing' }
-  ];
+  const invitations = ref<Invitation[]>([]);
+  const roles = ref<Role[]>([]);
 
   const showInviteModal = ref(false);
   const showRoleModal = ref(false);
 
-  const inviteForm = reactive({
-    email: '',
-    role: 'viewer' as KeyRole
+  const inviteForm = useForm({
+    invitation: {
+      email: null,
+      role: 'viewer' as Role['id']
+    }
   });
-  const inviteFormErrors = reactive({
-    email: ''
+
+  function rules() {
+    return {
+      invitation: {
+        email: { required, email },
+        role: { required }
+      }
+    };
+  }
+
+  const v$ = useVuelidate(rules, inviteForm);
+
+  const isInviteFormValid = computed(() => {
+    return !v$.value.$invalid;
   });
 
   const selectedUser = ref<ClientUser | null>(null);
   const roleChangeForm = reactive<{
-    role: KeyRole | null
+    role: Role['id'] | null
   }>({
     role: null
   });
@@ -226,32 +284,59 @@
     return roleChangeForm.role !== selectedUser.value?.role;
   });
 
-  function getRoleColor(role: KeyRole) {
-    const colors = {
-      owner: 'danger',
-      admin: 'warning',
-      manager: 'info',
-      viewer: 'secondary'
-    };
-    return colors[role] || 'secondary';
-  }
-
-  function getStatusColor(status: InvitationStatus) {
-    const colors = {
-      joined: 'success',
-      pending: 'warning',
-      expired: 'danger'
-    };
-    return colors[status] || 'secondary';
-  }
-
   function changeUserRole(user: ClientUser) {
     selectedUser.value = user;
     roleChangeForm.role = user.role;
     showRoleModal.value = true;
   }
 
-  async function handleUserRoleUpdate() {
+  async function handleUserRemove(user: ClientUser) {
+    if (confirm(`Are you sure you want to remove ${user.name} from the company?`)) {
+      try {
+        console.log('Removing user:', user.id);
+
+        const index = users.value.findIndex(u => u.id === user.id);
+        if (index > -1)
+          users.value.splice(index, 1);
+
+      } catch (error) {
+        console.error('Failed to remove user:', error);
+      }
+    }
+  }
+
+  async function handleResendInvitation(invitation: Invitation) {
+    try {
+      // Make API call to resend invitation
+      console.log('Resending invitation for user:', invitation.id);
+
+      // You can add success notification here
+    } catch (error) {
+      console.error('Failed to resend invitation:', error);
+      // Handle error
+    }
+  }
+
+  async function handleInvitationRemove(invitation: Invitation) {
+    if (confirm(`Are you sure you want to remove the invitation for ${invitation.email}?`)) {
+      try {
+        // Make API call to remove invitation
+        console.log('Removing invitation:', invitation.id);
+
+        // Remove from local state
+        const index = invitations.value.findIndex(i => i.id === invitation.id);
+        if (index > -1)
+          invitations.value.splice(index, 1);
+
+        // You can add success notification here
+      } catch (error) {
+        console.error('Failed to remove invitation:', error);
+        // Handle error
+      }
+    }
+  }
+
+  async function handleUpdateUserRole() {
     if (!selectedUser.value || !hasRoleChanged.value)
       return;
 
@@ -273,84 +358,45 @@
     }
   }
 
-  async function handleUserRemove(user: ClientUser) {
-    if (confirm(`Are you sure you want to remove ${user.name} from the company?`)) {
-      try {
-        // Make API call to remove user
-        console.log('Removing user:', user.id);
-
-        // Remove from local state
-        const index = users.value.findIndex(u => u.id === user.id);
-        if (index > -1)
-          users.value.splice(index, 1);
-
-        // You can add success notification here
-      } catch (error) {
-        console.error('Failed to remove user:', error);
-        // Handle error
-      }
-    }
-  }
-
-  async function handleResendInvitation(user: ClientUser) {
-    try {
-      // Make API call to resend invitation
-      console.log('Resending invitation for user:', user.id);
-
-      // You can add success notification here
-    } catch (error) {
-      console.error('Failed to resend invitation:', error);
-      // Handle error
-    }
-  }
-
   async function handleUserInvite() {
-    inviteFormErrors.email = '';
+    // if (!features.value.canRegister)
+    //   return;
 
-    if (!inviteForm.email) {
-      inviteFormErrors.email = 'Email is required';
+    const isValid = await v$.value.$validate();
+    if (!isValid) {
+      const firstInvalidElement = document.querySelector('.is-invalid');
+      firstInvalidElement?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
       return;
     }
 
-    if (!/\S+@\S+\.\S+/.test(inviteForm.email)) {
-      inviteFormErrors.email = 'Please enter a valid email';
-      return;
-    }
+    const result = await axios.post(paths.value.api.invitations, {
+      invitation: {
+        email: inviteForm.invitation.email,
+        role: inviteForm.invitation.role
+      }
+    });
 
-    if (users.value.some(u => u.email === inviteForm.email)) {
-      inviteFormErrors.email = 'User with this email already exists';
-      return;
-    }
-
-    try {
-      // Make API call to invite user
-      console.log('Inviting user:', inviteForm);
-
-      // Add to local users list with pending status
-      const newUser = {
+    if (result.status === 201) {
+      const newInvitation = {
         id: Date.now(),
-        name: inviteForm.email.split('@')[0],
-        email: inviteForm.email,
-        role: inviteForm.role,
+        email: inviteForm.invitation.email || '',
+        role: inviteForm.invitation.role,
         status: 'pending' as InvitationStatus,
-        avatar: null
+        expired: false
       };
 
-      users.value.push(newUser);
-
-      // You can add success notification here
+      invitations.value.push(newInvitation);
       closeInviteModal();
-    } catch (error) {
-      console.error('Failed to invite user:', error);
-      // Handle error
     }
   }
 
   function closeInviteModal() {
     showInviteModal.value = false;
-    inviteForm.email = '';
-    inviteForm.role = 'viewer';
-    inviteFormErrors.email = '';
+    inviteForm.invitation.email = null;
+    inviteForm.invitation.role = 'viewer';
   }
 
   function closeRoleModal() {
@@ -359,16 +405,37 @@
     roleChangeForm.role = null;
   }
 
-  function fetchUsers() {
-    fetch(paths.value.api.users)
-      .then(response => response.json())
-      .then(data => {
-        users.value = data;
-      });
+  async function fetchUsers() {
+    try {
+      const response = await axios.get(paths.value.api.users);
+      users.value = response.data;
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+    }
+  }
+
+  async function fetchInvitations() {
+    try {
+      const response = await axios.get(paths.value.api.invitations);
+      invitations.value = response.data;
+    } catch (error) {
+      console.error('Failed to fetch invitations:', error);
+    }
+  }
+
+  async function fetchRoles() {
+    try {
+      const response = await axios.get(paths.value.api.roles);
+      roles.value = response.data;
+    } catch (error) {
+      console.error('Failed to fetch roles:', error);
+    }
   }
 
   onMounted(() => {
     fetchUsers();
+    fetchInvitations();
+    fetchRoles();
   });
 </script>
 

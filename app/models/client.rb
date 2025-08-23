@@ -15,7 +15,7 @@ class Client < ApplicationRecord
   validates :name, presence: true, uniqueness: { case_sensitive: false }
   validates :subdomain, presence: true, uniqueness: { case_sensitive: false }, format: { with: /\A[a-z0-9\-]+\z/ }
   validates :color, presence: true, format: { with: /\A#[0-9a-fA-F]{6}\z/, message: 'must be a valid hex color (e.g., #FF0000)' }
-  validate :must_have_at_least_one_active_owner
+  validate :must_have_at_least_one_active_admin
   validate :must_have_at_least_one_active_site
 
   attr_accessor :site_attributes
@@ -30,15 +30,15 @@ class Client < ApplicationRecord
   end
 
   private
-    def must_have_at_least_one_active_owner
+    def must_have_at_least_one_active_admin
       highest_role = RoleManageable.highest_role
 
-      active_owners = client_users.reject(&:marked_for_destruction?).select do |cu|
+      active_admins = client_users.reject(&:marked_for_destruction?).select do |cu|
         cu.role == highest_role && cu.active
       end
 
-      if active_owners.empty?
-        errors.add(:base, 'must have at least one active owner')
+      if active_admins.empty?
+        errors.add(:base, 'must have at least one active admin')
       end
     end
 

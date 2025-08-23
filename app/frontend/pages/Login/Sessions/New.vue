@@ -42,8 +42,8 @@
                   autocomplete="email"
                   type="email"
                   required
-                  v-model="formData[rootObjectName].email"
-                  class="form-input-with-icon" />
+                  class="form-input-with-icon"
+                  v-model="formData[rootObjectName].email" />
                 <div class="form-error" v-if="v$[rootObjectName].email.$error">
                   {{ v$[rootObjectName].email.$errors[0].$message }}
                 </div>
@@ -64,8 +64,8 @@
                   placeholder="Enter your password"
                   type="password"
                   required
-                  v-model="formData[rootObjectName].password"
-                  class="form-input-with-icon" />
+                  class="form-input-with-icon"
+                  v-model="formData[rootObjectName].password" />
                 <div class="form-error" v-if="v$[rootObjectName].password.$error">
                   {{ v$[rootObjectName].password.$errors[0].$message }}
                 </div>
@@ -77,8 +77,8 @@
                 label="Remember me"
                 id="remember_me"
                 name="remember_me"
-                v-model="formData[rootObjectName].remember_me"
-                class="text-sm text-gray-600" />
+                class="text-sm text-gray-600"
+                v-model="formData[rootObjectName].remember_me" />
               <a v-if="features.canRecover" :href="paths.pages.forgotPassword" class="nav-link-primary">
                 Forgot password?
               </a>

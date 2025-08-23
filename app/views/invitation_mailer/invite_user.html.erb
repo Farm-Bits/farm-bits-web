@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Invitation to <%= @client.name %></title>
+    <style>
+      body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+      .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+      .header { background-color: <%= @client.color %>; color: white; padding: 20px; text-align: center; }
+      .content { padding: 20px; background-color: #f9f9f9; }
+      .button { display: inline-block; padding: 12px 24px; background-color: <%= @client.color %>; color: white; text-decoration: none; border-radius: 4px; margin: 20px 0; }
+      .footer { padding: 20px; text-align: center; color: #666; font-size: 14px; }
+      .role-badge { background-color: #e9ecef; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>You're Invited!</h1>
+      </div>
+
+      <div class="content">
+        <h2>Join <%= @client.name %></h2>
+
+        <p><strong><%= @inviter.name %></strong> has invited you to join <strong><%= @client.name %></strong> with the role of <span class="role-badge"><%= @role.titleize %></span>.</p>
+
+        <% case @role %>
+        <% when 'admin' %>
+          <p>As an <strong>Admin</strong>, you'll have full access to all sites and can manage company settings.</p>
+        <% when 'manager' %>
+          <p>As a <strong>Manager</strong>, you'll have edit access to assigned sites and can create new sites.</p>
+        <% when 'viewer' %>
+          <p>As a <strong>Viewer</strong>, you'll have read-only access to assigned sites.</p>
+        <% end %>
+
+        <p>Click the button below to accept your invitation:</p>
+
+        <div style="text-align: center;">
+          <a href="<%= @accept_url %>" class="button">Accept Invitation</a>
+        </div>
+
+        <p><small>Or copy and paste this link into your browser:</small><br>
+           <small><%= @accept_url %></small></p>
+
+        <hr>
+
+        <p><strong>This invitation will expire on <%= @expires_at.strftime("%B %d, %Y at %I:%M %p") %>.</strong></p>
+
+        <p>If you don't want to accept this invitation, you can simply ignore this email.</p>
+      </div>
+
+      <div class="footer">
+        <p>This invitation was sent by <%= @inviter.name %> from <%= @client.name %>.</p>
+        <p>If you have any questions, please contact your inviter directly.</p>
+      </div>
+    </div>
+  </body>
+</html>

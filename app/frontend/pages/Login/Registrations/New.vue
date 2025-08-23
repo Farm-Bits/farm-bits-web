@@ -93,10 +93,10 @@
                     name="password"
                     placeholder="Create a strong password"
                     type="password"
+                    class="form-input"
                     v-model="formData[rootObjectName].password"
                     :invalid="v$[rootObjectName].password.$error"
-                    @blur="v$[rootObjectName].password.$touch()"
-                    class="form-input" />
+                    @blur="v$[rootObjectName].password.$touch()" />
 
                   <!-- Password Strength Indicator -->
                   <div v-if="formData[rootObjectName].password" class="mt-2">
@@ -129,10 +129,10 @@
                     name="passwordConfirmation"
                     placeholder="Confirm your password"
                     type="password"
+                    class="form-input"
                     v-model="formData[rootObjectName].password_confirmation"
                     :invalid="v$[rootObjectName].password_confirmation.$error"
-                    @blur="v$[rootObjectName].password_confirmation.$touch()"
-                    class="form-input" />
+                    @blur="v$[rootObjectName].password_confirmation.$touch()" />
                   <div class="form-error" v-if="v$[rootObjectName].password_confirmation.$error">
                     {{ v$[rootObjectName].password_confirmation.$errors[0].$message }}
                   </div>

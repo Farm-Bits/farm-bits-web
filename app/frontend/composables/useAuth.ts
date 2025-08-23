@@ -48,7 +48,9 @@ export default function useAuth<T extends PageProps>() {
       clientSetup: `/${rootObjectName.value}/client_setup`
     },
     api: {
-      users: `/${rootObjectName.value}/users`
+      users: `/${rootObjectName.value}/users`,
+      invitations: `/${rootObjectName.value}/invitations`,
+      roles: `/${rootObjectName.value}/roles`
     }
   }));
 
