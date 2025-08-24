@@ -33,6 +33,7 @@ import {
   CFormInput,
   CFormLabel,
   CFormSelect,
+  CFormText,
   CHeader,
   CHeaderBrand,
   CHeaderDivider,
@@ -62,6 +63,7 @@ import {
   CSidebarHeader,
   CSidebarNav,
   CSidebarToggler,
+  CSpinner,
   CTab,
   CTable,
   CTableBody,
@@ -92,6 +94,7 @@ import {
   cilDescription,
   cilEnvelopeClosed,
   cilGem,
+  cilLocationPin,
   cilLockLocked,
   cilMenu,
   cilOptions,
@@ -149,6 +152,7 @@ export default function () {
         cilDescription,
         cilEnvelopeClosed,
         cilGem,
+        cilLocationPin,
         cilLockLocked,
         cilMenu,
         cilOptions,
@@ -192,6 +196,7 @@ export default function () {
       app.component('CFormInput', CFormInput);
       app.component('CFormLabel', CFormLabel);
       app.component('CFormSelect', CFormSelect);
+      app.component('CFormText', CFormText);
       app.component('CHeader', CHeader);
       app.component('CHeaderBrand', CHeaderBrand);
       app.component('CHeaderDivider', CHeaderDivider);
@@ -222,6 +227,7 @@ export default function () {
       app.component('CSidebarHeader', CSidebarHeader);
       app.component('CSidebarNav', CSidebarNav);
       app.component('CSidebarToggler', CSidebarToggler);
+      app.component('CSpinner', CSpinner);
       app.component('CTab', CTab);
       app.component('CTable', CTable);
       app.component('CTableBody', CTableBody);

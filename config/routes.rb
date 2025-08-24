@@ -44,13 +44,14 @@ Rails.application.routes.draw do
       get 'client_setup', to: 'client_setup#new'
       post 'client_setup', to: 'client_setup#create'
 
-      get 'users', to: 'users#index'
-
       get 'roles', to: 'roles#index'
+
+      resources :users, only: [:index]
+      put 'users', to: 'users#update'
+      delete 'users', to: 'users#destroy'
 
       resources :invitations, only: [:index, :create, :destroy]
       put 'invitations/:id/resend', to: 'invitations#resend'
-      get 'invitations/:token/accept', to: 'invitations#accept'
 
       get 'dashboard', to: 'dashboard#index'
     end
@@ -62,6 +63,9 @@ Rails.application.routes.draw do
   resources :plc_manufacturers
   resources :plc_models
   resources :plcs
+
+  get 'invitations/:token/accept', to: 'invitations#accept', as: :accept_invitation
+  put 'invitations/:token/accept', to: 'invitations#sign_up_and_accept'
 
   namespace :api do
     get 'regions/:country', to: 'regions#index'

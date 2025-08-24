@@ -19,6 +19,14 @@ class UserArea::ApplicationController < ApplicationController
       end
     end
 
+    def ensure_can_manage_users!
+      if !current_client.role_for(current_user).can_manage_users?
+        render json: { error: 'Unauthorized' }, status: :unauthorized
+      end
+    end
+
+    helper_method :ensure_can_manage_users!
+
     def set_current_client
       if params[:client_id]
         @current_client = current_user.active_clients_connections.find(params[:client_id])

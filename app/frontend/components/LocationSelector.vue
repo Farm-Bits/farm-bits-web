@@ -2,16 +2,14 @@
   <div class="form-section">
     <!-- Current Location Button -->
     <div class="flex justify-start">
-      <LoadingButton
-        class="btn-gradient-blue btn-small transform hover:scale-[1.02] inline-flex items-center"
-        @click="getCurrentPosition"
-        :loading="loadingPosition">
-        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-        </svg>
+      <CButton
+        color="secondary"
+        :disabled="loadingPosition"
+        @click="getCurrentPosition">
+        <CSpinner v-if="loadingPosition" size="sm" class="me-2" />
+        <CIcon name="cilLocationPin" class="me-2" />
         Use Current Location
-      </LoadingButton>
+      </CButton>
     </div>
 
     <!-- Location Selection Grid -->
@@ -171,7 +169,6 @@
   import { computed, nextTick, onMounted, ref } from 'vue';
   import { Loader } from '@googlemaps/js-api-loader';
   import { type Validation, type ValidationArgs } from '@vuelidate/core'
-  import LoadingButton from './LoadingButton.vue';
   import useToastStore from '@/stores/toast';
 
   type Location = {

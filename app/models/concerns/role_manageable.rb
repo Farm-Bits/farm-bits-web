@@ -44,7 +44,8 @@ module RoleManageable
       ROLES.map do |key, config|
         {
           id: key,
-          name: "#{key.titleize} - #{config[:description]}",
+          name: key.titleize,
+          description: config[:description],
           level: config[:level],
           permissions: config.except(:level, :description)
         }

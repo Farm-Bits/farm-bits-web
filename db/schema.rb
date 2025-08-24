@@ -172,7 +172,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_23_182030) do
 
   create_table "invitations", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "email", null: false
-    t.string "role", null: false
+    t.string "role"
     t.string "status", default: "pending", null: false
     t.string "token", null: false
     t.datetime "expires_at", null: false

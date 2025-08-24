@@ -19,7 +19,7 @@ class Api::RegionsController < ApplicationController
     rescue JSON::ParserError => e
       render json: { error: 'Invalid response format' }, status: :bad_gateway
     rescue StandardError => e
-      render json: { error: e.message }, status: :service_unavailable
+      render json: { error: 'An error occurred while fetching regions' }, status: :service_unavailable
     end
   end
 
@@ -42,7 +42,7 @@ class Api::RegionsController < ApplicationController
     rescue JSON::ParserError => e
       render json: { error: 'Invalid response format' }, status: :bad_gateway
     rescue StandardError => e
-      render json: { error: e.message }, status: :service_unavailable
+      render json: { error: 'An error occurred while fetching cities' }, status: :service_unavailable
     end
   end
 

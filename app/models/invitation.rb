@@ -7,7 +7,7 @@ class Invitation < ApplicationRecord
   validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :role, inclusion: { in: RoleManageable::ROLES.keys }, if: -> { inviter_type == 'User' }
   validates :role, absence: true, if: -> { inviter_type == 'AdminUser' }
-  validates :status, inclusion: { in: %w[pending expired cancelled accepted] }
+  validates :status, inclusion: { in: %w[pending expired accepted] }
   validates :client, presence: true, if: -> { inviter_type == 'User' }
   validates :client, absence: true, if: -> { inviter_type == 'AdminUser' }
   validate :user_not_already_member, on: :create
@@ -17,30 +17,35 @@ class Invitation < ApplicationRecord
   before_create :set_expires_at
   after_create :send_invitation_email
 
+  def accepted?
+    status == 'accepted'
+  end
+
   def expired?
     expires_at < Time.current
   end
 
-  def accept!(acceptor)
+  def accept_url
+    Rails.application.routes.url_helpers.accept_invitation_url(token: token)
+  end
+
+  def accept!(user)
+    if accepted?
+      return { success: false, error: 'Invitation already accepted' }
+    end
+
     if expired?
       return { success: false, error: 'Invitation has expired' }
     end
 
-    if status != 'pending'
-      return { success: false, error: 'Invitation is not pending' }
-    end
-
-    if acceptor.email != email
-      return { success: false, error: 'Email mismatch' }
-    end
-
     ActiveRecord::Base.transaction do
-      if inviter_type == 'User'
-        accept_user_invitation!(acceptor)
-      elsif inviter_type == 'AdminUser'
-        accept_admin_user_invitation!(acceptor)
+      case inviter_type
+      when 'User'
+        accept_user_invitation!(user)
+      when 'AdminUser'
+        accept_admin_user_invitation!(user)
       else
-        Rails.logger.warn "Unknown inviter type: #{inviter_type}"
+        raise ArgumentError, "Unknown inviter type: #{inviter_type}"
       end
 
       update!(status: 'accepted', accepted_at: Time.current)
@@ -48,15 +53,18 @@ class Invitation < ApplicationRecord
 
     { success: true }
   rescue ActiveRecord::RecordInvalid => e
-    { success: false, error: e.message }
+    { success: false, error: e.record.errors.full_messages.to_sentence }
   rescue => e
-    Rails.logger.error "Failed to accept invitation #{id}: #{e.message}"
-    { success: false, error: 'Failed to accept invitation' }
+    { success: false, error: 'An error occurred while accepting the invitation' }
   end
 
   def resend
-    if status != 'pending'
-      return { success: false, error: 'Invitation is not pending' }
+    if accepted?
+      return { success: false, error: 'Cannot resend accepted invitation' }
+    end
+
+    if expired?
+      return { success: false, error: 'Cannot resend expired invitation' }
     end
 
     generate_token
@@ -70,22 +78,17 @@ class Invitation < ApplicationRecord
     end
   end
 
-  def cancel!
-    update!(status: 'cancelled')
-  end
-
-  def accept_url
-    Rails.application.routes.url_helpers.accept_invitation_url(
-      token: token,
-      host: Rails.application.config.action_mailer.default_url_options[:host],
-      protocol: Rails.application.config.action_mailer.default_url_options[:protocol] || 'https'
-    )
-  end
-
   private
     def user_not_already_member
       if inviter_type != 'User' || !client.present?
         return
+      end
+
+      existing_invitation = Invitation.where(email: email, client: client)
+        .where.not(status: 'accepted')
+        .first
+      if existing_invitation
+        errors.add(:email, 'has already been invited to this organization')
       end
 
       existing_user = User.find_by(email: email)
@@ -99,6 +102,13 @@ class Invitation < ApplicationRecord
         return
       end
 
+      existing_invitation = Invitation.where(email: email, inviter_type: 'AdminUser')
+        .where.not(status: 'accepted')
+        .first
+      if existing_invitation
+        errors.add(:email, 'has already been invited')
+      end
+
       existing_admin = AdminUser.find_by(email: email)
       if existing_admin
         errors.add(:email, 'admin user already exists')
@@ -107,21 +117,26 @@ class Invitation < ApplicationRecord
 
     def accept_user_invitation!(user)
       if !user.is_a?(User)
-        raise ArgumentError, 'User required for User invitation'
+        raise ArgumentError, 'Invalid user type for client invitation'
       end
 
-      client_user = ClientUser.find_or_initialize_by(client: client, user: user)
-      client_user.role = role
-      client_user.active = true
-      client_user.save!
+      client_user = client.client_users.find_or_initialize_by(user: user)
+      if client_user.persisted?
+        if client_user.active
+          raise ActiveRecord::RecordInvalid, 'User is already a member of this client'
+        else
+          client_user.update!(role: role, active: true)
+        end
+      else
+        client_user.assign_attributes(role: role, active: true)
+        client_user.save!
+      end
     end
 
     def accept_admin_user_invitation!(admin_user)
       if !admin_user.is_a?(AdminUser)
-        raise ArgumentError, 'AdminUser required for AdminUser invitation'
+        raise ArgumentError, 'Invalid user type for admin invitation'
       end
-
-      admin_user.update!(active: true) unless admin_user.active?
     end
 
     def generate_token

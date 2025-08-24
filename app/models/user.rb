@@ -55,7 +55,7 @@ class User < ApplicationRecord
     def with_client_context(client)
       includes(:client_users)
         .joins(:client_users)
-        .where(client_users: { client: client, active: true })
+        .where(active: true, client_users: { client: client, active: true })
         .map { |user| user.with_client_context(client) }
     end
   end

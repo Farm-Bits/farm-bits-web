@@ -9,7 +9,7 @@
 
         <!-- Toast notifications -->
         <CToaster class="right-4 fixed">
-          <CToast v-for="(toast, index) in toasts" visible :key="index" :autohide="false">
+          <CToast v-for="(toast, index) in toasts" visible :key="index">
             <CToastHeader closeButton>
               <span class="me-auto fw-bold">
                 {{ toast.title }}
@@ -23,11 +23,19 @@
 
         <!-- Page content slot -->
         <div class="content">
-          <div v-if="flash.alert" class="alert">
-            {{ flash.alert }}
-          </div>
-          <div v-if="flash.notice" class="notice">
-            {{ flash.notice }}
+          <!-- Flash notifications with close functionality -->
+          <div
+            v-for="(value, key) in visibleFlash"
+            class="flash-notification"
+            :key="key"
+            :class="[key, 'flash-notification']">
+            {{ value }}
+            <button
+              class="btn-close"
+              aria-label="Close"
+              @click="closeFlashNotification(key)">
+              &times;
+            </button>
           </div>
           <slot />
         </div>
@@ -40,7 +48,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed } from 'vue';
+  import { computed, ref } from 'vue';
   import Navbar from './Navbar.vue';
   import Sidebar from './Sidebar.vue';
   import Footer from './Footer.vue';
@@ -51,11 +59,33 @@
     flash: {
       alert?: string;
       notice?: string;
+      errors?: string[];
+      [key: string]: any;
     };
   }>();
+
+  const dismissedFlash = ref<Set<string>>(new Set());
+
   const flash = computed(() => page.props.flash);
+  const visibleFlash = computed(() => {
+    const filtered: Record<string, string> = {};
+
+    for (const [key, value] of Object.entries(flash.value)) {
+      if (key === 'errors')
+        continue;
+
+      if (value && !dismissedFlash.value.has(key))
+        filtered[key] = value;
+    }
+
+    return filtered;
+  });
 
   const { toasts } = useToastStore();
+
+  function closeFlashNotification(flashKey: string) {
+    dismissedFlash.value.add(flashKey);
+  }
 </script>
 
 <style scoped>
@@ -79,5 +109,62 @@
 
   .content {
     flex: 1;
+  }
+
+  .flash-notification {
+    position: relative;
+    padding: 12px 40px 12px 16px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* Different styles for different flash types */
+  .flash-notification.alert {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+  }
+
+  .flash-notification.notice {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+  }
+
+  .flash-notification.warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+  }
+
+  /* Close button styling */
+  .btn-close {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.7;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-close:hover {
+    opacity: 1;
+  }
+
+  /* Animation for smooth removal */
+  .flash-notification {
+    transition: all 0.3s ease-out;
   }
 </style>

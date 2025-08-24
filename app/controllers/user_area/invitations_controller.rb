@@ -1,6 +1,6 @@
 class UserArea::InvitationsController < UserArea::ApplicationController
   before_action :ensure_can_manage_users!, only: [:index, :create, :resend, :destroy]
-  before_action :find_invitation, only: [:resend, :destroy]
+  before_action :set_invitation, only: [:resend, :destroy]
 
   def index
     invitations = current_client.invitations
@@ -15,37 +15,24 @@ class UserArea::InvitationsController < UserArea::ApplicationController
     invitation.client = current_client
 
     if invitation.save
-      render json: { message: 'Invitation sent successfully' }, status: :created
+      render json: InvitationSerializer.render(invitation), status: :created
     else
-      render json: { error: invitation.errors.full_messages }, status: :unprocessable_entity
+      render json: { error: invitation.errors.full_messages.to_sentence }, status: :unprocessable_entity
     end
   end
 
   def resend
     result = @invitation&.resend
     if result && result[:success]
-      render json: { message: 'Invitation resent successfully' }
+      render json: InvitationSerializer.render(@invitation), status: :ok
     else
       render json: { error: 'Cannot resend this invitation' }, status: :unprocessable_entity
     end
   end
 
-  def accept
-    invitation = Invitation.find_by!(token: params[:token])
-    result = invitation&.accept!(current_user)
-    if result && result[:success]
-      redirect_to root_path
-    else
-      render inertia: 'Login/Sessions/New', props: {
-        userScope: 'users',
-        errors: [result[:error]]
-      }
-    end
-  end
-
   def destroy
     @invitation.destroy
-    render json: { message: 'Invitation cancelled successfully' }
+    head :no_content
   end
 
   private
@@ -53,13 +40,7 @@ class UserArea::InvitationsController < UserArea::ApplicationController
       params.require(:invitation).permit(:email, :role)
     end
 
-    def find_invitation
+    def set_invitation
       @invitation = current_client.invitations.find(params[:id])
-    end
-
-    def ensure_can_manage_users!
-      if !current_client.role_for(current_user).can_manage_users?
-        render json: { error: 'Unauthorized' }, status: :unauthorized
-      end
     end
 end

@@ -4,6 +4,12 @@
       <div class="auth-card overflow-hidden">
         <!-- Form -->
         <div class="p-8">
+          <div class="auth-card-header">
+            <h2 class="text-2xl font-semibold">
+              Create Company
+            </h2>
+          </div>
+
           <FlashErrorMessages class="mb-6" />
 
           <CForm

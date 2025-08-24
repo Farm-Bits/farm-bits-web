@@ -45,9 +45,9 @@
 
 <script lang="ts" setup>
   import { ref } from 'vue';
-  import ClientTab from './ClientTab.vue';
-  import UsersTab from './UsersTab.vue';
-  import DangerTab from './DangerTab.vue';
+  import ClientTab from './components/tabs/ClientTab.vue';
+  import UsersTab from './components/tabs/UsersTab.vue';
+  import DangerTab from './components/tabs/DangerTab.vue';
 
   const activeTab = ref('client');
 </script>
