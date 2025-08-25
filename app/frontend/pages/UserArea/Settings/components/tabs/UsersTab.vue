@@ -49,17 +49,17 @@
                 <Teleport to="body">
                   <CDropdownMenu>
                     <CDropdownItem
-                      v-if="user.id !== currentUser?.id"
+                      v-if="user.id !== pageProps.user.id"
                       @click="openChangeRoleModal(user)">
                       <CIcon name="cilPeople" class="me-2" />
                       Change Role
                     </CDropdownItem>
-                    <CDropdownDivider v-if="user.id !== currentUser?.id" />
+                    <CDropdownDivider v-if="user.id !== pageProps.user.id" />
                     <CDropdownItem
                       @click="handleUserRemove(user)"
                       class="text-danger">
                       <CIcon name="cilUserX" class="me-2" />
-                      {{ user.id !== currentUser?.id ? 'Remove User' : 'Leave Company' }}
+                      {{ user.id !== pageProps.user.id ? 'Remove User' : 'Leave Company' }}
                     </CDropdownItem>
                   </CDropdownMenu>
                 </Teleport>
@@ -140,8 +140,11 @@
   import useAuth from '@/composables/useAuth';
   import { useApiCall, type ApiError } from '@/composables/useApi';
   import { type ClientUser, type Invitation, type Role } from '../types/user_invitation';
+  import { type User } from '@/types/inertia';
 
-  const { user: currentUser, paths } = useAuth();
+  const { pageProps, paths } = useAuth<{
+    user: User;
+  }>();
 
   const { execute } = useApiCall();
 

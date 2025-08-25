@@ -35,7 +35,7 @@ class UserArea::ApplicationController < ApplicationController
       end
       @current_client ||= current_user.active_clients_connections.first
 
-      session[:current_client_id] = @current_client.id
+      session[:current_client_id] = @current_client&.id
     end
 
     def current_client

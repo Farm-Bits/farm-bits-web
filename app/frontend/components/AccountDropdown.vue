@@ -16,6 +16,18 @@
       <div class="dropdown-container" :style="containerStyle">
         <!-- Default Menu Panel -->
         <div class="dropdown-panel">
+          <div class="dropdown-header d-flex align-items-center mb-2">
+              <CAvatar size="sm" :style="{ backgroundColor: currentClient.color }" class="me-2">
+                {{ getInitials(pageProps.user.name) }}
+              </CAvatar>
+              <div class="user-info">
+                <div class="fw-semibold">{{ pageProps.user.name }}</div>
+                <small class="text-muted">{{ currentClient.name }}</small>
+              </div>
+            </div>
+
+          <CDropdownDivider />
+
           <CDropdownHeader>Account</CDropdownHeader>
 
           <CDropdownItem href="#" class="d-flex align-items-center">
@@ -23,7 +35,10 @@
             Profile
           </CDropdownItem>
 
-          <CDropdownItem :href="paths.pages.editClient" class="d-flex align-items-center">
+          <!-- v-if="features.canManageSettings" -->
+          <CDropdownItem
+            :href="paths.pages.editClient"
+            class="d-flex align-items-center">
             <CIcon icon="cilSettings" class="me-2" />
             Settings
           </CDropdownItem>
@@ -112,8 +127,11 @@
 <script lang="ts" setup>
   import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
   import useAuth from '@/composables/useAuth';
+  import { type User } from '@/types/inertia';
 
-  const { userScope, paths, client, clients } = useAuth();
+  const { pageProps, userScope, paths, client, clients } = useAuth<{
+    user: User;
+  }>();
 
   const isOpen = ref(false);
   const currentPanel = ref<'default' | 'clients'>('default');

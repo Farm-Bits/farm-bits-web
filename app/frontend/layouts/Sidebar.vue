@@ -29,11 +29,6 @@
         Alerts
       </CNavItem>
 
-      <CNavItem href="#/users">
-        <CIcon customClassName="nav-icon" name="cilPeople" />
-        Users
-      </CNavItem>
-
       <!-- <CNavGroup>
         <template #togglerContent>
           <CIcon customClassName="nav-icon" name="cilPuzzle" />
