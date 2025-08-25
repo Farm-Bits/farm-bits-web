@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Invitation to <%= @client.name %></title>
+    <title>Unlock Your Account</title>
     <style>
       body {
         font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -11,7 +11,7 @@
         color: #4b5563;
         margin: 0;
         padding: 0;
-        background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+        background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
       }
 
       .container {
@@ -26,7 +26,7 @@
       }
 
       .header {
-        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
         color: white;
         padding: 48px 32px;
         text-align: center;
@@ -85,58 +85,99 @@
         text-align: center;
       }
 
-      .invitation-card {
-        background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
-        border: 1px solid #d1fae5;
+      .email-info {
+        background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+        border: 1px solid #fbbf24;
         border-radius: 16px;
         padding: 24px;
         margin: 24px 0;
         text-align: center;
       }
 
-      .inviter-info {
+      .email-address {
+        color: #d97706;
+        font-weight: 600;
         font-size: 18px;
-        color: #1f2937;
-        margin-bottom: 16px;
       }
 
-      .company-name {
-        color: #059669;
+      .lock-info {
+        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+        border: 2px solid #ef4444;
+        border-radius: 16px;
+        padding: 24px;
+        margin: 24px 0;
+        border-left: 6px solid #ef4444;
+        position: relative;
+      }
+
+      .lock-info::before {
+        content: '🚫';
+        position: absolute;
+        top: -12px;
+        left: 24px;
+        background: #ef4444;
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+      }
+
+      .lock-info h3 {
+        color: #dc2626;
+        margin: 0 0 12px 0;
+        font-size: 18px;
         font-weight: 700;
       }
 
-      .inviter-name {
-        color: #059669;
+      .lock-info p {
+        color: #dc2626;
+        margin: 0;
+        font-weight: 500;
+      }
+
+      .unlock-reasons {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 24px;
+        margin: 24px 0;
+      }
+
+      .unlock-reasons h3 {
+        color: #1e293b;
+        margin: 0 0 16px 0;
+        font-size: 18px;
         font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
 
-      .role-badge {
-        display: inline-block;
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-        color: white;
-        padding: 8px 16px;
-        border-radius: 12px;
-        font-weight: 600;
-        font-size: 14px;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+      .reasons-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
       }
 
-      .role-description {
-        background: #eff6ff;
-        border: 1px solid #bfdbfe;
-        border-radius: 12px;
-        padding: 20px;
-        margin: 20px 0;
-        border-left: 4px solid #2563eb;
+      .reasons-list li {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin: 8px 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #374151;
       }
 
-      .role-description h3 {
-        color: #1d4ed8;
-        margin: 0 0 8px 0;
+      .reason-icon {
         font-size: 16px;
-        font-weight: 600;
+        flex-shrink: 0;
       }
 
       .button-container {
@@ -147,20 +188,20 @@
       .button {
         display: inline-block;
         padding: 16px 32px;
-        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
         color: white;
         text-decoration: none;
         border-radius: 16px;
         font-weight: 600;
         font-size: 16px;
-        box-shadow: 0 8px 24px rgba(5, 150, 105, 0.3);
+        box-shadow: 0 8px 24px rgba(217, 119, 6, 0.3);
         transition: all 0.3s ease;
         transform: translateY(0);
       }
 
       .button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 12px 32px rgba(5, 150, 105, 0.4);
+        box-shadow: 0 12px 32px rgba(217, 119, 6, 0.4);
       }
 
       .link-fallback {
@@ -179,36 +220,9 @@
       }
 
       .link-fallback-url {
-        color: #059669;
+        color: #d97706;
         font-weight: 500;
         font-size: 14px;
-      }
-
-      .divider {
-        height: 1px;
-        background: linear-gradient(90deg, transparent 0%, #e5e7eb 50%, transparent 100%);
-        margin: 32px 0;
-      }
-
-      .expiry-notice {
-        background: #fef3c7;
-        border: 1px solid #f59e0b;
-        border-radius: 12px;
-        padding: 16px;
-        margin: 24px 0;
-        border-left: 4px solid #f59e0b;
-      }
-
-      .expiry-notice h3 {
-        color: #92400e;
-        margin: 0 0 8px 0;
-        font-size: 16px;
-        font-weight: 600;
-      }
-
-      .expiry-notice p {
-        color: #92400e;
-        margin: 0;
       }
 
       .footer {
@@ -251,68 +265,66 @@
   <body>
     <div class="container">
       <div class="header">
-        <div class="header-icon">🎉</div>
-        <h1>You're Invited!</h1>
+        <div class="header-icon">🔓</div>
+        <h1>Account Unlock</h1>
       </div>
 
       <div class="content">
-        <h2>Join <%= @client.name %></h2>
-
-        <div class="invitation-card">
-          <div class="inviter-info">
-            <span class="inviter-name"><%= @inviter.name %></span> has invited you to join <span class="company-name"><%= @client.name %></span>
-          </div>
-          <div style="margin: 16px 0;">
-            with the role of <span class="role-badge"><%= @role.titleize %></span>
-          </div>
-        </div>
-
-        <% case @role %>
-        <% when 'admin' %>
-          <div class="role-description">
-            <h3>👑 Administrator Access</h3>
-            <p>As an <strong>Admin</strong>, you'll have full access to all sites and can manage company settings, users, and permissions.</p>
-          </div>
-        <% when 'manager' %>
-          <div class="role-description">
-            <h3>🛠️ Manager Access</h3>
-            <p>As a <strong>Manager</strong>, you'll have edit access to assigned sites and can create new sites and manage team members.</p>
-          </div>
-        <% when 'viewer' %>
-          <div class="role-description">
-            <h3>👁️ Viewer Access</h3>
-            <p>As a <strong>Viewer</strong>, you'll have read-only access to assigned sites and can view reports and analytics.</p>
-          </div>
-        <% end %>
+        <h2>Your Account Was Locked</h2>
 
         <p style="text-align: center; font-size: 18px; color: #1f2937; margin: 24px 0;">
-          Ready to get started? Accept your invitation below:
+          Your account has been locked due to security reasons, but don't worry - we can unlock it right away.
+        </p>
+
+        <div class="email-info">
+          <p style="margin: 0 0 8px 0; color: #6b7280;">Locked account:</p>
+          <div class="email-address"><%= @resource.email %></div>
+        </div>
+
+        <div class="lock-info">
+          <h3>Why was my account locked?</h3>
+          <p>Your account was automatically locked as a security measure. This typically happens after multiple unsuccessful sign-in attempts.</p>
+        </div>
+
+        <div class="unlock-reasons">
+          <h3>🛡️ Account locks help protect you from:</h3>
+          <ul class="reasons-list">
+            <li>
+              <span class="reason-icon">🔐</span>
+              Unauthorized access attempts
+            </li>
+            <li>
+              <span class="reason-icon">🤖</span>
+              Automated brute force attacks
+            </li>
+            <li>
+              <span class="reason-icon">👥</span>
+              Identity theft and fraud
+            </li>
+          </ul>
+        </div>
+
+        <p style="text-align: center; font-size: 18px; color: #1f2937; margin: 24px 0;">
+          Click the button below to unlock your account:
         </p>
 
         <div class="button-container">
-          <a href="<%= @accept_url %>" class="button">Accept Invitation</a>
+          <a href="<%= unlock_url(@resource, unlock_token: @token) %>" class="button">Unlock My Account</a>
         </div>
 
         <div class="link-fallback">
           <div class="link-fallback-label">Or copy and paste this link into your browser:</div>
-          <div class="link-fallback-url"><%= @accept_url %></div>
+          <div class="link-fallback-url"><%= unlock_url(@resource, unlock_token: @token) %></div>
         </div>
 
-        <div class="divider"></div>
-
-        <div class="expiry-notice">
-          <h3>⏰ Time Sensitive</h3>
-          <p>This invitation will expire on <strong><%= @expires_at.strftime("%B %d, %Y at %I:%M %p") %></strong>.</p>
-        </div>
-
-        <p style="color: #6b7280; text-align: center;">
-          If you don't want to accept this invitation, you can simply ignore this email.
+        <p style="color: #6b7280; text-align: center; margin-top: 24px;">
+          If you didn't try to sign in recently, please contact our support team immediately.
         </p>
       </div>
 
       <div class="footer">
-        <p>This invitation was sent by <strong><%= @inviter.name %></strong> from <strong><%= @client.name %></strong>.</p>
-        <p>If you have any questions, please contact your inviter directly.</p>
+        <p>This email was sent because your account was locked for security reasons.</p>
+        <p>If you have any questions, please contact our support team.</p>
       </div>
     </div>
   </body>

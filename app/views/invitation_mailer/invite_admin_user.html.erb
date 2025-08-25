@@ -5,58 +5,408 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>System Administrator Invitation</title>
     <style>
-      body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-      .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-      .header { background-color: #dc3545; color: white; padding: 20px; text-align: center; }
-      .content { padding: 20px; background-color: #f9f9f9; }
-      .button { display: inline-block; padding: 12px 24px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 4px; margin: 20px 0; }
-      .footer { padding: 20px; text-align: center; color: #666; font-size: 14px; }
-      .admin-badge { background-color: #dc3545; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
-      .warning { background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 4px; margin: 15px 0; }
+      body {
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        line-height: 1.6;
+        color: #4b5563;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        margin-top: 40px;
+        margin-bottom: 40px;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        color: white;
+        padding: 48px 32px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: pulse 3s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 0.6; }
+      }
+
+      .header h1 {
+        margin: 0;
+        font-size: 32px;
+        font-weight: 700;
+        position: relative;
+        z-index: 1;
+      }
+
+      .header-icon {
+        width: 64px;
+        height: 64px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        margin: 0 auto 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .content {
+        padding: 40px 32px;
+        background: white;
+      }
+
+      .content h2 {
+        color: #1f2937;
+        font-size: 28px;
+        font-weight: 700;
+        margin: 0 0 24px 0;
+        text-align: center;
+      }
+
+      .invitation-card {
+        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+        border: 1px solid #fecaca;
+        border-radius: 16px;
+        padding: 24px;
+        margin: 24px 0;
+        text-align: center;
+      }
+
+      .inviter-info {
+        font-size: 18px;
+        color: #1f2937;
+        margin-bottom: 16px;
+      }
+
+      .inviter-name {
+        color: #dc2626;
+        font-weight: 600;
+      }
+
+      .admin-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 16px;
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        box-shadow: 0 8px 24px rgba(220, 38, 38, 0.3);
+        margin: 8px 0;
+      }
+
+      .warning {
+        background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+        border: 2px solid #f59e0b;
+        border-radius: 16px;
+        padding: 24px;
+        margin: 24px 0;
+        border-left: 6px solid #f59e0b;
+        position: relative;
+      }
+
+      .warning::before {
+        content: '⚠️';
+        position: absolute;
+        top: -12px;
+        left: 24px;
+        background: #f59e0b;
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+      }
+
+      .warning h3 {
+        color: #92400e;
+        margin: 0 0 12px 0;
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .warning p {
+        color: #92400e;
+        margin: 0;
+        font-weight: 500;
+      }
+
+      .privileges-section {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 24px;
+        margin: 24px 0;
+      }
+
+      .privileges-section h3 {
+        color: #1e293b;
+        margin: 0 0 16px 0;
+        font-size: 18px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .privileges-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .privileges-list li {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 16px;
+        margin: 12px 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.2s ease;
+      }
+
+      .privileges-list li:hover {
+        border-color: #dc2626;
+        transform: translateX(4px);
+      }
+
+      .privilege-icon {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 14px;
+        flex-shrink: 0;
+      }
+
+      .privilege-text {
+        color: #374151;
+        font-weight: 500;
+      }
+
+      .button-container {
+        text-align: center;
+        margin: 32px 0;
+      }
+
+      .button {
+        display: inline-block;
+        padding: 16px 32px;
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        color: white;
+        text-decoration: none;
+        border-radius: 16px;
+        font-weight: 600;
+        font-size: 16px;
+        box-shadow: 0 8px 24px rgba(220, 38, 38, 0.3);
+        transition: all 0.3s ease;
+        transform: translateY(0);
+      }
+
+      .button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 32px rgba(220, 38, 38, 0.4);
+      }
+
+      .link-fallback {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 16px;
+        margin: 16px 0;
+        word-break: break-all;
+      }
+
+      .link-fallback-label {
+        color: #6b7280;
+        font-size: 14px;
+        margin-bottom: 8px;
+      }
+
+      .link-fallback-url {
+        color: #dc2626;
+        font-weight: 500;
+        font-size: 14px;
+      }
+
+      .divider {
+        height: 1px;
+        background: linear-gradient(90deg, transparent 0%, #e5e7eb 50%, transparent 100%);
+        margin: 32px 0;
+      }
+
+      .expiry-notice {
+        background: #fef3c7;
+        border: 1px solid #f59e0b;
+        border-radius: 12px;
+        padding: 16px;
+        margin: 24px 0;
+        border-left: 4px solid #f59e0b;
+      }
+
+      .expiry-notice h3 {
+        color: #92400e;
+        margin: 0 0 8px 0;
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      .expiry-notice p {
+        color: #92400e;
+        margin: 0;
+      }
+
+      .footer {
+        padding: 32px;
+        text-align: center;
+        color: #6b7280;
+        font-size: 14px;
+        background: #f9fafb;
+        border-top: 1px solid #f3f4f6;
+      }
+
+      .footer p {
+        margin: 8px 0;
+      }
+
+      @media (max-width: 600px) {
+        .container {
+          margin: 20px;
+          border-radius: 16px;
+        }
+
+        .header {
+          padding: 32px 24px;
+        }
+
+        .content {
+          padding: 24px 20px;
+        }
+
+        .header h1 {
+          font-size: 24px;
+        }
+
+        .content h2 {
+          font-size: 22px;
+        }
+
+        .privileges-list li {
+          flex-direction: column;
+          text-align: center;
+          gap: 8px;
+        }
+      }
     </style>
   </head>
   <body>
     <div class="container">
       <div class="header">
-        <h1>🔐 System Administrator Invitation</h1>
+        <div class="header-icon">🔐</div>
+        <h1>System Administrator Invitation</h1>
       </div>
 
       <div class="content">
-        <h2>You're invited as a <span class="admin-badge">System Administrator</span></h2>
+        <h2>High-Level Access Granted</h2>
 
-        <p><strong><%= @inviter.name %></strong> has invited you to become a System Administrator.</p>
-
-        <div class="warning">
-          <strong>⚠️ Important:</strong> System administrators have full access to all organizations and system settings. This is a high-privilege role with significant responsibilities.
+        <div class="invitation-card">
+          <div class="inviter-info">
+            <span class="inviter-name"><%= @inviter.name %></span> has invited you to become a
+          </div>
+          <div class="admin-badge">System Administrator</div>
         </div>
 
-        <p>As a System Administrator, you will be able to:</p>
-        <ul>
-          <li>Access and manage all client organizations</li>
-          <li>Manage other administrators</li>
-          <li>Configure system-wide settings</li>
-          <li>Monitor system performance and usage</li>
-          <li>Handle billing and subscription management</li>
-        </ul>
+        <div class="warning">
+          <h3>Critical Security Role</h3>
+          <p>System administrators have full access to all organizations and system settings. This is a high-privilege role with significant responsibilities and security implications.</p>
+        </div>
 
-        <p>Click the button below to accept your invitation:</p>
+        <div class="privileges-section">
+          <h3>🛡️ Your Administrator Privileges</h3>
+          <ul class="privileges-list">
+            <li>
+              <div class="privilege-icon">🏢</div>
+              <div class="privilege-text">Access and manage all client organizations</div>
+            </li>
+            <li>
+              <div class="privilege-icon">👥</div>
+              <div class="privilege-text">Manage other administrators and system users</div>
+            </li>
+            <li>
+              <div class="privilege-icon">⚙️</div>
+              <div class="privilege-text">Configure system-wide settings and policies</div>
+            </li>
+            <li>
+              <div class="privilege-icon">📊</div>
+              <div class="privilege-text">Monitor system performance and usage analytics</div>
+            </li>
+            <li>
+              <div class="privilege-icon">💳</div>
+              <div class="privilege-text">Handle billing and subscription management</div>
+            </li>
+          </ul>
+        </div>
 
-        <div style="text-align: center;">
+        <p style="text-align: center; font-size: 18px; color: #1f2937; margin: 24px 0;">
+          Ready to accept this responsibility? Click below to proceed:
+        </p>
+
+        <div class="button-container">
           <a href="<%= @accept_url %>" class="button">Accept Admin Invitation</a>
         </div>
 
-        <p><small>Or copy and paste this link into your browser:</small><br>
-           <small><%= @accept_url %></small></p>
+        <div class="link-fallback">
+          <div class="link-fallback-label">Or copy and paste this link into your browser:</div>
+          <div class="link-fallback-url"><%= @accept_url %></div>
+        </div>
 
-        <hr>
+        <div class="divider"></div>
 
-        <p><strong>This invitation will expire on <%= @expires_at.strftime("%B %d, %Y at %I:%M %p") %>.</strong></p>
+        <div class="expiry-notice">
+          <h3>⏰ Time Sensitive</h3>
+          <p>This invitation will expire on <strong><%= @expires_at.strftime("%B %d, %Y at %I:%M %p") %></strong>.</p>
+        </div>
 
-        <p>If you don't want to accept this invitation, you can simply ignore this email.</p>
+        <p style="color: #6b7280; text-align: center;">
+          If you don't want to accept this invitation, you can simply ignore this email.
+        </p>
       </div>
 
       <div class="footer">
-        <p>This system administrator invitation was sent by <%= @inviter.name %>.</p>
+        <p>This system administrator invitation was sent by <strong><%= @inviter.name %></strong>.</p>
         <p>If you have any questions about this invitation, please contact the sender directly.</p>
       </div>
     </div>

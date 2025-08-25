@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Email Address Changed</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        line-height: 1.6;
+        color: #4b5563;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+      }
+
+      .header {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        color: white;
+        padding: 48px 32px;
+        text-align: center;
+      }
+
+      .header-icon {
+        width: 64px;
+        height: 64px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        margin: 0 auto 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+      }
+
+      .header h1 {
+        margin: 0;
+        font-size: 32px;
+        font-weight: 700;
+      }
+
+      .content {
+        padding: 40px 32px;
+      }
+
+      .content h2 {
+        color: #1f2937;
+        font-size: 28px;
+        font-weight: 700;
+        margin: 0 0 24px 0;
+        text-align: center;
+      }
+
+      .email-change-info {
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        border: 1px solid #bfdbfe;
+        border-radius: 16px;
+        padding: 24px;
+        margin: 24px 0;
+      }
+
+      .email-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 12px 0;
+        padding: 12px;
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+      }
+
+      .email-label {
+        color: #6b7280;
+        font-weight: 500;
+      }
+
+      .email-value {
+        color: #2563eb;
+        font-weight: 600;
+      }
+
+      .footer {
+        padding: 32px;
+        text-align: center;
+        color: #6b7280;
+        font-size: 14px;
+        background: #f9fafb;
+        border-top: 1px solid #f3f4f6;
+      }
+
+      @media (max-width: 600px) {
+        .container { margin: 20px; }
+        .email-row { flex-direction: column; gap: 8px; text-align: center; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="header-icon">📧</div>
+        <h1>Email Changed</h1>
+      </div>
+
+      <div class="content">
+        <h2>Your Email Was Updated</h2>
+
+        <p style="text-align: center; font-size: 18px; color: #1f2937; margin: 24px 0;">
+          This is a notification that your email address has been successfully changed.
+        </p>
+
+        <div class="email-change-info">
+          <div class="email-row">
+            <span class="email-label">Previous Email:</span>
+            <span class="email-value"><%= @email %></span>
+          </div>
+          <div class="email-row">
+            <span class="email-label">New Email:</span>
+            <span class="email-value"><%= @resource.email %></span>
+          </div>
+        </div>
+
+        <p style="color: #6b7280; text-align: center; margin-top: 24px;">
+          If you didn't make this change, please contact our support team immediately.
+        </p>
+      </div>
+
+      <div class="footer">
+        <p>This is an automated security notification.</p>
+        <p>If you have any concerns, please contact our support team.</p>
+      </div>
+    </div>
+  </body>
+</html>

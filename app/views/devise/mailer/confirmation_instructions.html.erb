@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Invitation to <%= @client.name %></title>
+    <title>Confirm Your Email Address</title>
     <style>
       body {
         font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -85,7 +85,7 @@
         text-align: center;
       }
 
-      .invitation-card {
+      .email-info {
         background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
         border: 1px solid #d1fae5;
         border-radius: 16px;
@@ -94,36 +94,13 @@
         text-align: center;
       }
 
-      .inviter-info {
+      .email-address {
+        color: #059669;
+        font-weight: 600;
         font-size: 18px;
-        color: #1f2937;
-        margin-bottom: 16px;
       }
 
-      .company-name {
-        color: #059669;
-        font-weight: 700;
-      }
-
-      .inviter-name {
-        color: #059669;
-        font-weight: 600;
-      }
-
-      .role-badge {
-        display: inline-block;
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-        color: white;
-        padding: 8px 16px;
-        border-radius: 12px;
-        font-weight: 600;
-        font-size: 14px;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-      }
-
-      .role-description {
+      .info-section {
         background: #eff6ff;
         border: 1px solid #bfdbfe;
         border-radius: 12px;
@@ -132,11 +109,14 @@
         border-left: 4px solid #2563eb;
       }
 
-      .role-description h3 {
+      .info-section h3 {
         color: #1d4ed8;
         margin: 0 0 8px 0;
         font-size: 16px;
         font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
 
       .button-container {
@@ -184,33 +164,6 @@
         font-size: 14px;
       }
 
-      .divider {
-        height: 1px;
-        background: linear-gradient(90deg, transparent 0%, #e5e7eb 50%, transparent 100%);
-        margin: 32px 0;
-      }
-
-      .expiry-notice {
-        background: #fef3c7;
-        border: 1px solid #f59e0b;
-        border-radius: 12px;
-        padding: 16px;
-        margin: 24px 0;
-        border-left: 4px solid #f59e0b;
-      }
-
-      .expiry-notice h3 {
-        color: #92400e;
-        margin: 0 0 8px 0;
-        font-size: 16px;
-        font-weight: 600;
-      }
-
-      .expiry-notice p {
-        color: #92400e;
-        margin: 0;
-      }
-
       .footer {
         padding: 32px;
         text-align: center;
@@ -251,68 +204,48 @@
   <body>
     <div class="container">
       <div class="header">
-        <div class="header-icon">🎉</div>
-        <h1>You're Invited!</h1>
+        <div class="header-icon">📧</div>
+        <h1>Confirm Your Email</h1>
       </div>
 
       <div class="content">
-        <h2>Join <%= @client.name %></h2>
-
-        <div class="invitation-card">
-          <div class="inviter-info">
-            <span class="inviter-name"><%= @inviter.name %></span> has invited you to join <span class="company-name"><%= @client.name %></span>
-          </div>
-          <div style="margin: 16px 0;">
-            with the role of <span class="role-badge"><%= @role.titleize %></span>
-          </div>
-        </div>
-
-        <% case @role %>
-        <% when 'admin' %>
-          <div class="role-description">
-            <h3>👑 Administrator Access</h3>
-            <p>As an <strong>Admin</strong>, you'll have full access to all sites and can manage company settings, users, and permissions.</p>
-          </div>
-        <% when 'manager' %>
-          <div class="role-description">
-            <h3>🛠️ Manager Access</h3>
-            <p>As a <strong>Manager</strong>, you'll have edit access to assigned sites and can create new sites and manage team members.</p>
-          </div>
-        <% when 'viewer' %>
-          <div class="role-description">
-            <h3>👁️ Viewer Access</h3>
-            <p>As a <strong>Viewer</strong>, you'll have read-only access to assigned sites and can view reports and analytics.</p>
-          </div>
-        <% end %>
+        <h2>Welcome!</h2>
 
         <p style="text-align: center; font-size: 18px; color: #1f2937; margin: 24px 0;">
-          Ready to get started? Accept your invitation below:
+          We're excited to have you on board. Please confirm your email address to get started.
+        </p>
+
+        <div class="email-info">
+          <p style="margin: 0 0 8px 0; color: #6b7280;">Confirming email address:</p>
+          <div class="email-address"><%= @email %></div>
+        </div>
+
+        <div class="info-section">
+          <h3>🔐 Why confirm your email?</h3>
+          <p style="margin: 0; color: #1d4ed8;">This helps us verify your identity and keep your account secure. You'll also receive important updates and notifications.</p>
+        </div>
+
+        <p style="text-align: center; font-size: 18px; color: #1f2937; margin: 24px 0;">
+          Click the button below to confirm your email address:
         </p>
 
         <div class="button-container">
-          <a href="<%= @accept_url %>" class="button">Accept Invitation</a>
+          <a href="<%= @confirmation_url %>" class="button">Confirm My Email</a>
         </div>
 
         <div class="link-fallback">
           <div class="link-fallback-label">Or copy and paste this link into your browser:</div>
-          <div class="link-fallback-url"><%= @accept_url %></div>
+          <div class="link-fallback-url"><%= @confirmation_url %></div>
         </div>
 
-        <div class="divider"></div>
-
-        <div class="expiry-notice">
-          <h3>⏰ Time Sensitive</h3>
-          <p>This invitation will expire on <strong><%= @expires_at.strftime("%B %d, %Y at %I:%M %p") %></strong>.</p>
-        </div>
-
-        <p style="color: #6b7280; text-align: center;">
-          If you don't want to accept this invitation, you can simply ignore this email.
+        <p style="color: #6b7280; text-align: center; margin-top: 24px;">
+          If you didn't create this account, you can safely ignore this email.
         </p>
       </div>
 
       <div class="footer">
-        <p>This invitation was sent by <strong><%= @inviter.name %></strong> from <strong><%= @client.name %></strong>.</p>
-        <p>If you have any questions, please contact your inviter directly.</p>
+        <p>This email was sent because someone signed up with this email address.</p>
+        <p>If you have any questions, please contact our support team.</p>
       </div>
     </div>
   </body>
