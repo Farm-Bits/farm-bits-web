@@ -2,7 +2,7 @@
   <div class="p-4">
     <div class="mb-4">
       <h5 class="mb-3">Company Information</h5>
-      <FlashErrorMessages class="mb-4" />
+      <ErrorMessages class="mb-4" />
     </div>
 
     <div class="row align-items-center py-3 border-bottom">
@@ -177,7 +177,6 @@
     formData.transform((data) => {
       return { client: { [field]: data.client[field] } };
     }).put(paths.value.actions.clientSetup, {
-      preserveState: true,
       onSuccess: () => {
         originalData.client[field] = formData.client[field];
         editingFields.client  [field] = false;

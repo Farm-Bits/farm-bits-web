@@ -13,7 +13,7 @@
           <p class="auth-subtitle">We'll send you instructions to unlock your account.</p>
         </div>
 
-        <FlashErrorMessages class="mb-6" />
+        <ErrorMessages class="mb-6" />
 
         <CForm
           novalidate
@@ -108,9 +108,7 @@
       return;
     }
 
-    formData.post(paths.value.actions.unlock, {
-      preserveState: true
-    });
+    formData.post(paths.value.actions.unlock);
   }
 </script>
 

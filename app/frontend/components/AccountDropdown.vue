@@ -30,7 +30,7 @@
 
           <CDropdownHeader>Account</CDropdownHeader>
 
-          <CDropdownItem href="#" class="d-flex align-items-center">
+          <CDropdownItem :href="paths.pages.myAccount" class="d-flex align-items-center">
             <CIcon icon="cilUser" class="me-2" />
             Profile
           </CDropdownItem>

@@ -13,7 +13,7 @@
           <p class="auth-subtitle">Create a new secure password for your account.</p>
         </div>
 
-        <FlashErrorMessages class="mb-6" />
+        <ErrorMessages class="mb-6" />
 
         <CForm
           novalidate
@@ -194,9 +194,7 @@
       return;
     }
 
-    formData.put(paths.value.actions.resetPassword, {
-      preserveState: true
-    });
+    formData.put(paths.value.actions.resetPassword);
   }
 </script>
 

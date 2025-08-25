@@ -35,6 +35,10 @@ Rails.application.routes.draw do
     namespace :user_area, path: 'user', as: :user do
       root 'dashboard#index'
 
+      get 'my_account' => 'my_account#index'
+      put 'my_account' => 'my_account#update'
+      delete 'my_account' => 'my_account#destroy'
+
       get 'client_setup/new' => 'client_setup#new'
       get 'client_setup/edit' => 'client_setup#edit'
       post 'client_setup' => 'client_setup#create'

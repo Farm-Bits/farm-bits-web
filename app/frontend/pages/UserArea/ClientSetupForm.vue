@@ -10,7 +10,7 @@
             </h2>
           </div>
 
-          <FlashErrorMessages class="mb-6" />
+          <ErrorMessages class="mb-6" />
 
           <CForm
             novalidate
@@ -124,9 +124,7 @@
       return;
     }
 
-    formData.post(paths.value.actions.clientSetup, {
-      preserveState: true
-    });
+    formData.post(paths.value.actions.clientSetup);
   }
 </script>
 

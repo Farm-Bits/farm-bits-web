@@ -3,12 +3,13 @@
 class Login::Users::RegistrationsController < Devise::RegistrationsController
   # before_action :configure_sign_up_params, only: [:create]
   # before_action :configure_account_update_params, only: [:update]
+  inertia_share do
+    { userScope: 'users' }
+  end
 
   # GET /resource/sign_up
   def new
-    render inertia: 'Login/Registrations/New', props: {
-      userScope: 'users'
-    }
+    render inertia: 'Login/Registrations/New'
   end
 
   # POST /resource
@@ -30,10 +31,9 @@ class Login::Users::RegistrationsController < Devise::RegistrationsController
     else
       clean_up_passwords resource
       set_minimum_password_length
-      redirect_back(
-        fallback_location: new_registration_path(resource_name),
-        flash: { errors: resource.errors.full_messages }
-      )
+      render inertia: 'Login/Registrations/New', props: {
+        errors: resource.errors.full_messages
+      }
     end
   end
 

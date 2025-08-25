@@ -10,7 +10,7 @@ class UserArea::UsersController < UserArea::ApplicationController
   def update
     if @client_user.update(client_user_params)
       user = @client_user.user.with_client_context(current_client)
-      render json: UserSerializer.render(user, view: :client_user)
+      render json: UserSerializer.render(user, view: :client_user), status: :ok
     else
       render json: { error: @client_user.errors.full_messages.to_sentence }, status: :unprocessable_entity
     end

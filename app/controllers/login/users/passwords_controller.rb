@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 class Login::Users::PasswordsController < Devise::PasswordsController
+  inertia_share do
+    { userScope: 'users' }
+  end
+
   # GET /resource/password/new
   def new
-    render inertia: 'Login/Passwords/New', props: {
-      userScope: 'users'
-    }
+    render inertia: 'Login/Passwords/New'
   end
 
   # POST /resource/password
@@ -16,10 +18,9 @@ class Login::Users::PasswordsController < Devise::PasswordsController
     if successfully_sent?(resource)
       respond_with({}, location: after_sending_reset_password_instructions_path_for(resource_name))
     else
-      redirect_back(
-        fallback_location: new_password_path(resource_name),
-        flash: { errors: resource.errors.full_messages }
-      )
+      render inertia: 'Login/Passwords/New', props: {
+        errors: resource.errors.full_messages
+      }
     end
   end
 
@@ -29,7 +30,6 @@ class Login::Users::PasswordsController < Devise::PasswordsController
     set_minimum_password_length
     resource.reset_password_token = params[:reset_password_token]
     render inertia: 'Login/Passwords/Edit', props: {
-      userScope: 'users',
       reset_password_token: params[:reset_password_token]
     }
   end
@@ -52,10 +52,10 @@ class Login::Users::PasswordsController < Devise::PasswordsController
       respond_with resource, location: after_resetting_password_path_for(resource)
     else
       set_minimum_password_length
-      redirect_back(
-        fallback_location: edit_password_path(resource_name, reset_password_token: params[:user][:reset_password_token]),
-        flash: { errors: resource.errors.full_messages }
-      )
+      render inertia: 'Login/Passwords/Edit', props: {
+        reset_password_token: params[:user][:reset_password_token],
+        errors: resource.errors.full_messages
+      }
     end
   end
 

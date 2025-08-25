@@ -3,6 +3,9 @@
 class Login::Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
   # You should configure your model like this:
   # devise :omniauthable, omniauth_providers: [:twitter]
+  inertia_share do
+    { userScope: 'users' }
+  end
 
   # You should also create an action method in this controller like this:
   # def twitter

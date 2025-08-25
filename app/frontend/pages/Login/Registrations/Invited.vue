@@ -10,7 +10,7 @@
 
         <!-- Form -->
         <div class="p-8">
-          <FlashErrorMessages class="mb-6" />
+          <ErrorMessages class="mb-6" />
 
           <CForm
             novalidate
@@ -214,9 +214,7 @@
       return;
     }
 
-    formData.put(window.location.href, {
-      preserveState: true
-    });
+    formData.put(window.location.href);
   }
 </script>
 

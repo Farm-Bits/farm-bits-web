@@ -21,7 +21,7 @@
             <p class="auth-subtitle">Sign in to your account</p>
           </div>
 
-          <FlashErrorMessages class="mb-6" />
+          <ErrorMessages class="mb-6" />
 
           <CForm
             novalidate
@@ -156,9 +156,7 @@
       return;
     }
 
-    formData.post(paths.value.actions.signIn, {
-      preserveState: true
-    });
+    formData.post(paths.value.actions.signIn);
   }
 </script>
 

@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 class Login::Users::ConfirmationsController < Devise::ConfirmationsController
+  inertia_share do
+    { userScope: 'users' }
+  end
+
   # GET /resource/confirmation/new
   def new
-    render inertia: 'Login/Confirmations/New', props: {
-      userScope: 'users'
-    }
+    render inertia: 'Login/Confirmations/New'
   end
 
   # POST /resource/confirmation
@@ -16,10 +18,9 @@ class Login::Users::ConfirmationsController < Devise::ConfirmationsController
     if successfully_sent?(resource)
       respond_with({}, location: after_resending_confirmation_instructions_path_for(resource_name))
     else
-      redirect_back(
-        fallback_location: new_confirmation_path(resource_name),
-        flash: { errors: resource.errors.full_messages }
-      )
+      render inertia: 'Login/Confirmations/New', props: {
+        errors: resource.errors.full_messages
+      }
     end
   end
 
@@ -33,10 +34,9 @@ class Login::Users::ConfirmationsController < Devise::ConfirmationsController
       set_flash_message!(:notice, :confirmed)
       respond_with_navigational(resource){ redirect_to after_confirmation_path_for(resource_name, resource) }
     else
-      redirect_back(
-        fallback_location: new_confirmation_path(resource_name),
-        flash: { errors: resource.errors.full_messages }
-      )
+      render inertia: 'Login/Confirmations/New', props: {
+        errors: resource.errors.full_messages
+      }
     end
   end
 

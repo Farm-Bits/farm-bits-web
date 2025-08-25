@@ -59,7 +59,6 @@
     flash: {
       alert?: string;
       notice?: string;
-      errors?: string[];
       [key: string]: any;
     };
   }>();
@@ -71,9 +70,6 @@
     const filtered: Record<string, string> = {};
 
     for (const [key, value] of Object.entries(flash.value)) {
-      if (key === 'errors')
-        continue;
-
       if (value && !dismissedFlash.value.has(key))
         filtered[key] = value;
     }

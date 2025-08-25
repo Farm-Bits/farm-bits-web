@@ -35,8 +35,8 @@ class UserArea::ClientSetupController < UserArea::ApplicationController
       if current_client.update(client_params)
         redirect_to user_client_setup_edit_path
       else
-        render inertia: 'UserArea/ClientSetupForm', props: {
-          errors: current_client.errors
+        render inertia: 'UserArea/Settings/index', props: {
+          errors: current_client.errors.full_messages
         }
       end
     else

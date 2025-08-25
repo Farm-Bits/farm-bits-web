@@ -63,7 +63,7 @@ class InvitationsController < ApplicationController
     end
 
     result = nil
-    error_messages = nil
+    errors = ['Unable to complete invitation acceptance. Please try again.']
 
     begin
       ActiveRecord::Base.transaction do
@@ -75,7 +75,7 @@ class InvitationsController < ApplicationController
         end
 
         if !result[:success]
-          error_messages = result[:errors]
+          errors = result[:errors]
           raise ActiveRecord::Rollback
         end
       end
@@ -97,11 +97,10 @@ class InvitationsController < ApplicationController
         redirect_to new_session_path(resource_name), notice: I18n.t("devise.failure.#{user.inactive_message}")
       end
     else
-      redirect_back(
-        fallback_location: accept_invitation_path(invitation.token),
-        flash: error_messages ? { errors: error_messages } : nil,
-        alert: error_messages ? nil : 'Unable to complete invitation acceptance. Please try again.'
-      )
+      render inertia: 'Login/Registrations/Invited', props: {
+        token: invitation.token,
+        errors: errors
+      }
     end
   end
 

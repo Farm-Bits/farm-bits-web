@@ -1,8 +1,8 @@
 <template>
   <div>
-    <div v-if="flash.errors" class="alert">
+    <div v-if="page.props.errors" class="alert">
       <ul class="list-disc pl-5">
-        <li v-for="(error, index) in flash.errors" :key="index">
+        <li v-for="(error, index) in page.props.errors" :key="index">
           {{ error }}
         </li>
       </ul>
@@ -11,15 +11,11 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed } from 'vue';
   import { usePage } from '@inertiajs/vue3';
 
   const page = usePage<{
-    flash: {
-      errors?: string[];
-    };
+    errors?: string[];
   }>();
-  const flash = computed(() => page.props.flash);
 </script>
 
 <style scoped>

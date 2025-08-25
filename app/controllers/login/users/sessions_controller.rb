@@ -2,12 +2,13 @@
 
 class Login::Users::SessionsController < Devise::SessionsController
   # before_action :configure_sign_in_params, only: [:create]
+  inertia_share do
+    { userScope: 'users' }
+  end
 
   # GET /resource/sign_in
   def new
-    render inertia: 'Login/Sessions/New', props: {
-      userScope: 'users'
-    }
+    render inertia: 'Login/Sessions/New'
   end
 
   # POST /resource/sign_in
@@ -20,10 +21,9 @@ class Login::Users::SessionsController < Devise::SessionsController
       yield resource if block_given?
       respond_with resource, location: after_sign_in_path_for(resource)
     else
-      redirect_back(
-        fallback_location: new_session_path(resource_name),
-        flash: { errors: ['Invalid email or password.'] }
-      )
+      render inertia: 'Login/Sessions/New', props: {
+        errors: ['Invalid email or password.']
+      }
     end
   end
 

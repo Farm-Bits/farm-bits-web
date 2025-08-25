@@ -36,7 +36,8 @@ export default function useAuth<T extends PageProps>() {
       confirmation: `/${userScope.value}/confirmation/new`,
       unlock: `/${userScope.value}/unlock/new`,
       newClient: `/${rootObjectName.value}/client_setup`,
-      editClient: `/${rootObjectName.value}/client_setup/edit`
+      editClient: `/${rootObjectName.value}/client_setup/edit`,
+      myAccount: `/${rootObjectName.value}/my_account`
     },
     actions: {
       signIn: `/${userScope.value}/sign_in`,

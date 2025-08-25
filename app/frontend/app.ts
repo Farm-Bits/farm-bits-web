@@ -112,7 +112,7 @@ import {
   cilX
 } from '@coreui/icons';
 import '@coreui/coreui/dist/css/coreui.min.css';
-import FlashErrorMessages from './components/FlashErrorMessages.vue';
+import ErrorMessages from './components/ErrorMessages.vue';
 import VueSelect from 'vue3-select-component';
 
 // Configuration
@@ -247,7 +247,7 @@ export default function () {
       app.component('VueSelect', VueSelect);
 
       // Custom
-      app.component('FlashErrorMessages', FlashErrorMessages);
+      app.component('ErrorMessages', ErrorMessages);
 
       app.mount(el);
     }

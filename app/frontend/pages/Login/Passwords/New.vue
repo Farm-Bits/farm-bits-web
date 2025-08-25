@@ -13,7 +13,7 @@
           <p class="auth-subtitle">No worries! Enter your email and we'll send you reset instructions.</p>
         </div>
 
-        <FlashErrorMessages class="mb-6" />
+        <ErrorMessages class="mb-6" />
 
         <CForm
           novalidate
@@ -89,9 +89,7 @@
       return;
     }
 
-    formData.post(paths.value.actions.resetPassword, {
-      preserveState: true
-    });
+    formData.post(paths.value.actions.resetPassword);
   }
 </script>
 
