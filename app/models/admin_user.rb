@@ -6,6 +6,8 @@ class AdminUser < ApplicationRecord
   devise :database_authenticatable, :recoverable, :rememberable, :validatable,
     :trackable, :confirmable, :lockable
 
+  after_commit :send_password_change_notification, if: :saved_change_to_encrypted_password?, on: :update
+
   class << self
     def ransackable_attributes(auth_object=nil)
       [
@@ -42,4 +44,11 @@ class AdminUser < ApplicationRecord
   def inactive_message
     active ? super : 'Your account is disabled'
   end
+
+  private
+    def send_password_change_notification
+      if persisted?
+        Devise::Mailer.password_change(self).deliver_later
+      end
+    end
 end

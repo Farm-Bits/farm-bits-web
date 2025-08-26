@@ -23,6 +23,7 @@ class User < ApplicationRecord
   attr_accessor :client_attributes, :current_client_user
 
   after_create :create_client_and_site_from_attributes
+  after_commit :send_password_change_notification, if: :saved_change_to_encrypted_password?, on: :update
 
   class << self
     def ransackable_attributes(auth_object=nil)
@@ -151,6 +152,12 @@ class User < ApplicationRecord
         end
 
         raise e
+      end
+    end
+
+    def send_password_change_notification
+      if persisted?
+        Devise::Mailer.password_change(self).deliver_later
       end
     end
 end
