@@ -413,17 +413,12 @@
     }
 
     const deactivateForm = useForm({
-      password: deactivatePassword.value
+      user: { password: deactivatePassword.value }
     });
 
     deactivateForm.delete(paths.value.pages.myAccount, {
-      onError: (errors) => {
-        if (errors.password) {
-          deactivatePasswordError.value = errors.password;
-        }
-      },
-      onSuccess: () => {
-        showDeactivateModal.value = false;
+      onError: () => {
+        cancelDeactivation();
       }
     });
   }

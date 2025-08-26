@@ -19,10 +19,12 @@ class User < ApplicationRecord
   validates :name, presence: true
   validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :email, uniqueness: { case_sensitive: false }
+  validate :cannot_deactivate_last_admin_user, if: :active_changed_to_false?
 
   attr_accessor :client_attributes, :current_client_user
 
   after_create :create_client_and_site_from_attributes
+  before_destroy :prevent_destroy_last_admin_user
   after_commit :send_password_change_notification, if: :saved_change_to_encrypted_password?, on: :update
 
   class << self
@@ -127,7 +129,24 @@ class User < ApplicationRecord
     current_client_user&.active? || false
   end
 
+  def last_admin_for_any_client?
+    highest_role = RoleManageable.highest_role
+
+    client_users.where(role: highest_role, active: true).any? do |admin_client_user|
+      client = admin_client_user.client
+      other_active_admins = client.client_users
+        .where.not(user_id: id)
+        .where(role: highest_role, active: true)
+
+      other_active_admins.empty?
+    end
+  end
+
   private
+    def active_changed_to_false?
+      active_changed? && !active
+    end
+
     def create_client_and_site_from_attributes
       if !client_attributes.present?
         return
@@ -152,6 +171,19 @@ class User < ApplicationRecord
         end
 
         raise e
+      end
+    end
+
+    def cannot_deactivate_last_admin_user
+      if last_admin_for_any_client?
+        errors.add(:base, 'Cannot deactivate user who is the last admin for one or more companies')
+      end
+    end
+
+    def prevent_destroy_last_admin_user
+      if last_admin_for_any_client?
+        errors.add(:base, 'Cannot destroy user who is the last admin for one or more companies')
+        throw(:abort)
       end
     end
 

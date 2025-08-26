@@ -32,10 +32,11 @@ class UserArea::MyAccountController < UserArea::ApplicationController
   end
 
   def destroy
-    if !current_user.valid_password?(user_params[:current_password])
+    if !current_user.valid_password?(user_params[:password])
       render inertia: 'UserArea/Profile', props: {
         errors: ['Current password is incorrect']
       }
+      return
     end
 
     if current_user.update(active: false)
