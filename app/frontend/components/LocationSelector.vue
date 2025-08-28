@@ -58,9 +58,9 @@
     </div>
 
     <!-- Coordinates and Map Section -->
-    <div>
-      <div class="form-grid-3">
-        <!-- Coordinate Inputs -->
+    <div v-show="displayMap">
+      <!-- <div class="form-grid-3">
+        Coordinate Inputs
         <div class="form-field">
           <label for="latitude" class="form-label">
             Latitude
@@ -116,7 +116,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
 
       <!-- Coordinate Info -->
       <div class="info-box-blue">
@@ -160,6 +160,19 @@
             </div>
           </div>
         </div>
+        <a @click="clearCoordinates" class="nav-link-secondary cursor-pointer">
+          Clear Coordinates
+        </a>
+      </div>
+
+      <div class="form-error" v-if="errors.latitude.$error">
+        {{ errors.latitude.$errors[0].$message }}
+      </div>
+      <div class="form-error" v-if="errors.longitude.$error">
+        {{ errors.longitude.$errors[0].$message }}
+      </div>
+      <div class="form-error" v-if="errors.altitude.$error">
+        {{ errors.altitude.$errors[0].$message }}
       </div>
     </div>
   </div>
@@ -194,6 +207,7 @@
   const loadingPosition = ref(false);
   const loadingCountries = ref(false);
   const loadingCities = ref(false);
+  const displayMap = ref(false);
 
   const loader = new Loader({
     apiKey: API_KEY,
@@ -267,7 +281,7 @@
     return value != null && typeof value === 'number' && !isNaN(value);
   }
 
-  function updateCoordinates(latitude: number, longitude: number, altitude: number) {
+  function updateCoordinates(latitude: number | null, longitude: number | null, altitude: number | null) {
     emit('update:modelValue', {
       ...props.modelValue,
       latitude,
@@ -468,6 +482,8 @@
                 cityModel.value = city.long_name;
               }
             }
+
+            displayMap.value = true;
           }
 
           map.value?.setCenter(position);
@@ -506,6 +522,18 @@
       } else
         marker.value.position = null;
     }
+  }
+
+  function clearCoordinates() {
+    updateCoordinates(null, null, null);
+
+    if (marker.value)
+      marker.value.position = null;
+
+    map.value?.setCenter(new google.maps.LatLng(0, 0));
+    map.value?.setZoom(2);
+
+    displayMap.value = false;
   }
 
   onMounted(async () => {
