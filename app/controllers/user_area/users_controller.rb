@@ -1,22 +1,27 @@
 class UserArea::UsersController < UserArea::ApplicationController
-  before_action :ensure_can_manage_users!, only: [:update, :destroy]
+  before_action :set_user, only: [:update, :destroy]
   before_action :set_client_user, only: [:update, :destroy]
 
   def index
-    users = User.with_client_context(current_client)
+    authorize User, :index?
+
+    users = policy_scope(User)
     render json: UserSerializer.render(users, view: :client_user)
   end
 
   def update
+    authorize @user, :update?
+
     if @client_user.update(client_user_params)
-      user = @client_user.user.with_client_context(current_client)
-      render json: UserSerializer.render(user, view: :client_user), status: :ok
+      render json: UserSerializer.render(@user, view: :client_user), status: :ok
     else
       render json: { error: @client_user.errors.full_messages.to_sentence }, status: :unprocessable_entity
     end
   end
 
   def destroy
+    authorize @user, :destroy?
+
     if @client_user.update(active: false)
       head :no_content
     else
@@ -33,7 +38,11 @@ class UserArea::UsersController < UserArea::ApplicationController
       permitted
     end
 
+    def set_user
+      @user = policy_scope(User).find(params[:id])
+    end
+
     def set_client_user
-      @client_user = current_client.client_users.find_by(user_id: client_user_params[:user_id])
+      @client_user = current_client.client_users.find_by(user: @user)
     end
 end

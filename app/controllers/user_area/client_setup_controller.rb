@@ -2,6 +2,8 @@ class UserArea::ClientSetupController < UserArea::ApplicationController
   skip_before_action :ensure_user_has_client_access
 
   def new
+    authorize Client, :new?
+
     errors = current_user.active_clients_connections.any? ? nil : ['You do not have access to any company. Create one now.']
     render inertia: 'UserArea/ClientSetupForm', props: {
       errors: errors
@@ -9,16 +11,16 @@ class UserArea::ClientSetupController < UserArea::ApplicationController
   end
 
   def edit
-    if current_client.role_for(current_user).can_manage_client_settings?
-      render inertia: 'UserArea/Settings/index'
-    else
-      redirect_to root_path, alert: 'You do not have permission to edit this company.'
-    end
+    authorize current_client, :edit?
+
+    render inertia: 'UserArea/Settings/Index'
   end
 
   def create
+    authorize Client, :create?
+
     client = Client.new(client_params)
-    client.client_users_attributes = [{ user: current_user, role: RoleManageable.highest_role }]
+    client.client_users_attributes = [{ user: current_user, role: Roleable::ROLES[:admin] }]
 
     if client.save
       session[:current_client_id] = client.id
@@ -31,26 +33,22 @@ class UserArea::ClientSetupController < UserArea::ApplicationController
   end
 
   def update
-    if current_client.role_for(current_user).can_manage_client_settings?
-      if current_client.update(client_params)
-        redirect_to user_client_setup_edit_path
-      else
-        render inertia: 'UserArea/Settings/index', props: {
-          errors: current_client.errors.full_messages
-        }
-      end
+    authorize current_client, :update?
+
+    if current_client.update(client_params)
+      redirect_to user_client_setup_edit_path
     else
-      redirect_to root_path, alert: 'You do not have permission to edit this company.'
+      render inertia: 'UserArea/Settings/Index', props: {
+        errors: current_client.errors.full_messages
+      }
     end
   end
 
   def destroy
-    if current_client.role_for(current_user).can_manage_client_settings?
-      current_client.destroy
-      redirect_to root_path
-    else
-      redirect_to root_path, alert: 'You do not have permission to edit this company.'
-    end
+    authorize current_client, :destroy?
+
+    current_client.destroy
+    redirect_to root_path
   end
 
   private

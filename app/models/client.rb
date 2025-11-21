@@ -1,6 +1,6 @@
 class Client < ApplicationRecord
   audited
-  include RoleManageable
+  include Roleable
 
   has_many :client_users, dependent: :destroy
   accepts_nested_attributes_for :client_users
@@ -25,16 +25,14 @@ class Client < ApplicationRecord
   before_validation :handle_color_assignment
   before_destroy :handle_orphaned_users, prepend: true
 
-  def role_for(user)
+  def client_user_for(user)
     client_users.find_by(user: user)
   end
 
   private
     def must_have_at_least_one_active_admin
-      highest_role = RoleManageable.highest_role
-
       active_admins = client_users.reject(&:marked_for_destruction?).select do |cu|
-        cu.role == highest_role && cu.active
+        cu.role == Roleable::ROLES[:admin] && cu.active
       end
 
       if active_admins.empty?

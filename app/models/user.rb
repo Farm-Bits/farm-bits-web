@@ -1,5 +1,6 @@
 class User < ApplicationRecord
   audited
+  include Roleable
 
   has_many :client_users, dependent: :destroy
 
@@ -54,13 +55,6 @@ class User < ApplicationRecord
         "updated_at"
       ]
     end
-
-    def with_client_context(client)
-      includes(:client_users)
-        .joins(:client_users)
-        .where(active: true, client_users: { client: client, active: true })
-        .map { |user| user.with_client_context(client) }
-    end
   end
 
   def active_for_authentication?
@@ -76,25 +70,9 @@ class User < ApplicationRecord
   end
 
   def active_clients_connections
-    clients.where(
-      id: client_users.select(:client_id).where(active: true),
-      active: true
-    )
-  end
-
-  def accessible_sites_for_client(client)
-    client_user = client_users.find_by(client: client, active: true)
-    if !client_user
-      return []
-    end
-
-    if client_user.can_access_all_sites?
-      client.sites.where(active: true)
-    else
-      sites.joins(:site_users)
-           .where(client: client, active: true)
-           .where(site_users: { active: true })
-    end
+    clients.joins(:client_users)
+      .where(client_users: { user: self, active: true })
+      .where(active: true)
   end
 
   def client_user_for(client)
@@ -116,27 +94,12 @@ class User < ApplicationRecord
     client_user
   end
 
-  def with_client_context(client)
-    self.current_client_user = client_user_for(client)
-    self
-  end
-
-  def role_for_current_client
-    current_client_user&.role
-  end
-
-  def active_for_current_client?
-    current_client_user&.active? || false
-  end
-
   def last_admin_for_any_client?
-    highest_role = RoleManageable.highest_role
-
-    client_users.where(role: highest_role, active: true).any? do |admin_client_user|
+    client_users.where(role: Roleable::ROLES[:admin], active: true).any? do |admin_client_user|
       client = admin_client_user.client
       other_active_admins = client.client_users
         .where.not(user_id: id)
-        .where(role: highest_role, active: true)
+        .where(role: Roleable::ROLES[:admin], active: true)
 
       other_active_admins.empty?
     end
@@ -154,7 +117,7 @@ class User < ApplicationRecord
 
       begin
         client_attrs = client_attributes.merge(
-          client_users_attributes: [{ user: self, role: RoleManageable.highest_role }],
+          client_users_attributes: [{ user: self, role: Roleable::ROLES[:admin] }],
         )
         client = Client.create!(client_attrs)
       rescue ActiveRecord::RecordInvalid => e

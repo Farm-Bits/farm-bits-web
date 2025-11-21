@@ -1,11 +1,12 @@
 class Invitation < ApplicationRecord
   audited
+  include Roleable
 
   belongs_to :inviter, polymorphic: true
   belongs_to :client, optional: true
 
   validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
-  validates :role, inclusion: { in: RoleManageable::ROLES.keys }, if: -> { inviter_type == 'User' }
+  validates :role, presence: true, if: -> { inviter_type == 'User' }
   validates :role, absence: true, if: -> { inviter_type == 'AdminUser' }
   validates :status, inclusion: { in: %w[pending expired accepted] }
   validates :client, presence: true, if: -> { inviter_type == 'User' }
@@ -13,9 +14,15 @@ class Invitation < ApplicationRecord
   validate :user_not_already_member, on: :create
   validate :admin_user_not_already_exists, on: :create
 
+  enum :role, Roleable::ROLES
+
   before_create :generate_token
   before_create :set_expires_at
   after_create :send_invitation_email
+
+  def pending?
+    status == 'pending'
+  end
 
   def accepted?
     status == 'accepted'
@@ -23,6 +30,10 @@ class Invitation < ApplicationRecord
 
   def expired?
     expires_at < Time.current
+  end
+
+  def can_be_resent?
+    pending?
   end
 
   def accept_url

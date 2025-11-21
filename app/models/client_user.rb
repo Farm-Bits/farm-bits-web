@@ -1,20 +1,33 @@
 class ClientUser < ApplicationRecord
   audited
-  include RoleManageable
+  include Roleable
 
   belongs_to :client
   belongs_to :user
 
-  validates :role, inclusion: { in: ROLES.keys }
   validates :client_id, uniqueness: { scope: :user_id }
   validates :user_id, uniqueness: { scope: :client_id }
+  validates :role, presence: true
   validate :cannot_deactivate_last_admin, if: :active_changed_to_false?
 
   before_destroy :prevent_destroy_last_admin
 
+  enum :role, Roleable::ROLES
+
+  def admin?
+    role == 'admin'
+  end
+
+  def manager?
+    role == 'manager'
+  end
+
+  def viewer?
+    role == 'viewer'
+  end
+
   def last_admin_for_client?
-    highest_role = RoleManageable.highest_role
-    if role != highest_role
+    if !admin?
       return false
     end
 
@@ -24,7 +37,7 @@ class ClientUser < ApplicationRecord
 
     other_active_admins = client.client_users
       .where.not(id: id)
-      .where(role: highest_role, active: true)
+      .where(role: Roleable::ROLES[:admin], active: true)
 
     other_active_admins.empty?
   end

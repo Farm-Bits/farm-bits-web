@@ -1,10 +1,14 @@
 class UserArea::MyAccountController < UserArea::ApplicationController
 
-  def index
+  def show
+    authorize current_user, :show?
+
     render inertia: 'UserArea/Profile'
   end
 
   def update
+    authorize current_user, :update?
+
     if user_params[:password].present?
       if !current_user.valid_password?(user_params[:current_password])
         render inertia: 'UserArea/Profile', props: {
@@ -32,6 +36,8 @@ class UserArea::MyAccountController < UserArea::ApplicationController
   end
 
   def destroy
+    authorize current_user, :destroy?
+
     if !current_user.valid_password?(user_params[:password])
       render inertia: 'UserArea/Profile', props: {
         errors: ['Current password is incorrect']

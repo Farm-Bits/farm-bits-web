@@ -25,17 +25,17 @@ Rails.application.routes.draw do
     mount Sidekiq::Web => '/sidekiq'
 
     namespace :admin_area, path: 'admin', as: :admin do
-      root 'dashboard#index'
+      root 'dashboard#show'
 
-      get 'dashboard', to: 'dashboard#index'
+      get 'dashboard', to: 'dashboard#show'
     end
   end
 
   authenticate :user do
     namespace :user_area, path: 'user', as: :user do
-      root 'dashboard#index'
+      root 'dashboard#show'
 
-      get 'my_account' => 'my_account#index'
+      get 'my_account' => 'my_account#show'
       put 'my_account' => 'my_account#update'
       delete 'my_account' => 'my_account#destroy'
 
@@ -57,16 +57,14 @@ Rails.application.routes.draw do
       resources :invitations, only: [:index, :create, :destroy]
       put 'invitations/:id/resend', to: 'invitations#resend'
 
-      get 'dashboard', to: 'dashboard#index'
+      get 'dashboard', to: 'dashboard#show'
+
+      resources :protocols
     end
   end
 
   match '/home',                        to: 'static_pages#home',               via: 'get'
   match '/privacy_policy',              to: 'static_pages#privacy_policy',     via: 'get'
-
-  resources :plc_manufacturers
-  resources :plc_models
-  resources :plcs
 
   get 'invitations/:token/accept', to: 'invitations#accept', as: :accept_invitation
   put 'invitations/:token/accept', to: 'invitations#sign_up_and_accept'

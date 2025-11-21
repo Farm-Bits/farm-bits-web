@@ -1,15 +1,18 @@
 class UserArea::InvitationsController < UserArea::ApplicationController
-  before_action :ensure_can_manage_users!, only: [:index, :create, :resend, :destroy]
   before_action :set_invitation, only: [:resend, :destroy]
 
   def index
-    invitations = current_client.invitations
+    authorize Invitation, :index?
+
+    invitations = policy_scope(Invitation)
       .where.not(status: 'accepted')
       .order(created_at: :desc)
     render json: InvitationSerializer.render(invitations)
   end
 
   def create
+    authorize Invitation, :create?
+
     invitation = Invitation.new(invitation_params)
     invitation.inviter = current_user
     invitation.client = current_client
@@ -22,6 +25,8 @@ class UserArea::InvitationsController < UserArea::ApplicationController
   end
 
   def resend
+    authorize @invitation, :resend?
+
     result = @invitation&.resend
     if result && result[:success]
       render json: InvitationSerializer.render(@invitation), status: :ok
@@ -31,6 +36,8 @@ class UserArea::InvitationsController < UserArea::ApplicationController
   end
 
   def destroy
+    authorize @invitation, :destroy?
+
     @invitation.destroy
     head :no_content
   end

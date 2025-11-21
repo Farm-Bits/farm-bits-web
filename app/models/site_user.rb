@@ -1,14 +1,16 @@
 class SiteUser < ApplicationRecord
   audited
-  include RoleManageable
+  include Roleable
 
   belongs_to :site
   belongs_to :user
 
   validates :site_id, uniqueness: { scope: :user_id }
   validates :user_id, uniqueness: { scope: :site_id }
-  validates :role, inclusion: { in: ROLES.keys }
+  validates :role, presence: true
   validate :user_must_be_client_member
+
+  enum :role, Roleable::ROLES
 
   private
     def user_must_be_client_member

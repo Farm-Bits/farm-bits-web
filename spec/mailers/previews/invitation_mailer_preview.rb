@@ -12,7 +12,7 @@ class InvitationMailerPreview < ActionMailer::Preview
       name: Faker::Company.name
     )
 
-    role = RoleManageable::ROLES.keys.sample
+    role = Roleable::ROLES.keys.sample
 
     invitation = Invitation.new(
       id: Faker::Number.between(from: 1, to: 1000),
@@ -40,7 +40,7 @@ class InvitationMailerPreview < ActionMailer::Preview
       name: Faker::Company.name
     )
 
-    role = RoleManageable.highest_role
+    role = Roleable::ROLES[:admin]
 
     invitation = Invitation.new(
       id: Faker::Number.between(from: 1, to: 1000),
@@ -68,7 +68,7 @@ class InvitationMailerPreview < ActionMailer::Preview
       name: Faker::Company.name
     )
 
-    role = 'manager'
+    role = Roleable::ROLES[:manager]
 
     invitation = Invitation.new(
       id: Faker::Number.between(from: 1, to: 1000),
@@ -96,7 +96,7 @@ class InvitationMailerPreview < ActionMailer::Preview
       name: Faker::Company.name
     )
 
-    role = 'viewer'
+    role = Roleable::ROLES[:viewer]
 
     invitation = Invitation.new(
       id: Faker::Number.between(from: 1, to: 1000),
@@ -143,7 +143,7 @@ class InvitationMailerPreview < ActionMailer::Preview
       name: Faker::Company.name
     )
 
-    role = RoleManageable::ROLES.keys.sample
+    role = Roleable::ROLES.keys.sample
 
     invitation = Invitation.new(
       id: Faker::Number.between(from: 1, to: 1000),
@@ -171,7 +171,7 @@ class InvitationMailerPreview < ActionMailer::Preview
       name: "#{Faker::Company.name} #{Faker::Company.suffix} International Solutions and Consulting Services LLC"
     )
 
-    role = RoleManageable.highest_role
+    role = Roleable::ROLES[:admin]
 
     invitation = Invitation.new(
       id: Faker::Number.between(from: 1, to: 1000),
