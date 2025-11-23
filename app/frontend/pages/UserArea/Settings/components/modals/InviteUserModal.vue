@@ -31,13 +31,13 @@
           <CFormLabel>Role *</CFormLabel>
           <div class="mt-2">
             <CFormCheck
-              v-for="role in roles"
+              v-for="(role, roleId) in ROLES"
               type="radio"
               class="mb-2 ml-6"
-              :key="role.id"
-              :id="`role-${role.id}`"
+              :key="roleId"
+              :id="`role-${roleId}`"
               :label="`${role.name} - ${role.description}`"
-              :value="role.id"
+              :value="roleId"
               v-model="form.role" />
             <CFormText v-if="errors.role" class="text-danger">
               {{ errors.role }}
@@ -65,17 +65,16 @@
 
 <script lang="ts" setup>
   import { ref, reactive, computed, watch } from 'vue';
-  import { type Role } from '../types/user_invitation';
   import { type ApiError } from '@/composables/useApi';
+  import { ROLES, type Role } from '@/types/permissions';
 
   export type InvitationData = {
     email: string;
-    role: Role['id'];
+    role: Role;
   };
 
   const props = defineProps<{
     visible: boolean;
-    roles: Role[];
   }>();
   const emit = defineEmits<{
     (e: 'close'): void;
@@ -88,7 +87,7 @@
 
   const form = reactive({
     email: '',
-    role: 'viewer' as Role['id']
+    role: 'viewer' as Role
   });
   const errors = reactive({
     submission: '',

@@ -1,17 +1,26 @@
 // Auto-generated file - Do not edit manually
-// Generated at: 2025-11-21 10:58:05 UTC
+// Generated at: 2025-11-23 12:54:42 UTC
 
 // Available roles from Roleable
-export type UserRole = 'admin' | 'manager' | 'viewer';
+export type Role = 'admin' | 'manager' | 'viewer';
 
-export const USER_ROLES = {
-  ADMIN: 'admin' as const,
-  MANAGER: 'manager' as const,
-  VIEWER: 'viewer' as const
+export const ROLES = {
+  admin: {
+    name: 'Admin',
+    description: 'Full access to all sites, management of company settings'
+  },
+  manager: {
+    name: 'Manager',
+    description: 'Assigned sites with edit access'
+  },
+  viewer: {
+    name: 'Viewer',
+    description: 'Assigned sites, read-only'
+  }
 } as const;
 
 // Valid controller keys
-export type ControllerKey = 'dashboard' | 'my_account' | 'client_setup' | 'roles' | 'users' | 'invitations' | 'protocols';
+export type ControllerKey = 'dashboard' | 'my_account' | 'client_setup' | 'users' | 'invitations' | 'sites' | 'protocols';
 
 // Route permissions mapping
 export type RoutePermissions = {
@@ -30,9 +39,6 @@ export type RoutePermissions = {
     update: boolean;
     destroy: boolean;
   };
-  roles: {
-    index: boolean;
-  };
   users: {
     index: boolean;
     update: boolean;
@@ -43,6 +49,11 @@ export type RoutePermissions = {
     create: boolean;
     destroy: boolean;
     resend: boolean;
+  };
+  sites: {
+    create: boolean;
+    update: boolean;
+    destroy: boolean;
   };
   protocols: {
     index: boolean;
@@ -57,7 +68,7 @@ export type RoutePermissions = {
 
 // Complete permission context
 export type PermissionContext = {
-  role: UserRole;
+  role: Role;
   routePermissions: RoutePermissions;
 };
 
@@ -124,12 +135,6 @@ export const ROUTES: Record<string, RouteInfo> = {
     path: '/user/client_setup',
     verb: 'DELETE'
   },
-  roles_index: {
-    controller: 'roles',
-    action: 'index',
-    path: '/user/roles',
-    verb: 'GET'
-  },
   users_index: {
     controller: 'users',
     action: 'index',
@@ -171,6 +176,24 @@ export const ROUTES: Record<string, RouteInfo> = {
     action: 'resend',
     path: '/user/invitations/:id/resend',
     verb: 'PUT'
+  },
+  sites_create: {
+    controller: 'sites',
+    action: 'create',
+    path: '/user/sites',
+    verb: 'POST'
+  },
+  sites_update: {
+    controller: 'sites',
+    action: 'update',
+    path: '/user/sites/:id',
+    verb: 'PATCH'
+  },
+  sites_destroy: {
+    controller: 'sites',
+    action: 'destroy',
+    path: '/user/sites/:id',
+    verb: 'DELETE'
   },
   protocols_index: {
     controller: 'protocols',

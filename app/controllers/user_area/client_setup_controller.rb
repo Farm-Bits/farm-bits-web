@@ -20,7 +20,7 @@ class UserArea::ClientSetupController < UserArea::ApplicationController
     authorize Client, :create?
 
     client = Client.new(client_params)
-    client.client_users_attributes = [{ user: current_user, role: Roleable::ROLES[:admin] }]
+    client.client_users_attributes = [{ user: current_user, role: Roleable::ROLE_IDS[:admin] }]
 
     if client.save
       session[:current_client_id] = client.id

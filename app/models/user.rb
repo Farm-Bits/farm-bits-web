@@ -28,35 +28,6 @@ class User < ApplicationRecord
   before_destroy :prevent_destroy_last_admin_user
   after_commit :send_password_change_notification, if: :saved_change_to_encrypted_password?, on: :update
 
-  class << self
-    def ransackable_attributes(auth_object=nil)
-      [
-        "id",
-        "name",
-        "email",
-        "encrypted_password",
-        "reset_password_token",
-        "reset_password_sent_at",
-        "remember_created_at",
-        "sign_in_count",
-        "current_sign_in_at",
-        "last_sign_in_at",
-        "current_sign_in_ip",
-        "last_sign_in_ip",
-        "confirmation_token",
-        "confirmed_at",
-        "confirmation_sent_at",
-        "unconfirmed_email",
-        "failed_attempts",
-        "unlock_token",
-        "locked_at",
-        "active",
-        "created_at",
-        "updated_at"
-      ]
-    end
-  end
-
   def active_for_authentication?
     super && active
   end
@@ -95,11 +66,11 @@ class User < ApplicationRecord
   end
 
   def last_admin_for_any_client?
-    client_users.where(role: Roleable::ROLES[:admin], active: true).any? do |admin_client_user|
+    client_users.where(role: Roleable::ROLE_IDS[:admin], active: true).any? do |admin_client_user|
       client = admin_client_user.client
       other_active_admins = client.client_users
         .where.not(user_id: id)
-        .where(role: Roleable::ROLES[:admin], active: true)
+        .where(role: Roleable::ROLE_IDS[:admin], active: true)
 
       other_active_admins.empty?
     end
@@ -117,7 +88,7 @@ class User < ApplicationRecord
 
       begin
         client_attrs = client_attributes.merge(
-          client_users_attributes: [{ user: self, role: Roleable::ROLES[:admin] }],
+          client_users_attributes: [{ user: self, role: Roleable::ROLE_IDS[:admin] }],
         )
         client = Client.create!(client_attrs)
       rescue ActiveRecord::RecordInvalid => e

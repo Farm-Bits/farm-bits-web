@@ -12,19 +12,7 @@ class ClientUser < ApplicationRecord
 
   before_destroy :prevent_destroy_last_admin
 
-  enum :role, Roleable::ROLES
-
-  def admin?
-    role == 'admin'
-  end
-
-  def manager?
-    role == 'manager'
-  end
-
-  def viewer?
-    role == 'viewer'
-  end
+  enum :role, Roleable::ROLE_IDS
 
   def last_admin_for_client?
     if !admin?
@@ -37,7 +25,7 @@ class ClientUser < ApplicationRecord
 
     other_active_admins = client.client_users
       .where.not(id: id)
-      .where(role: Roleable::ROLES[:admin], active: true)
+      .where(role: Roleable::ROLE_IDS[:admin], active: true)
 
     other_active_admins.empty?
   end

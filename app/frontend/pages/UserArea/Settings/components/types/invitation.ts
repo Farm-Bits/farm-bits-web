@@ -1,19 +1,8 @@
 import { type User } from '@/types/inertia';
-
-type UserRole = 'admin' | 'manager' | 'viewer';
-
-export type Role = {
-  id: UserRole;
-  name: string;
-  description: string;
-  level: number;
-  permissions: {
-    [key: string]: boolean;
-  };
-};
+import type { Role } from '@/types/permissions';
 
 export type ClientUser = User & {
-  role: UserRole;
+  role: Role;
   status: string;
 };
 
@@ -22,7 +11,7 @@ type InvitationStatus = 'pending' | 'expired';
 export type Invitation = {
   id: number;
   email: string;
-  role: UserRole;
+  role: Role;
   status: InvitationStatus;
   expired: boolean;
 };

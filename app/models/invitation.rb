@@ -14,7 +14,7 @@ class Invitation < ApplicationRecord
   validate :user_not_already_member, on: :create
   validate :admin_user_not_already_exists, on: :create
 
-  enum :role, Roleable::ROLES
+  enum :role, Roleable::ROLE_IDS
 
   before_create :generate_token
   before_create :set_expires_at

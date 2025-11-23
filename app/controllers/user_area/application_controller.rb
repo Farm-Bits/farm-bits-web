@@ -9,7 +9,8 @@ class UserArea::ApplicationController < ApplicationController
     {
       userScope: 'users',
       user: current_user,
-      currentClient: @current_client,
+      client: current_client,
+      role: current_client_user&.role,
       clients: @clients,
       sites: policy_scope(Site)
     }
@@ -25,7 +26,7 @@ class UserArea::ApplicationController < ApplicationController
     end
 
     def set_current_client
-      @clients = policy_scope(Client)
+      @clients = current_user.active_clients_connections
 
       if params[:client_id]
         @current_client = @clients.find(params[:client_id])
@@ -34,24 +35,25 @@ class UserArea::ApplicationController < ApplicationController
       end
       @current_client ||= @clients.first
 
-      session[:current_client_id] = @current_client&.id
+      @current_client_user = current_user.client_user_for(@current_client)
 
-      current_user.instance_variable_set(:@current_client, @current_client)
+      session[:current_client_id] = @current_client&.id
     end
 
     def current_client
       @current_client
     end
 
-    def policy_scope(scope, policy_scope_class: nil)
-      models_with_custom_scope = [Invitation, Site, User]
-      if models_with_custom_scope.include?(scope) || (scope.respond_to?(:model) && models_with_custom_scope.include?(scope.model))
-        model_class = scope.respond_to?(:model) ? scope.model : scope
-        policy_scope_class ||= "#{model_class.name}Policy::Scope".constantize
-        policy_scope_class.new(current_user, scope, current_client: current_client).resolve
-      else
-        super
-      end
+    def current_client_user
+      @current_client_user
+    end
+
+    def pundit_user
+      {
+        current_user: current_user,
+        current_client: current_client,
+        current_client_user: current_client_user
+      }
     end
 
   private

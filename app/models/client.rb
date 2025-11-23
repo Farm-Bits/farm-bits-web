@@ -32,7 +32,7 @@ class Client < ApplicationRecord
   private
     def must_have_at_least_one_active_admin
       active_admins = client_users.reject(&:marked_for_destruction?).select do |cu|
-        cu.role == Roleable::ROLES[:admin] && cu.active
+        cu.role == Roleable::ROLE_IDS[:admin] && cu.active
       end
 
       if active_admins.empty?

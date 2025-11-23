@@ -5,11 +5,15 @@ class UserSerializer < Blueprinter::Base
 
   view :client_user do
     field(:role) do |user, options|
-      user.role_for_current_client
+      current_client = options[:current_client]
+      client_user = user.client_user_for(current_client)
+      client_user&.role
     end
 
     field(:active) do |user, options|
-      user.active_for_current_client?
+      current_client = options[:current_client]
+      client_user = user.client_user_for(current_client)
+      client_user&.active?
     end
   end
 end

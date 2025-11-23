@@ -6,16 +6,17 @@ export default function useAuth<T extends PageProps>() {
   const page = usePage<T>();
 
   const pageProps = computed(() => page.props);
-
   const userScope = computed(() => page.props.userScope ? page.props.userScope : 'users');
-
+  const isSignedIn = computed(() => !!page.props.user);
   const user = computed(() => page.props.user);
-
+  const role = computed(() => page.props.role);
   const client = computed(() => page.props.client);
-
   const clients = computed(() => page.props.clients || []);
-
   const sites = computed(() => page.props.sites);
+
+  const isAdminUser = computed(() => {
+    return isSignedIn.value && userScope.value === 'admin_users';
+  });
 
   const rootObjectName = computed(() => {
     switch (userScope.value) {
@@ -65,10 +66,13 @@ export default function useAuth<T extends PageProps>() {
   return {
     pageProps,
     userScope,
+    isSignedIn,
     user,
     client,
+    role,
     clients,
     sites,
+    isAdminUser,
     rootObjectName,
     paths,
     features

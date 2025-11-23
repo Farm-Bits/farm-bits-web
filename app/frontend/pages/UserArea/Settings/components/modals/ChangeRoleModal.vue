@@ -26,14 +26,14 @@
         <CFormLabel>Select New Role</CFormLabel>
         <div class="mt-2">
           <CFormCheck
-            v-for="role in roles"
+            v-for="(role, roleId) in ROLES"
             type="radio"
             class="mb-2 ml-6"
             v-model="selectedRole"
-            :key="role.id"
-            :id="`change-role-${role.id}`"
+            :key="roleId"
+            :id="`change-role-${roleId}`"
             :label="`${role.name} - ${role.description}`"
-            :value="role.id" />
+            :value="roleId" />
         </div>
       </div>
     </CModalBody>
@@ -56,18 +56,18 @@
 
 <script lang="ts" setup>
   import { ref, computed, watch } from 'vue';
-  import { type ClientUser, type Role } from '../types/user_invitation';
+  import { ROLES, type Role } from '@/types/permissions';
+  import { type ClientUser } from '../types/invitation';
   import { type ApiError } from '@/composables/useApi';
 
   export type ChangeRoleData = {
     userId: ClientUser['id'];
-    role: Role['id'];
+    role: Role;
   };
 
   const props = defineProps<{
     visible: boolean;
     user: ClientUser | null;
-    roles: Role[];
   }>();
   const emit = defineEmits<{
     (e: 'close'): void;
@@ -78,7 +78,7 @@
     ): void;
   }>();
 
-  const selectedRole = ref<Role['id'] | null>(null);
+  const selectedRole = ref<Role | null>(null);
   const submissionError = ref('');
   const isLoading = ref(false);
 

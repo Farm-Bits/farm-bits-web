@@ -32,7 +32,7 @@
             </CTableDataCell>
             <CTableDataCell>{{ user.email }}</CTableDataCell>
             <CTableDataCell>
-              {{ formatRole(user.role) }}
+              {{ ROLES[user.role].name }}
             </CTableDataCell>
             <CTableDataCell>
               <CBadge color="success">Active</CBadge>
@@ -76,7 +76,7 @@
             </CTableDataCell>
             <CTableDataCell>{{ invitation.email }}</CTableDataCell>
             <CTableDataCell>
-              {{ formatRole(invitation.role) }}
+              {{ ROLES[invitation.role].name }}
             </CTableDataCell>
             <CTableDataCell>
               <CBadge
@@ -118,7 +118,6 @@
     <!-- Invite User Modal Component -->
     <InviteUserModal
       :visible="showInviteModal"
-      :roles="roles"
       @close="showInviteModal = false"
       @invite="handleUserInvite" />
 
@@ -126,7 +125,6 @@
     <ChangeRoleModal
       :visible="showRoleModal"
       :user="selectedUser"
-      :roles="roles"
       @close="closeRoleModal"
       @update="handleUpdateUserRole" />
   </div>
@@ -139,7 +137,8 @@
   import InviteUserModal, { type InvitationData } from '../modals/InviteUserModal.vue';
   import useAuth from '@/composables/useAuth';
   import { useApiCall, type ApiError } from '@/composables/useApi';
-  import { type ClientUser, type Invitation, type Role } from '../types/user_invitation';
+  import { ROLES } from '@/types/permissions';
+  import type { ClientUser, Invitation } from '../types/invitation';
   import { type User } from '@/types/inertia';
 
   const { pageProps, paths } = useAuth<{
@@ -150,15 +149,9 @@
 
   const users = ref<ClientUser[]>([]);
   const invitations = ref<Invitation[]>([]);
-  const roles = ref<Role[]>([]);
   const showInviteModal = ref(false);
   const showRoleModal = ref(false);
   const selectedUser = ref<ClientUser | null>(null);
-
-  function formatRole(roleId: Role['id']): string {
-    const role = roles.value.find((r) => r.id === roleId);
-    return role ? role.name : roleId;
-  }
 
   function openChangeRoleModal(user: ClientUser) {
     selectedUser.value = user;
@@ -290,20 +283,9 @@
       invitations.value = data;
   }
 
-  async function fetchRoles() {
-    const { success, data } = await execute<Role[]>(
-      () => axios.get(paths.value.api.roles),
-      { errorTitle: 'Load Roles Error', showErrorToast: true }
-    );
-
-    if (success)
-      roles.value = data;
-  }
-
   onMounted(() => {
     fetchUsers();
     fetchInvitations();
-    fetchRoles();
   });
 </script>
 

@@ -1,23 +1,25 @@
 # frozen_string_literal: true
 
 class ApplicationPolicy
-  attr_reader :user, :record
+  attr_reader :current_user, :current_client, :current_client_user, :record
 
-  def initialize(user, record)
-    @user = user
+  def initialize(context, record)
+    @current_user = context[:current_user]
+    @current_client = context[:current_client]
+    @current_client_user = context[:current_client_user]
     @record = record
   end
 
   def index?
-    false
+    active_context?
   end
 
   def show?
-    false
+    active_context? && record_belongs_to_current_client?
   end
 
   def create?
-    false
+    active_context?
   end
 
   def new?
@@ -25,7 +27,7 @@ class ApplicationPolicy
   end
 
   def update?
-    false
+    active_context? && record_belongs_to_current_client?
   end
 
   def edit?
@@ -33,73 +35,46 @@ class ApplicationPolicy
   end
 
   def destroy?
-    false
+    active_context? && record_belongs_to_current_client?
   end
 
-  class << self
-    def controller_mappings
-      @controller_mappings ||= {}
+  private
+    def active_context?
+      current_user&.active &&
+      current_client&.active &&
+      current_client_user&.active
     end
 
-    def maps_to_controller(controller_name, actions: {})
-      controller_mappings[controller_name] = actions
-      clear_discovery_cache!
-    end
-
-    def discover_all_policies
-      if @all_policies
-        return @all_policies
+    def record_belongs_to_current_client?
+      if record.nil?
+        return true
       end
 
-      @all_policies = Rails.cache.fetch('policy_discovery/all_policies') do
-        policy_files = Dir.glob(Rails.root.join('app/policies/**/*_policy.rb'))
-        policy_files.each { |file| require file }
+      if !record.respond_to?(:client_id) && !record.respond_to?(:client)
+        return false
+      end
 
-        ObjectSpace.each_object(Class).select do |klass|
-          klass < ApplicationPolicy &&
-          klass != ApplicationPolicy &&
-          klass.respond_to?(:controller_mappings)
-        rescue
-          false
-        end
+      if record.respond_to?(:client_id)
+        record.client_id == current_client&.id
+      elsif record.respond_to?(:client)
+        record.client == current_client
+      else
+        true
       end
     end
-
-    private
-      def clear_discovery_cache!
-        @all_policies = nil
-        if defined?(Rails.cache)
-          Rails.cache.delete('policy_discovery/all_policies')
-        end
-      end
-  end
 
   class Scope
-    def initialize(user, scope)
-      @user = user
+    attr_reader :current_user, :current_client, :current_client_user, :scope
+
+    def initialize(context, scope)
+      @current_user = context[:current_user]
+      @current_client = context[:current_client]
+      @current_client_user = context[:current_client_user]
       @scope = scope
     end
 
     def resolve
       raise NoMethodError, "You must define #resolve in #{self.class}"
     end
-
-    private
-      attr_reader :user, :scope
   end
-
-  protected
-    def client_user
-      if !current_client || !user
-        return nil
-      end
-
-      @client_user ||= user.client_user_for(current_client)
-    end
-
-    def current_client
-      if user.respond_to?(:instance_variable_get)
-        @current_client ||= user.instance_variable_get(:@current_client)
-      end
-    end
 end

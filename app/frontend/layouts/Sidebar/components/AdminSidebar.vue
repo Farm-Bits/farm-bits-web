@@ -1,56 +1,56 @@
 <template>
   <CSidebar
-    v-if="user"
     :narrow="sidebarNarrow"
     minimizer
     colorScheme="dark"
     class="d-print-none full-height-sidebar">
 
     <div class="sidebar-brand">
-      <CIcon name="cilGem" size="lg" class="brand-icon" />
-      <span v-if="!sidebarNarrow" class="brand-text">Farm Bits</span>
+      <CIcon name="cilShieldAlt" size="lg" class="brand-icon" />
+      <span v-if="!sidebarNarrow" class="brand-text">Admin Panel</span>
     </div>
 
     <CIcon name="cilMenu" size="lg" @click="store.toggleSidebar" class="sidebar-toggler" />
 
     <CSidebarNav>
-      <CNavItem href="#/dashboard">
+      <CNavItem href="#/admin/dashboard">
         <CIcon customClassName="nav-icon" name="cilSpeedometer" />
-        Devices
+        Dashboard
       </CNavItem>
 
-      <CNavItem href="#/dashboard">
-        <CIcon customClassName="nav-icon" name="cilBarChart" />
-        Analytics
-      </CNavItem>
-
-      <CNavItem href="#/dashboard">
-        <CIcon customClassName="nav-icon" name="cilBellExclamation" />
-        Alerts
-      </CNavItem>
-
-      <!-- <CNavGroup>
+      <CNavGroup>
         <template #togglerContent>
-          <CIcon customClassName="nav-icon" name="cilPuzzle" />
-          Components
+          <CIcon customClassName="nav-icon" name="cilPeople" />
+          User Management
         </template>
-        <CNavItem href="#/components/buttons">Buttons</CNavItem>
-        <CNavItem href="#/components/forms">Forms</CNavItem>
-        <CNavItem href="#/components/charts">Charts</CNavItem>
-      </CNavGroup> -->
+        <CNavItem href="#/admin/users">All Users</CNavItem>
+        <CNavItem href="#/admin/clients">Companies</CNavItem>
+        <CNavItem href="#/admin/invitations">Invitations</CNavItem>
+      </CNavGroup>
+
+      <CNavGroup>
+        <template #togglerContent>
+          <CIcon customClassName="nav-icon" name="cilSettings" />
+          System
+        </template>
+        <CNavItem href="#/admin/system-settings">Settings</CNavItem>
+        <CNavItem href="#/admin/logs">Logs</CNavItem>
+        <CNavItem href="#/admin/maintenance">Maintenance</CNavItem>
+      </CNavGroup>
+
+      <CNavItem href="#/admin/analytics">
+        <CIcon customClassName="nav-icon" name="cilBarChart" />
+        System Analytics
+      </CNavItem>
     </CSidebarNav>
   </CSidebar>
 </template>
 
 <script lang="ts" setup>
   import { computed } from 'vue';
-  import useAuth from '@/composables/useAuth';
   import useStore from '@/stores';
 
-  const { user } = useAuth();
-
   const store = useStore();
-
   const sidebarNarrow = computed(() => store.$state.sidebarNarrow);
 </script>
 
@@ -69,17 +69,17 @@
     justify-content: center;
     padding: 1rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: rgba(220, 38, 38, 0.2); /* Admin red theme */
     min-height: 60px;
   }
 
   .brand-icon {
-    color: #fff;
+    color: #fecaca; /* Light red for admin */
     flex-shrink: 0;
   }
 
   .brand-text {
-    color: #fff;
+    color: #fecaca;
     font-size: 1.25rem;
     font-weight: 600;
     margin-left: 0.5rem;
@@ -99,5 +99,5 @@
 
   .sidebar-toggler:hover {
     background-color: rgba(255, 255, 255, 0.1);
-  }
+}
 </style>

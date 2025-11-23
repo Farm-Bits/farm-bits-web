@@ -49,8 +49,8 @@
 
 <script lang="ts" setup>
   import { computed, ref } from 'vue';
-  import Navbar from './Navbar.vue';
-  import Sidebar from './Sidebar.vue';
+  import Navbar from './Navbar/index.vue';
+  import Sidebar from './Sidebar/index.vue';
   import Footer from './Footer.vue';
   import { usePage } from '@inertiajs/vue3';
   import useToastStore from '@/stores/toast';

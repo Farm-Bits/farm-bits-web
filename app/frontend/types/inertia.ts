@@ -1,3 +1,5 @@
+import type { Role } from '../types/permissions';
+
 export type UserScope = 'admin_users' | 'users';
 
 export type Client = {
@@ -17,6 +19,7 @@ declare module '@inertiajs/core' {
     userScope?: UserScope;
     user?: User;
     client?: Client;
+    role?: Role;
     clients?: Client[];
     sites?: Array<{ id: number; name: string }>;
   }

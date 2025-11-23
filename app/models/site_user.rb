@@ -10,7 +10,7 @@ class SiteUser < ApplicationRecord
   validates :role, presence: true
   validate :user_must_be_client_member
 
-  enum :role, Roleable::ROLES
+  enum :role, Roleable::ROLE_IDS
 
   private
     def user_must_be_client_member
