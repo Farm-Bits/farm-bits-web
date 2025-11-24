@@ -26,7 +26,22 @@ class Client < ApplicationRecord
   before_destroy :handle_orphaned_users, prepend: true
 
   def client_user_for(user)
-    client_users.find_by(user: user)
+    user_id = user.is_a?(User) ? user.id : user.to_i
+
+    @client_user_cache ||= {}
+
+    if @client_user_cache.key?(user_id)
+      return @client_user_cache[user_id]
+    end
+
+    if client_users.loaded?
+      client_user = client_users.find { |cu| cu.user_id == user_id }
+    else
+      client_user = client_users.find_by(user_id: user_id)
+    end
+
+    @client_user_cache[user_id] = client_user
+    client_user
   end
 
   private
