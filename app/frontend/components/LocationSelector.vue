@@ -23,7 +23,7 @@
           <VueSelect
             id="country"
             name="country"
-            placeholder="Type to search country..."
+            placeholder="Type to search..."
             v-model="countryModel"
             :options="countries"
             :isLoading="loadingCountries"
@@ -179,7 +179,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed, nextTick, onMounted, ref } from 'vue';
+  import { computed, nextTick, onMounted, ref, watch } from 'vue';
   import { Loader } from '@googlemaps/js-api-loader';
   import { type Validation, type ValidationArgs } from '@vuelidate/core'
   import useToastStore from '@/stores/toast';
@@ -541,6 +541,16 @@
     autocompleteService.value = true;
 
     await initMap();
+
+    if (countryModel.value) {
+      await searchCountries(countryModel.value);
+
+      if (cityModel.value)
+        await searchCities(cityModel.value);
+    }
+
+    if (isValidCoordinate(latitudeModel.value) && isValidCoordinate(longitudeModel.value))
+      displayMap.value = true;
   });
 </script>
 

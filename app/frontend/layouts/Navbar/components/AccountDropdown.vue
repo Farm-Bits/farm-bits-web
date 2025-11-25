@@ -35,8 +35,8 @@
             Profile
           </CDropdownItem>
 
-          <!-- v-if="features.canManageSettings" -->
           <CDropdownItem
+            v-if="permissions.client_setup.update"
             :href="paths.pages.editClient"
             class="d-flex align-items-center">
             <CIcon icon="cilSettings" class="me-2" />
@@ -127,11 +127,13 @@
 <script lang="ts" setup>
   import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
   import useAuth from '@/composables/useAuth';
+  import usePermissions from '@/composables/usePermissions';
   import { type User } from '@/types/inertia';
 
   const { pageProps, userScope, paths, client, clients } = useAuth<{
     user: User;
   }>();
+  const { permissions } = usePermissions();
 
   const isOpen = ref(false);
   const currentPanel = ref<'default' | 'clients'>('default');

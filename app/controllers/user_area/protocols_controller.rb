@@ -2,7 +2,7 @@ class UserArea::ProtocolsController < UserArea::ApplicationController
   before_action :set_protocol, only: %i[ show edit update destroy ]
 
   def index
-    render inertia: 'UserArea/Protocols/Index'
+    render inertia: 'UserArea/Protocols/index'
   end
 
   def show

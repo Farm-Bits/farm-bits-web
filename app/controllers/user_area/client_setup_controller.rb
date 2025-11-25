@@ -13,7 +13,7 @@ class UserArea::ClientSetupController < UserArea::ApplicationController
   def edit
     authorize current_client, :edit?
 
-    render inertia: 'UserArea/Settings/Index'
+    render inertia: 'UserArea/Settings/index'
   end
 
   def create
@@ -38,7 +38,7 @@ class UserArea::ClientSetupController < UserArea::ApplicationController
     if current_client.update(client_params)
       redirect_to user_client_setup_edit_path
     else
-      render inertia: 'UserArea/Settings/Index', props: {
+      render inertia: 'UserArea/Settings/index', props: {
         errors: current_client.errors.full_messages
       }
     end

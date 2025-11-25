@@ -1,5 +1,7 @@
 // Auto-generated file - Do not edit manually
-// Generated at: 2025-11-23 12:54:42 UTC
+// Generated at: 2025-11-25 18:34:46 UTC
+
+import type { Method } from '@inertiajs/core';
 
 // Available roles from Roleable
 export type Role = 'admin' | 'manager' | 'viewer';
@@ -51,6 +53,7 @@ export type RoutePermissions = {
     resend: boolean;
   };
   sites: {
+    index: boolean;
     create: boolean;
     update: boolean;
     destroy: boolean;
@@ -77,7 +80,7 @@ export type RouteInfo = {
   controller: string;
   action: string;
   path: string;
-  verb: string;
+  verb: Method;
 };
 
 export const ROUTES: Record<string, RouteInfo> = {
@@ -85,156 +88,162 @@ export const ROUTES: Record<string, RouteInfo> = {
     controller: 'dashboard',
     action: 'show',
     path: '/user',
-    verb: 'GET'
+    verb: 'get'
   },
   my_account_show: {
     controller: 'my_account',
     action: 'show',
     path: '/user/my_account',
-    verb: 'GET'
+    verb: 'get'
   },
   my_account_update: {
     controller: 'my_account',
     action: 'update',
     path: '/user/my_account',
-    verb: 'PUT'
+    verb: 'put'
   },
   my_account_destroy: {
     controller: 'my_account',
     action: 'destroy',
     path: '/user/my_account',
-    verb: 'DELETE'
+    verb: 'delete'
   },
   client_setup_new: {
     controller: 'client_setup',
     action: 'new',
     path: '/user/client_setup/new',
-    verb: 'GET'
+    verb: 'get'
   },
   client_setup_edit: {
     controller: 'client_setup',
     action: 'edit',
     path: '/user/client_setup/edit',
-    verb: 'GET'
+    verb: 'get'
   },
   client_setup_create: {
     controller: 'client_setup',
     action: 'create',
     path: '/user/client_setup',
-    verb: 'POST'
+    verb: 'post'
   },
   client_setup_update: {
     controller: 'client_setup',
     action: 'update',
     path: '/user/client_setup',
-    verb: 'PUT'
+    verb: 'put'
   },
   client_setup_destroy: {
     controller: 'client_setup',
     action: 'destroy',
     path: '/user/client_setup',
-    verb: 'DELETE'
+    verb: 'delete'
   },
   users_index: {
     controller: 'users',
     action: 'index',
     path: '/user/users',
-    verb: 'GET'
+    verb: 'get'
   },
   users_update: {
     controller: 'users',
     action: 'update',
     path: '/user/users',
-    verb: 'PUT'
+    verb: 'put'
   },
   users_destroy: {
     controller: 'users',
     action: 'destroy',
     path: '/user/users',
-    verb: 'DELETE'
+    verb: 'delete'
   },
   invitations_index: {
     controller: 'invitations',
     action: 'index',
     path: '/user/invitations',
-    verb: 'GET'
+    verb: 'get'
   },
   invitations_create: {
     controller: 'invitations',
     action: 'create',
     path: '/user/invitations',
-    verb: 'POST'
+    verb: 'post'
   },
   invitations_destroy: {
     controller: 'invitations',
     action: 'destroy',
     path: '/user/invitations/:id',
-    verb: 'DELETE'
+    verb: 'delete'
   },
   invitations_resend: {
     controller: 'invitations',
     action: 'resend',
     path: '/user/invitations/:id/resend',
-    verb: 'PUT'
+    verb: 'put'
+  },
+  sites_index: {
+    controller: 'sites',
+    action: 'index',
+    path: '/user/sites',
+    verb: 'get'
   },
   sites_create: {
     controller: 'sites',
     action: 'create',
     path: '/user/sites',
-    verb: 'POST'
+    verb: 'post'
   },
   sites_update: {
     controller: 'sites',
     action: 'update',
     path: '/user/sites/:id',
-    verb: 'PATCH'
+    verb: 'patch'
   },
   sites_destroy: {
     controller: 'sites',
     action: 'destroy',
     path: '/user/sites/:id',
-    verb: 'DELETE'
+    verb: 'delete'
   },
   protocols_index: {
     controller: 'protocols',
     action: 'index',
     path: '/user/protocols',
-    verb: 'GET'
+    verb: 'get'
   },
   protocols_create: {
     controller: 'protocols',
     action: 'create',
     path: '/user/protocols',
-    verb: 'POST'
+    verb: 'post'
   },
   protocols_new: {
     controller: 'protocols',
     action: 'new',
     path: '/user/protocols/new',
-    verb: 'GET'
+    verb: 'get'
   },
   protocols_edit: {
     controller: 'protocols',
     action: 'edit',
     path: '/user/protocols/:id/edit',
-    verb: 'GET'
+    verb: 'get'
   },
   protocols_show: {
     controller: 'protocols',
     action: 'show',
     path: '/user/protocols/:id',
-    verb: 'GET'
+    verb: 'get'
   },
   protocols_update: {
     controller: 'protocols',
     action: 'update',
     path: '/user/protocols/:id',
-    verb: 'PATCH'
+    verb: 'patch'
   },
   protocols_destroy: {
     controller: 'protocols',
     action: 'destroy',
     path: '/user/protocols/:id',
-    verb: 'DELETE'
+    verb: 'delete'
   }
 };

@@ -63,6 +63,8 @@ class FrontendPermissionsGenerator
         // Auto-generated file - Do not edit manually
         // Generated at: #{Time.current}
 
+        import type { Method } from '@inertiajs/core';
+
         // Available roles from Roleable
         export type Role = #{role_values};
 
@@ -89,7 +91,7 @@ class FrontendPermissionsGenerator
           controller: string;
           action: string;
           path: string;
-          verb: string;
+          verb: Method;
         };
 
         export const ROUTES: Record<string, RouteInfo> = {
@@ -119,7 +121,7 @@ class FrontendPermissionsGenerator
               controller: '#{route[:controller]}',
               action: '#{route[:action]}',
               path: '#{route[:path]}',
-              verb: '#{route[:verb]}'
+              verb: '#{route[:verb].downcase}'
             }
         ROUTE
       end.join(",\n  ")

@@ -31,6 +31,7 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       resend: true
     },
     sites: {
+      index: true,
       create: true,
       update: true,
       destroy: true
@@ -73,6 +74,7 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       resend: false
     },
     sites: {
+      index: false,
       create: false,
       update: false,
       destroy: false
@@ -115,6 +117,7 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       resend: false
     },
     sites: {
+      index: false,
       create: false,
       update: false,
       destroy: false
@@ -164,6 +167,7 @@ export default function usePermissions() {
   }
 
   return {
-    permissions
+    permissions,
+    canAccess
   };
 }

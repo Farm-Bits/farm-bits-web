@@ -14,6 +14,16 @@ export type User = {
   email: string;
 };
 
+export type Site = {
+  id: number;
+  name: string | null;
+  country: string | null;
+  city: string | null;
+  latitude: string | number | null;
+  longitude: string | number | null;
+  altitude: string | number | null;
+};
+
 declare module '@inertiajs/core' {
   interface PageProps {
     userScope?: UserScope;
@@ -21,6 +31,6 @@ declare module '@inertiajs/core' {
     client?: Client;
     role?: Role;
     clients?: Client[];
-    sites?: Array<{ id: number; name: string }>;
+    sites?: Site[];
   }
 };

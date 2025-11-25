@@ -1,6 +1,6 @@
 class SitePolicy < ApplicationPolicy
   def index?
-    super
+    super && current_client_user&.admin?
   end
 
   def create?

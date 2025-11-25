@@ -16,14 +16,10 @@
           <CDropdown variant="nav-item">
             <CDropdownToggle class="d-flex align-items-center">
               <CIcon name="cilLocationPin" class="me-1" />
-              {{ selectedSiteName || 'All Sites' }}
+              {{ selectedSiteName || 'No Sites Configured' }}
             </CDropdownToggle>
             <CDropdownMenu>
-              <CDropdownItem @click="onSelectSite(null)" :active="selectedSite === null">
-                All Sites
-              </CDropdownItem>
               <template v-if="sites && sites.length > 0">
-                <CDropdownDivider />
                 <CDropdownItem
                   v-for="site in sites"
                   :key="site.id"
@@ -33,20 +29,20 @@
                 </CDropdownItem>
                 <CDropdownDivider />
                 <CDropdownItem
-                  v-if="permissions.sites.create"
-                  @click="onAddSite"
+                  v-if="permissions.sites.index"
+                  @click="router.visit(ROUTES.sites_index.path)"
                   class="d-flex align-items-center text-primary">
-                  <CIcon name="cilPlus" class="me-2" />
-                  Add New Site
+                  <CIcon name="cilCompress" class="me-2" />
+                  Manage Sites
                 </CDropdownItem>
               </template>
               <template v-else>
                 <CDropdownDivider />
                 <CDropdownItem
-                  v-if="permissions.sites.create"
-                  @click="onAddSite"
+                  v-if="permissions.sites.index"
+                  @click="router.visit(ROUTES.sites_index.path)"
                   class="d-flex align-items-center text-primary">
-                  <CIcon name="cilPlus" class="me-2" />
+                  <CIcon name="cilCompress" class="me-2" />
                   Add Your First Site
                 </CDropdownItem>
               </template>
@@ -85,33 +81,31 @@
 
 <script lang="ts" setup>
   import { ref, computed } from 'vue';
-  import useAuth from '@/composables/useAuth';
-  import usePermissions from '@/composables/usePermissions';
+  import { router } from '@inertiajs/vue3';
   import AccountDropdown from './components/AccountDropdown.vue';
   import AdminAccountDropdown from './components/AdminAccountDropdown.vue';
+  import useAuth from '@/composables/useAuth';
+  import usePermissions from '@/composables/usePermissions';
+  import { ROUTES } from '@/types/permissions';
 
   const { isAdminUser, isSignedIn, paths, features, sites } = useAuth();
   const { permissions } = usePermissions();
 
-  const selectedSite = ref<number | null>(null);
+  const selectedSite = ref<number | null>(sites.value && sites.value.length > 0 ? sites.value[0].id : null);
 
   const selectedSiteName = computed(() => {
-    if (!selectedSite.value || !sites.value) return null;
-    const site = sites.value.find(s => s.id === selectedSite.value);
+    if (!selectedSite.value || !sites.value)
+      return null;
+
+    const site = sites.value.find((s) => s.id === selectedSite.value);
     return site?.name || null;
   });
 
-  const onSelectSite = (siteId: number | null) => {
+  function onSelectSite(siteId: number | null) {
     selectedSite.value = siteId;
     // Emit event or call method to update parent component
-  };
-
-  const onAddSite = () => {
-    console.log('Add new site clicked');
-    // Navigate to site creation form
-  };
+  }
 </script>
-
 
 <style scoped>
 </style>

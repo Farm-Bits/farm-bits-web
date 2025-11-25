@@ -1,6 +1,12 @@
 class UserArea::SitesController < UserArea::ApplicationController
   before_action :set_site, only: [:update, :destroy]
 
+  def index
+    authorize Site, :index?
+
+    render inertia: 'UserArea/Sites/index'
+  end
+
   def create
     authorize Site, :create?
 

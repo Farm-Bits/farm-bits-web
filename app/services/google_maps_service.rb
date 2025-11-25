@@ -37,22 +37,20 @@ class GoogleMapsService
     end
 
     begin
-      country_code = country_code_for(country_name)
-      if !country_code
-        return false
-      end
-
+      search_query = "#{city_name}, #{country_name}"
       response = self.class.get('/place/textsearch/json', {
         query: {
-          input: city_name,
-          type: 'city',
-          components: "country:#{country_code}",
+          query: search_query,
+          type: 'locality',
           key: @api_key
         }
       })
 
       if response.success? && response['status'] == 'OK'
-        return response['results'].any? { |result| result['name'] == city_name }
+        return response['results'].any? do |result|
+          result['name'].downcase.include?(city_name.downcase) &&
+            result['formatted_address'].downcase.include?(country_name.downcase)
+        end
       end
 
       return false
@@ -66,7 +64,7 @@ class GoogleMapsService
     begin
       response = self.class.get('/place/textsearch/json', {
         query: {
-          input: country_name,
+          query: country_name,
           type: 'country',
           key: @api_key
         }
