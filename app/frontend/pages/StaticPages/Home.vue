@@ -14,7 +14,7 @@
             Experience growth and efficiency like never before.
           </p>
           <div class="hero-buttons">
-            <CButton :href="paths.pages.signUp" class="btn-primary">
+            <CButton class="btn-primary" @click="router.visit(paths.pages.signUp)">
               Get Started Free
             </CButton>
           </div>
@@ -107,7 +107,7 @@
             Join thousands of farmers who have already revolutionized their operations with Farm Bits.
           </p>
           <div class="cta-buttons">
-            <CButton :href="paths.pages.signUp" class="btn-primary">
+            <CButton class="btn-primary" @click="router.visit(paths.pages.signUp)">
               Start Free Trial
             </CButton>
             <CButton href="/contact" class="btn-secondary">
@@ -121,6 +121,7 @@
 </template>
 
 <script lang="ts" setup>
+  import { router } from '@inertiajs/vue3';
   import useAuth from '@/composables/useAuth';
 
   const { paths } = useAuth();

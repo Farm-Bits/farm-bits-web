@@ -251,15 +251,21 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_23_182030) do
   end
 
   create_table "plcs", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "label", null: false
     t.string "name", null: false
+    t.string "serial_number", null: false
     t.bigint "plc_version_id", null: false
     t.integer "slave", null: false
-    t.bigint "terminal_id"
     t.string "host"
     t.integer "port"
+    t.text "username", null: false
+    t.text "password", null: false
+    t.bigint "terminal_id"
+    t.bigint "client_id"
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["client_id"], name: "index_plcs_on_client_id"
     t.index ["plc_version_id"], name: "index_plcs_on_plc_version_id"
     t.index ["terminal_id"], name: "index_plcs_on_terminal_id"
   end
@@ -327,13 +333,20 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_23_182030) do
 
   create_table "terminals", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "terminal_model_id"
+    t.string "label", null: false
+    t.string "name", null: false
     t.string "imei", null: false
+    t.string "serial_number", null: false
     t.string "iccid", null: false
     t.string "phone_number", null: false
+    t.text "username", null: false
+    t.text "password", null: false
     t.bigint "site_id"
+    t.bigint "client_id"
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["client_id"], name: "index_terminals_on_client_id"
     t.index ["site_id"], name: "index_terminals_on_site_id"
     t.index ["terminal_model_id"], name: "index_terminals_on_terminal_model_id"
   end
@@ -387,14 +400,16 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_23_182030) do
   add_foreign_key "plc_models", "plc_manufacturers", on_delete: :cascade
   add_foreign_key "plc_versions", "plc_models", on_delete: :cascade
   add_foreign_key "plc_versions", "plc_versions", on_delete: :cascade
+  add_foreign_key "plcs", "clients"
   add_foreign_key "plcs", "plc_versions"
-  add_foreign_key "plcs", "terminals", on_delete: :cascade
+  add_foreign_key "plcs", "terminals"
   add_foreign_key "registers", "plc_versions", on_delete: :cascade
   add_foreign_key "segments", "sites", on_delete: :cascade
   add_foreign_key "site_users", "sites", on_delete: :cascade
   add_foreign_key "site_users", "users", on_delete: :cascade
   add_foreign_key "sites", "clients", on_delete: :cascade
   add_foreign_key "terminal_models", "terminal_manufacturers", on_delete: :cascade
-  add_foreign_key "terminals", "sites", on_delete: :cascade
+  add_foreign_key "terminals", "clients"
+  add_foreign_key "terminals", "sites"
   add_foreign_key "terminals", "terminal_models"
 end

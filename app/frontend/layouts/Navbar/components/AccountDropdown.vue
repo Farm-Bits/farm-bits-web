@@ -30,15 +30,17 @@
 
           <CDropdownHeader>Account</CDropdownHeader>
 
-          <CDropdownItem :href="paths.pages.myAccount" class="d-flex align-items-center">
+          <CDropdownItem
+            class="d-flex align-items-center"
+            @click="router.visit(paths.pages.myAccount)">
             <CIcon icon="cilUser" class="me-2" />
             Profile
           </CDropdownItem>
 
           <CDropdownItem
             v-if="permissions.client_setup.update"
-            :href="paths.pages.editClient"
-            class="d-flex align-items-center">
+            class="d-flex align-items-center"
+            @click="router.visit(paths.pages.editClient)">
             <CIcon icon="cilSettings" class="me-2" />
             Settings
           </CDropdownItem>
@@ -56,17 +58,12 @@
 
           <CDropdownDivider />
 
-          <div class="dropdown-item d-flex align-items-center justify-content-between cursor-pointer">
-            <form :action="paths.actions.signOut" method="post" class="w-100">
-              <input type="hidden" name="_method" value="delete">
-              <button
-                type="submit"
-                class="btn btn-link w-100 text-start d-flex align-items-center text-danger p-0">
-                <CIcon icon="cilAccountLogout" class="me-2" />
-                Sign Out
-              </button>
-            </form>
-          </div>
+          <CDropdownItem
+            class="d-flex align-items-center text-danger cursor-pointer"
+            @click="router.delete(paths.actions.signOut)">
+            <CIcon icon="cilAccountLogout" class="me-2" />
+            Sign Out
+          </CDropdownItem>
         </div>
 
         <!-- Clients Panel -->
@@ -101,8 +98,8 @@
             <CDropdownItem
               v-for="otherClient in otherClients"
               :key="otherClient.id"
-              :href="`/?client_id=${otherClient.id}`"
-              class="d-flex align-items-center">
+              class="d-flex align-items-center"
+              @click="router.visit(pathname, { data: { client_id: otherClient.id } })">
               <div
                 class="client-avatar me-2"
                 :style="{ backgroundColor: otherClient.color }">
@@ -114,7 +111,7 @@
 
           <CDropdownDivider />
 
-          <CDropdownItem :href="paths.pages.newClient" class="d-flex align-items-center">
+          <CDropdownItem class="d-flex align-items-center" @click="router.visit(paths.pages.newClient)">
             <CIcon icon="cilPlus" class="me-2" />
             Create New Company
           </CDropdownItem>
@@ -126,6 +123,7 @@
 
 <script lang="ts" setup>
   import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
+  import { router } from '@inertiajs/vue3';
   import useAuth from '@/composables/useAuth';
   import usePermissions from '@/composables/usePermissions';
   import { type User } from '@/types/inertia';
@@ -135,6 +133,8 @@
   }>();
   const { permissions } = usePermissions();
 
+  const pathname = window.location.pathname;
+
   const isOpen = ref(false);
   const currentPanel = ref<'default' | 'clients'>('default');
   const dropdownToggle = ref<HTMLElement | null>(null);
@@ -143,7 +143,9 @@
   const isClientConnected = computed(() => userScope.value !== 'admin_users');
 
   const currentClient = reactive(client);
-  const otherClients = reactive(clients.value.filter((c) => c.id !== currentClient.value?.id));
+  const otherClients = computed(() =>
+    clients.value.filter((c) => c.id !== currentClient.value?.id)
+  );
 
   const containerStyle = computed(() => ({
     transform: `translateX(${currentPanel.value === 'clients' ? '-50%' : '0%'})`,

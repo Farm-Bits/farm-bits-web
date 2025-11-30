@@ -31,6 +31,7 @@ declare module '@inertiajs/core' {
     client?: Client;
     role?: Role;
     clients?: Client[];
+    site?: Site;
     sites?: Site[];
   }
 };

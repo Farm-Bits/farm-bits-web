@@ -5,7 +5,7 @@
       <div class="px-6 py-4">
         <div class="flex items-center justify-between">
           <h1 class="text-2xl font-bold text-gray-800">Sensors Management</h1>
-          <button 
+          <button
             @click="showAddSensorModal = true"
             class="btn-primary btn-small"
           >
@@ -89,7 +89,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="mb-4">
             <div class="sensor-value">{{ sensor.currentValue || '--' }}</div>
             <div class="sensor-unit">{{ sensor.unit }}</div>
@@ -118,14 +118,14 @@
           <div v-if="sensor.connectionType === 'DO' || sensor.connectionType === 'AO'" class="mt-4 pt-4 border-t border-gray-200">
             <div class="flex items-center justify-between mb-3">
               <span class="text-sm font-medium text-gray-700">Controls</span>
-              <button 
+              <button
                 @click="openControlModal(sensor)"
                 class="text-blue-600 hover:text-blue-800 text-sm"
               >
                 Configure
               </button>
             </div>
-            
+
             <div v-if="sensor.connectionType === 'DO'" class="control-button-group">
               <button 
                 @click="toggleOutput(sensor.id, true)"
@@ -134,7 +134,7 @@
               >
                 ON
               </button>
-              <button 
+              <button
                 @click="toggleOutput(sensor.id, false)"
                 :class="!sensor.outputState ? 'control-button-off' : 'bg-gray-300 text-gray-600 px-3 py-1 rounded text-sm'"
                 :disabled="sensor.status === 'offline'"
@@ -142,12 +142,12 @@
                 OFF
               </button>
             </div>
-            
+
             <div v-if="sensor.connectionType === 'AO'" class="space-y-2">
-              <input 
+              <input
                 v-model.number="sensor.outputValue"
                 @change="setAnalogOutput(sensor.id, sensor.outputValue)"
-                type="number" 
+                type="number"
                 :min="sensor.minValue || 0"
                 :max="sensor.maxValue || 100"
                 class="w-full px-2 py-1 border border-gray-300 rounded text-sm"
@@ -183,7 +183,7 @@
             </svg>
           </button>
         </div>
-        
+
         <div class="modal-body">
           <form @submit.prevent="saveSensor" class="space-y-6">
             <div class="form-section">
@@ -191,9 +191,9 @@
               <div class="form-row">
                 <div class="form-field">
                   <label class="form-label">Sensor Name *</label>
-                  <input 
+                  <input
                     v-model="currentSensor.name"
-                    type="text" 
+                    type="text"
                     required
                     class="form-input"
                     placeholder="e.g., Temperature Sensor"
@@ -201,9 +201,9 @@
                 </div>
                 <div class="form-field">
                   <label class="form-label">Location</label>
-                  <input 
+                  <input
                     v-model="currentSensor.location"
-                    type="text" 
+                    type="text"
                     class="form-input"
                     placeholder="e.g., Room A1"
                   >
@@ -211,7 +211,7 @@
               </div>
               <div class="form-field">
                 <label class="form-label">Description</label>
-                <textarea 
+                <textarea
                   v-model="currentSensor.description"
                   class="form-input"
                   rows="3"
@@ -254,9 +254,9 @@
                 </div>
                 <div class="form-field">
                   <label class="form-label">Unit</label>
-                  <input 
+                  <input
                     v-model="currentSensor.unit"
-                    type="text" 
+                    type="text"
                     class="form-input"
                     placeholder="e.g., °C, bar, L/min"
                   >
@@ -270,27 +270,27 @@
               <div class="form-row-3">
                 <div class="form-field">
                   <label class="form-label">Min Value</label>
-                  <input 
+                  <input
                     v-model.number="currentSensor.minValue"
-                    type="number" 
+                    type="number"
                     step="0.01"
                     class="form-input"
                   >
                 </div>
                 <div class="form-field">
                   <label class="form-label">Max Value</label>
-                  <input 
+                  <input
                     v-model.number="currentSensor.maxValue"
-                    type="number" 
+                    type="number"
                     step="0.01"
                     class="form-input"
                   >
                 </div>
                 <div class="form-field">
                   <label class="form-label">Decimal Places</label>
-                  <input 
+                  <input
                     v-model.number="currentSensor.decimalPlaces"
-                    type="number" 
+                    type="number"
                     min="0"
                     max="4"
                     class="form-input"
@@ -300,7 +300,7 @@
             </div>
           </form>
         </div>
-        
+
         <div class="modal-footer">
           <button @click="closeModals" type="button" class="btn-outline-secondary btn-small">
             Cancel
@@ -323,7 +323,7 @@
             </svg>
           </button>
         </div>
-        
+
         <div class="modal-body">
           <div class="space-y-6">
             <!-- Manual Control -->
@@ -344,9 +344,9 @@
                   <div v-if="controlConfig.mode === 'timed'" class="mt-2 ml-6">
                     <div class="form-row">
                       <div class="form-field">
-                        <input 
+                        <input
                           v-model.number="controlConfig.duration"
-                          type="number" 
+                          type="number"
                           min="1"
                           class="form-input"
                           placeholder="Duration"
@@ -370,9 +370,9 @@
                   <div v-if="controlConfig.mode === 'counted'" class="mt-2 ml-6">
                     <div class="form-row">
                       <div class="form-field">
-                        <input 
+                        <input
                           v-model.number="controlConfig.amount"
-                          type="number" 
+                          type="number"
                           min="1"
                           class="form-input"
                           placeholder="Amount"
@@ -410,8 +410,8 @@
                     <div v-if="schedule.repeat">Repeats: {{ schedule.repeatType }}</div>
                   </div>
                 </div>
-                
-                <button 
+
+                <button
                   @click="addSchedule"
                   :disabled="controlConfig.schedules.length >= 5"
                   class="btn-outline btn-small"
@@ -435,7 +435,7 @@
                     <div>{{ rule.action }} if {{ rule.condition }} {{ rule.value }} {{ getSensorUnit(rule.sensorId) }}</div>
                   </div>
                 </div>
-                
+
                 <button @click="addSensorRule" class="btn-outline btn-small">
                   Add Sensor Rule
                 </button>
@@ -443,7 +443,7 @@
             </div>
           </div>
         </div>
-        
+
         <div class="modal-footer">
           <button @click="showControlModal = false" type="button" class="btn-outline-secondary btn-small">
             Cancel
@@ -466,14 +466,14 @@
             </svg>
           </button>
         </div>
-        
+
         <div class="modal-body">
           <div class="chart-container">
             <div class="chart-header">
               <h3 class="chart-title">Historical Data</h3>
               <div class="chart-controls">
-                <button 
-                  v-for="range in timeRanges" 
+                <button
+                  v-for="range in timeRanges"
                   :key="range.value"
                   @click="selectedTimeRange = range.value"
                   :class="selectedTimeRange === range.value ? 'time-range-button-active' : 'time-range-button'"
@@ -486,7 +486,7 @@
               <span class="text-gray-500">Chart placeholder for {{ selectedTimeRange }}</span>
             </div>
           </div>
-          
+
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
             <div class="widget">
               <h4 class="widget-title">Statistics</h4>
@@ -505,7 +505,7 @@
                 </div>
               </div>
             </div>
-            
+
             <div class="widget">
               <h4 class="widget-title">Data Quality</h4>
               <div class="space-y-2 text-sm">
@@ -523,7 +523,7 @@
                 </div>
               </div>
             </div>
-            
+
             <div class="widget">
               <h4 class="widget-title">Alerts</h4>
               <div class="space-y-2 text-sm">
@@ -748,7 +748,7 @@ const filteredSensors = computed(() => {
     const matchesStatus = !statusFilter.value || sensor.status === statusFilter.value
     const matchesConnection = !connectionFilter.value || sensor.connectionType === connectionFilter.value
     const matchesPLC = !plcFilter.value || sensor.plcId === plcFilter.value
-    
+
     return matchesSearch && matchesStatus && matchesConnection && matchesPLC
   })
 })
@@ -785,9 +785,9 @@ const getPLCName = (plcId: string) => {
 }
 
 const formatTime = (date: Date) => {
-  return date.toLocaleTimeString('en-US', { 
-    hour: '2-digit', 
-    minute: '2-digit' 
+  return date.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit'
   })
 }
 

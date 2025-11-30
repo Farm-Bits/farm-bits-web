@@ -12,6 +12,7 @@ import {
   CButton,
   CCard,
   CCardBody,
+  CCardFooter,
   CCardGroup,
   CCardHeader,
   CCardImage,
@@ -79,7 +80,8 @@ import {
   CToastBody,
   CToastClose,
   CToaster,
-  CToastHeader
+  CToastHeader,
+  CTooltip
 } from '@coreui/vue';
 import { CIcon } from '@coreui/icons-vue';
 import {
@@ -177,6 +179,7 @@ export default function () {
       app.component('CButton', CButton);
       app.component('CCard', CCard);
       app.component('CCardBody', CCardBody);
+      app.component('CCardFooter', CCardFooter);
       app.component('CCardGroup', CCardGroup);
       app.component('CCardHeader', CCardHeader);
       app.component('CCardImage', CCardImage);
@@ -246,6 +249,7 @@ export default function () {
       app.component('CToastClose', CToastClose);
       app.component('CToaster', CToaster);
       app.component('CToastHeader', CToastHeader);
+      app.component('CTooltip', CTooltip);
       app.component('VueSelect', VueSelect);
 
       // Custom

@@ -36,6 +36,11 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: true,
       destroy: true
     },
+    terminals: {
+      index: true,
+      update: true,
+      destroy: true
+    },
     protocols: {
       index: true,
       create: true,
@@ -79,6 +84,11 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: false,
       destroy: false
     },
+    terminals: {
+      index: true,
+      update: false,
+      destroy: false
+    },
     protocols: {
       index: false,
       create: false,
@@ -119,6 +129,11 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
     sites: {
       index: false,
       create: false,
+      update: false,
+      destroy: false
+    },
+    terminals: {
+      index: true,
       update: false,
       destroy: false
     },

@@ -12,7 +12,8 @@ class UserArea::ApplicationController < ApplicationController
       client: current_client,
       role: current_client_user&.role,
       clients: @clients,
-      sites: policy_scope(Site)
+      site: current_site,
+      sites: policy_scope(Site),
     }
   end
 
@@ -38,6 +39,24 @@ class UserArea::ApplicationController < ApplicationController
       @current_client_user = current_user.client_user_for(@current_client)
 
       session[:current_client_id] = @current_client&.id
+    end
+
+    def set_current_site(site)
+      @current_site = site
+      session[:current_site_id] = site&.id
+    end
+
+    def current_site
+      @current_site ||= begin
+        sites = policy_scope(Site)
+        if params[:site_id]
+          sites.find_by(id: params[:site_id])
+        elsif session[:current_site_id]
+          sites.find_by(id: session[:current_site_id])
+        else
+          sites.first
+        end
+      end
     end
 
     def current_client

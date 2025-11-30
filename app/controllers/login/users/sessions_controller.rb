@@ -13,7 +13,18 @@ class Login::Users::SessionsController < Devise::SessionsController
 
   # POST /resource/sign_in
   def create
-    self.resource = warden.authenticate(auth_options)
+    self.resource = catch(:warden) do
+      warden.authenticate(auth_options)
+    end
+
+    if resource.is_a?(Hash)
+      message_key = resource[:message]
+      translated_message = I18n.t("devise.failure.#{message_key}", default: :invalid)
+      render inertia: 'Login/Sessions/New', props: {
+        errors: [translated_message]
+      }
+      return
+    end
 
     if resource&.persisted?
       set_flash_message!(:notice, :signed_in)

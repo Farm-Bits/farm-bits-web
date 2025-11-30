@@ -27,7 +27,9 @@
 
       <CDropdownHeader>Account</CDropdownHeader>
 
-      <CDropdownItem :href="paths.pages.myAccount" class="d-flex align-items-center">
+      <CDropdownItem
+        class="d-flex align-items-center"
+        @click="router.visit(paths.pages.myAccount)">
         <CIcon icon="cilUser" class="me-2" />
         Profile
       </CDropdownItem>
@@ -58,23 +60,19 @@
 
       <CDropdownDivider />
 
-      <div class="dropdown-item d-flex align-items-center justify-content-between cursor-pointer">
-        <form :action="paths.actions.signOut" method="post" class="w-100">
-          <input type="hidden" name="_method" value="delete">
-          <button
-            type="submit"
-            class="btn btn-link w-100 text-start d-flex align-items-center text-danger p-0">
-            <CIcon icon="cilAccountLogout" class="me-2" />
-            Sign Out
-          </button>
-        </form>
-      </div>
+      <CDropdownItem
+        class="d-flex align-items-center text-danger cursor-pointer"
+        @click="router.delete(paths.actions.signOut)">
+        <CIcon icon="cilAccountLogout" class="me-2" />
+        Sign Out
+      </CDropdownItem>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
   import { ref, onMounted, onUnmounted } from 'vue';
+  import { router } from '@inertiajs/vue3';
   import useAuth from '@/composables/useAuth';
   import { type User } from '@/types/inertia';
 

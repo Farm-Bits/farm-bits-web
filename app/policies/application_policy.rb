@@ -50,10 +50,6 @@ class ApplicationPolicy
         return true
       end
 
-      if !record.respond_to?(:client_id) && !record.respond_to?(:client)
-        return false
-      end
-
       if record.respond_to?(:client_id)
         record.client_id == current_client&.id
       elsif record.respond_to?(:client)

@@ -162,9 +162,9 @@
             <div class="form-divider">
               <p class="text-gray-600">
                 Already have an account?
-                <a :href="paths.pages.signIn" class="nav-link-primary">
+                <Link class="nav-link nav-link-primary inline" :href="paths.pages.signIn">
                   Sign in here
-                </a>
+                </Link>
               </p>
             </div>
           </CForm>

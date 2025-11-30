@@ -1,5 +1,5 @@
 // Auto-generated file - Do not edit manually
-// Generated at: 2025-11-25 18:34:46 UTC
+// Generated at: 2025-11-26 15:51:08 UTC
 
 import type { Method } from '@inertiajs/core';
 
@@ -22,7 +22,7 @@ export const ROLES = {
 } as const;
 
 // Valid controller keys
-export type ControllerKey = 'dashboard' | 'my_account' | 'client_setup' | 'users' | 'invitations' | 'sites' | 'protocols';
+export type ControllerKey = 'dashboard' | 'my_account' | 'client_setup' | 'users' | 'invitations' | 'sites' | 'terminals' | 'protocols';
 
 // Route permissions mapping
 export type RoutePermissions = {
@@ -55,6 +55,11 @@ export type RoutePermissions = {
   sites: {
     index: boolean;
     create: boolean;
+    update: boolean;
+    destroy: boolean;
+  };
+  terminals: {
+    index: boolean;
     update: boolean;
     destroy: boolean;
   };
@@ -202,6 +207,24 @@ export const ROUTES: Record<string, RouteInfo> = {
     controller: 'sites',
     action: 'destroy',
     path: '/user/sites/:id',
+    verb: 'delete'
+  },
+  terminals_index: {
+    controller: 'terminals',
+    action: 'index',
+    path: '/user/terminals',
+    verb: 'get'
+  },
+  terminals_update: {
+    controller: 'terminals',
+    action: 'update',
+    path: '/user/terminals/:id',
+    verb: 'patch'
+  },
+  terminals_destroy: {
+    controller: 'terminals',
+    action: 'destroy',
+    path: '/user/terminals/:id',
     verb: 'delete'
   },
   protocols_index: {

@@ -150,7 +150,7 @@ PlcManufacturer.create(
   name: 'Eliwell',
   plc_models_attributes: [
     {
-      name: 'FreeAdvance',
+      name: 'FreeAdvance AVC12600/C/L/U/I (AVC126006I500)',
       plc_versions_attributes: [
         {
           name: 'V0',
@@ -654,6 +654,6 @@ Interface.all.each do |interface|
 end
 
 TerminalManufacturer.create(
-  name: 'Sierra Wireless',
-  terminal_models_attributes: [{ name: 'LX40' }]
+  name: 'Semtech',
+  terminal_models_attributes: [{ name: 'LX40 EMEA' }]
 )

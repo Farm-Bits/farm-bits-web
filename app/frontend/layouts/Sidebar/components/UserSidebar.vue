@@ -13,9 +13,11 @@
     <CIcon name="cilMenu" size="lg" @click="store.toggleSidebar" class="sidebar-toggler" />
 
     <CSidebarNav>
-      <CNavItem v-if="true" href="#/dashboard">
-        <CIcon customClassName="nav-icon" name="cilSpeedometer" />
-        Devices
+      <CNavItem v-if="permissions.terminals.index">
+        <Link :href="ROUTES.terminals_index.path" class="nav-link">
+          <CIcon customClassName="nav-icon" name="cilSpeedometer" />
+          Devices
+        </Link>
       </CNavItem>
 
       <CNavItem v-if="true" href="#/dashboard">
@@ -45,6 +47,7 @@
   import { computed } from 'vue';
   import usePermissions from '@/composables/usePermissions';
   import useStore from '@/stores';
+  import { ROUTES } from '@/types/permissions';
 
   const store = useStore();
   const { permissions } = usePermissions();

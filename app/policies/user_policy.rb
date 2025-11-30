@@ -4,7 +4,7 @@ class UserPolicy < ApplicationPolicy
   end
 
   def show?
-    super
+    super && record.id == current_user.id
   end
 
   def update?

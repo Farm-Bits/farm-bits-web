@@ -56,6 +56,7 @@ Rails.application.routes.draw do
       put 'invitations/:id/resend', to: 'invitations#resend'
 
       resources :sites, only: [:index, :create, :update, :destroy]
+      resources :terminals, only: [:index, :update, :destroy]
 
       get 'dashboard', to: 'dashboard#show'
 

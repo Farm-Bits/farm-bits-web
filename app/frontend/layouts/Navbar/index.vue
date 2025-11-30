@@ -16,22 +16,22 @@
           <CDropdown variant="nav-item">
             <CDropdownToggle class="d-flex align-items-center">
               <CIcon name="cilLocationPin" class="me-1" />
-              {{ selectedSiteName || 'No Sites Configured' }}
+              {{ site?.name || 'No Sites Configured' }}
             </CDropdownToggle>
             <CDropdownMenu>
               <template v-if="sites && sites.length > 0">
                 <CDropdownItem
-                  v-for="site in sites"
-                  :key="site.id"
-                  @click="onSelectSite(site.id)"
-                  :active="selectedSite === site.id">
-                  {{ site.name }}
+                  v-for="otherSite in sites"
+                  :key="otherSite.id"
+                  @click="onSelectSite(otherSite.id)"
+                  :active="site?.id === otherSite.id">
+                  {{ otherSite.name }}
                 </CDropdownItem>
                 <CDropdownDivider />
                 <CDropdownItem
                   v-if="permissions.sites.index"
-                  @click="router.visit(ROUTES.sites_index.path)"
-                  class="d-flex align-items-center text-primary">
+                  class="d-flex align-items-center text-primary"
+                  @click="router.visit(ROUTES.sites_index.path)">
                   <CIcon name="cilCompress" class="me-2" />
                   Manage Sites
                 </CDropdownItem>
@@ -40,8 +40,8 @@
                 <CDropdownDivider />
                 <CDropdownItem
                   v-if="permissions.sites.index"
-                  @click="router.visit(ROUTES.sites_index.path)"
-                  class="d-flex align-items-center text-primary">
+                  class="d-flex align-items-center text-primary"
+                  @click="router.visit(ROUTES.sites_index.path)">
                   <CIcon name="cilCompress" class="me-2" />
                   Add Your First Site
                 </CDropdownItem>
@@ -56,14 +56,14 @@
         <!-- Not logged in: Sign In/Sign Up buttons -->
         <template v-if="!isSignedIn">
           <CNavItem>
-            <CNavLink :href="paths.pages.signIn" class="text-secondary-light">
+            <Link class="nav-link text-secondary-light" :href="paths.pages.signIn">
               Sign In
-            </CNavLink>
+            </Link>
           </CNavItem>
           <CNavItem v-if="features.canRegister">
-            <CNavLink :href="paths.pages.signUp" class="text-secondary-light">
+            <Link class="nav-link text-secondary-light" :href="paths.pages.signUp">
               Sign Up
-            </CNavLink>
+            </Link>
           </CNavItem>
         </template>
 
@@ -80,30 +80,19 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, computed } from 'vue';
   import { router } from '@inertiajs/vue3';
   import AccountDropdown from './components/AccountDropdown.vue';
   import AdminAccountDropdown from './components/AdminAccountDropdown.vue';
   import useAuth from '@/composables/useAuth';
   import usePermissions from '@/composables/usePermissions';
+  import type { Site } from '@/types/inertia';
   import { ROUTES } from '@/types/permissions';
 
-  const { isAdminUser, isSignedIn, paths, features, sites } = useAuth();
+  const { isAdminUser, isSignedIn, paths, features, site, sites } = useAuth();
   const { permissions } = usePermissions();
 
-  const selectedSite = ref<number | null>(sites.value && sites.value.length > 0 ? sites.value[0].id : null);
-
-  const selectedSiteName = computed(() => {
-    if (!selectedSite.value || !sites.value)
-      return null;
-
-    const site = sites.value.find((s) => s.id === selectedSite.value);
-    return site?.name || null;
-  });
-
-  function onSelectSite(siteId: number | null) {
-    selectedSite.value = siteId;
-    // Emit event or call method to update parent component
+  function onSelectSite(siteId: Site['id']) {
+    router.visit(window.location.pathname, { data: { site_id: siteId } });
   }
 </script>
 

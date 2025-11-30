@@ -1,0 +1,75 @@
+class UserArea::TerminalsController < UserArea::ApplicationController
+  before_action :set_terminal, only: [:update, :destroy]
+
+  def index
+    authorize Terminal, :index?
+
+    terminals = policy_scope(Terminal).where(site: current_site)
+      .includes(:terminal_model, :plcs)
+
+    render inertia: 'UserArea/Terminals/index', props: {
+      terminals: TerminalSerializer.render_as_hash(terminals, view: :with_plcs),
+      availableTerminals: available_terminals_for_activation,
+      availablePlcs: available_plcs_for_activation
+    }
+  end
+
+  def update
+    authorize @terminal, :update?
+    @terminal.site_id = current_site.id
+
+    if @terminal.update(terminal_params)
+      render json: TerminalSerializer.render(@terminal, view: :with_plcs), status: :ok
+    else
+      render json: { error: @terminal.errors.full_messages.to_sentence }, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    authorize @terminal, :destroy?
+
+    if @terminal.update(site_id: nil)
+      render json: TerminalSerializer.render(@terminal), status: :ok
+    else
+      render json: { error: @terminal.errors.full_messages.to_sentence }, status: :unprocessable_entity
+    end
+  end
+
+  private
+    def terminal_params
+      params.require(:terminal).permit(:name, :iccid, :phone_number, plc_assignments: [:id, :name])
+    end
+
+    def set_terminal
+      @terminal = policy_scope(Terminal).find(params[:id])
+    end
+
+    def available_terminals_for_activation
+      policy_scope(Terminal).where(site_id: nil, active: true).map do |t|
+        {
+          id: t.id,
+          label: t.label,
+          name: t.name,
+          imei: t.imei,
+          iccid: t.iccid,
+          phone_number: t.phone_number
+        }
+      end
+    end
+
+    def available_plcs_for_activation
+      policy_scope(Plc).where(terminal_id: nil, active: true).map do |p|
+        {
+          id: p.id,
+          label: p.label,
+          name: p.name,
+          slave: p.slave,
+          plc_version: {
+            id: p.plc_version.id,
+            name: p.plc_version.name,
+            description: p.plc_version.description
+          }
+        }
+      end
+    end
+end

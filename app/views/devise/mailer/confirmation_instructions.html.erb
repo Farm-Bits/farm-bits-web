@@ -230,12 +230,12 @@
         </p>
 
         <div class="button-container">
-          <a href="<%= @confirmation_url %>" class="button">Confirm My Email</a>
+          <a href="<%= confirmation_url(@resource, confirmation_token: @token) %>" class="button">Confirm My Email</a>
         </div>
 
         <div class="link-fallback">
           <div class="link-fallback-label">Or copy and paste this link into your browser:</div>
-          <div class="link-fallback-url"><%= @confirmation_url %></div>
+          <div class="link-fallback-url"><%= confirmation_url(@resource, confirmation_token: @token) %></div>
         </div>
 
         <p style="color: #6b7280; text-align: center; margin-top: 24px;">

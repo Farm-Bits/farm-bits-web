@@ -12,6 +12,7 @@ export default function useAuth<T extends PageProps>() {
   const role = computed(() => page.props.role);
   const client = computed(() => page.props.client);
   const clients = computed(() => page.props.clients || []);
+  const site = computed(() => page.props.site);
   const sites = computed(() => page.props.sites);
 
   const isAdminUser = computed(() => {
@@ -71,6 +72,7 @@ export default function useAuth<T extends PageProps>() {
     client,
     role,
     clients,
+    site,
     sites,
     isAdminUser,
     rootObjectName,

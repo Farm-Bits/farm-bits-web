@@ -79,9 +79,9 @@
                 name="remember_me"
                 class="text-sm text-gray-600"
                 v-model="formData[rootObjectName].remember_me" />
-              <a v-if="features.canRecover" :href="paths.pages.forgotPassword" class="nav-link-primary">
+              <Link v-if="features.canRecover" class="nav-link nav-link-primary" :href="paths.pages.forgotPassword">
                 Forgot password?
-              </a>
+              </Link>
             </div>
 
             <CButton type="submit" class="btn-gradient-green btn-full-width">
@@ -93,23 +93,23 @@
           <div v-if="features.canRegister" class="form-divider">
             <p class="text-gray-600">
               Don't have an account?
-              <a :href="paths.pages.signUp" class="nav-link-primary">
+              <Link class="nav-link nav-link-primary" :href="paths.pages.signUp">
                 Sign Up
-              </a>
+              </Link>
             </p>
           </div>
 
           <!-- Additional links -->
           <div class="nav-divider">
             <div v-if="features.canConfirm">
-              <a :href="paths.pages.confirmation" class="nav-link-primary">
+              <Link class="nav-link nav-link-primary" :href="paths.pages.confirmation">
                 Didn't receive confirmation instructions?
-              </a>
+              </Link>
             </div>
             <div v-if="features.canUnlock">
-              <a :href="paths.pages.unlock" class="nav-link-primary">
+              <Link class="nav-link nav-link-primary" :href="paths.pages.unlock">
                 Account locked?
-              </a>
+              </Link>
             </div>
           </div>
         </div>

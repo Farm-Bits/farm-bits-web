@@ -200,7 +200,6 @@
     isDeleting.value = true;
 
     const url = ROUTES.sites_destroy.path.replace(':id', String(siteToDelete.value.id));
-
     const { success } = await execute(
       () => axios.delete(url),
       {
