@@ -103,6 +103,9 @@ GEM
       capistrano (~> 3.1)
     capistrano-nvm (0.0.7)
       capistrano (~> 3.1)
+    capistrano-rails (1.7.0)
+      capistrano (~> 3.1)
+      capistrano-bundler (>= 1.1, < 3)
     capistrano-rvm (0.1.2)
       capistrano (~> 3.0)
       sshkit (~> 1.2)
@@ -387,6 +390,7 @@ DEPENDENCIES
   blueprinter
   capistrano (~> 3.17)
   capistrano-nvm
+  capistrano-rails
   capistrano-rvm
   capistrano-sidekiq
   capistrano3-puma

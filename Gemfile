@@ -44,6 +44,7 @@ group :development do
 
   # Capistrano is a framework for building automated deployment scripts
   gem "capistrano", "~> 3.17", require: false
+  gem "capistrano-rails", require: false
   gem "capistrano-rvm"
   gem "capistrano-nvm", require: false
   gem "capistrano3-puma"
