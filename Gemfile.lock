@@ -87,6 +87,9 @@ GEM
       activesupport (>= 5.2, < 8.2)
     base64 (0.2.0)
     bcrypt (3.1.20)
+    bcrypt_pbkdf (1.1.2)
+    bcrypt_pbkdf (1.1.2-arm64-darwin)
+    bcrypt_pbkdf (1.1.2-x86_64-darwin)
     benchmark (0.4.0)
     bigdecimal (3.1.8)
     blueprinter (1.1.2)
@@ -129,6 +132,7 @@ GEM
     diff-lcs (1.6.0)
     drb (2.2.1)
     dry-cli (1.2.0)
+    ed25519 (1.4.0)
     erubi (1.13.0)
     et-orbi (1.2.11)
       tzinfo
@@ -379,6 +383,7 @@ PLATFORMS
 DEPENDENCIES
   administrate
   audited
+  bcrypt_pbkdf
   blueprinter
   capistrano (~> 3.17)
   capistrano-nvm
@@ -387,6 +392,7 @@ DEPENDENCIES
   capistrano3-puma
   debug
   devise
+  ed25519
   faker
   figaro
   httparty

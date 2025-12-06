@@ -48,6 +48,12 @@ group :development do
   gem "capistrano-nvm", require: false
   gem "capistrano3-puma"
   gem "capistrano-sidekiq"
+
+  # A Ruby binding to the Ed25519 elliptic curve public-key signature system described in RFC 8032
+  gem "ed25519"
+
+  # bcrypt_pbkdf is a ruby gem implementing bcrypt_pbkdf from OpenBSD
+  gem "bcrypt_pbkdf"
 end
 
 # Vite is a build tool that aims to provide a faster and leaner development experience for modern web projects
