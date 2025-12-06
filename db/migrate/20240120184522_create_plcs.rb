@@ -6,6 +6,7 @@ class CreatePlcs < ActiveRecord::Migration[7.0]
       t.string :serial_number, null: false
       t.references :plc_version, null: false, foreign_key: true
       t.integer :slave, null: false
+      t.string :private_ip
       t.string :host
       t.integer :port
       t.text :username, null: false

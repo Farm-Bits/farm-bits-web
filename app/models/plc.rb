@@ -19,11 +19,23 @@ class Plc < ApplicationRecord
       less_than_or_equal_to: 247,
       message: 'must be between 1 and 247 (Modbus specification)'
     }
-  validates :slave,
+  validates :private_ip,
     uniqueness: {
       scope: :terminal_id,
       message: 'is already assigned to another PLC on this terminal',
       conditions: -> { where.not(terminal_id: nil) }
     },
     if: -> { terminal_id.present? }
+  validate :private_ip_must_be_valid
+
+  private
+    def private_ip_must_be_valid
+      if private_ip.blank?
+        return
+      end
+
+      IPAddr.new(private_ip)
+    rescue IPAddr::InvalidAddressError
+      errors.add(:private_ip, "must be a valid IP address")
+    end
 end

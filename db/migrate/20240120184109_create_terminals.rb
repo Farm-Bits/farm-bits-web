@@ -7,6 +7,7 @@ class CreateTerminals < ActiveRecord::Migration[7.0]
       t.string :serial_number, null: false
       t.string :iccid, null: false
       t.string :phone_number, null: false
+      t.string :private_ip, null: false
       t.text :username, null: false
       t.text :password, null: false
       t.boolean :active, null: false, default: true

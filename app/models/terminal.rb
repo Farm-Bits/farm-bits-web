@@ -15,8 +15,10 @@ class Terminal < ApplicationRecord
   validates :name, presence: true
   validates :imei, presence: true, uniqueness: { case_sensitive: false }
   validates :serial_number, presence: true, uniqueness: { case_sensitive: false }
-  validates :iccid, presence: true, uniqueness: { case_sensitive: false }
-  validates :phone_number, presence: true, uniqueness: { case_sensitive: false }
+  validates :iccid, uniqueness: { case_sensitive: false }
+  validates :phone_number, uniqueness: { case_sensitive: false }
+  validates :private_ip, presence: true
+  validate :private_ip_must_be_valid
 
   def plc_assignments=(plc_assignments_params)
     ActiveRecord::Base.transaction do
@@ -28,4 +30,15 @@ class Terminal < ApplicationRecord
       end
     end
   end
+
+  private
+    def private_ip_must_be_valid
+      if private_ip.blank?
+        return
+      end
+
+      IPAddr.new(private_ip)
+    rescue IPAddr::InvalidAddressError
+      errors.add(:private_ip, "must be a valid IP address")
+    end
 end

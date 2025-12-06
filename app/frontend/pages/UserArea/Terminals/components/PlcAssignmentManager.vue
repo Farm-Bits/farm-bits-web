@@ -95,19 +95,19 @@
                   <strong>Slave:</strong> {{ plc.slave }}
                 </CCardText>
               </div>
-              <CTooltip content="PLC with same slave already assigned">
+              <CTooltip content="PLC with same IP already assigned">
                 <template #toggler="{ id, on }">
                   <span
                     class="d-inline-block"
                     :tabindex="0"
                     :aria-describedby="id"
-                    v-on="slaveAlreadyAssigned(plc.slave) ? on : {}">
+                    v-on="ipAlreadyAssigned(plc.private_ip) ? on : {}">
                     <CButton
                       color="success"
                       size="sm"
                       variant="outline"
                       class="mt-3 w-100"
-                      :disabled="slaveAlreadyAssigned(plc.slave)"
+                      :disabled="ipAlreadyAssigned(plc.private_ip)"
                       @click="selectPlc(plc)">
                       <CIcon icon="cilPlus" class="me-1" />
                       Add PLC
@@ -147,8 +147,8 @@
     return props.availablePlcs.every((plc) => assignedPlcIds.includes(plc.id));
   });
 
-  function slaveAlreadyAssigned(slave: Plc['slave']): boolean {
-    return props.modelValue.some((a) => a.slave === slave);
+  function ipAlreadyAssigned(private_ip: Plc['private_ip']): boolean {
+    return props.modelValue.some((a) => a.private_ip === private_ip);
   }
 
   function selectPlc(plc: Plc) {

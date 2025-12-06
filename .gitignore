@@ -33,6 +33,7 @@ node_modules
 
 
 # Ignore application configuration
+/config/database.yml
 /config/application.yml
 
 /config/credentials/development.key

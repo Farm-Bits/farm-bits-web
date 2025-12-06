@@ -256,6 +256,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_23_182030) do
     t.string "serial_number", null: false
     t.bigint "plc_version_id", null: false
     t.integer "slave", null: false
+    t.string "private_ip"
     t.string "host"
     t.integer "port"
     t.text "username", null: false
@@ -339,6 +340,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_23_182030) do
     t.string "serial_number", null: false
     t.string "iccid", null: false
     t.string "phone_number", null: false
+    t.string "private_ip", null: false
     t.text "username", null: false
     t.text "password", null: false
     t.bigint "site_id"
