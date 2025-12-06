@@ -41,6 +41,13 @@ group :development do
 
   # Easily generate a diagram based on your application's Active Record models
   gem "rails-erd"
+
+  # Capistrano is a framework for building automated deployment scripts
+  gem "capistrano", "~> 3.17", require: false
+  gem "capistrano-rvm"
+  gem "capistrano-nvm", require: false
+  gem "capistrano3-puma"
+  gem "capistrano-sidekiq"
 end
 
 # Vite is a build tool that aims to provide a faster and leaner development experience for modern web projects
