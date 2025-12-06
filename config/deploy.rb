@@ -2,7 +2,7 @@
 lock "~> 3.19.2"
 
 set :application, "farm_bits"
-set :repo_url, "https://github.com/jerems6/webApplication.git"
+set :repo_url, "git@github.com:jerems6/webApplication.git"
 
 # Default branch is :master
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
