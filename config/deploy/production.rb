@@ -10,6 +10,7 @@ server "farm-bits.com", user: "deploy", roles: %w{app db web}
 
 set :user, "deploy"
 set :deploy_to, "/var/www/#{fetch(:application)}"
+set :branch, "main"
 
 set :rvm_type, :user
 set :rvm_ruby_version, "3.3.1"
