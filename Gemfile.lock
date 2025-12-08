@@ -327,6 +327,7 @@ GEM
       sprockets (> 3.0)
       sprockets-rails
       tilt
+    sd_notify (0.1.1)
     securerandom (0.4.0)
     selectize-rails (0.12.6)
     sidekiq (7.3.6)
@@ -410,6 +411,7 @@ DEPENDENCIES
   rails-controller-testing
   rails-erd
   rspec-rails (~> 7.0.0)
+  sd_notify
   sidekiq (~> 7.2)
   sidekiq-scheduler
   sprockets-rails

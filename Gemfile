@@ -90,3 +90,6 @@ gem "httparty"
 
 # Blueprinter is a JSON Object Presenter for Ruby that takes business objects and breaks them down into simple hashes and serializes them to JSON
 gem "blueprinter"
+
+# A pure-Ruby implementation of sd_notify(3) that can be used to communicate state changes of Ruby programs to systemd
+gem "sd_notify"

@@ -20,43 +20,52 @@
 # Any libraries that use a connection pool or another resource pool should
 # be configured to provide at least as many connections as the number of
 # threads. This includes Active Record's `pool` parameter in `database.yml`.
-threads_count = ENV.fetch("RAILS_MAX_THREADS", 3)
-threads threads_count, threads_count
+max_threads_count = ENV.fetch("RAILS_MAX_THREADS", 5)
+min_threads_count = ENV.fetch("RAILS_MIN_THREADS") { max_threads_count }
+threads min_threads_count, max_threads_count
 
-# Specifies the `port` that Puma will listen on to receive requests; default is 3000.
-port ENV.fetch("PORT", 3000)
+# Specifies the number of `workers` to boot in clustered mode
+workers ENV.fetch("WEB_CONCURRENCY", 2)
+
+# Use the `preload_app!` method when specifying a `workers` number.
+preload_app!
 
 # Allow puma to be restarted by `bin/rails restart` command.
 plugin :tmp_restart
 
 # Specify the PID file. Defaults to tmp/pids/server.pid in development.
 # In other environments, only set the PID file if requested.
-pidfile ENV["PIDFILE"] if ENV["PIDFILE"]
+pidfile ENV.fetch("PIDFILE", "tmp/pids/server.pid")
 
-# Specifies the number of `workers` to boot in clustered mode
-# Workers are forked web server processes. If using threads and workers together,
-# the concurrency of the application would be max `threads` * `workers`.
-workers ENV.fetch("WEB_CONCURRENCY", 2)
+# Specifies the `environment` that Puma will run in.
+environment ENV.fetch("RAILS_ENV", "development")
 
-# Use the `preload_app!` method when specifying a `workers` number.
-# This directive tells Puma to first boot the application and load code
-# before forking the application. This takes advantage of Copy On Write
-# process behavior so workers use less memory.
-preload_app!
-
-# Allow puma to be restarted by `rails restart` command
-plugin :tmp_restart
-
-# Bind to unix socket for Nginx (production)
+# Production-specific configuration
 if ENV["RAILS_ENV"] == "production"
-  bind "unix://#{ENV.fetch('PUMA_SOCKET', 'tmp/sockets/puma.sock')}"
-end
+  # Bind to unix socket (tmp/sockets is symlinked to shared)
+  bind "unix://tmp/sockets/puma.sock"
 
-# Enable systemd notify support
-if ENV["NOTIFY_SOCKET"]
+  # Logging
+  stdout_redirect "log/puma.stdout.log", "log/puma.stderr.log", true
+
+  # State and PID
+  state_path "tmp/pids/puma.state"
+  pidfile "tmp/pids/puma.pid"
+
+  # Set up database connections for workers
+  on_worker_boot do
+    ActiveRecord::Base.establish_connection if defined?(ActiveRecord)
+  end
+
+  before_fork do
+    ActiveRecord::Base.connection_pool.disconnect! if defined?(ActiveRecord)
+  end
+
+  # Notify systemd when ready
   on_booted do
     require 'sd_notify'
     SdNotify.ready
   end
+else
+  port ENV.fetch("PORT", 3000)
 end
-
