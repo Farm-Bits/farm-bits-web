@@ -11,6 +11,7 @@ class CreateRegisterTemplates < ActiveRecord::Migration[7.2]
       t.string :register_type, null: false
       t.string :data_type, null: false
       t.string :byte_order, null: false
+      t.string :value_format, null: false, default: 'numeric'
       t.decimal :factor, null: false, precision: 15, scale: 10, default: 1.0
       t.decimal :offset, null: false, precision: 15, scale: 6, default: 0.0
 
@@ -25,19 +26,18 @@ class CreateRegisterTemplates < ActiveRecord::Migration[7.2]
       t.boolean :read_only, null: false, default: true
 
       # Validation bounds
-      t.decimal :min_value, precision: 15, scale: 6
-      t.decimal :max_value, precision: 15, scale: 6
-      t.decimal :default_value, precision: 15, scale: 6
+      t.decimal :min_value, precision: 20, scale: 6
+      t.decimal :max_value, precision: 20, scale: 6
+      t.string :default_value
 
       # For status/enum registers, define possible values
       # Example: {"0": "Off", "1": "On", "2": "Error"}
-      t.jsonb :enum_values, default: {}
+      t.json :enum_values
 
       t.boolean :default_data_collection_enabled, null: false, default: true
       t.integer :default_polling_interval_seconds, null: false, default: 60
       t.integer :position, null: false, default: 0
       t.references :interface, foreign_key: { on_delete: :cascade }
-      t.references :measurement_subtype, foreign_key: { on_delete: :cascade }
       t.references :plc_version, null: false, foreign_key: { on_delete: :cascade }
 
       t.timestamps

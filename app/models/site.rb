@@ -16,6 +16,7 @@ class Site < ApplicationRecord
 
   validates :name, presence: true
   validates :country, presence: true
+  validates :time_zone, presence: true, inclusion: { in: ActiveSupport::TimeZone.all.map(&:name) }
   validate :country_must_be_valid
   validate :city_must_be_valid_if_present
   validate :coordinates_must_be_present_together
@@ -33,16 +34,13 @@ class Site < ApplicationRecord
   }, allow_blank: true
 
   before_validation :set_default_name, if: -> { name.blank? && client.present? }
+  before_validation :set_default_time_zone, if: -> { time_zone.blank? }
+
+  def time_zone_object
+    ActiveSupport::TimeZone[time_zone]
+  end
 
   private
-    def set_default_name
-      other_sites = client.sites.to_a.select { |p| p != self && !p.marked_for_destruction? }
-
-      if other_sites.empty?
-        self.name = 'My First Site'
-      end
-    end
-
     def country_must_be_valid
       if country.present?
         service = GoogleMapsService.new
@@ -66,5 +64,44 @@ class Site < ApplicationRecord
       if coordinates.any?(&:present?) && coordinates.any?(&:blank?)
         errors.add(:base, 'Latitude and longitude must both be present if one is provided')
       end
+    end
+
+    def set_default_name
+      other_sites = client.sites.to_a.select { |p| p != self && !p.marked_for_destruction? }
+
+      if other_sites.empty?
+        self.name = 'My First Site'
+      end
+    end
+
+    def infer_time_zone
+      service = GoogleMapsService.new
+
+      if latitude.present? && longitude.present?
+        return service.time_zone_for_coordinates(latitude, longitude)
+      end
+
+      if city.present? && country.present?
+        coords = service.geocode_country("#{city}, #{country}")
+        if coords
+          return service.time_zone_for_coordinates(coords[:latitude], coords[:longitude])
+        end
+      end
+
+      if country.present?
+        coords = service.geocode_country(country)
+        if coords
+          return service.time_zone_for_coordinates(coords[:latitude], coords[:longitude])
+        end
+      end
+
+      nil
+    end
+
+    def set_default_time_zone
+      inferred = infer_time_zone
+      self.time_zone = inferred if inferred
+
+      self.time_zone ||= 'UTC'
     end
 end

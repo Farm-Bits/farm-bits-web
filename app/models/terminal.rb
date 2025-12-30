@@ -1,7 +1,7 @@
 class Terminal < ApplicationRecord
   audited
 
-  belongs_to :terminal_model
+  belongs_to :model
   belongs_to :site, optional: true
   belongs_to :client, optional: true
 
@@ -13,12 +13,22 @@ class Terminal < ApplicationRecord
 
   validates :label, presence: true
   validates :name, presence: true
-  validates :imei, presence: true, uniqueness: { case_sensitive: false }
-  validates :serial_number, presence: true, uniqueness: { case_sensitive: false }
-  validates :iccid, uniqueness: { case_sensitive: false }
-  validates :phone_number, uniqueness: { case_sensitive: false }
-  validates :private_ip, presence: true
-  validate :private_ip_must_be_valid
+  validates :imei, presence: true, uniqueness: true
+  validates :serial_number, presence: true, uniqueness: true
+  validates :iccid, uniqueness: true, allow_blank: true
+  validates :phone_number, uniqueness: true, allow_blank: true
+  validates :private_ip, format: { with: /\A(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\z/ }
+  validates :username, presence: true
+  validates :password, presence: true
+  validate :model_is_terminal_type
+
+  def full_name
+    parts = []
+    parts << manufacturer_name if model.present?
+    parts << model_name if model.present?
+    parts << "(#{display_identifier})"
+    parts.join(' ')
+  end
 
   def plc_assignments=(plc_assignments_params)
     ActiveRecord::Base.transaction do
@@ -31,14 +41,22 @@ class Terminal < ApplicationRecord
     end
   end
 
+  def touch_last_seen!(timestamp = Time.current)
+    update_column(:last_seen_at, timestamp)
+  end
+
+  def poll!
+    Polling::TerminalPoller.new(self).poll!
+  end
+
   private
-    def private_ip_must_be_valid
-      if private_ip.blank?
+    def model_is_terminal_type
+      if !model.present?
         return
       end
 
-      IPAddr.new(private_ip)
-    rescue IPAddr::InvalidAddressError
-      errors.add(:private_ip, "must be a valid IP address")
+      if !model.device_type_terminal?
+        errors.add(:model, 'must be a terminal model')
+      end
     end
 end

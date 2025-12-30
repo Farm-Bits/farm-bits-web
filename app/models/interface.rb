@@ -1,26 +1,21 @@
 class Interface < ApplicationRecord
   audited
 
-  belongs_to :register
   belongs_to :plc_version
 
-  has_one :device, dependent: :destroy
+  has_many :register_templates, dependent: :destroy
+  accepts_nested_attributes_for :register_templates, :allow_destroy => true
 
-  has_many :interface_registers, dependent: :destroy
-  has_many :registers, through: :interface_registers
-  accepts_nested_attributes_for :interface_registers, :allow_destroy => true
+  COMMUNICATION_TYPES = %w[analog_input analog_output digital_input digital_output].freeze
 
-  class << self
-    def communication_types
-      [
-        { id: 'DI', name: 'Digital Input' },
-        { id: 'DO', name: 'Digital Output' },
-        { id: 'AI', name: 'Analog Input' },
-        { id: 'AO', name: 'Analog Output' }
-      ]
-    end
+  validates :name, presence: true, uniqueness: { scope: :plc_version_id }
+  validates :communication_type, presence: true, inclusion: { in: COMMUNICATION_TYPES }
+
+  def input?
+    communication_type.end_with?('_input')
   end
 
-  validates :name, presence: true
-  validates_inclusion_of :communication_type, :in => communication_types.map { |s| s[:id] }
+  def output?
+    communication_type.end_with?('_output')
+  end
 end

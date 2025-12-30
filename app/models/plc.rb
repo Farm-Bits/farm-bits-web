@@ -1,16 +1,21 @@
 class Plc < ApplicationRecord
   audited
 
+  belongs_to :model
   belongs_to :plc_version
   belongs_to :terminal, optional: true
   belongs_to :client, optional: true
 
   encrypts :username
   encrypts :password
+  encrypts :web_username
+  encrypts :web_password
+
+  has_many :measurement_points, dependent: :destroy
 
   validates :label, presence: true
   validates :name, presence: true
-  validates :serial_number, presence: true, uniqueness: { case_sensitive: false }
+  validates :serial_number, presence: true, uniqueness: true
   validates :slave,
     presence: true,
     numericality: {
@@ -19,23 +24,40 @@ class Plc < ApplicationRecord
       less_than_or_equal_to: 247,
       message: 'must be between 1 and 247 (Modbus specification)'
     }
-  validates :private_ip,
-    uniqueness: {
-      scope: :terminal_id,
-      message: 'is already assigned to another PLC on this terminal',
-      conditions: -> { where.not(terminal_id: nil) }
-    },
-    if: -> { terminal_id.present? }
-  validate :private_ip_must_be_valid
+  validates :private_ip, format: {
+    with: /\A(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\z/
+  }
+  validates :private_ip, uniqueness: {
+    scope: :terminal_id,
+    message: 'is already assigned to another PLC on this terminal',
+    conditions: -> { where.not(terminal_id: nil) }
+  }, if: -> { terminal_id.present? }
+  validates :username, presence: true
+  validates :password, presence: true
+  validates :web_username, presence: true
+  validates :web_password, presence: true
+  validate :model_is_plc_type
+
+  def handler
+    plc_version.handler_for(self)
+  end
+
+  def touch_last_seen!(timestamp = Time.current)
+    update_column(:last_seen_at, timestamp)
+  end
+
+  def poll!
+    Polling::PlcPoller.new(self).poll!
+  end
 
   private
-    def private_ip_must_be_valid
-      if private_ip.blank?
+    def model_is_plc_type
+      if !model.present?
         return
       end
 
-      IPAddr.new(private_ip)
-    rescue IPAddr::InvalidAddressError
-      errors.add(:private_ip, "must be a valid IP address")
+      if !model.device_type_plc?
+        errors.add(:model, 'must be a PLC model')
+      end
     end
 end

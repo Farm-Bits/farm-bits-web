@@ -7,7 +7,7 @@ class CreateSites < ActiveRecord::Migration[7.0]
       t.float :latitude
       t.float :longitude
       t.float :altitude
-      t.timezone :time_zone, null: false, default: 'UTC'
+      t.string :time_zone, null: false, default: 'UTC'
       t.boolean :active, null: false, default: true
       t.references :client, null: false, foreign_key: { on_delete: :cascade }
 

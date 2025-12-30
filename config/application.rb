@@ -39,7 +39,13 @@ module FarmBits
     # Don't generate system test files.
     config.generators.system_tests = nil
 
-    config.active_record.yaml_column_permitted_classes = [ActiveSupport::TimeWithZone, ActiveSupport::TimeZone, Time, Date]
+    config.active_record.yaml_column_permitted_classes = [
+      ActiveSupport::TimeWithZone,
+      ActiveSupport::TimeZone,
+      Time,
+      Date,
+      BigDecimal
+    ]
 
     config.exceptions_app = ->(env) do
       Class.new(ActionController::Base) do

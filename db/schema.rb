@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_08_23_182030) do
+ActiveRecord::Schema[7.2].define(version: 2025_12_24_145915) do
   create_table "action_mailbox_inbound_emails", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "status", default: 0, null: false
     t.string "message_id", null: false
@@ -120,54 +120,18 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_23_182030) do
     t.index ["subdomain"], name: "index_clients_on_subdomain", unique: true
   end
 
-  create_table "device_type_measurement_subtypes", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
-    t.bigint "device_type_id", null: false
-    t.bigint "measurement_subtype_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["device_type_id"], name: "index_device_type_measurement_subtypes_on_device_type_id"
-    t.index ["measurement_subtype_id"], name: "index_device_type_measurement_subtypes_on_measurement_subtype_id"
-  end
-
-  create_table "device_types", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
-    t.string "name", null: false
-    t.string "communication_type", null: false
-    t.string "color"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["communication_type"], name: "index_device_types_on_communication_type"
-  end
-
-  create_table "devices", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
-    t.string "name", null: false
-    t.bigint "device_type_id", null: false
-    t.bigint "interface_id"
-    t.boolean "active", default: true, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["device_type_id"], name: "index_devices_on_device_type_id"
-    t.index ["interface_id"], name: "index_devices_on_interface_id"
-  end
-
-  create_table "interface_registers", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
-    t.bigint "interface_id", null: false
-    t.bigint "register_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["interface_id"], name: "index_interface_registers_on_interface_id"
-    t.index ["register_id"], name: "index_interface_registers_on_register_id"
-  end
-
   create_table "interfaces", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "communication_type", null: false
-    t.bigint "register_id", null: false
+    t.text "description"
+    t.integer "position", default: 0, null: false
     t.bigint "plc_version_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["communication_type"], name: "index_interfaces_on_communication_type"
+    t.index ["plc_version_id", "communication_type"], name: "index_interfaces_on_plc_version_id_and_communication_type"
+    t.index ["plc_version_id", "name"], name: "index_interfaces_on_plc_version_id_and_name", unique: true
+    t.index ["plc_version_id", "position"], name: "index_interfaces_on_plc_version_id_and_position"
     t.index ["plc_version_id"], name: "index_interfaces_on_plc_version_id"
-    t.index ["register_id"], name: "index_interfaces_on_register_id"
   end
 
   create_table "invitations", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -182,114 +146,199 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_23_182030) do
     t.bigint "client_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["client_id", "email"], name: "index_invitations_on_client_id_and_email", unique: true
     t.index ["client_id"], name: "index_invitations_on_client_id"
     t.index ["email"], name: "index_invitations_on_email"
     t.index ["inviter_type", "inviter_id"], name: "index_invitations_on_inviter"
     t.index ["token"], name: "index_invitations_on_token", unique: true
   end
 
-  create_table "measurement_points", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "manufacturers", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
-    t.bigint "measurement_subtype_id"
-    t.text "description"
-    t.integer "min_value"
-    t.integer "max_value"
-    t.bigint "device_id"
-    t.bigint "segment_id"
-    t.bigint "site_id"
-    t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["device_id"], name: "index_measurement_points_on_device_id"
+    t.index ["name"], name: "index_manufacturers_on_name", unique: true
+  end
+
+  create_table "measurement_points", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "description"
+    t.string "unit_override"
+    t.string "chart_type_override"
+    t.string "color_override"
+    t.boolean "data_collection_enabled_override"
+    t.integer "polling_interval_seconds_override"
+    t.decimal "factor_override", precision: 15, scale: 10
+    t.decimal "offset_override", precision: 15, scale: 6
+    t.decimal "alarm_low", precision: 15, scale: 6
+    t.decimal "alarm_high", precision: 15, scale: 6
+    t.decimal "warning_low", precision: 15, scale: 6
+    t.decimal "warning_high", precision: 15, scale: 6
+    t.string "last_decoded_value"
+    t.datetime "last_decoded_value_at"
+    t.integer "position", default: 0, null: false
+    t.boolean "active", default: true, null: false
+    t.bigint "measurement_subtype_id"
+    t.bigint "plc_id", null: false
+    t.bigint "register_template_id", null: false
+    t.bigint "client_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_measurement_points_on_active"
+    t.index ["client_id"], name: "index_measurement_points_on_client_id"
+    t.index ["data_collection_enabled_override"], name: "index_measurement_points_on_data_collection_enabled_override"
     t.index ["measurement_subtype_id"], name: "index_measurement_points_on_measurement_subtype_id"
-    t.index ["segment_id"], name: "index_measurement_points_on_segment_id"
-    t.index ["site_id"], name: "index_measurement_points_on_site_id"
+    t.index ["plc_id", "data_collection_enabled_override"], name: "index_measurement_points_on_plc_and_data_collection_enabled"
+    t.index ["plc_id", "position"], name: "index_measurement_points_on_plc_id_and_position"
+    t.index ["plc_id", "register_template_id"], name: "index_measurement_points_on_plc_id_and_register_template_id", unique: true
+    t.index ["plc_id"], name: "index_measurement_points_on_plc_id"
+    t.index ["register_template_id"], name: "index_measurement_points_on_register_template_id"
   end
 
   create_table "measurement_subtypes", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "value_type", null: false
-    t.string "chart_type", null: false
-    t.string "unit", null: false
-    t.bigint "measurement_type_id"
-    t.string "color"
+    t.string "default_unit", null: false
+    t.string "default_chart_type", null: false
+    t.string "default_color"
+    t.integer "position", default: 0, null: false
+    t.bigint "measurement_type_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["measurement_type_id", "name"], name: "index_measurement_subtypes_on_measurement_type_id_and_name", unique: true
+    t.index ["measurement_type_id", "position"], name: "index_measurement_subtypes_on_measurement_type_id_and_position"
     t.index ["measurement_type_id"], name: "index_measurement_subtypes_on_measurement_type_id"
     t.index ["value_type"], name: "index_measurement_subtypes_on_value_type"
   end
 
   create_table "measurement_types", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
+    t.string "category", null: false
+    t.integer "position", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["category", "position"], name: "index_measurement_types_on_category_and_position"
+    t.index ["category"], name: "index_measurement_types_on_category"
+    t.index ["name"], name: "index_measurement_types_on_name", unique: true
   end
 
-  create_table "plc_manufacturers", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "models", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
+    t.string "device_type", null: false
+    t.bigint "manufacturer_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-  end
-
-  create_table "plc_models", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
-    t.string "name", null: false
-    t.bigint "plc_manufacturer_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["plc_manufacturer_id"], name: "index_plc_models_on_plc_manufacturer_id"
+    t.index ["device_type"], name: "index_models_on_device_type"
+    t.index ["manufacturer_id", "name"], name: "index_models_on_manufacturer_id_and_name", unique: true
+    t.index ["manufacturer_id"], name: "index_models_on_manufacturer_id"
   end
 
   create_table "plc_versions", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
+    t.string "version_code", null: false
     t.text "description"
-    t.bigint "plc_model_id"
-    t.bigint "plc_version_id"
+    t.boolean "is_latest", default: false, null: false
+    t.boolean "is_supported", default: true, null: false
+    t.string "handler_class", null: false
+    t.bigint "model_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["plc_model_id"], name: "index_plc_versions_on_plc_model_id"
-    t.index ["plc_version_id"], name: "index_plc_versions_on_plc_version_id"
+    t.index ["is_supported"], name: "index_plc_versions_on_is_supported"
+    t.index ["model_id", "is_latest"], name: "index_plc_versions_on_model_id_and_is_latest"
+    t.index ["model_id", "name"], name: "index_plc_versions_on_model_id_and_name", unique: true
+    t.index ["model_id"], name: "index_plc_versions_on_model_id"
   end
 
   create_table "plcs", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "label", null: false
     t.string "name", null: false
     t.string "serial_number", null: false
-    t.bigint "plc_version_id", null: false
     t.integer "slave", null: false
     t.string "private_ip"
     t.string "host"
     t.integer "port"
     t.text "username", null: false
     t.text "password", null: false
+    t.text "web_username", null: false
+    t.text "web_password", null: false
+    t.datetime "last_seen_at"
+    t.boolean "active", default: true, null: false
+    t.bigint "model_id", null: false
+    t.bigint "plc_version_id", null: false
     t.bigint "terminal_id"
     t.bigint "client_id"
-    t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_plcs_on_active"
+    t.index ["client_id", "active"], name: "index_plcs_on_client_id_and_active"
     t.index ["client_id"], name: "index_plcs_on_client_id"
+    t.index ["model_id"], name: "index_plcs_on_model_id"
     t.index ["plc_version_id"], name: "index_plcs_on_plc_version_id"
+    t.index ["serial_number"], name: "index_plcs_on_serial_number", unique: true
+    t.index ["terminal_id", "active"], name: "index_plcs_on_terminal_id_and_active"
     t.index ["terminal_id"], name: "index_plcs_on_terminal_id"
   end
 
-  create_table "registers", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "register_templates", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
+    t.string "label", null: false
     t.text "description"
     t.integer "address", null: false
-    t.integer "min_value"
-    t.bigint "max_value"
+    t.integer "address_count", default: 1, null: false
+    t.string "register_type", null: false
+    t.string "data_type", null: false
+    t.string "byte_order", null: false
+    t.string "value_format", default: "numeric", null: false
+    t.decimal "factor", precision: 15, scale: 10, default: "1.0", null: false
+    t.decimal "offset", precision: 15, scale: 6, default: "0.0", null: false
+    t.string "category", null: false
+    t.boolean "read_only", default: true, null: false
+    t.decimal "min_value", precision: 20, scale: 6
+    t.decimal "max_value", precision: 20, scale: 6
+    t.string "default_value"
+    t.json "enum_values"
+    t.boolean "default_data_collection_enabled", default: true, null: false
+    t.integer "default_polling_interval_seconds", default: 60, null: false
+    t.integer "position", default: 0, null: false
+    t.bigint "interface_id"
     t.bigint "plc_version_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["plc_version_id"], name: "index_registers_on_plc_version_id"
+    t.index ["category"], name: "index_register_templates_on_category"
+    t.index ["interface_id"], name: "index_register_templates_on_interface_id"
+    t.index ["plc_version_id", "address"], name: "index_register_templates_on_plc_version_id_and_address", unique: true
+    t.index ["plc_version_id", "category"], name: "index_register_templates_on_plc_version_id_and_category"
+    t.index ["plc_version_id", "label"], name: "index_register_templates_on_plc_version_id_and_label", unique: true
+    t.index ["plc_version_id", "name"], name: "index_register_templates_on_plc_version_id_and_name", unique: true
+    t.index ["plc_version_id", "position"], name: "index_register_templates_on_plc_version_id_and_position"
+    t.index ["plc_version_id"], name: "index_register_templates_on_plc_version_id"
   end
 
   create_table "segments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
-    t.bigint "site_id", null: false
     t.boolean "active", default: true, null: false
+    t.bigint "site_id", null: false
+    t.bigint "client_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["client_id"], name: "index_segments_on_client_id"
+    t.index ["site_id", "name"], name: "index_segments_on_site_id_and_name", unique: true
     t.index ["site_id"], name: "index_segments_on_site_id"
+  end
+
+  create_table "site_sun_data", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.date "date", null: false
+    t.datetime "sunrise", null: false
+    t.datetime "sunset", null: false
+    t.datetime "solar_noon"
+    t.bigint "site_id", null: false
+    t.bigint "client_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["client_id"], name: "index_site_sun_data_on_client_id"
+    t.index ["date"], name: "index_site_sun_data_on_date"
+    t.index ["site_id", "date"], name: "index_site_sun_data_on_site_id_and_date", unique: true
+    t.index ["site_id"], name: "index_site_sun_data_on_site_id"
   end
 
   create_table "site_users", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -311,29 +360,16 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_23_182030) do
     t.float "latitude"
     t.float "longitude"
     t.float "altitude"
-    t.bigint "client_id", null: false
+    t.string "time_zone", default: "UTC", null: false
     t.boolean "active", default: true, null: false
+    t.bigint "client_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["client_id", "name"], name: "index_sites_on_client_id_and_name", unique: true
     t.index ["client_id"], name: "index_sites_on_client_id"
   end
 
-  create_table "terminal_manufacturers", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
-    t.string "name", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  create_table "terminal_models", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
-    t.string "name", null: false
-    t.bigint "terminal_manufacturer_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["terminal_manufacturer_id"], name: "index_terminal_models_on_terminal_manufacturer_id"
-  end
-
   create_table "terminals", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
-    t.bigint "terminal_model_id"
     t.string "label", null: false
     t.string "name", null: false
     t.string "imei", null: false
@@ -343,14 +379,22 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_23_182030) do
     t.string "private_ip", null: false
     t.text "username", null: false
     t.text "password", null: false
+    t.datetime "last_seen_at"
+    t.boolean "active", default: true, null: false
+    t.bigint "model_id", null: false
     t.bigint "site_id"
     t.bigint "client_id"
-    t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_terminals_on_active"
+    t.index ["client_id", "active"], name: "index_terminals_on_client_id_and_active"
     t.index ["client_id"], name: "index_terminals_on_client_id"
+    t.index ["iccid"], name: "index_terminals_on_iccid", unique: true
+    t.index ["imei"], name: "index_terminals_on_imei", unique: true
+    t.index ["model_id"], name: "index_terminals_on_model_id"
+    t.index ["serial_number"], name: "index_terminals_on_serial_number", unique: true
+    t.index ["site_id", "active"], name: "index_terminals_on_site_id_and_active"
     t.index ["site_id"], name: "index_terminals_on_site_id"
-    t.index ["terminal_model_id"], name: "index_terminals_on_terminal_model_id"
   end
 
   create_table "users", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -385,33 +429,29 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_23_182030) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "client_users", "clients", on_delete: :cascade
   add_foreign_key "client_users", "users", on_delete: :cascade
-  add_foreign_key "device_type_measurement_subtypes", "device_types", on_delete: :cascade
-  add_foreign_key "device_type_measurement_subtypes", "measurement_subtypes", on_delete: :cascade
-  add_foreign_key "devices", "device_types"
-  add_foreign_key "devices", "interfaces"
-  add_foreign_key "interface_registers", "interfaces", on_delete: :cascade
-  add_foreign_key "interface_registers", "registers", on_delete: :cascade
   add_foreign_key "interfaces", "plc_versions", on_delete: :cascade
-  add_foreign_key "interfaces", "registers", on_delete: :cascade
   add_foreign_key "invitations", "clients", on_delete: :cascade
-  add_foreign_key "measurement_points", "devices", on_delete: :cascade
-  add_foreign_key "measurement_points", "measurement_subtypes"
-  add_foreign_key "measurement_points", "segments", on_delete: :cascade
-  add_foreign_key "measurement_points", "sites", on_delete: :cascade
+  add_foreign_key "measurement_points", "clients", on_delete: :cascade
+  add_foreign_key "measurement_points", "measurement_subtypes", on_delete: :cascade
+  add_foreign_key "measurement_points", "plcs", on_delete: :cascade
+  add_foreign_key "measurement_points", "register_templates", on_delete: :cascade
   add_foreign_key "measurement_subtypes", "measurement_types", on_delete: :cascade
-  add_foreign_key "plc_models", "plc_manufacturers", on_delete: :cascade
-  add_foreign_key "plc_versions", "plc_models", on_delete: :cascade
-  add_foreign_key "plc_versions", "plc_versions", on_delete: :cascade
+  add_foreign_key "models", "manufacturers", on_delete: :cascade
+  add_foreign_key "plc_versions", "models", on_delete: :cascade
   add_foreign_key "plcs", "clients"
+  add_foreign_key "plcs", "models"
   add_foreign_key "plcs", "plc_versions"
   add_foreign_key "plcs", "terminals"
-  add_foreign_key "registers", "plc_versions", on_delete: :cascade
+  add_foreign_key "register_templates", "interfaces", on_delete: :cascade
+  add_foreign_key "register_templates", "plc_versions", on_delete: :cascade
+  add_foreign_key "segments", "clients", on_delete: :cascade
   add_foreign_key "segments", "sites", on_delete: :cascade
+  add_foreign_key "site_sun_data", "clients", on_delete: :cascade
+  add_foreign_key "site_sun_data", "sites", on_delete: :cascade
   add_foreign_key "site_users", "sites", on_delete: :cascade
   add_foreign_key "site_users", "users", on_delete: :cascade
   add_foreign_key "sites", "clients", on_delete: :cascade
-  add_foreign_key "terminal_models", "terminal_manufacturers", on_delete: :cascade
   add_foreign_key "terminals", "clients"
+  add_foreign_key "terminals", "models"
   add_foreign_key "terminals", "sites"
-  add_foreign_key "terminals", "terminal_models"
 end
