@@ -24,6 +24,7 @@ class User < ApplicationRecord
 
   attr_accessor :client_attributes, :current_client_user
 
+  before_validation :normalize_email
   after_create :create_client_and_site_from_attributes
   before_destroy :prevent_destroy_last_admin_user
   after_commit :send_password_change_notification, if: :saved_change_to_encrypted_password?, on: :update
@@ -111,6 +112,12 @@ class User < ApplicationRecord
     def cannot_deactivate_last_admin_user
       if last_admin_for_any_client?
         errors.add(:base, 'Cannot deactivate user who is the last admin for one or more companies')
+      end
+    end
+
+    def normalize_email
+      if email.present?
+        self.email = email.to_s.downcase.strip
       end
     end
 

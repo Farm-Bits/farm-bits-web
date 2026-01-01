@@ -148,6 +148,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_24_145915) do
     t.datetime "updated_at", null: false
     t.index ["client_id", "email"], name: "index_invitations_on_client_id_and_email", unique: true
     t.index ["client_id"], name: "index_invitations_on_client_id"
+    t.index ["email", "inviter_type"], name: "index_invitations_on_email_and_inviter_type"
     t.index ["email"], name: "index_invitations_on_email"
     t.index ["inviter_type", "inviter_id"], name: "index_invitations_on_inviter"
     t.index ["token"], name: "index_invitations_on_token", unique: true
@@ -179,9 +180,10 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_24_145915) do
     t.integer "position", default: 0, null: false
     t.boolean "active", default: true, null: false
     t.bigint "measurement_subtype_id"
-    t.bigint "plc_id", null: false
     t.bigint "register_template_id", null: false
-    t.bigint "client_id", null: false
+    t.bigint "plc_id"
+    t.bigint "site_id", null: false
+    t.bigint "client_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["active"], name: "index_measurement_points_on_active"
@@ -193,6 +195,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_24_145915) do
     t.index ["plc_id", "register_template_id"], name: "index_measurement_points_on_plc_id_and_register_template_id", unique: true
     t.index ["plc_id"], name: "index_measurement_points_on_plc_id"
     t.index ["register_template_id"], name: "index_measurement_points_on_register_template_id"
+    t.index ["site_id"], name: "index_measurement_points_on_site_id"
   end
 
   create_table "measurement_subtypes", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -435,6 +438,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_24_145915) do
   add_foreign_key "measurement_points", "measurement_subtypes", on_delete: :cascade
   add_foreign_key "measurement_points", "plcs", on_delete: :cascade
   add_foreign_key "measurement_points", "register_templates", on_delete: :cascade
+  add_foreign_key "measurement_points", "sites", on_delete: :cascade
   add_foreign_key "measurement_subtypes", "measurement_types", on_delete: :cascade
   add_foreign_key "models", "manufacturers", on_delete: :cascade
   add_foreign_key "plc_versions", "models", on_delete: :cascade

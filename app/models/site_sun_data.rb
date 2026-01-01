@@ -77,7 +77,7 @@ class SiteSunData < ApplicationRecord
 
   # Check if a given time falls during day hours
   def is_day?(timestamp)
-    time = timestamp.in_time_zone(site.timezone || 'UTC')
+    time = timestamp.in_time_zone(site.time_zone || 'UTC')
     time >= sunrise && time < sunset
   end
 
@@ -97,12 +97,12 @@ class SiteSunData < ApplicationRecord
 
   # Sunrise in site's timezone
   def sunrise_local
-    sunrise&.in_time_zone(site.timezone || 'UTC')
+    sunrise&.in_time_zone(site.time_zone || 'UTC')
   end
 
   # Sunset in site's timezone
   def sunset_local
-    sunset&.in_time_zone(site.timezone || 'UTC')
+    sunset&.in_time_zone(site.time_zone || 'UTC')
   end
 
   private

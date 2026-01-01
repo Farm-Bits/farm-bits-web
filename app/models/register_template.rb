@@ -38,6 +38,7 @@ class RegisterTemplate < ApplicationRecord
   validates :default_polling_interval_seconds, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
   validate :valid_value_bounds
   validate :enum_values_format, if: :enum_values?
+  validate :address_range_does_not_overlap
 
   def full_address
     "#{address}#{address_count > 1 ? "-#{address + address_count - 1}" : ''}"
@@ -170,6 +171,29 @@ class RegisterTemplate < ApplicationRecord
 
       if !enum_values.values.all? { |v| v.is_a?(String) }
         errors.add(:enum_values, "values must be strings")
+      end
+    end
+
+    def address_range_does_not_overlap
+      if !plc_version_id.present? || !address.present? || !address_count.present?
+        return
+      end
+
+      start_addr = address
+      end_addr = address + address_count - 1
+
+      overlapping = RegisterTemplate
+        .where(plc_version_id: plc_version_id, register_type: register_type)
+        .where.not(id: id)
+        .where('address <= ? AND (address + address_count - 1) >= ?', end_addr, start_addr)
+
+      if overlapping.exists?
+        overlapping_register = overlapping.first
+        errors.add(
+          :address,
+          "range #{start_addr}-#{end_addr} overlaps with '#{overlapping_register.name}' " \
+          "(#{overlapping_register.address}-#{overlapping_register.address + overlapping_register.address_count - 1})"
+        )
       end
     end
 

@@ -2,8 +2,9 @@ class MeasurementPoint < ApplicationRecord
   audited
 
   belongs_to :measurement_subtype, optional: true
-  belongs_to :plc
   belongs_to :register_template
+  belongs_to :plc
+  belongs_to :site, optional: true
   belongs_to :client
 
   validates :name, presence: true

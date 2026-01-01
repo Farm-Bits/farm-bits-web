@@ -16,5 +16,6 @@ class CreateInvitations < ActiveRecord::Migration[7.2]
     add_index :invitations, [:client_id, :email], unique: true
     add_index :invitations, :email
     add_index :invitations, :token, unique: true
+    add_index :invitations, [:email, :inviter_type]
   end
 end

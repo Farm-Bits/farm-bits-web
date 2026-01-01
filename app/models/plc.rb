@@ -37,6 +37,7 @@ class Plc < ApplicationRecord
   validates :web_username, presence: true
   validates :web_password, presence: true
   validate :model_is_plc_type
+  validate :client_matches_terminal_client, if: -> { terminal_id.present? && client_id.present? }
 
   def handler
     plc_version.handler_for(self)
@@ -58,6 +59,12 @@ class Plc < ApplicationRecord
 
       if !model.device_type_plc?
         errors.add(:model, 'must be a PLC model')
+      end
+    end
+
+    def client_matches_terminal_client
+      if terminal.client_id != client_id
+        errors.add(:client, 'must match the terminal client')
       end
     end
 end
