@@ -16,6 +16,9 @@ class MeasurementPoint < ApplicationRecord
   validate :measurement_subtype_required_for_sensor_and_control, if: :active?
   validate :measurement_subtype_category_matches_interface
 
+  class WriteValidationError < StandardError;
+  end
+
   def effective_unit
     unit_override.presence || measurement_subtype&.default_unit
   end
@@ -60,9 +63,29 @@ class MeasurementPoint < ApplicationRecord
     scale_decoded_value(last_decoded_value)
   end
 
-  def write_value!(value)
+  def validate_write(value)
+    if !register_template.group_name.present?
+      return []
+    end
+
+    group_points = fetch_group_points
+    simulated_states = build_simulated_states(group_points, value)
+
+    RegisterGroupValidator.new(simulated_states).validate
+  end
+
+  def write_value!(value, skip_validation: false)
+    if !skip_validation
+      errors = validate_write(value)
+
+      if errors.any?
+        raise WriteValidationError, errors.join('; ')
+      end
+    end
+
     data = register_template.encode_value(value)
 
+    # TODO: Implement actual write to PLC
     # plc.modbus_client.write_registers(
     #   register_template.address,
     #   data
@@ -135,6 +158,48 @@ class MeasurementPoint < ApplicationRecord
         errors.add(:measurement_subtype, "cannot be a control type on input interface")
       elsif register_template.interface.output? && measurement_subtype.sensor?
         errors.add(:measurement_subtype, "cannot be a sensor type on output interface")
+      end
+    end
+
+    def fetch_group_points
+      if !register_template.goup_name.present?
+        return []
+      end
+
+      plc.measurement_points
+        .joins(:register_template)
+        .where(register_templates: {
+          plc_version_id: register_template.plc_version_id,
+          group_name: register_template.group_name
+        })
+        .to_a
+    end
+
+    def build_simulated_states(group_points, new_value)
+      group_points.map do |point|
+        if point.id == id
+          SimulatedPoint.new(point, new_value)
+        else
+          point
+        end
+      end
+    end
+
+    SimulatedPoint = Struct.new(:measurement_point, :simulated_value) do
+      def last_decoded_value
+        simulated_value
+      end
+
+      def register_template
+        measurement_point.register_template
+      end
+
+      def method_missing(method, *args, &block)
+        measurement_point.send(method, *args, &block)
+      end
+
+      def respond_to_missing?(method, include_private = false)
+        measurement_point.respond_to?(method, include_private)
       end
     end
 

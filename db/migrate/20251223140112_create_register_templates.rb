@@ -22,6 +22,9 @@ class CreateRegisterTemplates < ActiveRecord::Migration[7.2]
       # status (device status flags, diagnostic info)
       # identification (device info like serial, firmware version)
       t.string :category, null: false
+      t.string :group_name
+      t.string :group_role
+      t.json :validation_rules
 
       t.boolean :read_only, null: false, default: true
 
@@ -35,7 +38,7 @@ class CreateRegisterTemplates < ActiveRecord::Migration[7.2]
       t.json :enum_values
 
       t.boolean :default_data_collection_enabled, null: false, default: true
-      t.integer :default_polling_interval_seconds, null: false, default: 60
+      t.integer :default_polling_interval_seconds, default: 60
       t.integer :position, null: false, default: 0
       t.references :interface, foreign_key: { on_delete: :cascade }
       t.references :plc_version, null: false, foreign_key: { on_delete: :cascade }
@@ -47,6 +50,7 @@ class CreateRegisterTemplates < ActiveRecord::Migration[7.2]
     add_index :register_templates, [:plc_version_id, :label], unique: true
     add_index :register_templates, [:plc_version_id, :name], unique: true
     add_index :register_templates, :category
+    add_index :register_templates, [:plc_version_id, :group_name]
     add_index :register_templates, [:plc_version_id, :category]
     add_index :register_templates, [:plc_version_id, :position]
   end

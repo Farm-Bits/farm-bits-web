@@ -295,13 +295,16 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_24_145915) do
     t.decimal "factor", precision: 15, scale: 10, default: "1.0", null: false
     t.decimal "offset", precision: 15, scale: 6, default: "0.0", null: false
     t.string "category", null: false
+    t.string "group_name"
+    t.string "group_role"
+    t.json "validation_rules"
     t.boolean "read_only", default: true, null: false
     t.decimal "min_value", precision: 20, scale: 6
     t.decimal "max_value", precision: 20, scale: 6
     t.string "default_value"
     t.json "enum_values"
     t.boolean "default_data_collection_enabled", default: true, null: false
-    t.integer "default_polling_interval_seconds", default: 60, null: false
+    t.integer "default_polling_interval_seconds", default: 60
     t.integer "position", default: 0, null: false
     t.bigint "interface_id"
     t.bigint "plc_version_id", null: false
@@ -311,6 +314,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_24_145915) do
     t.index ["interface_id"], name: "index_register_templates_on_interface_id"
     t.index ["plc_version_id", "address"], name: "index_register_templates_on_plc_version_id_and_address", unique: true
     t.index ["plc_version_id", "category"], name: "index_register_templates_on_plc_version_id_and_category"
+    t.index ["plc_version_id", "group_name"], name: "index_register_templates_on_plc_version_id_and_group_name"
     t.index ["plc_version_id", "label"], name: "index_register_templates_on_plc_version_id_and_label", unique: true
     t.index ["plc_version_id", "name"], name: "index_register_templates_on_plc_version_id_and_name", unique: true
     t.index ["plc_version_id", "position"], name: "index_register_templates_on_plc_version_id_and_position"

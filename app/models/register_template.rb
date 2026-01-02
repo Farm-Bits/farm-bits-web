@@ -39,6 +39,8 @@ class RegisterTemplate < ApplicationRecord
   validate :valid_value_bounds
   validate :enum_values_format, if: :enum_values?
   validate :address_range_does_not_overlap
+  validate :group_role_requires_group_name
+  validate :validation_rules_format
 
   def full_address
     "#{address}#{address_count > 1 ? "-#{address + address_count - 1}" : ''}"
@@ -194,6 +196,75 @@ class RegisterTemplate < ApplicationRecord
           "range #{start_addr}-#{end_addr} overlaps with '#{overlapping_register.name}' " \
           "(#{overlapping_register.address}-#{overlapping_register.address + overlapping_register.address_count - 1})"
         )
+      end
+    end
+
+    def group_role_requires_group_name
+      if group_role.present? && group_name.blank?
+        errors.add(:group_role, 'cannot be set without a group_name')
+      end
+    end
+
+    def validation_rules_format
+      if validation_rules.blank?
+        return
+      end
+
+      if !validation_rules.is_a?(Hash)
+        errors.add(:validation_rules, 'must be a JSON object')
+        return
+      end
+
+      validation_rules.each do |rule_type, rule_config|
+        case rule_type
+        when 'required_when'
+          validate_required_when_format(rule_config)
+        when 'one_of_required'
+          validate_one_of_required_format(rule_config)
+        when 'less_than', 'greater_than'
+          validate_comparison_format(rule_type, rule_config)
+        end
+      end
+    end
+
+    def validate_required_when_format(rule_config)
+      if !rule_config.is_a?(Hash)
+        errors.add(:validation_rules, "required_when must be an object")
+        return
+      end
+
+      if !rule_config['group_role'].present?
+        errors.add(:validation_rules, "required_when must have 'group_role'")
+      end
+
+      if !rule_config.key?('equals')
+        errors.add(:validation_rules, "required_when must have 'equals'")
+      end
+    end
+
+    def validate_one_of_required_format(rule_config)
+      if !rule_config.is_a?(Array)
+        errors.add(:validation_rules, "one_of_required must be an array")
+        return
+      end
+
+      if rule_config.empty?
+        errors.add(:validation_rules, "one_of_required cannot be empty")
+      end
+
+      if !rule_config.all? { |role| role.is_a?(String) }
+        errors.add(:validation_rules, "one_of_required must contain only strings")
+      end
+    end
+
+    def validate_comparison_format(rule_type, rule_config)
+      if !rule_config.is_a?(Hash)
+        errors.add(:validation_rules, "#{rule_type} must be an object")
+        return
+      end
+
+      if !rule_config['group_role'].present?
+        errors.add(:validation_rules, "#{rule_type} must have 'group_role'")
       end
     end
 
