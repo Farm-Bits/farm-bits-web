@@ -8,7 +8,16 @@ class RegisterTemplate < ApplicationRecord
 
   CATEGORIES = %w[sensor control configuration diagnostic identification].freeze
   REGISTER_TYPES = %w[holding input coil discrete].freeze
-  DATA_TYPES = %w[int16 uint16 int32 uint32 float32 boolean].freeze
+  DATA_TYPES = %w[
+    int8 uint8 int16 uint16 int32 uint32 int64 uint64
+    float32 float64
+    boolean
+    string utf16_string
+    date_seconds date_nanoseconds
+    time_milliseconds time_nanoseconds
+    datetime_seconds datetime_nanoseconds
+    timeofday_milliseconds timeofday_nanoseconds
+  ].freeze
   BYTE_ORDERS = %w[big_endian little_endian big_endian_swap little_endian_swap].freeze
   VALUE_FORMATS = %w[
     numeric      # Raw numeric value (default)
@@ -36,6 +45,7 @@ class RegisterTemplate < ApplicationRecord
   validates :offset, numericality: true
   validates :category, presence: true, inclusion: { in: CATEGORIES }
   validates :default_polling_interval_seconds, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
+  validate :address_count_matches_data_type
   validate :valid_value_bounds
   validate :enum_values_format, if: :enum_values?
   validate :address_range_does_not_overlap
@@ -56,10 +66,10 @@ class RegisterTemplate < ApplicationRecord
 
   def read_function_code
     case register_type
-    when 'holding_register' then 3
-    when 'input_register' then 4
+    when 'holding' then 3
+    when 'input' then 4
     when 'coil' then 1
-    when 'discrete_input' then 2
+    when 'discrete' then 2
     end
   end
 
@@ -69,19 +79,9 @@ class RegisterTemplate < ApplicationRecord
     end
 
     case register_type
-    when 'holding_register' then 6
+    when 'holding' then 6
     when 'coil' then 5
     else nil
-    end
-  end
-
-  def byte_size
-    case data_type
-    when 'int16', 'uint16' then 2
-    when 'int32', 'uint32', 'float32' then 4
-    when 'float64' then 8
-    when 'boolean' then 1
-    else 2
     end
   end
 
@@ -152,6 +152,31 @@ class RegisterTemplate < ApplicationRecord
   end
 
   private
+    def minimum_address_count
+      case data_type
+      when 'int8', 'uint8', 'boolean', 'int16', 'uint16' then 1
+      when 'int32', 'uint32', 'float32',
+          'date_seconds', 'time_milliseconds',
+          'datetime_seconds', 'timeofday_milliseconds' then 2
+      when 'int64', 'uint64', 'float64',
+          'date_nanoseconds', 'time_nanoseconds',
+          'datetime_nanoseconds', 'timeofday_nanoseconds' then 4
+      when 'string', 'utf16_string' then 1
+      else 1
+      end
+    end
+
+    def address_count_matches_data_type
+      if !data_type.present? || !address_count.present?
+        return
+      end
+
+      min = minimum_address_count
+      if address_count < min
+        errors.add(:address_count, "must be at least #{min} for data type '#{data_type}' (#{name})")
+      end
+    end
+
     def valid_value_bounds
       if !min_value.present? || !max_value.present?
         return
@@ -281,6 +306,11 @@ class RegisterTemplate < ApplicationRecord
 
     def decode_numeric(data)
       case data_type
+      when 'uint8'
+        data.first & 0xFF
+      when 'int8'
+        val = data.first & 0xFF
+        val > 127 ? val - 256 : val
       when 'uint16'
         data.first
       when 'int16'
@@ -291,8 +321,19 @@ class RegisterTemplate < ApplicationRecord
       when 'int32'
         val = (data[0] << 16) | data[1]
         val > 2147483647 ? val - 4294967296 : val
+      when 'uint64'
+        (data[0] << 48) | (data[1] << 32) | (data[2] << 16) | data[3]
+      when 'int64'
+        val = (data[0] << 48) | (data[1] << 32) | (data[2] << 16) | data[3]
+        val > 9223372036854775807 ? val - 18446744073709551616 : val
       when 'float32'
         data.pack('S>*').unpack1('g')
+      when 'float64'
+        data.pack('S>*').unpack1('G')
+      when 'date_seconds', 'datetime_seconds', 'time_milliseconds', 'timeofday_milliseconds'
+        (data[0] << 16) | data[1]  # 32-bit timestamp/duration
+      when 'date_nanoseconds', 'datetime_nanoseconds', 'time_nanoseconds', 'timeofday_nanoseconds'
+        (data[0] << 48) | (data[1] << 32) | (data[2] << 16) | data[3]  # 64-bit timestamp/duration
       else
         data.first
       end
@@ -308,13 +349,20 @@ class RegisterTemplate < ApplicationRecord
 
     def encode_numeric(value)
       case data_type
+      when 'uint8', 'int8'
+        [value.to_i & 0xFF]
       when 'uint16', 'int16'
         [value.to_i & 0xFFFF]
-      when 'uint32', 'int32'
+      when 'uint32', 'int32', 'date_seconds', 'datetime_seconds', 'time_milliseconds', 'timeofday_milliseconds'
         val = value.to_i
         [(val >> 16) & 0xFFFF, val & 0xFFFF]
+      when 'uint64', 'int64', 'date_nanoseconds', 'datetime_nanoseconds', 'time_nanoseconds', 'timeofday_nanoseconds'
+        val = value.to_i
+        [(val >> 48) & 0xFFFF, (val >> 32) & 0xFFFF, (val >> 16) & 0xFFFF, val & 0xFFFF]
       when 'float32'
         [value.to_f].pack('g').unpack('S>*')
+      when 'float64'
+        [value.to_f].pack('G').unpack('S>*')
       else
         [value.to_i]
       end

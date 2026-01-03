@@ -1,0 +1,1304 @@
+Address,Name,Type,Value,Um,Default,Min,Max,Description,Count
+15716,Par_TAB,UINT,0,num,0,0,65535,Tab (map code),1
+15717,Par_POLI,UINT,1027,num,1025,0,65535,Polycarbonate code,2
+15719,Par_PARMOD,BOOL,True,flag,True,0,1,Parameter modified,1
+15725,Temp_UM,enum,0=°C,num,0=°C,0,1,Unit of temperature measurement,1
+15726,Cfg_AI1,enum,0=NTC(NK103),num,2=NTC(103AT),0,11,Type of analogue input AI1,1
+15727,Cfg_AI2,enum,2=NTC(103AT),num,2=NTC(103AT),0,11,Type of analogue input AI2,1
+15728,Cfg_AI3,enum,2=NTC(103AT),num,2=NTC(103AT),0,11,Type of analogue input AI3,1
+15729,Cfg_AI4,enum,2=NTC(103AT),num,2=NTC(103AT),0,11,Type of analogue input AI4,1
+15730,Cfg_AI5,enum,2=NTC(103AT),num,2=NTC(103AT),0,11,Type of analogue input AI5,1
+15731,Cfg_AI6,enum,2=NTC(103AT),num,2=NTC(103AT),0,11,Type of analogue input AI6,1
+16100,Cfg_AI7,enum,2=NTC(103AT),num,2=NTC(103AT),0,11,Type of analogue input AI7,1
+16101,Cfg_AI8,enum,2=NTC(103AT),num,2=NTC(103AT),0,11,Type of analogue input AI8,1
+15748,Calibration_AI1,INT,0,digit,0,-1000,1000,Analogue input AI1 differential,1
+15749,Calibration_AI2,INT,0,digit,0,-1000,1000,Analogue input AI2 differential,1
+15750,Calibration_AI3,INT,0,digit,0,-1000,1000,Analogue input AI3 differential,1
+15751,Calibration_AI4,INT,0,digit,0,-1000,1000,Analogue input AI4 differential,1
+15752,Calibration_AI5,INT,0,digit,0,-1000,1000,Analogue input AI5 differential,1
+15753,Calibration_AI6,INT,0,digit,0,-1000,1000,Analogue input AI6 differential,1
+16118,Calibration_AI7,INT,0,digit,0,-1000,1000,Analogue input AI7 differential,1
+16119,Calibration_AI8,INT,0,digit,0,-1000,1000,Analogue input AI8 differential,1
+15774,Addr_RS485_OB,UINT,1,num,1,0,255,RS485-2 On Board address,1
+15775,Proto_RS485_OB,enum,3=Modbus/RTU,num,3=Modbus/RTU,2,4,Select RS485-2 On Board protocol,1
+15776,DataBit_RS485_OB,UINT,8,num,8,8,8,RS485-2 On Board Data bit number,1
+15777,StopBit_RS485_OB,UINT,1,num,1,1,2,RS485-2 On Board stop bit number,1
+15778,Parity_RS485_OB,enum,2=Even,num,0=Null,0,2,RS485-2 On Board parity protocol,1
+15779,Baud_RS485_OB,enum,2=38400,num,0=9600,0,5,RS485-2 On Board baud rate protocol,1
+15780,Addr_CAN_OB,UINT,1,num,1,1,127,CAN On Board address,1
+15781,Baud_CAN_OB,enum,2=500 Kb/s,num,2=500 Kb/s,2,6,CAN On Board baud rate protocol,1
+15782,Addr_RS485_PI,UINT,1,num,1,0,255,RS485 passive Plug-In address,1
+15783,Proto_RS485_PI,enum,3=Modbus/RTU,num,3=Modbus/RTU,2,4,Select RS485 passive Plug-In protocol ,1
+15784,DataBit_RS485_PI,UINT,8,num,8,8,8,RS485 passive Plug-In Data bit number,1
+15785,StopBit_RS485_PI,UINT,1,num,1,1,2,RS485 passive Plug-In stop bit number,1
+15786,Parity_RS485_PI,enum,2=Even,num,2=Even,0,2,RS485 passive Plug-In parity protocol,1
+15787,Baud_RS485_PI,enum,2=38400,num,2=38400,0,5,RS485 passive Plug-In baud rate protocol,1
+15788,Addr_CAN_PI,UINT,1,num,1,1,127,CAN passive Plug-In address,1
+15789,Baud_CAN_PI,enum,2=500 Kb/s,num,2=500 Kb/s,2,6,CAN Passive Plug-In baud rate protocol,1
+15790,Addr_RS232_PI,UINT,1,num,1,0,255,RS232 passive Plug-In address,1
+15791,Proto_RS232_PI,enum,3=Modbus/RTU,num,3=Modbus/RTU,2,3,Select RS232 passive Plug-In protocol ,1
+15792,DataBit_RS232_PI,UINT,8,num,8,7,8,RS232 passive Plug-In Data bit number,1
+15793,StopBit_RS232_PI,UINT,1,num,1,1,2,RS232 passive Plug-In stop bit number,1
+15794,Parity_RS232_PI,enum,2=Even,num,2=Even,0,2,RS232 passive Plug-In parity protocol,1
+15795,Baud_RS232_PI,enum,2=38400,num,2=38400,0,5,RS232 passive Plug-In baud rate protocol,1
+15772,Port_FTP_PI,UINT,80,num,65535,0,65535,"FTP Port number, 0 is equal to default port 21, 65535 disable from reset FTP slave ",1
+15796,Port_HTTP_PI,UINT,0,num,0,0,65535,"HTTP Port number, 0 is equal to default port 80, 65535 disable from reset HTTP service",1
+15797,Port_ETH_PI,UINT,502,num,65535,0,65535,"TCP/IP Port number, 65535 disable from reset TCP/IP Modbus Slave",1
+15798,Ip_1_ETH_PI,UINT,10,num,10,0,255,Ethernet IP address (1 st part),1
+15799,Ip_2_ETH_PI,UINT,0,num,0,0,255,Ethernet IP address (2 nd part),1
+15800,Ip_3_ETH_PI,UINT,0,num,0,0,255,Ethernet IP address (3 rd part),1
+15801,Ip_4_ETH_PI,UINT,100,num,100,0,255,Ethernet IP address (4 th part),1
+15802,DefGtwy_1_ETH_PI,UINT,10,num,10,0,255,Default Gateway (1 st part),1
+15803,DefGtwy_2_ETH_PI,UINT,0,num,0,0,255,Default Gateway (2 nd part),1
+15804,DefGtwy_3_ETH_PI,UINT,0,num,0,0,255,Default Gateway (3 rd part),1
+15805,DefGtwy_4_ETH_PI,UINT,1,num,1,0,255,Default Gateway (4 th part),1
+15806,NetMsk_1_ETH_PI,UINT,255,num,255,0,255,Net mask (1 st part),1
+15807,NetMsk_2_ETH_PI,UINT,255,num,255,0,255,Net mask (2 nd part),1
+15808,NetMsk_3_ETH_PI,UINT,255,num,255,0,255,Net mask (3 rd part),1
+15809,NetMsk_4_ETH_PI,UINT,0,num,0,0,255,Net mask (4 th part),1
+15810,PriDNS_1_ETH_PI,UINT,8,num,8,0,255,Primary DNS server (1 st part),1
+15811,PriDNS_2_ETH_PI,UINT,8,num,8,0,255,Primary DNS server (2 nd part),1
+15812,PriDNS_3_ETH_PI,UINT,8,num,8,0,255,Primary DNS server (3 rd part),1
+15813,PriDNS_4_ETH_PI,UINT,8,num,8,0,255,Primary DNS server (4 th part),1
+15814,SecDNS_1_ETH_PI,UINT,8,num,8,0,255,Secondary DNS server (1 st part),1
+15815,SecDNS_2_ETH_PI,UINT,8,num,8,0,255,Secondary DNS server (2 nd part),1
+15816,SecDNS_3_ETH_PI,UINT,4,num,4,0,255,Secondary DNS server (3 rd part),1
+15817,SecDNS_4_ETH_PI,UINT,4,num,4,0,255,Secondary DNS server (4 th part),1
+15818,EnableDHCP_ETH_PI,BOOL,True,flag,True,0,1,Enable DHCP,1
+15820,Modem_RS232_PI,BOOL,True,flag,True,0,1,Modem Enable,1
+15821,Modem_InitStr1,STRING,AT&F&C1&D2X4E0S0=0,,AT&F&C1&D2X4E0S0=0,,,Init String (1st part),10
+15831,Modem_InitStr2,STRING,,,,,,Init String (2nd part),20
+15851,Modem_HangupStr,STRING,32768,,ATH0,,,HangUp String,10
+15819,Hmi_Language,UINT,0,num,0,0,65535,Language,1
+15723,Par_ContrLCD,UINT,30,num,30,0,63,LCD contrast,1
+15724,Par_BackLightTime,UINT,10,sec,10,0,3600,Backlight time,1
+8336,AIL1,INT,222,digit,-32768,,,AIL1 analogue input,1
+8337,AIL2,INT,-32768,digit,-32768,,,AIL2 analogue input,1
+8338,AIL3,INT,-32768,digit,-32768,,,AIL3 analogue input,1
+8339,AIL4,INT,-32768,digit,-32768,,,AIL4 analogue input,1
+8340,AIL5,INT,-32768,digit,-32768,,,AIL5 analogue input,1
+8341,AIL6,INT,-32768,digit,-32768,,,AIL6 analogue input,1
+8342,AIL7,INT,-32768,digit,-32768,,,AIL7 analogue input,1
+8343,AIL8,INT,-32768,digit,-32768,,,AIL8 analogue input,1
+8344,AIL9,INT,-32768,digit,-32768,,,AIL9 analogue input,1
+8345,AIL10,INT,-32768,digit,-32768,,,AIL10 analogue input,1
+8346,AIL11,INT,-32768,digit,-32768,,,AIL11 analogue input,1
+8347,AIL12,INT,-32768,digit,-32768,,,AIL12 analogue input,1
+8192,DIL1,BOOL,True,flag,True,0,1,DIL1 digital input,1
+8193,DIL2,BOOL,True,flag,True,0,1,DIL2 digital input,1
+8194,DIL3,BOOL,True,flag,True,0,1,DIL3 digital input,1
+8195,DIL4,BOOL,True,flag,True,0,1,DIL4 digital input,1
+8196,DIL5,BOOL,True,flag,True,0,1,DIL5 digital input,1
+8197,DIL6,BOOL,True,flag,True,0,1,DIL6 digital input,1
+8198,DIL7,BOOL,True,flag,True,0,1,DIL7 digital input,1
+8199,DIL8,BOOL,True,flag,True,0,1,DIL8 digital input,1
+8200,DIL9,BOOL,True,flag,True,0,1,DIL9 digital input,1
+8201,DIL10,BOOL,True,flag,True,0,1,DIL10 digital input,1
+8202,DIL11,BOOL,True,flag,True,0,1,DIL11 digital input,1
+8203,DIL12,BOOL,True,flag,True,0,1,DIL12 digital input,1
+8528,DOL1,BOOL,True,flag,True,0,1,DOL1 digital output,1
+8529,DOL2,BOOL,True,flag,True,0,1,DOL2 digital output,1
+8530,DOL3,BOOL,True,flag,True,0,1,DOL3 digital output,1
+8531,DOL4,BOOL,True,flag,True,0,1,DOL4 digital output,1
+8532,DOL5,BOOL,True,flag,True,0,1,DOL5 digital output,1
+8533,DOL6,BOOL,True,flag,True,0,1,DOL6 digital output,1
+8534,DOL7,BOOL,True,flag,True,0,1,DOL7 digital output,1
+8535,DOL8,BOOL,True,flag,True,0,1,DOL8 digital output,1
+8536,DOL9,BOOL,True,flag,True,0,1,DOL9 digital output,1
+8537,DOL10,BOOL,True,flag,True,0,1,DOL10 digital output,1
+8538,DOL11,BOOL,True,flag,True,0,1,DOL11 digital output,1
+8539,DOL12,BOOL,True,flag,True,0,1,DOL12 digital output,1
+8448,AOL1,REAL,0.0,%,0.0,0.0,100.0,AOL1 analogue output,1
+8449,AOL2,REAL,0.0,%,0.0,0.0,100.0,AOL2 analogue output,1
+8450,AOL3,REAL,0.0,%,0.0,0.0,100.0,AOL3 analogue output,1
+8451,AOL4,REAL,0.0,%,0.0,0.0,100.0,AOL4 analogue output,1
+8452,AOL5,REAL,0.0,%,0.0,0.0,100.0,AOL5 analogue output,1
+8453,AOL6,REAL,0.0,%,0.0,0.0,100.0,AOL6 analogue output,1
+8752,FDI1_counter,UDINT,0,num,0,,,FDI1 input counter,2
+8754,FDI1_frequency,REAL,0.0,Hz,0.0,,,FDI1 input frequency,2
+8760,FDI1_value,BOOL,True,flag,True,0,1,FDI1 digital input,1
+8761,FDI1_reset_counter,BOOL,True,flag,True,0,1,FDI1 reset input counter value,1
+8898,FDI2_counter,UDINT,0,num,0,,,FDI2 input counter,2
+8900,FDI2_frequency,REAL,0.0,Hz,0.0,,,FDI2 input frequency,2
+8902,FDI2_value,BOOL,True,flag,True,0,1,FDI2 digital input,1
+8903,FDI2_reset_counter,BOOL,True,flag,True,0,1,FDI2 reset input counter value,1
+8640,LED1,enum,0=Off,num,0=Off,0,2,Led green,1
+8641,LED2,enum,0=Off,num,0=Off,0,2,Led red,1
+8642,LED3,enum,0=Off,num,0=Off,0,2,Led yellow,1
+8720,BACKLIGHT,enum,0=Off,num,0=Off,0,4,Display backlight,1
+8736,sysClock_seconds,USINT,42,sec,0,0,59,Second value,1
+8737,sysClock_minutes,USINT,36,min,0,0,59,Minute value,1
+8738,sysClock_hours,USINT,2,hours,0,0,23,Hour value,1
+8739,sysClock_dayweek,USINT,3,num,0,0,6,Day of week value,1
+8740,sysClock_daymonth,USINT,15,num,1,1,31,Day of the month value,1
+8741,sysClock_month,USINT,4,num,1,1,12,Month value,1
+8742,sysClock_year,USINT,25,num,0,10,99,Year value,1
+8743,sysClock_Error,BOOL,True,flag,True,0,1,RTC not inizialized,1
+8744,sysClockSet_seconds,USINT,0,sec,0,0,59,Second value (write),1
+8745,sysClockSet_minutes,USINT,0,min,0,0,59,Minute value (write),1
+8746,sysClockSet_hours,USINT,0,hours,0,0,23,Hour value (write),1
+8747,sysClockSet_dayweek,USINT,0,num,0,0,6,Day of week value (write),1
+8748,sysClockSet_daymonth,USINT,19,num,1,1,31,Day of the month value (write),1
+8749,sysClockSet_month,USINT,3,num,1,1,12,Month value (write),1
+8750,sysClockSet_year,USINT,20,num,0,10,99,Year value (write),1
+8751,sysClockSet_Upload,BOOL,True,flag,True,0,1,RTC upload,1
+24320,PASSWORD,UDINT,0,num,4294967295,0,4294967295,"Numeric Password for Application protection. Write-only parameter, One Time Programmable!!!",2
+15527,Gain_10V_AI1,UINT,32768,num,32768,0,65535,0-10V calibration gain AI1,1
+15590,Gain_10V_AI10,UINT,32768,num,32768,0,65535,0-10V calibration gain AI10,1
+15597,Gain_10V_AI11,UINT,32768,num,32768,0,65535,0-10V calibration gain AI11,1
+15604,Gain_10V_AI12,UINT,32768,num,32768,0,65535,0-10V calibration gain AI12,1
+15534,Gain_10V_AI2,UINT,32768,num,32768,0,65535,0-10V calibration gain AI2,1
+15541,Gain_10V_AI3,UINT,32768,num,32768,0,65535,0-10V calibration gain AI3,1
+15548,Gain_10V_AI4,UINT,32768,num,32768,0,65535,0-10V calibration gain AI4,1
+15555,Gain_10V_AI5,UINT,32768,num,32768,0,65535,0-10V calibration gain AI5,1
+15562,Gain_10V_AI6,UINT,32768,num,32768,0,65535,0-10V calibration gain AI6,1
+15569,Gain_10V_AI7,UINT,32142,num,32768,0,65535,0-10V calibration gain AI7,1
+15576,Gain_10V_AI8,UINT,32768,num,32768,0,65535,0-10V calibration gain AI8,1
+15583,Gain_10V_AI9,UINT,32247,num,32768,0,65535,0-10V calibration gain AI9,1
+15692,Gain_10V_AO1,UINT,29401,num,32768,0,65535,0-10V calibration gain AO1,1
+15694,Gain_10V_AO2,UINT,29502,num,32768,0,65535,0-10V calibration gain AO2,1
+15696,Gain_10V_AO3,UINT,27378,num,32768,0,65535,0-10V calibration gain AO3,1
+15698,Gain_10V_AO4,UINT,27389,num,32768,0,65535,0-10V calibration gain AO4,1
+15700,Gain_10V_AO5,UINT,29453,num,32768,0,65535,0-10V calibration gain AO5,1
+15702,Gain_10V_AO6,UINT,29489,num,32768,0,65535,0-10V calibration gain AO6,1
+15526,Gain_5Vr_AI1,UINT,32068,num,32768,0,65535,0-5Vr calibration gain AI1,1
+15529,Gain_5V_AI1,UINT,32271,num,32768,0,65535,0-5V calibration gain AI1,1
+15589,Gain_5Vr_AI10,UINT,32077,num,32768,0,65535,0-5Vr calibration gain AI10,1
+15592,Gain_5V_AI10,UINT,32273,num,32768,0,65535,0-5V calibration gain AI10,1
+15596,Gain_5Vr_AI11,UINT,32048,num,32768,0,65535,0-5Vr calibration gain AI11,1
+15599,Gain_5V_AI11,UINT,32245,num,32768,0,65535,0-5V calibration gain AI11,1
+15603,Gain_5Vr_AI12,UINT,32104,num,32768,0,65535,0-5Vr calibration gain AI12,1
+15606,Gain_5V_AI12,UINT,32302,num,32768,0,65535,0-5V calibration gain AI12,1
+15533,Gain_5Vr_AI2,UINT,32127,num,32768,0,65535,0-5Vr calibration gain AI2,1
+15536,Gain_5V_AI2,UINT,32333,num,32768,0,65535,0-5V calibration gain AI2,1
+15540,Gain_5Vr_AI3,UINT,32097,num,32768,0,65535,0-5Vr calibration gain AI3,1
+15543,Gain_5V_AI3,UINT,32300,num,32768,0,65535,0-5V calibration gain AI3,1
+15547,Gain_5Vr_AI4,UINT,32083,num,32768,0,65535,0-5Vr calibration gain AI4,1
+15550,Gain_5V_AI4,UINT,32287,num,32768,0,65535,0-5V calibration gain AI4,1
+15554,Gain_5Vr_AI5,UINT,32096,num,32768,0,65535,0-5Vr calibration gain AI5,1
+15557,Gain_5V_AI5,UINT,32295,num,32768,0,65535,0-5V calibration gain AI5,1
+15561,Gain_5Vr_AI6,UINT,32099,num,32768,0,65535,0-5Vr calibration gain AI6,1
+15564,Gain_5V_AI6,UINT,32299,num,32768,0,65535,0-5V calibration gain AI6,1
+15568,Gain_5Vr_AI7,UINT,32088,num,32768,0,65535,0-5Vr calibration gain AI7,1
+15571,Gain_5V_AI7,UINT,32286,num,32768,0,65535,0-5V calibration gain AI7,1
+15575,Gain_5Vr_AI8,UINT,32088,num,32768,0,65535,0-5Vr calibration gain AI8,1
+15578,Gain_5V_AI8,UINT,32283,num,32768,0,65535,0-5V calibration gain AI8,1
+15582,Gain_5Vr_AI9,UINT,32095,num,32768,0,65535,0-5Vr calibration gain AI9,1
+15585,Gain_5V_AI9,UINT,32292,num,32768,0,65535,0-5V calibration gain AI9,1
+15528,Gain_mA_AI1,UINT,31060,num,32768,0,65535,4-20mA calibration gain AI1,1
+15591,Gain_mA_AI10,UINT,31012,num,32768,0,65535,4-20mA calibration gain AI10,1
+15598,Gain_mA_AI11,UINT,30955,num,32768,0,65535,4-20mA calibration gain AI11,1
+15605,Gain_mA_AI12,UINT,30975,num,32768,0,65535,4-20mA calibration gain AI12,1
+15535,Gain_mA_AI2,UINT,30963,num,32768,0,65535,4-20mA calibration gain AI2,1
+15542,Gain_mA_AI3,UINT,31053,num,32768,0,65535,4-20mA calibration gain AI3,1
+15549,Gain_mA_AI4,UINT,31002,num,32768,0,65535,4-20mA calibration gain AI4,1
+15556,Gain_mA_AI5,UINT,31005,num,32768,0,65535,4-20mA calibration gain AI5,1
+15563,Gain_mA_AI6,UINT,31116,num,32768,0,65535,4-20mA calibration gain AI6,1
+15570,Gain_mA_AI7,UINT,30962,num,32768,0,65535,4-20mA calibration gain AI7,1
+15577,Gain_mA_AI8,UINT,31090,num,32768,0,65535,4-20mA calibration gain AI8,1
+15584,Gain_mA_AI9,UINT,30983,num,32768,0,65535,4-20mA calibration gain AI9,1
+15693,Gain_mA_AO1,UINT,32768,num,32768,0,65535,4-20mA calibration gain AO1,1
+15695,Gain_mA_AO2,UINT,0,num,32768,0,65535,4-20mA calibration gain AO2,1
+15697,Gain_mA_AO3,UINT,27574,num,32768,0,65535,4-20mA calibration gain AO3,1
+15699,Gain_mA_AO4,UINT,0,num,32768,0,65535,4-20mA calibration gain AO4,1
+15701,Gain_mA_AO5,UINT,32768,num,32768,0,65535,4-20mA calibration gain AO5,1
+15703,Gain_mA_AO6,UINT,32768,num,32768,0,65535,4-20mA calibration gain AO6,1
+15524,Gain_Ntc_AI1,UINT,32768,num,32768,0,65535,NTC calibration gain AI1,1
+15587,Gain_Ntc_AI10,UINT,32768,num,32768,0,65535,NTC calibration gain AI10,1
+15594,Gain_Ntc_AI11,UINT,32768,num,32768,0,65535,NTC calibration gain AI11,1
+15601,Gain_Ntc_AI12,UINT,32768,num,32768,0,65535,NTC calibration gain AI12,1
+15531,Gain_Ntc_AI2,UINT,32768,num,32768,0,65535,NTC calibration gain AI2,1
+15538,Gain_Ntc_AI3,UINT,32768,num,32768,0,65535,NTC calibration gain AI3,1
+15545,Gain_Ntc_AI4,UINT,32768,num,32768,0,65535,NTC calibration gain AI4,1
+15552,Gain_Ntc_AI5,UINT,32768,num,32768,0,65535,NTC calibration gain AI5,1
+15559,Gain_Ntc_AI6,UINT,32768,num,32768,0,65535,NTC calibration gain AI6,1
+15566,Gain_Ntc_AI7,UINT,32768,num,32768,0,65535,NTC calibration gain AI7,1
+15573,Gain_Ntc_AI8,UINT,32768,num,32768,0,65535,NTC calibration gain AI8,1
+15580,Gain_Ntc_AI9,UINT,32768,num,32768,0,65535,NTC calibration gain AI9,1
+15525,Gain_PT1000_AI1,UINT,32768,num,32768,0,65535,PT1000 calibration gain AI1,1
+15588,Gain_PT1000_AI10,UINT,32768,num,32768,0,65535,PT1000 calibration gain AI10,1
+15595,Gain_PT1000_AI11,UINT,32768,num,32768,0,65535,PT1000 calibration gain AI11,1
+15602,Gain_PT1000_AI12,UINT,32768,num,32768,0,65535,PT1000 calibration gain AI12,1
+15532,Gain_PT1000_AI2,UINT,32768,num,32768,0,65535,PT1000 calibration gain AI2,1
+15539,Gain_PT1000_AI3,UINT,32768,num,32768,0,65535,PT1000 calibration gain AI3,1
+15546,Gain_PT1000_AI4,UINT,32768,num,32768,0,65535,PT1000 calibration gain AI4,1
+15553,Gain_PT1000_AI5,UINT,32768,num,32768,0,65535,PT1000 calibration gain AI5,1
+15560,Gain_PT1000_AI6,UINT,32768,num,32768,0,65535,PT1000 calibration gain AI6,1
+15567,Gain_PT1000_AI7,UINT,32768,num,32768,0,65535,PT1000 calibration gain AI7,1
+15574,Gain_PT1000_AI8,UINT,32768,num,32768,0,65535,PT1000 calibration gain AI8,1
+15581,Gain_PT1000_AI9,UINT,32768,num,32768,0,65535,PT1000 calibration gain AI9,1
+15530,Gain_PTC_AI1,UINT,32768,num,32768,0,65535,PTC calibration gain AI1,1
+15593,Gain_PTC_AI10,UINT,32768,num,32768,0,65535,PTC calibration gain AI10,1
+15600,Gain_PTC_AI11,UINT,32768,num,32768,0,65535,PTC calibration gain AI11,1
+15607,Gain_PTC_AI12,UINT,32768,num,32768,0,65535,PTC calibration gain AI12,1
+15537,Gain_PTC_AI2,UINT,32768,num,32768,0,65535,PTC calibration gain AI2,1
+15544,Gain_PTC_AI3,UINT,32768,num,32768,0,65535,PTC calibration gain AI3,1
+15551,Gain_PTC_AI4,UINT,32768,num,32768,0,65535,PTC calibration gain AI4,1
+15558,Gain_PTC_AI5,UINT,32768,num,32768,0,65535,PTC calibration gain AI5,1
+15565,Gain_PTC_AI6,UINT,32768,num,32768,0,65535,PTC calibration gain AI6,1
+15572,Gain_PTC_AI7,UINT,32768,num,32768,0,65535,PTC calibration gain AI7,1
+15579,Gain_PTC_AI8,UINT,32768,num,32768,0,65535,PTC calibration gain AI8,1
+15586,Gain_PTC_AI9,UINT,32768,num,32768,0,65535,PTC calibration gain AI9,1
+15608,Offs_Ntc_AI1,INT,0,num,0,-32768,32767,NTC calibration offset AI1,1
+15609,Offs_PT1000_AI1,INT,0,num,0,-32768,32767,PT1000 calibration offset AI1,1
+15610,Offs_5Vr_AI1,INT,0,num,0,-32768,32767,0-5Vr calibration offset AI1,1
+15611,Offs_10V_AI1,INT,0,num,0,-32768,32767,0-10V calibration offset AI1,1
+15612,Offs_mA_AI1,INT,0,num,0,-32768,32767,4-20mA calibration offset AI1,1
+15613,Offs_5V_AI1,INT,0,num,0,-32768,32767,0-5V calibration offset AI1,1
+15614,Offs_PTC_AI1,INT,0,num,0,-32768,32767,PTC calibration offset AI1,1
+15615,Offs_Ntc_AI2,INT,0,num,0,-32768,32767,NTC calibration offset AI2,1
+15616,Offs_PT1000_AI2,INT,0,num,0,-32768,32767,PT1000 calibration offset AI2,1
+15617,Offs_5Vr_AI2,INT,0,num,0,-32768,32767,0-5Vr calibration offset AI2,1
+15618,Offs_10V_AI2,INT,0,num,0,-32768,32767,0-10V calibration offset AI2,1
+15619,Offs_mA_AI2,INT,0,num,0,-32768,32767,4-20mA calibration offset AI2,1
+15620,Offs_5V_AI2,INT,0,num,0,-32768,32767,0-5V calibration offset AI2,1
+15621,Offs_PTC_AI2,INT,0,num,0,-32768,32767,PTC calibration offset AI2,1
+15622,Offs_Ntc_AI3,INT,0,num,0,-32768,32767,NTC calibration offset AI3,1
+15623,Offs_PT1000_AI3,INT,0,num,0,-32768,32767,PT1000 calibration offset AI3,1
+15624,Offs_5Vr_AI3,INT,0,num,0,-32768,32767,0-5Vr calibration offset AI3,1
+15625,Offs_10V_AI3,INT,0,num,0,-32768,32767,0-10V calibration offset AI3,1
+15626,Offs_mA_AI3,INT,0,num,0,-32768,32767,4-20mA calibration offset AI3,1
+15627,Offs_5V_AI3,INT,0,num,0,-32768,32767,0-5V calibration offset AI3,1
+15628,Offs_PTC_AI3,INT,0,num,0,-32768,32767,PTC calibration offset AI3,1
+15629,Offs_Ntc_AI4,INT,0,num,0,-32768,32767,NTC calibration offset AI4,1
+15630,Offs_PT1000_AI4,INT,0,num,0,-32768,32767,PT1000 calibration offset AI4,1
+15631,Offs_5Vr_AI4,INT,0,num,0,-32768,32767,0-5Vr calibration offset AI4,1
+15632,Offs_10V_AI4,INT,0,num,0,-32768,32767,0-10V calibration offset AI4,1
+15633,Offs_mA_AI4,INT,0,num,0,-32768,32767,4-20mA calibration offset AI4,1
+15634,Offs_5V_AI4,INT,0,num,0,-32768,32767,0-5V calibration offset AI4,1
+15635,Offs_PTC_AI4,INT,0,num,0,-32768,32767,PTC calibration offset AI4,1
+15636,Offs_Ntc_AI5,INT,0,num,0,-32768,32767,NTC calibration offset AI5,1
+15637,Offs_PT1000_AI5,INT,0,num,0,-32768,32767,PT1000 calibration offset AI5,1
+15638,Offs_5Vr_AI5,INT,0,num,0,-32768,32767,0-5Vr calibration offset AI5,1
+15639,Offs_10V_AI5,INT,0,num,0,-32768,32767,0-10V calibration offset AI5,1
+15640,Offs_mA_AI5,INT,0,num,0,-32768,32767,4-20mA calibration offset AI5,1
+15641,Offs_5V_AI5,INT,0,num,0,-32768,32767,0-5V calibration offset AI5,1
+15642,Offs_PTC_AI5,INT,0,num,0,-32768,32767,PTC calibration offset AI5,1
+15643,Offs_Ntc_AI6,INT,0,num,0,-32768,32767,NTC calibration offset AI6,1
+15644,Offs_PT1000_AI6,INT,0,num,0,-32768,32767,PT1000 calibration offset AI6,1
+15645,Offs_5Vr_AI6,INT,0,num,0,-32768,32767,0-5Vr calibration offset AI6,1
+15646,Offs_10V_AI6,INT,0,num,0,-32768,32767,0-10V calibration offset AI6,1
+15647,Offs_mA_AI6,INT,0,num,0,-32768,32767,4-20mA calibration offset AI6,1
+15648,Offs_5V_AI6,INT,0,num,0,-32768,32767,0-5V calibration offset AI6,1
+15649,Offs_PTC_AI6,INT,0,num,0,-32768,32767,PTC calibration offset AI6,1
+15650,Offs_Ntc_AI7,INT,0,num,0,-32768,32767,NTC calibration offset AI7,1
+15651,Offs_PT1000_AI7,INT,0,num,0,-32768,32767,PT1000 calibration offset AI7,1
+15652,Offs_5Vr_AI7,INT,0,num,0,-32768,32767,0-5Vr calibration offset AI7,1
+15653,Offs_10V_AI7,INT,0,num,0,-32768,32767,0-10V calibration offset AI7,1
+15654,Offs_mA_AI7,INT,0,num,0,-32768,32767,4-20mA calibration offset AI7,1
+15655,Offs_5V_AI7,INT,0,num,0,-32768,32767,0-5V calibration offset AI7,1
+15656,Offs_PTC_AI7,INT,0,num,0,-32768,32767,PTC calibration offset AI7,1
+15657,Offs_Ntc_AI8,INT,0,num,0,-32768,32767,NTC calibration offset AI8,1
+15658,Offs_PT1000_AI8,INT,0,num,0,-32768,32767,PT1000 calibration offset AI8,1
+15659,Offs_5Vr_AI8,INT,0,num,0,-32768,32767,0-5Vr calibration offset AI8,1
+15660,Offs_10V_AI8,INT,0,num,0,-32768,32767,0-10V calibration offset AI8,1
+15661,Offs_mA_AI8,INT,0,num,0,-32768,32767,4-20mA calibration offset AI8,1
+15662,Offs_5V_AI8,INT,0,num,0,-32768,32767,0-5V calibration offset AI8,1
+15663,Offs_PTC_AI8,INT,0,num,0,-32768,32767,PTC calibration offset AI8,1
+15664,Offs_Ntc_AI9,INT,0,num,0,-32768,32767,NTC calibration offset AI9,1
+15665,Offs_PT1000_AI9,INT,0,num,0,-32768,32767,PT1000 calibration offset AI9,1
+15666,Offs_5Vr_AI9,INT,0,num,0,-32768,32767,0-5Vr calibration offset AI9,1
+15667,Offs_10V_AI9,INT,0,num,0,-32768,32767,0-10V calibration offset AI9,1
+15668,Offs_mA_AI9,INT,0,num,0,-32768,32767,4-20mA calibration offset AI9,1
+15669,Offs_5V_AI9,INT,0,num,0,-32768,32767,0-5V calibration offset AI9,1
+15670,Offs_PTC_AI9,INT,0,num,0,-32768,32767,PTC calibration offset AI9,1
+15671,Offs_Ntc_AI10,INT,0,num,0,-32768,32767,NTC calibration offset AI10,1
+15672,Offs_PT1000_AI10,INT,0,num,0,-32768,32767,PT1000 calibration offset AI10,1
+15673,Offs_5Vr_AI10,INT,0,num,0,-32768,32767,0-5Vr calibration offset AI10,1
+15674,Offs_10V_AI10,INT,0,num,0,-32768,32767,0-10V calibration offset AI10,1
+15675,Offs_mA_AI10,INT,0,num,0,-32768,32767,4-20mA calibration offset AI10,1
+15676,Offs_5V_AI10,INT,0,num,0,-32768,32767,0-5V calibration offset AI10,1
+15677,Offs_PTC_AI10,INT,0,num,0,-32768,32767,PTC calibration offset AI10,1
+15678,Offs_Ntc_AI11,INT,0,num,0,-32768,32767,NTC calibration offset AI11,1
+15679,Offs_PT1000_AI11,INT,0,num,0,-32768,32767,PT1000 calibration offset AI11,1
+15680,Offs_5Vr_AI11,INT,0,num,0,-32768,32767,0-5Vr calibration offset AI11,1
+15681,Offs_10V_AI11,INT,0,num,0,-32768,32767,0-10V calibration offset AI11,1
+15682,Offs_mA_AI11,INT,0,num,0,-32768,32767,4-20mA calibration offset AI11,1
+15683,Offs_5V_AI11,INT,0,num,0,-32768,32767,0-5V calibration offset AI11,1
+15684,Offs_PTC_AI11,INT,0,num,0,-32768,32767,PTC calibration offset AI11,1
+15685,Offs_Ntc_AI12,INT,0,num,0,-32768,32767,NTC calibration offset AI12,1
+15686,Offs_PT1000_AI12,INT,0,num,0,-32768,32767,PT1000 calibration offset AI12,1
+15687,Offs_5Vr_AI12,INT,0,num,0,-32768,32767,0-5Vr calibration offset AI12,1
+15688,Offs_10V_AI12,INT,0,num,0,-32768,32767,0-10V calibration offset AI12,1
+15689,Offs_mA_AI12,INT,0,num,0,-32768,32767,4-20mA calibration offset AI12,1
+15690,Offs_5V_AI12,INT,0,num,0,-32768,32767,0-5V calibration offset AI12,1
+15691,Offs_PTC_AI12,INT,0,num,0,-32768,32767,PTC calibration offset AI12,1
+15704,Offs_10V_AO1,INT,0,num,0,-32768,32767,0-10V calibration offset AO1,1
+15705,Offs_mA_AO1,INT,0,num,0,-32768,32767,4-20mA calibration offset AO1,1
+15706,Offs_10V_AO2,INT,0,num,0,-32768,32767,0-10V calibration offset AO2,1
+15707,Offs_mA_AO2,INT,0,num,0,-32768,32767,4-20mA calibration offset AO2,1
+15708,Offs_10V_AO3,INT,0,num,0,-32768,32767,0-10V calibration offset AO3,1
+15709,Offs_mA_AO3,INT,0,num,0,-32768,32767,4-20mA calibration offset AO3,1
+15710,Offs_10V_AO4,INT,0,num,0,-32768,32767,0-10V calibration offset AO4,1
+15711,Offs_mA_AO4,INT,0,num,0,-32768,32767,4-20mA calibration offset AO4,1
+15712,Offs_10V_AO5,INT,0,num,0,-32768,32767,0-10V calibration offset AO5,1
+15713,Offs_mA_AO5,INT,0,num,0,-32768,32767,4-20mA calibration offset AO5,1
+15714,Offs_10V_AO6,INT,0,num,0,-32768,32767,0-10V calibration offset AO6,1
+15715,Offs_mA_AO6,INT,0,num,0,-32768,32767,4-20mA calibration offset AO6,1
+15736,FullScaleMin_AI1,INT,0,digit,0,-9999,9999,First value analogue input AI1 scale,1
+15737,FullScaleMax_AI1,INT,1000,digit,1000,-9999,9999,Last value analogue input AI1 scale,1
+15738,FullScaleMin_AI2,INT,0,digit,0,-9999,9999,First value analogue input AI2 scale,1
+15739,FullScaleMax_AI2,INT,1000,digit,1000,-9999,9999,Last value analogue input AI2 scale,1
+15740,FullScaleMin_AI3,INT,0,digit,0,-9999,9999,First value analogue input AI3 scale,1
+15741,FullScaleMax_AI3,INT,1000,digit,1000,-9999,9999,Last value analogue input AI3 scale,1
+15742,FullScaleMin_AI4,INT,0,digit,0,-9999,9999,First value analogue input AI4 scale,1
+15743,FullScaleMax_AI4,INT,1000,digit,1000,-9999,9999,Last value analogue input AI4 scale,1
+15744,FullScaleMin_AI5,INT,0,digit,0,-9999,9999,First value analogue input AI5 scale,1
+15745,FullScaleMax_AI5,INT,1000,digit,1000,-9999,9999,Last value analogue input AI5 scale,1
+15746,FullScaleMin_AI6,INT,0,digit,0,-9999,9999,First value analogue input AI6 scale,1
+15747,FullScaleMax_AI6,INT,1000,digit,1000,-9999,9999,Last value analogue input AI6 scale,1
+16106,FullScaleMin_AI7,INT,0,digit,0,-9999,9999,First value analogue input AI7 scale,1
+16107,FullScaleMax_AI7,INT,1000,digit,1000,-9999,9999,Last value analogue input AI7 scale,1
+16108,FullScaleMin_AI8,INT,0,digit,0,-9999,9999,First value analogue input AI8 scale,1
+16109,FullScaleMax_AI8,INT,1000,digit,1000,-9999,9999,Last value analogue input AI8 scale,1
+15758,Cfg_AO3,enum,0=Current modulation,num,0=Current modulation,0,3,Type of analogue output AO3,1
+15759,Cfg_AO4,enum,0=Current modulation,num,0=Current modulation,0,3,Type of analogue output AO4,1
+15769,PWM_frequency_AO3_AO4,UINT,1000,Hz,1000,0,2000,PWM Frequency for AO3 and AO4 in PWM mode,1
+15770,PWM_polarity_AO3_AO4,UINT,1,num,1,0,1,"PWM Polarity for AO3 and AO4 in PWM mode: 1=direct,0=reversed",1
+16102,Cfg_AI9,enum,2=NTC(103AT),num,2=NTC(103AT),0,11,Type of analogue input AI9,1
+16103,Cfg_AI10,enum,2=NTC(103AT),num,2=NTC(103AT),0,11,Type of analogue input AI10,1
+16104,Cfg_AI11,enum,2=NTC(103AT),num,2=NTC(103AT),0,11,Type of analogue input AI11,1
+16105,Cfg_AI12,enum,2=NTC(103AT),num,2=NTC(103AT),0,11,Type of analogue input AI12,1
+16110,FullScaleMin_AI9,INT,0,digit,0,-9999,9999,First value analogue input AI9 scale,1
+16111,FullScaleMax_AI9,INT,1000,digit,1000,-9999,9999,Last value analogue input AI9 scale,1
+16112,FullScaleMin_AI10,INT,0,digit,0,-9999,9999,First value analogue input AI10 scale,1
+16113,FullScaleMax_AI10,INT,1000,digit,1000,-9999,9999,Last value analogue input AI10 scale,1
+16114,FullScaleMin_AI11,INT,0,digit,0,-9999,9999,First value analogue input AI11 scale,1
+16115,FullScaleMax_AI11,INT,1000,digit,1000,-9999,9999,Last value analogue input AI11 scale,1
+16116,FullScaleMin_AI12,INT,0,digit,0,-9999,9999,First value analogue input AI12 scale,1
+16117,FullScaleMax_AI12,INT,1000,digit,1000,-9999,9999,Last value analogue input AI12 scale,1
+16120,Calibration_AI9,INT,0,digit,0,-1000,1000,Analogue input AI9 differential,1
+16121,Calibration_AI10,INT,0,digit,0,-1000,1000,Analogue input AI10 differential,1
+16122,Calibration_AI11,INT,0,digit,0,-1000,1000,Analogue input AI11 differential,1
+16123,Calibration_AI12,INT,0,digit,0,-1000,1000,Analogue input AI12 differential,1
+16124,Addr_RS485_OB1,UINT,1,num,1,0,255,RS485-1 On Board address,1
+16125,Proto_RS485_OB1,enum,3=Modbus/RTU,num,3=Modbus/RTU,2,4,Select RS485-1 On Board protocol,1
+16126,DataBit_RS485_OB1,UINT,8,num,8,8,8,RS485-1 On Board Data bit number,1
+16127,StopBit_RS485_OB1,UINT,1,num,1,1,2,RS485-1 On Board stop bit number,1
+16128,Parity_RS485_OB1,enum,2=Even,num,2=Even,0,2,RS485-1 On Board parity protocol,1
+16129,Baud_RS485_OB1,enum,2=38400,num,2=38400,0,5,RS485-1 On Board baud rate protocol,1
+16130,MAC_1_ETH_PI,UINT,0,num,0,0,0,MAC address (1 st part),1
+16131,MAC_2_ETH_PI,UINT,24,num,24,0,24,MAC address (2 nd part),1
+16132,MAC_3_ETH_PI,UINT,187,num,187,0,187,MAC address (3 rd part),1
+16133,MAC_4_ETH_PI,UINT,5,num,0,0,255,MAC address (4 th part),1
+16134,MAC_5_ETH_PI,UINT,42,num,0,0,255,MAC address (5 th part),1
+16135,MAC_6_ETH_PI,UINT,155,num,0,0,255,MAC address (6 th part),1
+16136,HTTP_volume,enum,0=NOR Flash,num,0=NOR Flash,0,1,Volume of HTTP files,1
+16137,DAT_volume,enum,0=NOR Flash,num,0=NOR Flash,0,1,"Volume of *.DAT and *.RAW files, ",1
+16138,FTP_volume,enum,0=NOR Flash,num,0=NOR Flash,0,1,Volume of FTP files,1
+16139,PLC_volume,enum,0=NOR Flash,num,0=NOR Flash,0,1,Volume of PLC file,1
+16140,HMI_volume,enum,0=NOR Flash,num,0=NOR Flash,0,1,Volume of HMI file,1
+16141,REM_volume,enum,0=NOR Flash,num,0=NOR Flash,0,1,Volume of HMI Remote file,1
+16142,PAR_volume,enum,0=NOR Flash,num,0=NOR Flash,0,1,Volume of CONNEC.PAR file,1
+8717,microSD_command,enum,0=No command,num,0=No command,0,2,microSD Command,1
+8718,microSD_status,enum,0=Command completed,num,0=Command completed,0,255,Result of microSD command,1
+8719,microSD_presence,BOOL,True,flag,True,0,1,microSD presence,1
+8756,USB_Host_command,enum,0=No command,num,0=No command,0,218,USB-Host Command,1
+8758,USB_Host_status,enum,0=Command completed,num,0=Command completed,0,255,Result of USB-Host command,1
+16143,virtualDipSwitch,UINT,0,num,0,0,7,Nemeric prefix for system files name,1
+16144,CANExpPresenceByPar,UINT,0,num,0,0,4095,"bit(x) : if 0 the (x+1)-th CAN slave in CONNEC.PAR sequence is present, otherwise not present",1
+16145,MbMRtu_DisByPar,enum,0=Enabled,num,0=Enabled,0,1,RS485-2 Modbus Master Status when enabled from Configuration,1
+8716,Deep_PowerDown_keyword,UINT,0,num,0,0,65535,Put keyword 12345 to enable deep power down mode at power-off,1
+8764,Ip_1_CURRENT,UINT,10,num,10,0,255,Ethernet IP address (1 st part),1
+8765,Ip_2_CURRENT,UINT,0,num,0,0,255,Ethernet IP address (2 nd part),1
+8766,Ip_3_CURRENT,UINT,0,num,0,0,255,Ethernet IP address (3 rd part),1
+8767,Ip_4_CURRENT,UINT,100,num,100,0,255,Ethernet IP address (4 th part),1
+8905,DefGtwy_1_CURRENT,UINT,10,num,10,0,255,Default Gateway (1 st part),1
+8906,DefGtwy_2_CURRENT,UINT,0,num,0,0,255,Default Gateway (2 nd part),1
+8907,DefGtwy_3_CURRENT,UINT,0,num,0,0,255,Default Gateway (3 rd part),1
+8908,DefGtwy_4_CURRENT,UINT,1,num,1,0,255,Default Gateway (4 th part),1
+8909,NetMsk_1_CURRENT,UINT,255,num,255,0,255,Net mask (1 st part),1
+8910,NetMsk_2_CURRENT,UINT,255,num,255,0,255,Net mask (2 nd part),1
+8911,NetMsk_3_CURRENT,UINT,255,num,255,0,255,Net mask (3 rd part),1
+8912,NetMsk_4_CURRENT,UINT,0,num,0,0,255,Net mask (4 th part),1
+8913,PriDNS_1_CURRENT,UINT,8,num,8,0,255,Primary DNS server (1 st part),1
+8914,PriDNS_2_CURRENT,UINT,8,num,8,0,255,Primary DNS server (2 nd part),1
+8915,PriDNS_3_CURRENT,UINT,8,num,8,0,255,Primary DNS server (3 rd part),1
+8916,PriDNS_4_CURRENT,UINT,8,num,8,0,255,Primary DNS server (4 th part),1
+8917,SecDNS_1_CURRENT,UINT,8,num,8,0,255,Secondary DNS server (1 st part),1
+8918,SecDNS_2_CURRENT,UINT,8,num,8,0,255,Secondary DNS server (2 nd part),1
+8919,SecDNS_3_CURRENT,UINT,4,num,4,0,255,Secondary DNS server (3 rd part),1
+8920,SecDNS_4_CURRENT,UINT,4,num,4,0,255,Secondary DNS server (4 th part),1
+15766,Load_BACnet_E2_Defaults,BOOL,True,flag,True,0,1,Load default values for BACnet parameters in EEPROM at next boot,1
+16154,MaxMaster_BACnet_MSTP,UINT,0,num,0,0,127,"BACnet MS/TP max-master, if less than 1 or greater then 127 is managed as 127",1
+15768,Port_BACnet_IP,UINT,65535,num,65535,0,65535,"BACnet/IP Port number, 0=default port 47808, 65535=bacnet stack running only on PLC side",1
+16146,MbMTcp_ServerIp4thOctet_Node0,UINT,0,num,0,0,255,Modbus TCP Client via Configuration: 4th octet for server node number 0,1
+16147,MbMTcp_ServerIp4thOctet_Node1,UINT,0,num,0,0,255,Modbus TCP Client via Configuration: 4th octet for server node number 1,1
+16148,MbMTcp_ServerIp4thOctet_Node2,UINT,0,num,0,0,255,Modbus TCP Client via Configuration: 4th octet for server node number 2,1
+16149,MbMTcp_ServerIp4thOctet_Node3,UINT,0,num,0,0,255,Modbus TCP Client via Configuration: 4th octet for server node number 3,1
+16150,MbMTcp_ServerIp4thOctet_Node4,UINT,0,num,0,0,255,Modbus TCP Client via Configuration: 4th octet for server node number 4,1
+16151,MbMTcp_ServerIp4thOctet_Node5,UINT,0,num,0,0,255,Modbus TCP Client via Configuration: 4th octet for server node number 5,1
+16152,MbMTcp_ServerIp4thOctet_Node6,UINT,0,num,0,0,255,Modbus TCP Client via Configuration: 4th octet for server node number 6,1
+16153,MbMTcp_ServerIp4thOctet_Node7,UINT,0,num,0,0,255,Modbus TCP Client via Configuration: 4th octet for server node number 7,1
+8938,HTTP_AdminUserName,STRING,***************,,administrator,,,HTTP_AdminUserName,8
+8921,HTTP_AdminPswOld,STRING,***************,,***************,,,HTTP_AdminPswOld,8
+8929,HTTP_AdminPswNew,STRING,***************,,***************,,,HTTP_AdminPswNew,8
+8937,HTTP_AdminPswConfirm,BOOL,True,flag,True,0,1,HTTP_AdminPswConfirm,1
+8946,HTTP_AdminPswConfirmStatus,enum,0=no operation or operation done correctly,num,0=no operation or operation done correctly,0,9,HTTP_AdminPswConfirmStatus,1
+16384,SunriseHour,UINT,0,,360,,,,1
+16385,SunriseMinute,UINT,0,,0,,,,1
+16386,SunsetHour,UINT,0,,1080,,,,1
+16387,SunsetMinute,UINT,0,,0,,,,1
+16388,MaxAmbientTemp,INT,0,,0,,,,1
+16389,MinAmbientTemp,INT,0,,0,,,,1
+16390,MaxAmbientHumidity,INT,0,,0,,,,1
+16391,MinAmbientHumidity,INT,0,,0,,,,1
+16392,MaxGroundTemp,INT,0,,0,,,,1
+16393,MinGroundTemp,INT,0,,0,,,,1
+16394,MaxGroundHumidity,INT,0,,0,,,,1
+16395,MinGroundHumidity,INT,0,,0,,,,1
+16396,MaxWindSpeed,INT,0,,0,,,,1
+16397,MaxRadiation,INT,0,,0,,,,1
+16398,MaxCo2,INT,0,,0,,,,1
+16399,MinCo2,INT,0,,0,,,,1
+16400,nightEnable,INT,0,,0,,,,1
+16401,AIL1Type,USINT,0,,0,,,,1
+16402,AIL2Type,USINT,0,,0,,,,1
+16403,AIL3Type,USINT,0,,0,,,,1
+16404,AIL4Type,USINT,0,,0,,,,1
+16405,AIL5Type,USINT,0,,0,,,,1
+16406,AIL6Type,USINT,0,,0,,,,1
+16407,AIL7Type,USINT,0,,0,,,,1
+16408,AIL8Type,USINT,0,,0,,,,1
+16409,AIL9Type,USINT,0,,0,,,,1
+16410,AIL10Type,USINT,0,,0,,,,1
+16411,AIL11Type,USINT,0,,0,,,,1
+16412,AIL12Type,USINT,0,,0,,,,1
+16413,DIL1Type,USINT,0,,0,,,,1
+16414,DIL2Type,USINT,0,,0,,,,1
+16415,DIL3Type,USINT,0,,0,,,,1
+16416,DIL4Type,USINT,0,,0,,,,1
+16417,DIL5Type,USINT,0,,0,,,,1
+16418,DIL6Type,USINT,0,,0,,,,1
+16419,DIL7Type,USINT,0,,0,,,,1
+16420,DIL8Type,USINT,0,,0,,,,1
+16421,DIL9Type,USINT,0,,0,,,,1
+16422,DIL10Type,USINT,0,,0,,,,1
+16423,DIL11Type,USINT,0,,0,,,,1
+16424,DIL12Type,USINT,0,,0,,,,1
+16425,DOL1Type,USINT,0,,0,,,,1
+16426,DOL2Type,USINT,0,,0,,,,1
+16427,DOL3Type,USINT,0,,0,,,,1
+16428,DOL4Type,USINT,0,,0,,,,1
+16429,DOL5Type,USINT,0,,0,,,,1
+16430,DOL6Type,USINT,0,,0,,,,1
+16431,DOL7Type,USINT,0,,0,,,,1
+16432,DOL8Type,USINT,0,,0,,,,1
+16433,DOL9Type,USINT,0,,0,,,,1
+16434,DOL10Type,USINT,0,,0,,,,1
+16435,DOL11Type,USINT,0,,0,,,,1
+16436,DOL12Type,USINT,0,,0,,,,1
+16437,AOL1Type,USINT,0,,0,,,,1
+16438,AOL2Type,USINT,0,,0,,,,1
+16439,AOL3Type,USINT,0,,0,,,,1
+16440,AOL4Type,USINT,0,,0,,,,1
+16441,AOL5Type,USINT,0,,0,,,,1
+16442,AOL6Type,USINT,0,,0,,,,1
+16443,AIL1Active,BOOL,True,,True,,,,1
+16444,AIL2Active,BOOL,True,,True,,,,1
+16445,AIL3Active,BOOL,True,,True,,,,1
+16446,AIL4Active,BOOL,True,,True,,,,1
+16447,AIL5Active,BOOL,True,,True,,,,1
+16448,AIL6Active,BOOL,True,,True,,,,1
+16449,AIL7Active,BOOL,True,,True,,,,1
+16450,AIL8Active,BOOL,True,,True,,,,1
+16451,AIL9Active,BOOL,True,,True,,,,1
+16452,AIL10Active,BOOL,True,,True,,,,1
+16453,AIL11Active,BOOL,True,,True,,,,1
+16454,AIL12Active,BOOL,True,,True,,,,1
+16455,DIL1Active,BOOL,True,,True,,,,1
+16456,DIL2Active,BOOL,True,,True,,,,1
+16457,DIL3Active,BOOL,True,,True,,,,1
+16458,DIL4Active,BOOL,True,,True,,,,1
+16459,DIL5Active,BOOL,True,,True,,,,1
+16460,DIL6Active,BOOL,True,,True,,,,1
+16461,DIL7Active,BOOL,True,,True,,,,1
+16462,DIL8Active,BOOL,True,,True,,,,1
+16463,DIL9Active,BOOL,True,,True,,,,1
+16464,DIL10Active,BOOL,True,,True,,,,1
+16465,DIL11Active,BOOL,True,,True,,,,1
+16466,DIL12Active,BOOL,True,,True,,,,1
+16467,DOL1Active,BOOL,True,,True,,,,1
+16468,DOL2Active,BOOL,True,,True,,,,1
+16469,DOL3Active,BOOL,True,,True,,,,1
+16470,DOL4Active,BOOL,True,,True,,,,1
+16471,DOL5Active,BOOL,True,,True,,,,1
+16472,DOL6Active,BOOL,True,,True,,,,1
+16473,DOL7Active,BOOL,True,,True,,,,1
+16474,DOL8Active,BOOL,True,,True,,,,1
+16475,DOL9Active,BOOL,True,,True,,,,1
+16476,DOL10Active,BOOL,True,,True,,,,1
+16477,DOL11Active,BOOL,True,,True,,,,1
+16478,DOL12Active,BOOL,True,,True,,,,1
+16479,AOL1Active,BOOL,True,,True,,,,1
+16480,AOL2Active,BOOL,True,,True,,,,1
+16481,AOL3Active,BOOL,True,,True,,,,1
+16482,AOL4Active,BOOL,True,,True,,,,1
+16483,AOL5Active,BOOL,True,,True,,,,1
+16484,AOL6Active,BOOL,True,,True,,,,1
+16485,AIL1Location,UDINT,0,,0,,,,2
+16487,AIL2Location,UDINT,0,,0,,,,2
+16489,AIL3Location,UDINT,0,,0,,,,2
+16491,AIL4Location,UDINT,0,,0,,,,2
+16493,AIL5Location,UDINT,0,,0,,,,2
+16495,AIL6Location,UDINT,0,,0,,,,2
+16497,AIL7Location,UDINT,0,,0,,,,2
+16499,AIL8Location,UDINT,0,,0,,,,2
+16501,AIL9Location,UDINT,0,,0,,,,2
+16503,AIL10Location,UDINT,0,,0,,,,2
+16505,AIL11Location,UDINT,0,,0,,,,2
+16507,AIL12Location,UDINT,0,,0,,,,2
+16509,DOL1Location,UDINT,0,,0,,,,2
+16511,DOL2Location,UDINT,0,,0,,,,2
+16513,DOL3Location,UDINT,0,,0,,,,2
+16515,DOL4Location,UDINT,0,,0,,,,2
+16517,DOL5Location,UDINT,0,,0,,,,2
+16519,DOL6Location,UDINT,0,,0,,,,2
+16521,DOL7Location,UDINT,0,,0,,,,2
+16523,DOL8Location,UDINT,0,,0,,,,2
+16525,DOL9Location,UDINT,0,,0,,,,2
+16527,DOL10Location,UDINT,0,,0,,,,2
+16529,DOL11Location,UDINT,0,,0,,,,2
+16531,DOL12Location,UDINT,0,,0,,,,2
+16533,DIL1Location,UDINT,0,,0,,,,2
+16535,DIL2Location,UDINT,0,,0,,,,2
+16537,DIL3Location,UDINT,0,,0,,,,2
+16539,DIL4Location,UDINT,0,,0,,,,2
+16541,DIL5Location,UDINT,0,,0,,,,2
+16543,DIL6Location,UDINT,0,,0,,,,2
+16545,DIL7Location,UDINT,0,,0,,,,2
+16547,DIL8Location,UDINT,0,,0,,,,2
+16549,DIL9Location,UDINT,0,,0,,,,2
+16551,DIL10Location,UDINT,0,,0,,,,2
+16553,DIL11Location,UDINT,0,,0,,,,2
+16555,DIL12Location,UDINT,0,,0,,,,2
+16557,AOL1Location,UDINT,0,,0,,,,2
+16559,AOL2Location,UDINT,0,,0,,,,2
+16561,AOL3Location,UDINT,0,,0,,,,2
+16563,AOL4Location,UDINT,0,,0,,,,2
+16565,AOL5Location,UDINT,0,,0,,,,2
+16567,AOL6Location,UDINT,0,,0,,,,2
+16569,AmbientTempSpDay1,INT,0,,0,,,,1
+16570,AmbientTempSpNight1,INT,0,,0,,,,1
+16571,AmbientTempSpDiff1,INT,0,,0,,,,1
+16572,AmbientHumiditySpDay1,INT,0,,0,,,,1
+16573,AmbientHumiditySpNight1,INT,0,,0,,,,1
+16574,AmbientHumiditySpDiff1,INT,0,,0,,,,1
+16575,GroundTempSpDay1,INT,0,,0,,,,1
+16576,GroundTempSpNight1,INT,0,,0,,,,1
+16577,GroundTempSpDiff1,INT,0,,0,,,,1
+16578,GroundHumiditySpDay1,INT,0,,0,,,,1
+16579,GroundHumiditySpNight1,INT,0,,0,,,,1
+16580,GroundHumiditySpDiff1,INT,0,,0,,,,1
+16581,DcOn1,UDINT,0,,0,,,,2
+16583,DcOff1,UDINT,0,,0,,,,2
+16585,fs1StartingTime1,UDINT,0,,0,,,,2
+16587,fs1Duration1,UDINT,0,,0,,,,2
+16589,Amount11,UINT,0,,0,,,,1
+16590,fs2StartingTime1,UDINT,0,,0,,,,2
+16592,fs2Duration1,UDINT,0,,0,,,,2
+16594,Amount12,INT,0,,0,,,,1
+16595,fs3StartingTime1,UDINT,0,,0,,,,2
+16597,fs3Duration1,UDINT,0,,0,,,,2
+16599,Amount13,INT,0,,0,,,,1
+16600,FixedEnable1,USINT,1,,1,,,,1
+16601,WindSpeedSpDay1,INT,0,,0,,,,1
+16602,WindSpeedSpNight1,INT,0,,0,,,,1
+16603,WindSpeedSpDiff1,INT,0,,0,,,,1
+16604,IrrigationAmount1,UINT,0,,0,,,,1
+16605,ValidStartTime1,UDINT,0,,0,,,,2
+16607,ValidEndTime1,UDINT,1440,,1440,,,,2
+16609,OperationMode1,UINT,1,,0,,,,1
+16610,AmbientTempSpDay2,INT,0,,0,,,,1
+16611,AmbientTempSpNight2,INT,0,,0,,,,1
+16612,AmbientTempSpDiff2,INT,0,,0,,,,1
+16613,AmbientHumiditySpDay2,INT,0,,0,,,,1
+16614,AmbientHumiditySpNight2,INT,0,,0,,,,1
+16615,AmbientHumiditySpDiff2,INT,0,,0,,,,1
+16616,GroundTempSpDay2,INT,0,,0,,,,1
+16617,GroundTempSpNight2,INT,0,,0,,,,1
+16618,GroundTempSpDiff2,INT,0,,0,,,,1
+16619,GroundHumiditySpDay2,INT,0,,0,,,,1
+16620,GroundHumiditySpNight2,INT,0,,0,,,,1
+16621,GroundHumiditySpDiff2,INT,0,,0,,,,1
+16622,DcOn2,UDINT,0,,0,,,,2
+16624,DcOff2,UDINT,0,,0,,,,2
+16626,fs1StartingTime2,UDINT,0,,0,,,,2
+16628,fs1Duration2,UDINT,0,,0,,,,2
+16630,Amount21,INT,0,,0,,,,1
+16631,fs2StartingTime2,UDINT,0,,0,,,,2
+16633,fs2Duration2,UDINT,0,,0,,,,2
+16635,Amount22,INT,0,,0,,,,1
+16636,fs3StartingTime2,UDINT,0,,0,,,,2
+16638,fs3Duration2,UDINT,0,,0,,,,2
+16640,Amount23,INT,0,,0,,,,1
+16641,FixedEnable2,USINT,1,,1,,,,1
+16642,WindSpeedSpDay2,INT,0,,0,,,,1
+16643,WindSpeedSpNight2,INT,0,,0,,,,1
+16644,WindSpeedSpDiff2,INT,0,,0,,,,1
+16645,IrrigationAmount2,UINT,0,,0,,,,1
+16646,ValidStartTime2,UDINT,0,,0,,,,2
+16648,ValidEndTime2,UDINT,1440,,1440,,,,2
+16650,OperationMode2,UINT,0,,0,,,,1
+16651,AmbientTempSpDay3,INT,0,,0,,,,1
+16652,AmbientTempSpNight3,INT,0,,0,,,,1
+16653,AmbientTempSpDiff3,INT,0,,0,,,,1
+16654,AmbientHumiditySpDay3,INT,0,,0,,,,1
+16655,AmbientHumiditySpNight3,INT,0,,0,,,,1
+16656,AmbientHumiditySpDiff3,INT,0,,0,,,,1
+16657,GroundTempSpDay3,INT,0,,0,,,,1
+16658,GroundTempSpNight3,INT,0,,0,,,,1
+16659,GroundTempSpDiff3,INT,0,,0,,,,1
+16660,GroundHumiditySpDay3,INT,0,,0,,,,1
+16661,GroundHumiditySpNight3,INT,0,,0,,,,1
+16662,GroundHumiditySpDiff3,INT,0,,0,,,,1
+16663,DcOn3,UDINT,0,,0,,,,2
+16665,DcOff3,UDINT,0,,0,,,,2
+16667,fs1StartingTime3,UDINT,0,,0,,,,2
+16669,fs1Duration3,UDINT,0,,0,,,,2
+16671,Amount31,INT,0,,0,,,,1
+16672,fs2StartingTime3,UDINT,0,,0,,,,2
+16674,fs2Duration3,UDINT,0,,0,,,,2
+16676,Amount32,INT,0,,0,,,,1
+16677,fs3StartingTime3,UDINT,0,,0,,,,2
+16679,fs3Duration3,UDINT,0,,0,,,,2
+16681,Amount33,INT,0,,0,,,,1
+16682,FixedEnable3,USINT,1,,1,,,,1
+16683,WindSpeedSpDay3,INT,0,,0,,,,1
+16684,WindSpeedSpNight3,INT,0,,0,,,,1
+16685,WindSpeedSpDiff3,INT,0,,0,,,,1
+16686,IrrigationAmount3,UINT,0,,0,,,,1
+16687,ValidStartTime3,UDINT,0,,0,,,,2
+16689,ValidEndTime3,UDINT,1440,,1440,,,,2
+16691,OperationMode3,UINT,1,,0,,,,1
+16692,AmbientTempSpDay4,INT,0,,0,,,,1
+16693,AmbientTempSpNight4,INT,0,,0,,,,1
+16694,AmbientTempSpDiff4,INT,0,,0,,,,1
+16695,AmbientHumiditySpDay4,INT,0,,0,,,,1
+16696,AmbientHumiditySpNight4,INT,0,,0,,,,1
+16697,AmbientHumiditySpDiff4,INT,0,,0,,,,1
+16698,DcOn4,UDINT,0,,0,,,,2
+16700,DcOff4,UDINT,0,,0,,,,2
+16702,GroundTempSpDay4,INT,0,,0,,,,1
+16703,GroundTempSpNight4,INT,0,,0,,,,1
+16704,GroundTempSpDiff4,INT,0,,0,,,,1
+16705,GroundHumiditySpDay4,INT,0,,0,,,,1
+16706,GroundHumiditySpNight4,INT,0,,0,,,,1
+16707,GroundHumiditySpDiff4,INT,0,,0,,,,1
+16708,fs1StartingTime4,UDINT,1,,1,,,,2
+16710,fs1Duration4,UDINT,0,,0,,,,2
+16712,Amount41,INT,0,,0,,,,1
+16713,fs2StartingTime4,UDINT,0,,0,,,,2
+16715,fs2Duration4,UDINT,0,,0,,,,2
+16717,Amount42,INT,0,,0,,,,1
+16718,fs3StartingTime4,UDINT,0,,0,,,,2
+16720,fs3Duration4,UDINT,0,,0,,,,2
+16722,Amount43,INT,0,,0,,,,1
+16723,FixedEnable4,USINT,1,,1,,,,1
+16724,WindSpeedSpDay4,INT,0,,0,,,,1
+16725,WindSpeedSpNight4,INT,0,,0,,,,1
+16726,WindSpeedSpDiff4,INT,0,,0,,,,1
+16727,IrrigationAmount4,UINT,0,,0,,,,1
+16728,ValidStartTime4,UDINT,0,,0,,,,2
+16730,ValidEndTime4,UDINT,1440,,1440,,,,2
+16732,OperationMode4,UINT,1,,0,,,,1
+16733,AmbientTempSpDay5,INT,0,,0,,,,1
+16734,AmbientTempSpNight5,INT,0,,0,,,,1
+16735,AmbientTempSpDiff5,INT,0,,0,,,,1
+16736,AmbientHumiditySpDay5,INT,0,,0,,,,1
+16737,AmbientHumiditySpNight5,INT,0,,0,,,,1
+16738,AmbientHumiditySpDiff5,INT,0,,0,,,,1
+16739,GroundTempSpDay5,INT,0,,0,,,,1
+16740,GroundTempSpNight5,INT,0,,0,,,,1
+16741,GroundTempSpDiff5,INT,0,,0,,,,1
+16742,GroundHumiditySpDay5,INT,0,,0,,,,1
+16743,GroundHumiditySpNight5,INT,0,,0,,,,1
+16744,GroundHumiditySpDiff5,INT,0,,0,,,,1
+16745,DcOn5,UDINT,0,,0,,,,2
+16747,DcOff5,UDINT,0,,0,,,,2
+16749,fs1StartingTime5,UDINT,0,,0,,,,2
+16751,fs1Duration5,UDINT,0,,0,,,,2
+16753,Amount51,INT,0,,0,,,,1
+16754,fs2StartingTime5,UDINT,0,,0,,,,2
+16756,fs2Duration5,UDINT,0,,0,,,,2
+16758,Amount52,INT,0,,0,,,,1
+16759,fs3StartingTime5,UDINT,0,,0,,,,2
+16761,fs3Duration5,UDINT,0,,0,,,,2
+16763,Amount53,INT,0,,0,,,,1
+16764,FixedEnable5,USINT,1,,1,,,,1
+16765,WindSpeedSpDay5,INT,0,,0,,,,1
+16766,WindSpeedSpNight5,INT,0,,0,,,,1
+16767,WindSpeedSpDiff5,INT,0,,0,,,,1
+16768,IrrigationAmount5,UINT,0,,0,,,,1
+16769,ValidStartTime5,UDINT,0,,0,,,,2
+16771,ValidEndTime5,UDINT,1440,,1440,,,,2
+16773,OperationMode5,UINT,2,,0,,,,1
+16774,AmbientTempSpDay6,INT,0,,0,,,,1
+16775,AmbientTempSpNight6,INT,0,,0,,,,1
+16776,AmbientTempSpDiff6,INT,0,,0,,,,1
+16777,AmbientHumiditySpDay6,INT,0,,0,,,,1
+16778,AmbientHumiditySpNight6,INT,0,,0,,,,1
+16779,AmbientHumiditySpDiff6,INT,0,,0,,,,1
+16780,GroundTempSpDay6,INT,0,,0,,,,1
+16781,GroundTempSpNight6,INT,0,,0,,,,1
+16782,GroundTempSpDiff6,INT,0,,0,,,,1
+16783,GroundHumiditySpDay6,INT,0,,0,,,,1
+16784,GroundHumiditySpNight6,INT,0,,0,,,,1
+16785,GroundHumiditySpDiff6,INT,0,,0,,,,1
+16786,DcOn6,UDINT,0,,0,,,,2
+16788,DcOff6,UDINT,0,,0,,,,2
+16790,fs1StartingTime6,UDINT,0,,0,,,,2
+16792,fs1Duration6,UDINT,0,,0,,,,2
+16794,Amount61,INT,0,,0,,,,1
+16795,fs2StartingTime6,UDINT,0,,0,,,,2
+16797,fs2Duration6,UDINT,0,,0,,,,2
+16799,Amount62,INT,0,,0,,,,1
+16800,fs3StartingTime6,UDINT,0,,0,,,,2
+16802,fs3Duration6,UDINT,0,,0,,,,2
+16804,Amount63,INT,0,,0,,,,1
+16805,FixedEnable6,USINT,1,,1,,,,1
+16806,WindSpeedSpDay6,INT,0,,0,,,,1
+16807,WindSpeedSpNight6,INT,0,,0,,,,1
+16808,WindSpeedSpDiff6,INT,0,,0,,,,1
+16809,IrrigationAmount6,UINT,0,,0,,,,1
+16810,ValidStartTime6,UDINT,0,,0,,,,2
+16812,ValidEndTime6,UDINT,1440,,1440,,,,2
+16814,OperationMode6,UINT,4,,0,,,,1
+16815,AmbientTempSpDay7,INT,0,,0,,,,1
+16816,AmbientTempSpNight7,INT,0,,0,,,,1
+16817,AmbientTempSpDiff7,INT,0,,0,,,,1
+16818,AmbientHumiditySpDay7,INT,0,,0,,,,1
+16819,AmbientHumiditySpNight7,INT,0,,0,,,,1
+16820,AmbientHumiditySpDiff7,INT,0,,0,,,,1
+16821,GroundTempSpDay7,INT,0,,0,,,,1
+16822,GroundTempSpNight7,INT,0,,0,,,,1
+16823,GroundTempSpDiff7,INT,0,,0,,,,1
+16824,GroundHumiditySpDay7,INT,0,,0,,,,1
+16825,GroundHumiditySpNight7,INT,0,,0,,,,1
+16826,GroundHumiditySpDiff7,INT,0,,0,,,,1
+16827,DcOn7,UDINT,0,,0,,,,2
+16829,DcOff7,UDINT,0,,0,,,,2
+16831,fs1StartingTime7,UDINT,0,,0,,,,2
+16833,fs1Duration7,UDINT,0,,0,,,,2
+16835,Amount71,INT,0,,0,,,,1
+16836,fs2StartingTime7,UDINT,0,,0,,,,2
+16838,fs2Duration7,UDINT,0,,0,,,,2
+16840,Amount72,INT,0,,0,,,,1
+16841,fs3StartingTime7,UDINT,0,,0,,,,2
+16843,fs3Duration7,UDINT,0,,0,,,,2
+16845,Amount73,INT,0,,0,,,,1
+16846,FixedEnable7,USINT,1,,1,,,,1
+16847,WindSpeedSpDay7,INT,0,,0,,,,1
+16848,WindSpeedSpNight7,INT,0,,0,,,,1
+16849,WindSpeedSpDiff7,INT,0,,0,,,,1
+16850,IrrigationAmount7,UINT,0,,0,,,,1
+16851,ValidStartTime7,UDINT,0,,0,,,,2
+16853,ValidEndTime7,UDINT,1440,,1440,,,,2
+16855,OperationMode7,UINT,0,,0,,,,1
+16856,AmbientTempSpDay8,INT,0,,0,,,,1
+16857,AmbientTempSpNight8,INT,0,,0,,,,1
+16858,AmbientTempSpDiff8,INT,0,,0,,,,1
+16859,AmbientHumiditySpDay8,INT,0,,0,,,,1
+16860,AmbientHumiditySpNight8,INT,0,,0,,,,1
+16861,AmbientHumiditySpDiff8,INT,0,,0,,,,1
+16862,GroundTempSpDay8,INT,0,,0,,,,1
+16863,GroundTempSpNight8,INT,0,,0,,,,1
+16864,GroundTempSpDiff8,INT,0,,0,,,,1
+16865,GroundHumiditySpDay8,INT,0,,0,,,,1
+16866,GroundHumiditySpNight8,INT,0,,0,,,,1
+16867,GroundHumiditySpDiff8,INT,0,,0,,,,1
+16868,DcOn8,UDINT,0,,0,,,,2
+16870,DcOff8,UDINT,0,,0,,,,2
+16872,fs1StartingTime8,UDINT,0,,0,,,,2
+16874,fs1Duration8,UDINT,0,,0,,,,2
+16876,Amount81,INT,0,,0,,,,1
+16877,fs2StartingTime8,UDINT,0,,0,,,,2
+16879,fs2Duration8,UDINT,0,,0,,,,2
+16881,Amount82,INT,0,,0,,,,1
+16882,fs3StartingTime8,UDINT,0,,0,,,,2
+16884,fs3Duration8,UDINT,0,,0,,,,2
+16886,Amount83,INT,0,,0,,,,1
+16887,FixedEnable8,USINT,1,,1,,,,1
+16888,WindSpeedSpDay8,INT,0,,0,,,,1
+16889,WindSpeedSpNight8,INT,0,,0,,,,1
+16890,WindSpeedSpDiff8,INT,0,,0,,,,1
+16891,IrrigationAmount8,UINT,0,,0,,,,1
+16892,ValidStartTime8,UDINT,0,,0,,,,2
+16894,ValidEndTime8,UDINT,1440,,1440,,,,2
+16896,OperationMode8,UINT,0,,0,,,,1
+16897,AmbientTempSpDay9,INT,0,,0,,,,1
+16898,AmbientTempSpNight9,INT,0,,0,,,,1
+16899,AmbientTempSpDiff9,INT,0,,0,,,,1
+16900,AmbientHumiditySpDay9,INT,0,,0,,,,1
+16901,AmbientHumiditySpNight9,INT,0,,0,,,,1
+16902,AmbientHumiditySpDiff9,INT,0,,0,,,,1
+16903,GroundTempSpDay9,INT,0,,0,,,,1
+16904,GroundTempSpNight9,INT,0,,0,,,,1
+16905,GroundTempSpDiff9,INT,0,,0,,,,1
+16906,GroundHumiditySpDay9,INT,0,,0,,,,1
+16907,GroundHumiditySpNight9,INT,0,,0,,,,1
+16908,GroundHumiditySpDiff9,INT,0,,0,,,,1
+16909,DcOn9,UDINT,0,,0,,,,2
+16911,DcOff9,UDINT,0,,0,,,,2
+16913,fs1StartingTime9,UDINT,0,,0,,,,2
+16915,fs1Duration9,UDINT,0,,0,,,,2
+16917,Amount91,INT,0,,0,,,,1
+16918,fs2StartingTime9,UDINT,0,,0,,,,2
+16920,fs2Duration9,UDINT,0,,0,,,,2
+16922,Amount92,INT,0,,0,,,,1
+16923,fs3StartingTime9,UDINT,0,,0,,,,2
+16925,fs3Duration9,UDINT,0,,0,,,,2
+16927,Amount93,INT,0,,0,,,,1
+16928,FixedEnable9,USINT,1,,1,,,,1
+16929,WindSpeedSpDay9,INT,0,,0,,,,1
+16930,WindSpeedSpNight9,INT,0,,0,,,,1
+16931,WindSpeedSpDiff9,INT,0,,0,,,,1
+16932,IrrigationAmount9,UINT,0,,0,,,,1
+16933,ValidStartTime9,UDINT,0,,0,,,,2
+16935,ValidEndTime9,UDINT,1440,,1440,,,,2
+16937,OperationMode9,UINT,2,,0,,,,1
+16938,AmbientTempSpDay10,INT,0,,0,,,,1
+16939,AmbientTempSpNight10,INT,0,,0,,,,1
+16940,AmbientTempSpDiff10,INT,0,,0,,,,1
+16941,AmbientHumiditySpDay10,INT,0,,0,,,,1
+16942,AmbientHumiditySpNight10,INT,0,,0,,,,1
+16943,AmbientHumiditySpDiff10,INT,0,,0,,,,1
+16944,GroundTempSpDay10,INT,0,,0,,,,1
+16945,GroundTempSpNight10,INT,0,,0,,,,1
+16946,GroundTempSpDiff10,INT,0,,0,,,,1
+16947,GroundHumiditySpDay10,INT,0,,0,,,,1
+16948,GroundHumiditySpNight10,INT,0,,0,,,,1
+16949,GroundHumiditySpDiff10,INT,0,,0,,,,1
+16950,DcOn10,UDINT,0,,0,,,,2
+16952,DcOff10,UDINT,0,,0,,,,2
+16954,fs1StartingTime10,UDINT,0,,0,,,,2
+16956,fs1Duration10,UDINT,0,,0,,,,2
+16958,Amount101,INT,0,,0,,,,1
+16959,fs2StartingTime10,UDINT,0,,0,,,,2
+16961,fs2Duration10,UDINT,0,,0,,,,2
+16963,Amount102,INT,0,,0,,,,1
+16964,fs3StartingTime10,UDINT,0,,0,,,,2
+16966,fs3Duration10,UDINT,0,,0,,,,2
+16968,Amount103,INT,0,,0,,,,1
+16969,FixedEnable10,USINT,1,,1,,,,1
+16970,WindSpeedSpDay10,INT,0,,0,,,,1
+16971,WindSpeedSpNight10,INT,0,,0,,,,1
+16972,WindSpeedSpDiff10,INT,0,,0,,,,1
+16973,IrrigationAmount10,UINT,0,,0,,,,1
+16974,ValidStartTime10,UDINT,0,,0,,,,2
+16976,ValidEndTime10,UDINT,1440,,1440,,,,2
+16978,OperationMode10,UINT,1,,0,,,,1
+16979,AmbientTempSpDay11,INT,0,,0,,,,1
+16980,AmbientTempSpNight11,INT,0,,0,,,,1
+16981,AmbientTempSpDiff11,INT,0,,0,,,,1
+16982,AmbientHumiditySpDay11,INT,0,,0,,,,1
+16983,AmbientHumiditySpNight11,INT,0,,0,,,,1
+16984,AmbientHumiditySpDiff11,INT,0,,0,,,,1
+16985,GroundTempSpDay11,INT,0,,0,,,,1
+16986,GroundTempSpNight11,INT,0,,0,,,,1
+16987,GroundTempSpDiff11,INT,0,,0,,,,1
+16988,GroundHumiditySpDay11,INT,0,,0,,,,1
+16989,GroundHumiditySpNight11,INT,0,,0,,,,1
+16990,GroundHumiditySpDiff11,INT,0,,0,,,,1
+16991,DcOn11,UDINT,0,,0,,,,2
+16993,DcOff11,UDINT,0,,0,,,,2
+16995,fs1StartingTime11,UDINT,0,,0,,,,2
+16997,fs1Duration11,UDINT,0,,0,,,,2
+16999,Amount111,INT,0,,0,,,,1
+17000,fs2StartingTime11,UDINT,0,,0,,,,2
+17002,fs2Duration11,UDINT,0,,0,,,,2
+17004,Amount112,INT,0,,0,,,,1
+17005,fs3StartingTime11,UDINT,0,,0,,,,2
+17007,fs3Duration11,UDINT,0,,0,,,,2
+17009,Amount113,INT,0,,0,,,,1
+17010,FixedEnable11,USINT,1,,1,,,,1
+17011,WindSpeedSpDay11,INT,0,,0,,,,1
+17012,WindSpeedSpNight11,INT,0,,0,,,,1
+17013,WindSpeedSpDiff11,INT,0,,0,,,,1
+17014,IrrigationAmount11,UINT,0,,0,,,,1
+17015,ValidStartTime11,UDINT,0,,0,,,,2
+17017,ValidEndTime11,UDINT,1440,,1440,,,,2
+17019,OperationMode11,UINT,1,,0,,,,1
+17020,AmbientTempSpDay12,INT,0,,0,,,,1
+17021,AmbientTempSpNight12,INT,0,,0,,,,1
+17022,AmbientTempSpDiff12,INT,0,,0,,,,1
+17023,AmbientHumiditySpDay12,INT,0,,0,,,,1
+17024,AmbientHumiditySpNight12,INT,0,,0,,,,1
+17025,AmbientHumiditySpDiff12,INT,0,,0,,,,1
+17026,GroundTempSpDay12,INT,0,,0,,,,1
+17027,GroundTempSpNight12,INT,0,,0,,,,1
+17028,GroundTempSpDiff12,INT,0,,0,,,,1
+17029,GroundHumiditySpDay12,INT,0,,0,,,,1
+17030,GroundHumiditySpNight12,INT,0,,0,,,,1
+17031,GroundHumiditySpDiff12,INT,0,,0,,,,1
+17032,DcOn12,UDINT,0,,0,,,,2
+17034,DcOff12,UDINT,0,,0,,,,2
+17036,fs1StartingTime12,UDINT,0,,0,,,,2
+17038,fs1Duration12,UDINT,0,,0,,,,2
+17040,Amount121,INT,0,,0,,,,1
+17041,fs2StartingTime12,UDINT,0,,0,,,,2
+17043,fs2Duration12,UDINT,0,,0,,,,2
+17045,Amount122,INT,0,,0,,,,1
+17046,fs3StartingTime12,UDINT,0,,0,,,,2
+17048,fs3Duration12,UDINT,0,,0,,,,2
+17050,Amount123,INT,0,,0,,,,1
+17051,FixedEnable12,USINT,1,,1,,,,1
+17052,WindSpeedSpDay12,INT,0,,0,,,,1
+17053,WindSpeedSpNight12,INT,0,,0,,,,1
+17054,WindSpeedSpDiff12,INT,0,,0,,,,1
+17055,IrrigationAmount12,UINT,0,,0,,,,1
+17056,ValidStartTime12,UDINT,0,,0,,,,2
+17058,ValidEndTime12,UDINT,1440,,1440,,,,2
+17060,OperationMode12,UINT,0,,0,,,,1
+17061,Slave1Type,USINT,2,,0,,,,1
+17062,Slave1Id,USINT,3,,0,,,,1
+17063,Slave1Active,BOOL,True,,True,,,,1
+17064,Slave2Type,USINT,1,,0,,,,1
+17065,Slave2Id,USINT,1,,0,,,,1
+17066,Slave2Active,BOOL,True,,True,,,,1
+17067,Slave3Type,USINT,0,,0,,,,1
+17068,Slave3Id,USINT,0,,0,,,,1
+17069,Slave3Active,BOOL,True,,True,,,,1
+17070,Slave4Type,USINT,0,,0,,,,1
+17071,Slave4Id,USINT,0,,0,,,,1
+17072,Slave4Active,BOOL,True,,True,,,,1
+17073,Slave5Type,USINT,0,,0,,,,1
+17074,Slave5Id,USINT,0,,0,,,,1
+17075,Slave5Active,BOOL,True,,True,,,,1
+17076,Slave6Type,USINT,0,,0,,,,1
+17077,Slave6Id,USINT,0,,0,,,,1
+17078,Slave6Active,BOOL,True,,True,,,,1
+17079,Slave7Type,USINT,0,,0,,,,1
+17080,Slave7Id,USINT,0,,0,,,,1
+17081,Slave7Active,BOOL,True,,True,,,,1
+17082,Slave8Type,USINT,0,,0,,,,1
+17083,Slave8Id,USINT,0,,0,,,,1
+17084,Slave8Active,BOOL,True,,True,,,,1
+17085,Slave9Type,USINT,0,,0,,,,1
+17086,Slave9Id,USINT,0,,0,,,,1
+17087,Slave9Active,BOOL,True,,True,,,,1
+17088,Reg11Type,INT,0,,0,,,,1
+17089,Reg12Type,INT,0,,0,,,,1
+17090,Reg13Type,INT,0,,0,,,,1
+17091,Reg14Type,INT,0,,0,,,,1
+17092,Reg15Type,INT,0,,0,,,,1
+17093,Reg16Type,INT,0,,0,,,,1
+17094,Reg17Type,INT,0,,0,,,,1
+17095,Reg18Type,INT,0,,0,,,,1
+17096,Reg19Type,INT,0,,0,,,,1
+17097,Reg11Active,INT,0,,0,,,,1
+17098,Reg12Active,INT,0,,0,,,,1
+17099,Reg13Active,INT,0,,0,,,,1
+17100,Reg14Active,INT,0,,0,,,,1
+17101,Reg15Active,INT,0,,0,,,,1
+17102,Reg16Active,INT,0,,0,,,,1
+17103,Reg17Active,INT,0,,0,,,,1
+17104,Reg18Active,INT,0,,0,,,,1
+17105,Reg19Active,INT,0,,0,,,,1
+17106,Reg11Location,INT,0,,0,,,,1
+17107,Reg12Location,INT,0,,0,,,,1
+17108,Reg13Location,INT,0,,0,,,,1
+17109,Reg14Location,INT,0,,0,,,,1
+17110,Reg15Location,INT,0,,0,,,,1
+17111,Reg16Location,INT,0,,0,,,,1
+17112,Reg17Location,INT,0,,0,,,,1
+17113,Reg18Location,INT,0,,0,,,,1
+17114,Reg19Location,INT,0,,0,,,,1
+17115,Reg11Addr,INT,0,,0,,,,1
+17116,Reg12Addr,INT,0,,0,,,,1
+17117,Reg13Addr,INT,0,,0,,,,1
+17118,Reg14Addr,INT,0,,0,,,,1
+17119,Reg15Addr,INT,0,,0,,,,1
+17120,Reg16Addr,INT,0,,0,,,,1
+17121,Reg17Addr,INT,0,,0,,,,1
+17122,Reg18Addr,INT,0,,0,,,,1
+17123,Reg19Addr,INT,0,,0,,,,1
+17124,Reg21Type,INT,0,,0,,,,1
+17125,Reg22Type,INT,0,,0,,,,1
+17126,Reg23Type,INT,0,,0,,,,1
+17127,Reg24Type,INT,0,,0,,,,1
+17128,Reg25Type,INT,0,,0,,,,1
+17129,Reg26Type,INT,0,,0,,,,1
+17130,Reg27Type,INT,0,,0,,,,1
+17131,Reg28Type,INT,0,,0,,,,1
+17132,Reg29Type,INT,0,,0,,,,1
+17133,Reg21Active,INT,0,,0,,,,1
+17134,Reg22Active,INT,0,,0,,,,1
+17135,Reg23Active,INT,0,,0,,,,1
+17136,Reg24Active,INT,0,,0,,,,1
+17137,Reg25Active,INT,0,,0,,,,1
+17138,Reg26Active,INT,0,,0,,,,1
+17139,Reg27Active,INT,0,,0,,,,1
+17140,Reg28Active,INT,0,,0,,,,1
+17141,Reg29Active,INT,0,,0,,,,1
+17142,Reg21Location,INT,0,,0,,,,1
+17143,Reg22Location,INT,0,,0,,,,1
+17144,Reg23Location,INT,0,,0,,,,1
+17145,Reg24Location,INT,0,,0,,,,1
+17146,Reg25Location,INT,0,,0,,,,1
+17147,Reg26Location,INT,0,,0,,,,1
+17148,Reg27Location,INT,0,,0,,,,1
+17149,Reg28Location,INT,0,,0,,,,1
+17150,Reg29Location,INT,0,,0,,,,1
+17151,Reg21Addr,INT,0,,0,,,,1
+17152,Reg22Addr,INT,0,,0,,,,1
+17153,Reg23Addr,INT,0,,0,,,,1
+17154,Reg24Addr,INT,0,,0,,,,1
+17155,Reg25Addr,INT,0,,0,,,,1
+17156,Reg26Addr,INT,0,,0,,,,1
+17157,Reg27Addr,INT,0,,0,,,,1
+17158,Reg28Addr,INT,0,,0,,,,1
+17159,Reg29Addr,INT,0,,0,,,,1
+17160,Reg31Type,INT,0,,0,,,,1
+17161,Reg32Type,INT,0,,0,,,,1
+17162,Reg33Type,INT,0,,0,,,,1
+17163,Reg34Type,INT,0,,0,,,,1
+17164,Reg35Type,INT,0,,0,,,,1
+17165,Reg36Type,INT,0,,0,,,,1
+17166,Reg37Type,INT,0,,0,,,,1
+17167,Reg38Type,INT,0,,0,,,,1
+17168,Reg39Type,INT,0,,0,,,,1
+17169,Reg31Active,INT,0,,0,,,,1
+17170,Reg32Active,INT,0,,0,,,,1
+17171,Reg33Active,INT,0,,0,,,,1
+17172,Reg34Active,INT,0,,0,,,,1
+17173,Reg35Active,INT,0,,0,,,,1
+17174,Reg36Active,INT,0,,0,,,,1
+17175,Reg37Active,INT,0,,0,,,,1
+17176,Reg38Active,INT,0,,0,,,,1
+17177,Reg39Active,INT,0,,0,,,,1
+17178,Reg31Location,INT,0,,0,,,,1
+17179,Reg32Location,INT,0,,0,,,,1
+17180,Reg33Location,INT,0,,0,,,,1
+17181,Reg34Location,INT,0,,0,,,,1
+17182,Reg35Location,INT,0,,0,,,,1
+17183,Reg36Location,INT,0,,0,,,,1
+17184,Reg37Location,INT,0,,0,,,,1
+17185,Reg38Location,INT,0,,0,,,,1
+17186,Reg39Location,INT,0,,0,,,,1
+17187,Reg31Addr,INT,0,,0,,,,1
+17188,Reg32Addr,INT,0,,0,,,,1
+17189,Reg33Addr,INT,0,,0,,,,1
+17190,Reg34Addr,INT,0,,0,,,,1
+17191,Reg35Addr,INT,0,,0,,,,1
+17192,Reg36Addr,INT,0,,0,,,,1
+17193,Reg37Addr,INT,0,,0,,,,1
+17194,Reg38Addr,INT,0,,0,,,,1
+17195,Reg39Addr,INT,0,,0,,,,1
+17196,Reg41Type,INT,0,,0,,,,1
+17197,Reg42Type,INT,0,,0,,,,1
+17198,Reg43Type,INT,0,,0,,,,1
+17199,Reg44Type,INT,0,,0,,,,1
+17200,Reg45Type,INT,0,,0,,,,1
+17201,Reg46Type,INT,0,,0,,,,1
+17202,Reg47Type,INT,0,,0,,,,1
+17203,Reg48Type,INT,0,,0,,,,1
+17204,Reg49Type,INT,0,,0,,,,1
+17205,Reg41Active,INT,0,,0,,,,1
+17206,Reg42Active,INT,0,,0,,,,1
+17207,Reg43Active,INT,0,,0,,,,1
+17208,Reg44Active,INT,0,,0,,,,1
+17209,Reg45Active,INT,0,,0,,,,1
+17210,Reg46Active,INT,0,,0,,,,1
+17211,Reg47Active,INT,0,,0,,,,1
+17212,Reg48Active,INT,0,,0,,,,1
+17213,Reg49Active,INT,0,,0,,,,1
+17214,Reg41Location,INT,0,,0,,,,1
+17215,Reg42Location,INT,0,,0,,,,1
+17216,Reg43Location,INT,0,,0,,,,1
+17217,Reg44Location,INT,0,,0,,,,1
+17218,Reg45Location,INT,0,,0,,,,1
+17219,Reg46Location,INT,0,,0,,,,1
+17220,Reg47Location,INT,0,,0,,,,1
+17221,Reg48Location,INT,0,,0,,,,1
+17222,Reg49Location,INT,0,,0,,,,1
+17223,Reg41Addr,INT,0,,0,,,,1
+17224,Reg42Addr,INT,0,,0,,,,1
+17225,Reg43Addr,INT,0,,0,,,,1
+17226,Reg44Addr,INT,0,,0,,,,1
+17227,Reg45Addr,INT,0,,0,,,,1
+17228,Reg46Addr,INT,0,,0,,,,1
+17229,Reg47Addr,INT,0,,0,,,,1
+17230,Reg48Addr,INT,0,,0,,,,1
+17231,Reg49Addr,INT,0,,0,,,,1
+17232,Reg51Type,INT,0,,0,,,,1
+17233,Reg52Type,INT,0,,0,,,,1
+17234,Reg53Type,INT,0,,0,,,,1
+17235,Reg54Type,INT,0,,0,,,,1
+17236,Reg55Type,INT,0,,0,,,,1
+17237,Reg56Type,INT,0,,0,,,,1
+17238,Reg57Type,INT,0,,0,,,,1
+17239,Reg58Type,INT,0,,0,,,,1
+17240,Reg59Type,INT,0,,0,,,,1
+17241,Reg51Active,INT,0,,0,,,,1
+17242,Reg52Active,INT,0,,0,,,,1
+17243,Reg53Active,INT,0,,0,,,,1
+17244,Reg54Active,INT,0,,0,,,,1
+17245,Reg55Active,INT,0,,0,,,,1
+17246,Reg56Active,INT,0,,0,,,,1
+17247,Reg57Active,INT,0,,0,,,,1
+17248,Reg58Active,INT,0,,0,,,,1
+17249,Reg59Active,INT,0,,0,,,,1
+17250,Reg51Location,INT,0,,0,,,,1
+17251,Reg52Location,INT,0,,0,,,,1
+17252,Reg53Location,INT,0,,0,,,,1
+17253,Reg54Location,INT,0,,0,,,,1
+17254,Reg55Location,INT,0,,0,,,,1
+17255,Reg56Location,INT,0,,0,,,,1
+17256,Reg57Location,INT,0,,0,,,,1
+17257,Reg58Location,INT,0,,0,,,,1
+17258,Reg59Location,INT,0,,0,,,,1
+17259,Reg51Addr,INT,0,,0,,,,1
+17260,Reg52Addr,INT,0,,0,,,,1
+17261,Reg53Addr,INT,0,,0,,,,1
+17262,Reg54Addr,INT,0,,0,,,,1
+17263,Reg55Addr,INT,0,,0,,,,1
+17264,Reg56Addr,INT,0,,0,,,,1
+17265,Reg57Addr,INT,0,,0,,,,1
+17266,Reg58Addr,INT,0,,0,,,,1
+17267,Reg59Addr,INT,0,,0,,,,1
+17268,Reg61Type,INT,0,,0,,,,1
+17269,Reg62Type,INT,0,,0,,,,1
+17270,Reg63Type,INT,0,,0,,,,1
+17271,Reg64Type,INT,0,,0,,,,1
+17272,Reg65Type,INT,0,,0,,,,1
+17273,Reg66Type,INT,0,,0,,,,1
+17274,Reg67Type,INT,0,,0,,,,1
+17275,Reg68Type,INT,0,,0,,,,1
+17276,Reg69Type,INT,0,,0,,,,1
+17277,Reg61Active,INT,0,,0,,,,1
+17278,Reg62Active,INT,0,,0,,,,1
+17279,Reg63Active,INT,0,,0,,,,1
+17280,Reg64Active,INT,0,,0,,,,1
+17281,Reg65Active,INT,0,,0,,,,1
+17282,Reg66Active,INT,0,,0,,,,1
+17283,Reg67Active,INT,0,,0,,,,1
+17284,Reg68Active,INT,0,,0,,,,1
+17285,Reg69Active,INT,0,,0,,,,1
+17286,Reg61Location,INT,0,,0,,,,1
+17287,Reg62Location,INT,0,,0,,,,1
+17288,Reg63Location,INT,0,,0,,,,1
+17289,Reg64Location,INT,0,,0,,,,1
+17290,Reg65Location,INT,0,,0,,,,1
+17291,Reg66Location,INT,0,,0,,,,1
+17292,Reg67Location,INT,0,,0,,,,1
+17293,Reg68Location,INT,0,,0,,,,1
+17294,Reg69Location,INT,0,,0,,,,1
+17295,Reg61Addr,INT,0,,0,,,,1
+17296,Reg62Addr,INT,0,,0,,,,1
+17297,Reg63Addr,INT,0,,0,,,,1
+17298,Reg64Addr,INT,0,,0,,,,1
+17299,Reg65Addr,INT,0,,0,,,,1
+17300,Reg66Addr,INT,0,,0,,,,1
+17301,Reg67Addr,INT,0,,0,,,,1
+17302,Reg68Addr,INT,0,,0,,,,1
+17303,Reg69Addr,INT,0,,0,,,,1
+17304,ManualOn1,UDINT,0,,0,,,,2
+17306,ManualOn2,UDINT,0,,0,,,,2
+17308,ManualOn3,UDINT,0,,0,,,,2
+17310,ManualOn4,UDINT,72,,0,,,,2
+17312,ManualOn5,UDINT,0,,0,,,,2
+17314,ManualOn6,UDINT,0,,0,,,,2
+17316,ManualOn7,UDINT,0,,0,,,,2
+17318,ManualOn8,UDINT,0,,0,,,,2
+17320,ManualOn9,UDINT,0,,0,,,,2
+17322,ManualOn10,UDINT,0,,0,,,,2
+17324,ManualOn11,UDINT,0,,0,,,,2
+17326,ManualOn12,UDINT,0,,0,,,,2
+17328,SMTP_HOSTNAME,STRING,mail.farm-bits.com,,0,,,,16
+17344,SMTP_USERNAME,STRING,plc.4@farm-bits.com,,0,,,,16
+17360,SMTP_PASSWORD,STRING,z4H4!Cpf!76s,,0,,,,16
+17376,SMTP_TO_EMAIL,STRING,data@farm-bits.com,,0,,,,16
+17392,SMTP_PORT,UINT,2525,,0,,,,1
+17393,FertigationAmount1,UINT,0,,0,,,,1
+17394,FertigationAmount2,UINT,0,,0,,,,1
+17395,FertigationAmount3,UINT,0,,0,,,,1
+17396,FertigationAmount4,UINT,0,,0,,,,1
+17397,FertigationAmount5,UINT,0,,0,,,,1
+17398,FertigationAmount6,UINT,0,,0,,,,1
+17399,FertigationAmount7,UINT,0,,0,,,,1
+17400,FertigationAmount8,UINT,0,,0,,,,1
+17401,FertigationAmount9,UINT,0,,0,,,,1
+17402,FertigationAmount10,UINT,0,,0,,,,1
+17403,FertigationAmount11,UINT,0,,0,,,,1
+17404,FertigationAmount12,UINT,0,,0,,,,1
+8960,DIL1Status,BOOL,True,,True,,,,1
+8961,DIL2Status,BOOL,True,,True,,,,1
+8962,DIL3Status,BOOL,True,,True,,,,1
+8963,DIL4Status,BOOL,True,,True,,,,1
+8964,DIL5Status,BOOL,True,,True,,,,1
+8965,DIL6Status,BOOL,True,,True,,,,1
+8966,DIL7Status,BOOL,True,,True,,,,1
+8967,DIL8Status,BOOL,True,,True,,,,1
+8968,DIL9Status,BOOL,True,,True,,,,1
+8969,DIL10Status,BOOL,True,,True,,,,1
+8970,DIL11Status,BOOL,True,,True,,,,1
+8971,DIL12Status,BOOL,True,,True,,,,1
+8972,AIL1Status,INT,0,,0,,,,1
+8973,AIL2Status,INT,0,,0,,,,1
+8974,AIL3Status,INT,0,,0,,,,1
+8975,AIL4Status,INT,0,,0,,,,1
+8976,AIL5Status,INT,0,,0,,,,1
+8977,AIL6Status,INT,0,,0,,,,1
+8978,AIL7Status,INT,0,,0,,,,1
+8979,AIL8Status,INT,0,,0,,,,1
+8980,AIL9Status,INT,0,,0,,,,1
+8981,AIL10Status,INT,0,,0,,,,1
+8982,AIL11Status,INT,0,,0,,,,1
+8983,AIL12Status,INT,0,,0,,,,1
+8984,DOL1Status,BOOL,True,,True,,,,1
+8985,DOL2Status,BOOL,True,,True,,,,1
+8986,DOL3Status,BOOL,True,,True,,,,1
+8987,DOL4Status,BOOL,True,,True,,,,1
+8988,DOL5Status,BOOL,True,,True,,,,1
+8989,DOL6Status,BOOL,True,,True,,,,1
+8990,DOL7Status,BOOL,True,,True,,,,1
+8991,DOL8Status,BOOL,True,,True,,,,1
+8992,DOL9Status,BOOL,True,,True,,,,1
+8993,DOL10Status,BOOL,True,,True,,,,1
+8994,DOL11Status,BOOL,True,,True,,,,1
+8995,DOL12Status,BOOL,True,,True,,,,1
+8996,AOL1Status,INT,0,,0,,,,1
+8997,AOL2Status,INT,0,,0,,,,1
+8998,AOL3Status,INT,0,,0,,,,1
+8999,AOL4Status,INT,0,,0,,,,1
+9000,AOL5Status,INT,0,,0,,,,1
+9001,AOL6Status,INT,0,,0,,,,1
+9002,WeatherTemperature,INT,0,,0,,,,1
+9003,WeatherHumidity,INT,0,,0,,,,1
+9004,WeatherWindSpeed,INT,0,,0,,,,1
+9005,WeatherWindDirection,INT,0,,0,,,,1
+9006,WeatherRadiation,INT,0,,0,,,,1
+9007,WeatherPreassure,INT,0,,0,,,,1
+9008,WeatherRain,INT,0,,0,,,,1
+9009,NightFlag,BOOL,True,,True,,,,1
+9010,GeneralVoltage,INT,0,,0,,,,1
+9011,GeneralPower,INT,0,,0,,,,1
+9012,GeneralPressure,INT,0,,0,,,,1
+9013,GeneralFlow,INT,0,,0,,,,1
+9014,GeneralWater,INT,0,,0,,,,1
+9015,GeneralElectricalEnergy,INT,0,,0,,,,1
+9020,StatusCounter1,UDINT,0,,0,,,,2
+9022,StatusCounter2,UDINT,0,,0,,,,2
+9024,Counter3,UDINT,0,,0,,,,2
+9026,Counter4,UDINT,0,,0,,,,2
+9028,Counter5,UDINT,0,,0,,,,2
+9030,Counter6,UDINT,0,,0,,,,2
+9032,Counter7,UDINT,0,,0,,,,2
+9034,Counter8,UDINT,0,,0,,,,2
+9036,Counter9,UDINT,0,,0,,,,2
+9038,Counter10,UDINT,0,,0,,,,2
+9040,Counter11,UDINT,0,,0,,,,2
+9042,Counter12,UDINT,0,,0,,,,2
+9044,ManualStart1,UDINT,0,,0,,,,2
+9046,ManualStart2,UDINT,0,,0,,,,2
+9048,ManualStart3,UDINT,0,,0,,,,2
+9050,ManualStart4,UDINT,0,,0,,,,2
+9052,ManualStart5,UDINT,0,,0,,,,2
+9054,ManualStart6,UDINT,0,,0,,,,2
+9056,ManualStart7,UDINT,0,,0,,,,2
+9058,ManualStart8,UDINT,0,,0,,,,2
+9060,ManualStart9,UDINT,0,,0,,,,2
+9062,ManualStart10,UDINT,0,,0,,,,2
+9064,ManualStart11,UDINT,0,,0,,,,2
+9066,ManualStart12,UDINT,0,,0,,,,2
