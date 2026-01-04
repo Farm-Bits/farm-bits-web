@@ -37,14 +37,14 @@ class Plc < ApplicationRecord
   validates :web_username, presence: true
   validates :web_password, presence: true
   validate :model_is_plc_type
+  validate :plc_version_belongs_to_model
   validate :client_matches_terminal_client, if: -> { terminal_id.present? && client_id.present? }
+
+  after_create :create_measurement_points_from_templates
+  after_update :sync_measurement_points_client, if: :saved_change_to_client_id?
 
   def touch_last_seen!(timestamp = Time.current)
     update_column(:last_seen_at, timestamp)
-  end
-
-  def poll!
-    Polling::PlcPoller.new(self).poll!
   end
 
   private
@@ -58,9 +58,42 @@ class Plc < ApplicationRecord
       end
     end
 
+    def plc_version_belongs_to_model
+      if !model.present? || !plc_version.present?
+        return
+      end
+
+      if plc_version.model_id != model_id
+        errors.add(:plc_version, "must belong to the selected model (#{model.full_name})")
+      end
+    end
+
     def client_matches_terminal_client
       if terminal.client_id != client_id
         errors.add(:client, 'must match the terminal client')
       end
+    end
+
+    def create_measurement_points_from_templates
+      if !plc_version.present?
+        return
+      end
+
+      plc_version.register_templates.find_each do |template|
+        measurement_points.create!(
+          name: template.name,
+          description: template.description,
+          position: template.position,
+          active: true,
+          measurement_subtype: nil,
+          register_template: template,
+          site: nil,
+          client: client
+        )
+      end
+    end
+
+    def sync_measurement_points_client
+      measurement_points.update_all(client_id: client_id)
     end
 end

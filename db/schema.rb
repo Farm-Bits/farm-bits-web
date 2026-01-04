@@ -181,8 +181,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_24_145915) do
     t.boolean "active", default: true, null: false
     t.bigint "measurement_subtype_id"
     t.bigint "register_template_id", null: false
-    t.bigint "plc_id"
-    t.bigint "site_id", null: false
+    t.bigint "plc_id", null: false
+    t.bigint "site_id"
     t.bigint "client_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

@@ -5,15 +5,15 @@ class MeasurementPoint < ApplicationRecord
   belongs_to :register_template
   belongs_to :plc
   belongs_to :site, optional: true
-  belongs_to :client
+  belongs_to :client, optional: true
 
   validates :name, presence: true
   validates :register_template_id, uniqueness: { scope: :plc_id }
   validate :register_template_matches_plc_version
   validates :chart_type_override, inclusion: { in: MeasurementSubtype::CHART_TYPES }, allow_blank: true
-  validates :color, format: { with: /\A#[0-9A-Fa-f]{6}\z/, message: 'must be a valid hex color' }, allow_blank: true
-  validates :polling_interval_seconds, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
-  validate :measurement_subtype_required_for_sensor_and_control, if: :active?
+  validates :color_override, format: { with: /\A#[0-9A-Fa-f]{6}\z/, message: 'must be a valid hex color' }, allow_blank: true
+  validates :polling_interval_seconds_override, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
+  # validate :measurement_subtype_required_for_sensor_and_control, if: :active?
   validate :measurement_subtype_category_matches_interface
 
   class WriteValidationError < StandardError;
@@ -143,11 +143,11 @@ class MeasurementPoint < ApplicationRecord
       end
     end
 
-    def measurement_subtype_required_for_sensor_and_control
-      if register_template.category.in?(%w[sensor control]) && measurement_subtype.nil?
-        errors.add(:measurement_subtype, "is required for #{register_template.category} registers")
-      end
-    end
+    # def measurement_subtype_required_for_sensor_and_control
+    #   if register_template.category.in?(%w[sensor control]) && measurement_subtype.nil?
+    #     errors.add(:measurement_subtype, "is required for #{register_template.category} registers")
+    #   end
+    # end
 
     def measurement_subtype_category_matches_interface
       if !register_template.interface.present? || !measurement_subtype.present?

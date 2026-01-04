@@ -45,10 +45,6 @@ class Terminal < ApplicationRecord
     update_column(:last_seen_at, timestamp)
   end
 
-  def poll!
-    Polling::TerminalPoller.new(self).poll!
-  end
-
   private
     def model_is_terminal_type
       if !model.present?
