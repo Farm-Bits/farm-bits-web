@@ -189,6 +189,7 @@
 
   function visit(path: string, options: Record<string, any> = {}) {
     isOpen.value = false;
+    currentPanel.value = 'default';
     router.visit(path, options);
   }
 

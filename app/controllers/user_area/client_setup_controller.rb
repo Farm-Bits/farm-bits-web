@@ -47,8 +47,14 @@ class UserArea::ClientSetupController < UserArea::ApplicationController
   def destroy
     authorize current_client, :destroy?
 
-    current_client.destroy
-    redirect_to root_path
+    begin
+      current_client.destroy!
+      redirect_to root_path
+    rescue => e
+      render inertia: 'UserArea/Settings/index', props: {
+        errors: [e.message]
+      }
+    end
   end
 
   private

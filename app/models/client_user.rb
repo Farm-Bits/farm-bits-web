@@ -42,7 +42,7 @@ class ClientUser < ApplicationRecord
     end
 
     def prevent_destroy_last_admin
-      if last_admin_for_client?
+      if last_admin_for_client? && !destroyed_by_association
         errors.add(:base, 'Cannot delete the last admin user')
         throw(:abort)
       end

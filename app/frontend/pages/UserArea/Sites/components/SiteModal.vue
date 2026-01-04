@@ -76,7 +76,7 @@
 
   const isLoading = ref(false);
 
-  const formData = ref<{ site: Omit<Site, 'id'> }>({
+  const formData = ref<{ site: Omit<Site, 'id' | 'time_zone'> }>({
     site: {
       name: null,
       country: null,
