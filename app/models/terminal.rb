@@ -21,6 +21,9 @@ class Terminal < ApplicationRecord
   validates :username, presence: true
   validates :password, presence: true
   validate :model_is_terminal_type
+  validate :client_matches_site_client
+
+  after_update :remove_plcs_if_deactivated, if: -> { saved_change_to_active? && !active? }
 
   def full_name
     parts = []
@@ -32,11 +35,11 @@ class Terminal < ApplicationRecord
 
   def plc_assignments=(plc_assignments_params)
     ActiveRecord::Base.transaction do
-      plcs.update_all(terminal_id: nil)
+      plcs.update_all(active: false, terminal_id: nil)
 
       plc_assignments_params.each do |assignment|
         plc = Plc.find(assignment[:id])
-        plc.update!(assignment.merge(terminal_id: id))
+        plc.update!(assignment.merge(active: true, terminal_id: id))
       end
     end
   end
@@ -54,5 +57,15 @@ class Terminal < ApplicationRecord
       if model.device_type != 'terminal'
         errors.add(:model, 'must be a terminal model')
       end
+    end
+
+    def client_matches_site_client
+      if site.present? && site.client_id != client_id
+        errors.add(:client, 'must match the client of the assigned site')
+      end
+    end
+
+    def remove_plcs_if_deactivated
+      plcs.update_all(active: false, terminal_id: nil)
     end
 end

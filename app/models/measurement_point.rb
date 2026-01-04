@@ -4,6 +4,7 @@ class MeasurementPoint < ApplicationRecord
   belongs_to :measurement_subtype, optional: true
   belongs_to :register_template
   belongs_to :plc
+  belongs_to :segment, optional: true
   belongs_to :site, optional: true
   belongs_to :client, optional: true
 
@@ -15,6 +16,7 @@ class MeasurementPoint < ApplicationRecord
   validates :polling_interval_seconds_override, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
   # validate :measurement_subtype_required_for_sensor_and_control, if: :active?
   validate :measurement_subtype_category_matches_interface
+  validate :client_matches_site_client
 
   class WriteValidationError < StandardError;
   end
@@ -158,6 +160,16 @@ class MeasurementPoint < ApplicationRecord
         errors.add(:measurement_subtype, "cannot be a control type on input interface")
       elsif register_template.interface.output? && measurement_subtype.sensor?
         errors.add(:measurement_subtype, "cannot be a sensor type on output interface")
+      end
+    end
+
+    def client_matches_site_client
+      if segment.present? && segment.client_id != client_id
+        errors.add(:client, 'must match the client of the assigned segment')
+      end
+
+      if site.present? && site.client_id != client_id
+        errors.add(:client, 'must match the client of the assigned site')
       end
     end
 

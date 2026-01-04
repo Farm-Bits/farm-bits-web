@@ -1,12 +1,13 @@
 # frozen_string_literal: true
 
 class ApplicationPolicy
-  attr_reader :current_user, :current_client, :current_client_user, :record
+  attr_reader :current_user, :current_client, :current_client_user, :current_site, :record
 
   def initialize(context, record)
     @current_user = context[:current_user]
     @current_client = context[:current_client]
     @current_client_user = context[:current_client_user]
+    @current_site = context[:current_site]
     @record = record
   end
 
@@ -60,12 +61,13 @@ class ApplicationPolicy
     end
 
   class Scope
-    attr_reader :current_user, :current_client, :current_client_user, :scope
+    attr_reader :current_user, :current_client, :current_client_user, :current_site, :scope
 
     def initialize(context, scope)
       @current_user = context[:current_user]
       @current_client = context[:current_client]
       @current_client_user = context[:current_client_user]
+      @current_site = context[:current_site]
       @scope = scope
     end
 

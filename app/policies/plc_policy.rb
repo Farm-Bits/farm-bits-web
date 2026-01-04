@@ -13,7 +13,7 @@ class PlcPolicy < ApplicationPolicy
 
   class Scope < Scope
     def resolve
-      scope.where(client_id: current_client.id)
+      scope.where(site_id: current_site.id, client_id: current_client.id)
     end
   end
 end

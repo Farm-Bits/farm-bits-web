@@ -112,6 +112,7 @@
         name: form.customName,
         iccid: selectedTerminal.iccid,
         phone_number: selectedTerminal.phone_number,
+        active: true,
         plc_assignments: form.plc_assignments
           .filter((a) => a.id)
           .map((a) => ({ id: a.id, name: a.customName }))

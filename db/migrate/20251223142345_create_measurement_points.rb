@@ -27,6 +27,7 @@ class CreateMeasurementPoints < ActiveRecord::Migration[7.0]
       t.references :measurement_subtype, foreign_key: { on_delete: :cascade }
       t.references :register_template, null: false, foreign_key: { on_delete: :cascade }
       t.references :plc, null: false, foreign_key: { on_delete: :cascade }
+      t.references :segment, foreign_key: { on_delete: :cascade }
       t.references :site, foreign_key: { on_delete: :cascade }
       t.references :client, foreign_key: { on_delete: :cascade }
 

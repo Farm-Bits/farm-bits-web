@@ -56,7 +56,7 @@
               </div>
               <!-- <div class="d-flex justify-content-between mb-2">
                 <span class="text-muted small">Model:</span>
-                <span class="small">{{ terminal.terminal_model?.name || 'N/A' }}</span>
+                <span class="small">{{ terminal.model?.name || 'N/A' }}</span>
               </div> -->
             </div>
 
@@ -73,7 +73,9 @@
                   class="d-flex justify-content-between py-1 border-bottom">
                   <span>
                     <CBadge color="success">Active</CBadge>
-                    {{ plc.name }}
+                    <Link class="nav-link nav-link-secondary d-inline-block ms-2" :href="`/user/plcs/${plc.id}`">
+                      {{ plc.name }}
+                    </Link>
                   </span>
                   <span class="text-muted">Slave: {{ plc.slave }}</span>
                 </div>
@@ -234,9 +236,15 @@
 
     if (success) {
       const index = terminals.findIndex((t) => t.id === terminalToRemove.value!.id);
-      if (index > -1)
+      if (index > -1) {
+        const plcsToRemove = terminals[index].plcs;;
+        plcsToRemove.forEach((plc) => {
+          availablePlcs.push(plc);
+        });
         terminals.splice(index, 1);
+      }
 
+      terminalToRemove.value.plcs = [];
       availableTerminals.push(terminalToRemove.value);
 
       closeConfirmModal();
@@ -261,6 +269,12 @@
     const index = availableTerminals.findIndex((t) => t.id === terminal.id);
     if (index > -1)
       availableTerminals.splice(index, 1);
+
+    terminal.plcs.forEach((plc) => {
+      const plcWasAvailableIndex = availablePlcs.findIndex((p) => p.id === plc.id);
+      if (plcWasAvailableIndex > -1)
+        availablePlcs.splice(plcWasAvailableIndex, 1);
+    });
 
     terminals.push(terminal);
 

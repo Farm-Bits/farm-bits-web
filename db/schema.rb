@@ -182,6 +182,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_24_145915) do
     t.bigint "measurement_subtype_id"
     t.bigint "register_template_id", null: false
     t.bigint "plc_id", null: false
+    t.bigint "segment_id"
     t.bigint "site_id"
     t.bigint "client_id"
     t.datetime "created_at", null: false
@@ -195,6 +196,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_24_145915) do
     t.index ["plc_id", "register_template_id"], name: "index_measurement_points_on_plc_id_and_register_template_id", unique: true
     t.index ["plc_id"], name: "index_measurement_points_on_plc_id"
     t.index ["register_template_id"], name: "index_measurement_points_on_register_template_id"
+    t.index ["segment_id"], name: "index_measurement_points_on_segment_id"
     t.index ["site_id"], name: "index_measurement_points_on_site_id"
   end
 
@@ -268,6 +270,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_24_145915) do
     t.bigint "model_id", null: false
     t.bigint "plc_version_id", null: false
     t.bigint "terminal_id"
+    t.bigint "site_id"
     t.bigint "client_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -277,6 +280,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_24_145915) do
     t.index ["model_id"], name: "index_plcs_on_model_id"
     t.index ["plc_version_id"], name: "index_plcs_on_plc_version_id"
     t.index ["serial_number"], name: "index_plcs_on_serial_number", unique: true
+    t.index ["site_id"], name: "index_plcs_on_site_id"
     t.index ["terminal_id", "active"], name: "index_plcs_on_terminal_id_and_active"
     t.index ["terminal_id"], name: "index_plcs_on_terminal_id"
   end
@@ -445,6 +449,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_24_145915) do
   add_foreign_key "measurement_points", "measurement_subtypes", on_delete: :cascade
   add_foreign_key "measurement_points", "plcs", on_delete: :cascade
   add_foreign_key "measurement_points", "register_templates", on_delete: :cascade
+  add_foreign_key "measurement_points", "segments", on_delete: :cascade
   add_foreign_key "measurement_points", "sites", on_delete: :cascade
   add_foreign_key "measurement_subtypes", "measurement_types", on_delete: :cascade
   add_foreign_key "models", "manufacturers", on_delete: :cascade
@@ -452,6 +457,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_24_145915) do
   add_foreign_key "plcs", "clients"
   add_foreign_key "plcs", "models"
   add_foreign_key "plcs", "plc_versions"
+  add_foreign_key "plcs", "sites"
   add_foreign_key "plcs", "terminals"
   add_foreign_key "register_templates", "interfaces", on_delete: :cascade
   add_foreign_key "register_templates", "plc_versions", on_delete: :cascade

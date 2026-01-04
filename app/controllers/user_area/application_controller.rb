@@ -4,6 +4,7 @@ class UserArea::ApplicationController < ApplicationController
   before_action :authenticate_user!
   before_action :ensure_user_has_client_access
   before_action :set_current_client
+  before_action :set_current_site
   after_action :verify_pundit_authorization
   inertia_share do
     {
@@ -41,22 +42,19 @@ class UserArea::ApplicationController < ApplicationController
       session[:current_client_id] = @current_client&.id
     end
 
-    def set_current_site(site)
-      @current_site = site
-      session[:current_site_id] = site&.id
-    end
+    def set_current_site
+      # Use direct scope without policy_scope to avoid circular dependency
+      sites = Site.where(client_id: current_client&.id)
 
-    def current_site
-      @current_site ||= begin
-        sites = policy_scope(Site)
-        if params[:site_id]
-          sites.find_by(id: params[:site_id])
-        elsif session[:current_site_id]
-          sites.find_by(id: session[:current_site_id])
-        else
-          sites.first
-        end
+      if params[:site_id]
+        @current_site = sites.find_by(id: params[:site_id])
+      elsif session[:current_site_id]
+        @current_site = sites.find_by(id: session[:current_site_id])
+      else
+        @current_site = sites.first
       end
+
+      session[:current_site_id] = @current_site&.id
     end
 
     def current_client
@@ -67,11 +65,16 @@ class UserArea::ApplicationController < ApplicationController
       @current_client_user
     end
 
+    def current_site
+      @current_site
+    end
+
     def pundit_user
       {
         current_user: current_user,
         current_client: current_client,
-        current_client_user: current_client_user
+        current_client_user: current_client_user,
+        current_site: current_site
       }
     end
 

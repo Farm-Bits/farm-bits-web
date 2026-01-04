@@ -4,6 +4,7 @@ class Plc < ApplicationRecord
   belongs_to :model
   belongs_to :plc_version
   belongs_to :terminal, optional: true
+  belongs_to :site, optional: true
   belongs_to :client, optional: true
 
   encrypts :username
@@ -38,10 +39,10 @@ class Plc < ApplicationRecord
   validates :web_password, presence: true
   validate :model_is_plc_type
   validate :plc_version_belongs_to_model
-  validate :client_matches_terminal_client, if: -> { terminal_id.present? && client_id.present? }
+  validate :client_matches_site_client
 
   after_create :create_measurement_points_from_templates
-  after_update :sync_measurement_points_client, if: :saved_change_to_client_id?
+  after_update :sync_measurement_points_client
 
   def touch_last_seen!(timestamp = Time.current)
     update_column(:last_seen_at, timestamp)
@@ -68,9 +69,13 @@ class Plc < ApplicationRecord
       end
     end
 
-    def client_matches_terminal_client
-      if terminal.client_id != client_id
-        errors.add(:client, 'must match the terminal client')
+    def client_matches_site_client
+      if site.present? && site.client_id != client_id
+        errors.add(:client, 'must match the client of the assigned site')
+      end
+
+      if terminal.present? && terminal.client_id != client_id
+        errors.add(:client, 'must match the client of the assigned terminal')
       end
     end
 
@@ -94,6 +99,17 @@ class Plc < ApplicationRecord
     end
 
     def sync_measurement_points_client
-      measurement_points.update_all(client_id: client_id)
+      update_attrs = {}
+      if saved_change_to_site_id?
+        update_attrs[:site_id] = site_id
+      end
+
+      if saved_change_to_client_id?
+        update_attrs[:client_id] = client_id
+      end
+
+      if !update_attrs.empty?
+        measurement_points.update_all(update_attrs)
+      end
     end
 end

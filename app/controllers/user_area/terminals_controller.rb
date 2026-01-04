@@ -4,8 +4,8 @@ class UserArea::TerminalsController < UserArea::ApplicationController
   def index
     authorize Terminal, :index?
 
-    terminals = policy_scope(Terminal).where(site: current_site)
-      .includes(:terminal_model, :plcs)
+    terminals = policy_scope(Terminal).where(active: true)
+      .includes(:model, :plcs)
 
     render inertia: 'UserArea/Terminals/index', props: {
       terminals: TerminalSerializer.render_as_hash(terminals, view: :with_plcs),
@@ -16,7 +16,6 @@ class UserArea::TerminalsController < UserArea::ApplicationController
 
   def update
     authorize @terminal, :update?
-    @terminal.site_id = current_site.id
 
     if @terminal.update(terminal_params)
       render json: TerminalSerializer.render(@terminal, view: :with_plcs), status: :ok
@@ -28,7 +27,7 @@ class UserArea::TerminalsController < UserArea::ApplicationController
   def destroy
     authorize @terminal, :destroy?
 
-    if @terminal.update(site_id: nil)
+    if @terminal.update(active: false)
       render json: TerminalSerializer.render(@terminal), status: :ok
     else
       render json: { error: @terminal.errors.full_messages.to_sentence }, status: :unprocessable_entity
@@ -37,7 +36,7 @@ class UserArea::TerminalsController < UserArea::ApplicationController
 
   private
     def terminal_params
-      params.require(:terminal).permit(:name, :iccid, :phone_number, plc_assignments: [:id, :name])
+      params.require(:terminal).permit(:name, :iccid, :phone_number, :active, plc_assignments: [:id, :name])
     end
 
     def set_terminal
@@ -45,25 +44,27 @@ class UserArea::TerminalsController < UserArea::ApplicationController
     end
 
     def available_terminals_for_activation
-      policy_scope(Terminal).where(site_id: nil, active: true).map do |t|
+      policy_scope(Terminal).where(active: false).map do |t|
         {
           id: t.id,
           label: t.label,
           name: t.name,
           imei: t.imei,
           iccid: t.iccid,
-          phone_number: t.phone_number
+          phone_number: t.phone_number,
+          private_ip: t.private_ip
         }
       end
     end
 
     def available_plcs_for_activation
-      policy_scope(Plc).where(terminal_id: nil, active: true).map do |p|
+      policy_scope(Plc).where(terminal_id: nil, active: false).map do |p|
         {
           id: p.id,
           label: p.label,
           name: p.name,
           slave: p.slave,
+          private_ip: p.private_ip,
           plc_version: {
             id: p.plc_version.id,
             name: p.plc_version.name,
