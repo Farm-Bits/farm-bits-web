@@ -26,6 +26,10 @@ class CreateRegisterTemplates < ActiveRecord::Migration[7.2]
       t.string :group_role
       t.json :validation_rules
 
+      t.string :bulk_read_group
+      t.integer :bulk_read_address
+      t.string :bulk_read_offset
+
       t.boolean :read_only, null: false, default: true
 
       # Validation bounds
@@ -47,6 +51,7 @@ class CreateRegisterTemplates < ActiveRecord::Migration[7.2]
     end
 
     add_index :register_templates, [:plc_version_id, :address], unique: true
+    add_index :register_templates, [:plc_version_id, :bulk_read_group]
     add_index :register_templates, [:plc_version_id, :label], unique: true
     add_index :register_templates, [:plc_version_id, :name], unique: true
     add_index :register_templates, :category

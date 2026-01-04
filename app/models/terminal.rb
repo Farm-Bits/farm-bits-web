@@ -55,7 +55,7 @@ class Terminal < ApplicationRecord
         return
       end
 
-      if !model.device_type_terminal?
+      if model.device_type != 'terminal'
         errors.add(:model, 'must be a terminal model')
       end
     end

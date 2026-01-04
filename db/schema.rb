@@ -242,7 +242,6 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_24_145915) do
     t.text "description"
     t.boolean "is_latest", default: false, null: false
     t.boolean "is_supported", default: true, null: false
-    t.string "handler_class", null: false
     t.bigint "model_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -298,6 +297,9 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_24_145915) do
     t.string "group_name"
     t.string "group_role"
     t.json "validation_rules"
+    t.string "bulk_read_group"
+    t.integer "bulk_read_address"
+    t.string "bulk_read_offset"
     t.boolean "read_only", default: true, null: false
     t.decimal "min_value", precision: 20, scale: 6
     t.decimal "max_value", precision: 20, scale: 6
@@ -313,6 +315,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_24_145915) do
     t.index ["category"], name: "index_register_templates_on_category"
     t.index ["interface_id"], name: "index_register_templates_on_interface_id"
     t.index ["plc_version_id", "address"], name: "index_register_templates_on_plc_version_id_and_address", unique: true
+    t.index ["plc_version_id", "bulk_read_group"], name: "index_register_templates_on_plc_version_id_and_bulk_read_group"
     t.index ["plc_version_id", "category"], name: "index_register_templates_on_plc_version_id_and_category"
     t.index ["plc_version_id", "group_name"], name: "index_register_templates_on_plc_version_id_and_group_name"
     t.index ["plc_version_id", "label"], name: "index_register_templates_on_plc_version_id_and_label", unique: true

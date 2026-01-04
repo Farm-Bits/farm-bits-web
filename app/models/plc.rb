@@ -39,10 +39,6 @@ class Plc < ApplicationRecord
   validate :model_is_plc_type
   validate :client_matches_terminal_client, if: -> { terminal_id.present? && client_id.present? }
 
-  def handler
-    plc_version.handler_for(self)
-  end
-
   def touch_last_seen!(timestamp = Time.current)
     update_column(:last_seen_at, timestamp)
   end
@@ -57,7 +53,7 @@ class Plc < ApplicationRecord
         return
       end
 
-      if !model.device_type_plc?
+      if model.device_type != 'plc'
         errors.add(:model, 'must be a PLC model')
       end
     end

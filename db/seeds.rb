@@ -98,7 +98,6 @@ ActiveRecord::Base.transaction do
   free_advance_first_version = PlcVersion.create!(
     name: 'V0',
     version_code: '0.1',
-    handler_class: 'Plc::Handlers::FreeAdvanceV0',
     is_latest: true,
     is_supported: true,
     model: free_advance_model
@@ -185,7 +184,7 @@ ActiveRecord::Base.transaction do
   rows.each_with_index do |row, index|
     data = row
 
-    # Address,Name,Type,Value,Um,Default,Min,Max,Description,Count
+    # Address,Name,Type,Value,Um,Default,Min,Max,Description,Count,Register Type,Read Only,Category,Read Group,Read Address,Read Offset,Data Collection Enabled,Polling Interval Seconds
     address = data[0].to_i
     name = data[1]
     type = data[2]
@@ -195,25 +194,14 @@ ActiveRecord::Base.transaction do
     max_value = data[7]
     description = data[8]
     address_count = data[9].to_i
-
-    register_type = 'holding'
-    read_only = false
-    if address > 0 && address <= 9999
-      register_type = 'coil'
-      read_only = false
-    elsif address > 10000 && address <= 19999
-      register_type = 'discrete'
-      read_only = true
-    elsif address > 30000 && address <= 39999
-      register_type = 'input'
-      read_only = true
-    elsif address > 40000 && address <= 49999
-      register_type = 'holding'
-      read_only = false
-    else
-      register_type = 'holding'
-      read_only = false
-    end
+    register_type = data[10]
+    read_only = data[11].to_i
+    category = data[12]
+    bulk_read_group = data[13]
+    bulk_read_address = data[14]
+    bulk_read_offset = data[15]
+    default_data_collection_enabled = data[16].to_i
+    default_polling_interval_seconds = data[17] ? data[17].to_i : nil
 
     value_format = 'numeric'
     if um == 'flag' || type == 'BOOL'
@@ -224,6 +212,9 @@ ActiveRecord::Base.transaction do
 
     enum_values = nil
     data_type = type_mapping[type]
+    if name.start_with?('AOL')
+      data_type = 'int16'
+    end
     if type == 'enum'
       value_format = 'enum'
       data_type = 'uint8'
@@ -390,31 +381,6 @@ ActiveRecord::Base.transaction do
       end
     end
 
-    category = 'configuration'
-    default_data_collection_enabled = false
-    default_polling_interval_seconds = nil
-    if address >= 8960 && address <= 9001
-      if address <= 8983
-        category = 'sensor'
-      else
-        category = 'control'
-      end
-
-      default_data_collection_enabled = true
-      default_polling_interval_seconds = 300
-    else
-      if name.end_with?('status') || name.end_with?('Status')
-        category = 'diagnostic'
-      elsif name.start_with?('AIL') || name.start_with?('DIL')
-        category = 'sensor'
-      elsif name.start_with?('AOL') || name.start_with?('DOL')
-        category = 'control'
-        if name.start_with?('AOL')
-          data_type = 'int16'
-        end
-      end
-    end
-
     registers.push(
       name: name,
       label: name,
@@ -428,6 +394,9 @@ ActiveRecord::Base.transaction do
       factor: 1,
       offset: 0,
       category: category,
+      bulk_read_group: bulk_read_group,
+      bulk_read_address: bulk_read_address,
+      bulk_read_offset: bulk_read_offset,
       read_only: read_only,
       min_value: min_value,
       max_value: max_value,

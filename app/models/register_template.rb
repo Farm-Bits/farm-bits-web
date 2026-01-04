@@ -51,6 +51,7 @@ class RegisterTemplate < ApplicationRecord
   validate :address_range_does_not_overlap
   validate :group_role_requires_group_name
   validate :validation_rules_format
+  validate :bulk_read_offset_requires_bulk_read_address
 
   def full_address
     "#{address}#{address_count > 1 ? "-#{address + address_count - 1}" : ''}"
@@ -230,28 +231,6 @@ class RegisterTemplate < ApplicationRecord
       end
     end
 
-    def validation_rules_format
-      if validation_rules.blank?
-        return
-      end
-
-      if !validation_rules.is_a?(Hash)
-        errors.add(:validation_rules, 'must be a JSON object')
-        return
-      end
-
-      validation_rules.each do |rule_type, rule_config|
-        case rule_type
-        when 'required_when'
-          validate_required_when_format(rule_config)
-        when 'one_of_required'
-          validate_one_of_required_format(rule_config)
-        when 'less_than', 'greater_than'
-          validate_comparison_format(rule_type, rule_config)
-        end
-      end
-    end
-
     def validate_required_when_format(rule_config)
       if !rule_config.is_a?(Hash)
         errors.add(:validation_rules, "required_when must be an object")
@@ -290,6 +269,34 @@ class RegisterTemplate < ApplicationRecord
 
       if !rule_config['group_role'].present?
         errors.add(:validation_rules, "#{rule_type} must have 'group_role'")
+      end
+    end
+
+    def validation_rules_format
+      if validation_rules.blank?
+        return
+      end
+
+      if !validation_rules.is_a?(Hash)
+        errors.add(:validation_rules, 'must be a JSON object')
+        return
+      end
+
+      validation_rules.each do |rule_type, rule_config|
+        case rule_type
+        when 'required_when'
+          validate_required_when_format(rule_config)
+        when 'one_of_required'
+          validate_one_of_required_format(rule_config)
+        when 'less_than', 'greater_than'
+          validate_comparison_format(rule_type, rule_config)
+        end
+      end
+    end
+
+    def bulk_read_offset_requires_bulk_read_address
+      if bulk_read_offset.present? && bulk_read_address.blank?
+        errors.add(:bulk_read_offset, 'cannot be set without bulk_read_address')
       end
     end
 

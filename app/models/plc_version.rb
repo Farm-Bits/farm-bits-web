@@ -15,28 +15,12 @@ class PlcVersion < ApplicationRecord
 
   validates :name, presence: true, uniqueness: { scope: :model_id }
   validates :version_code, presence: true, uniqueness: { scope: :model_id }
-  validates :handler_class, presence: true
   validate :only_one_latest_per_model, if: :is_latest?
 
   after_save :ensure_single_latest, if: :saved_change_to_is_latest?
 
   def full_name
     "#{model.full_name} v#{version_code}"
-  end
-
-  def handler
-    if !handler_class.present?
-      return nil
-    end
-
-    @handler ||= handler_class.constantize
-  rescue NameError => e
-    Rails.logger.error "Handler class not found: #{handler_class} - #{e.message}"
-    nil
-  end
-
-  def handler_instance(plc)
-    handler&.new(plc)
   end
 
   def copy_registers_from(source_version)
