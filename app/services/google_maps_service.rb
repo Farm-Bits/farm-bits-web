@@ -96,4 +96,54 @@ class GoogleMapsService
       return nil
     end
   end
+
+  def geocode_country(country)
+    if !country.present?
+      return nil
+    end
+
+    response = self.class.get('/geocode/json',
+      query: {
+        address: country,
+        key: @api_key
+      }
+    )
+
+    if response.success? && response['status'] == 'OK' && response['results'].any?
+      location = response['results'].first['geometry']['location']
+      {
+        latitude: location['lat'],
+        longitude: location['lng']
+      }
+    else
+      nil
+    end
+  rescue => e
+    Rails.logger.error("Error geocoding country: #{e.message}")
+    nil
+  end
+
+  def time_zone_for_coordinates(latitude, longitude, timestamp = Time.current.to_i)
+    if !latitude.present? || !longitude.present?
+      return nil
+    end
+
+    response = self.class.get('/timezone/json',
+      query: {
+        location: "#{latitude},#{longitude}",
+        timestamp: timestamp,
+        key: @api_key
+      }
+    )
+
+    if response.success? && response['status'] == 'OK'
+      response['timeZoneId']
+    else
+      Rails.logger.warn("Google Maps Time Zone API error: #{response['status']} - #{response['errorMessage']}")
+      nil
+    end
+  rescue => e
+    Rails.logger.error("Error fetching time zone: #{e.message}")
+    nil
+  end
 end

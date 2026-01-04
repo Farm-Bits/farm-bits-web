@@ -32,7 +32,7 @@
 
           <CDropdownItem
             class="d-flex align-items-center"
-            @click="router.visit(paths.pages.myAccount)">
+            @click="visit(paths.pages.myAccount)">
             <CIcon icon="cilUser" class="me-2" />
             Profile
           </CDropdownItem>
@@ -40,7 +40,7 @@
           <CDropdownItem
             v-if="permissions.client_setup.update"
             class="d-flex align-items-center"
-            @click="router.visit(paths.pages.editClient)">
+            @click="visit(paths.pages.editClient)">
             <CIcon icon="cilSettings" class="me-2" />
             Settings
           </CDropdownItem>
@@ -99,7 +99,7 @@
               v-for="otherClient in otherClients"
               :key="otherClient.id"
               class="d-flex align-items-center"
-              @click="router.visit(pathname, { data: { client_id: otherClient.id } })">
+              @click="visit(pathname, { data: { client_id: otherClient.id } })">
               <div
                 class="client-avatar me-2"
                 :style="{ backgroundColor: otherClient.color }">
@@ -111,7 +111,7 @@
 
           <CDropdownDivider />
 
-          <CDropdownItem class="d-flex align-items-center" @click="router.visit(paths.pages.newClient)">
+          <CDropdownItem class="d-flex align-items-center" @click="visit(paths.pages.newClient)">
             <CIcon icon="cilPlus" class="me-2" />
             Create New Company
           </CDropdownItem>
@@ -152,28 +152,28 @@
     transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
   }));
 
-  const toggleDropdown = () => {
+  function toggleDropdown() {
     isOpen.value = !isOpen.value;
     if (!isOpen.value) {
       setTimeout(() => {
         currentPanel.value = 'default';
       }, 150);
     }
-  };
+  }
 
-  const getInitials = (name: string) => {
+  function getInitials(name: string) {
     return (name.match(/\b\w/g) || []).join('').toUpperCase();
-  };
+  }
 
-  const showClientPanel = () => {
+  function showClientPanel() {
     currentPanel.value = 'clients';
-  };
+  }
 
-  const showDefaultPanel = () => {
+  function showDefaultPanel() {
     currentPanel.value = 'default';
-  };
+  }
 
-  const handleClickOutside = (event: MouseEvent) => {
+  function handleClickOutside(event: MouseEvent) {
     if (
       dropdownToggle.value &&
       dropdownMenu.value &&
@@ -185,7 +185,12 @@
         currentPanel.value = 'default'
       }, 150)
     }
-  };
+  }
+
+  function visit(path: string, options: Record<string, any> = {}) {
+    isOpen.value = false;
+    router.visit(path, options);
+  }
 
   onMounted(() => {
     document.addEventListener('click', handleClickOutside)

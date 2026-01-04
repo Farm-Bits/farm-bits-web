@@ -29,7 +29,7 @@
 
       <CDropdownItem
         class="d-flex align-items-center"
-        @click="router.visit(paths.pages.myAccount)">
+        @click="visit(paths.pages.myAccount)">
         <CIcon icon="cilUser" class="me-2" />
         Profile
       </CDropdownItem>
@@ -84,15 +84,15 @@
   const dropdownToggle = ref<HTMLElement | null>(null);
   const dropdownMenu = ref<HTMLElement | null>(null);
 
-  const toggleDropdown = () => {
+  function toggleDropdown() {
     isOpen.value = !isOpen.value;
-  };
+  }
 
-  const getInitials = (name: string) => {
+  function getInitials(name: string) {
     return (name.match(/\b\w/g) || []).join('').toUpperCase();
-  };
+  }
 
-  const handleClickOutside = (event: MouseEvent) => {
+  function handleClickOutside(event: MouseEvent) {
     if (
       dropdownToggle.value &&
       dropdownMenu.value &&
@@ -101,7 +101,12 @@
     ) {
       isOpen.value = false;
     }
-  };
+  }
+
+  function visit(path: string, options: Record<string, any> = {}) {
+    isOpen.value = false;
+    router.visit(path, options);
+  }
 
   onMounted(() => {
     document.addEventListener('click', handleClickOutside);

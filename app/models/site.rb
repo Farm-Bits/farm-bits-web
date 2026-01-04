@@ -16,7 +16,7 @@ class Site < ApplicationRecord
 
   validates :name, presence: true
   validates :country, presence: true
-  validates :time_zone, presence: true, inclusion: { in: ActiveSupport::TimeZone.all.map(&:name) }
+  validates :time_zone, presence: true, inclusion: { in: TZInfo::Timezone.all.map(&:identifier) }
   validate :country_must_be_valid
   validate :city_must_be_valid_if_present
   validate :coordinates_must_be_present_together
@@ -34,7 +34,7 @@ class Site < ApplicationRecord
   }, allow_blank: true
 
   before_validation :set_default_name, if: -> { name.blank? && client.present? }
-  before_validation :set_default_time_zone, if: -> { time_zone.blank? }
+  before_validation :set_default_time_zone
 
   def time_zone_object
     ActiveSupport::TimeZone[time_zone]
