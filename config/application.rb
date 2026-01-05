@@ -47,6 +47,8 @@ module FarmBits
       BigDecimal
     ]
 
+    config.active_job.queue_adapter = :sidekiq
+
     config.exceptions_app = ->(env) do
       Class.new(ActionController::Base) do
         layout "application"
