@@ -72,6 +72,9 @@ gem "devise"
 # Administrate is a library for Rails apps that automatically generates admin dashboards
 gem "administrate"
 
+# Use Redis adapter to run Action Cable in production
+gem "redis"
+
 # Simple, efficient background processing for Ruby
 gem "sidekiq", "~> 7.2"
 gem "sidekiq-scheduler"

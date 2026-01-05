@@ -20,19 +20,12 @@ Rails.application.configure do
   # Enable server timing.
   config.server_timing = true
 
-  # Enable/disable caching. By default caching is disabled.
-  # Run rails dev:cache to toggle caching.
-  if Rails.root.join("tmp/caching-dev.txt").exist?
-    config.action_controller.perform_caching = true
-    config.action_controller.enable_fragment_cache_logging = true
-
-    config.cache_store = :memory_store
-    config.public_file_server.headers = { "Cache-Control" => "public, max-age=#{2.days.to_i}" }
-  else
-    config.action_controller.perform_caching = false
-
-    config.cache_store = :null_store
-  end
+  config.action_controller.perform_caching = true
+  config.action_controller.enable_fragment_cache_logging = true
+  config.cache_store = :redis_cache_store, {
+    url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/0'),
+    expires_in: 1.day
+  }
 
   # Don't care if the mailer can't send.
   config.action_mailer.raise_delivery_errors = false
@@ -42,16 +35,16 @@ Rails.application.configure do
   config.action_mailer.perform_caching = false
 
   config.action_mailer.default_url_options = { host: ENV["HOSTNAME"] }
-  # config.action_mailer.perform_deliveries = true
-  # config.action_mailer.delivery_method = :smtp
-  # config.action_mailer.smtp_settings = {
-  #   address:              Rails.application.credentials[:mailer][:address],
-  #   port:                 Rails.application.credentials[:mailer][:port],
-  #   user_name:            Rails.application.credentials[:mailer][:user_name],
-  #   password:             Rails.application.credentials[:mailer][:password],
-  #   authentication:       "plain",
-  #   enable_starttls_auto: true
-  # }
+  config.action_mailer.perform_deliveries = true
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.smtp_settings = {
+    address:              Rails.application.credentials[:mailer][:address],
+    port:                 Rails.application.credentials[:mailer][:port],
+    user_name:            Rails.application.credentials[:mailer][:user_name],
+    password:             Rails.application.credentials[:mailer][:password],
+    authentication:       "plain",
+    enable_starttls_auto: true
+  }
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log

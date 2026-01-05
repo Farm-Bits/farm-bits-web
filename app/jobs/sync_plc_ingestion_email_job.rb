@@ -1,4 +1,4 @@
-class SyncPlcIngestionEmailJob < ActiveJob::Base
+class SyncPlcIngestionEmailJob < ApplicationJob
   queue_as :default
 
   def perform(plc_id, action)
