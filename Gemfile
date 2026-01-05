@@ -75,8 +75,12 @@ gem "administrate"
 # Use Redis adapter to run Action Cable in production
 gem "redis"
 
+# Sidekiq gem being updated to 8.1.0 which in turn requires connection_pool to be at version >= 3.0.0. This then introduced a compatibility issue between connection_pool and Rails 8.1
+# https://github.com/rails/rails/pull/56292/commits
+gem "connection_pool", "< 3"
+
 # Simple, efficient background processing for Ruby
-gem "sidekiq", "~> 7.2"
+gem "sidekiq"
 gem "sidekiq-scheduler"
 
 # Figaro parses a Git-ignored YAML file in your application and loads its values into ENV

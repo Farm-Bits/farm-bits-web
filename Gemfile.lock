@@ -397,6 +397,7 @@ DEPENDENCIES
   capistrano-rvm
   capistrano-sidekiq
   capistrano3-puma
+  connection_pool (< 3)
   debug
   devise
   ed25519
@@ -415,7 +416,7 @@ DEPENDENCIES
   redis
   rspec-rails (~> 7.0.0)
   sd_notify
-  sidekiq (~> 7.2)
+  sidekiq
   sidekiq-scheduler
   sprockets-rails
   tzinfo-data
