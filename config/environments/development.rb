@@ -23,8 +23,7 @@ Rails.application.configure do
   config.action_controller.perform_caching = true
   config.action_controller.enable_fragment_cache_logging = true
   config.cache_store = :redis_cache_store, {
-    url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/0'),
-    expires_in: 1.day
+    url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/0')
   }
 
   # Don't care if the mailer can't send.
