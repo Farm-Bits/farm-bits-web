@@ -18,71 +18,65 @@ ActiveRecord::Base.transaction do
   MeasurementType.create!([
     {
       name: 'Weather',
-      category: 'sensor',
       position: 1,
       measurement_subtypes_attributes: [
-        { name: 'Temperature',  value_type: 'instantaneous', default_unit: '°C',   default_chart_type: 'spline', default_color: '', position: 1 },
-        { name: 'Humidity',     value_type: 'instantaneous', default_unit: '%',    default_chart_type: 'spline', default_color: '', position: 2 },
-        { name: 'Wind Speed',   value_type: 'instantaneous', default_unit: 'm/s',  default_chart_type: 'spline', default_color: '', position: 3 },
-        { name: 'Rain',         value_type: 'accumulative',  default_unit: 'mm',   default_chart_type: 'bar',    default_color: '', position: 4 },
-        { name: 'Radiation',    value_type: 'instantaneous', default_unit: 'w/m2', default_chart_type: 'spline', default_color: '', position: 5 }
+        { name: 'Temperature',  data_category: 'analog',  value_type: 'instantaneous', default_unit: '°C',   default_chart_type: 'spline', default_color: '', position: 1 },
+        { name: 'Humidity',     data_category: 'analog',  value_type: 'instantaneous', default_unit: '%',    default_chart_type: 'spline', default_color: '', position: 2 },
+        { name: 'Wind Speed',   data_category: 'analog',  value_type: 'instantaneous', default_unit: 'm/s',  default_chart_type: 'spline', default_color: '', position: 3 },
+        { name: 'Rain',         data_category: 'counter', value_type: 'accumulative',  default_unit: 'mm',   default_chart_type: 'bar',    default_color: '', position: 4 },
+        { name: 'Radiation',    data_category: 'analog',  value_type: 'instantaneous', default_unit: 'w/m2', default_chart_type: 'spline', default_color: '', position: 5 }
       ]
     },
     {
       name: 'Ambient',
-      category: 'sensor',
       position: 2,
       measurement_subtypes_attributes: [
-        { name: 'Temperature',  value_type: 'instantaneous', default_unit: '°C',  default_chart_type: 'spline', default_color: '', position: 1 },
-        { name: 'Humidity',     value_type: 'instantaneous', default_unit: '%',   default_chart_type: 'spline', default_color: '', position: 2 },
-        { name: 'CO2',          value_type: 'instantaneous', default_unit: 'ppm', default_chart_type: 'spline', default_color: '', position: 3 }
+        { name: 'Temperature',  data_category: 'analog', value_type: 'instantaneous', default_unit: '°C',  default_chart_type: 'spline', default_color: '', position: 1 },
+        { name: 'Humidity',     data_category: 'analog', value_type: 'instantaneous', default_unit: '%',   default_chart_type: 'spline', default_color: '', position: 2 },
+        { name: 'CO2',          data_category: 'analog', value_type: 'instantaneous', default_unit: 'ppm', default_chart_type: 'spline', default_color: '', position: 3 }
       ]
     },
     {
       name: 'Soil',
-      category: 'sensor',
       position: 3,
       measurement_subtypes_attributes: [
-        { name: 'Temperature',  value_type: 'instantaneous', default_unit: '°C', default_chart_type: 'spline', default_color: '', position: 1 },
-        { name: 'Humidity',     value_type: 'instantaneous', default_unit: '%',  default_chart_type: 'spline', default_color: '', position: 2 }
+        { name: 'Temperature',  data_category: 'analog', value_type: 'instantaneous', default_unit: '°C', default_chart_type: 'spline', default_color: '', position: 1 },
+        { name: 'Humidity',     data_category: 'analog', value_type: 'instantaneous', default_unit: '%',  default_chart_type: 'spline', default_color: '', position: 2 }
       ]
     },
     {
       name: 'Electricity',
-      category: 'sensor',
       position: 4,
       measurement_subtypes_attributes: [
-        { name: 'Power',        value_type: 'instantaneous', default_unit: 'W',  default_chart_type: 'spline', default_color: '', position: 1 },
-        { name: 'Energy',       value_type: 'accumulative',  default_unit: 'Wh', default_chart_type: 'bar',    default_color: '', position: 2 },
-        { name: 'Voltage',      value_type: 'instantaneous', default_unit: 'V',  default_chart_type: 'spline', default_color: '', position: 3 },
-        { name: 'Current',      value_type: 'instantaneous', default_unit: 'A',  default_chart_type: 'spline', default_color: '', position: 4 }
+        { name: 'Power',        data_category: 'analog',  value_type: 'instantaneous', default_unit: 'W',  default_chart_type: 'spline', default_color: '', position: 1 },
+        { name: 'Energy',       data_category: 'counter', value_type: 'accumulative',  default_unit: 'Wh', default_chart_type: 'bar',    default_color: '', position: 2 },
+        { name: 'Voltage',      data_category: 'analog',  value_type: 'instantaneous', default_unit: 'V',  default_chart_type: 'spline', default_color: '', position: 3 },
+        { name: 'Current',      data_category: 'analog',  value_type: 'instantaneous', default_unit: 'A',  default_chart_type: 'spline', default_color: '', position: 4 }
       ]
     },
     {
       name: 'Fluid',
-      category: 'sensor',
       position: 5,
       measurement_subtypes_attributes: [
-        { name: 'Pressure',     value_type: 'instantaneous', default_unit: 'Bar',  default_chart_type: 'spline', default_color: '', position: 1 },
-        { name: 'Flow Rate',    value_type: 'instantaneous', default_unit: 'm3/s', default_chart_type: 'spline', default_color: '', position: 2 },
-        { name: 'Amount',       value_type: 'accumulative',  default_unit: 'L',    default_chart_type: 'bar',    default_color: '', position: 3 }
+        { name: 'Pressure',     data_category: 'analog',  value_type: 'instantaneous', default_unit: 'Bar',  default_chart_type: 'spline', default_color: '', position: 1 },
+        { name: 'Flow Rate',    data_category: 'analog',  value_type: 'instantaneous', default_unit: 'm3/s', default_chart_type: 'spline', default_color: '', position: 2 },
+        { name: 'Amount',       data_category: 'counter', value_type: 'accumulative',  default_unit: 'L',    default_chart_type: 'bar',    default_color: '', position: 3 }
       ]
     },
     {
-      name: 'Control',
-      category: 'control',
-      position: 6,
+      name: 'Switch',
       measurement_subtypes_attributes: [
-        { name: 'Irrigation',  value_type: 'status', default_unit: 'Closed/Open', default_chart_type: 'spline', default_color: '', position: 1 },
-        { name: 'Fertigation', value_type: 'status', default_unit: 'Closed/Open', default_chart_type: 'spline', default_color: '', position: 2 },
-        { name: 'Curtain',     value_type: 'status', default_unit: 'Closed/Open', default_chart_type: 'spline', default_color: '', position: 3 },
-        { name: 'Fan',         value_type: 'status', default_unit: 'Off/On',      default_chart_type: 'spline', default_color: '#5C6267', position: 4 },
-        { name: 'Heater',      value_type: 'status', default_unit: 'Off/On',      default_chart_type: 'spline', default_color: '#FF8C00', position: 5 },
-        { name: 'Window',      value_type: 'status', default_unit: 'Closed/Open', default_chart_type: 'spline', default_color: '#39A0CA', position: 6 },
-        { name: 'Light',       value_type: 'status', default_unit: 'Off/On',      default_chart_type: 'spline', default_color: '', position: 7 },
-        { name: 'Humidifier',  value_type: 'status', default_unit: 'Off/On',      default_chart_type: 'spline', default_color: '', position: 8 },
-        { name: 'Pump',        value_type: 'status', default_unit: 'Off/On',      default_chart_type: 'spline', default_color: '', position: 9 },
-        { name: 'Valve',       value_type: 'status', default_unit: 'Closed',      default_chart_type: 'spline', default_color: '#398439', position: 10 }
+        { name: 'Irrigation',  data_category: 'status', value_type: 'status', default_unit: 'Closed/Open', default_chart_type: 'spline', default_color: '', position: 1 },
+        { name: 'Fertigation', data_category: 'status', value_type: 'status', default_unit: 'Closed/Open', default_chart_type: 'spline', default_color: '', position: 2 },
+        { name: 'Curtain',     data_category: 'status', value_type: 'status', default_unit: 'Closed/Open', default_chart_type: 'spline', default_color: '', position: 3 },
+        { name: 'Fan',         data_category: 'status', value_type: 'status', default_unit: 'Off/On',      default_chart_type: 'spline', default_color: '#5C6267', position: 4 },
+        { name: 'Heater',      data_category: 'status', value_type: 'status', default_unit: 'Off/On',      default_chart_type: 'spline', default_color: '#FF8C00', position: 5 },
+        { name: 'Window',      data_category: 'status', value_type: 'status', default_unit: 'Closed/Open', default_chart_type: 'spline', default_color: '#39A0CA', position: 6 },
+        { name: 'Light',       data_category: 'status', value_type: 'status', default_unit: 'Off/On',      default_chart_type: 'spline', default_color: '', position: 7 },
+        { name: 'Humidifier',  data_category: 'status', value_type: 'status', default_unit: 'Off/On',      default_chart_type: 'spline', default_color: '', position: 8 },
+        { name: 'Pump',        data_category: 'status', value_type: 'status', default_unit: 'Off/On',      default_chart_type: 'spline', default_color: '', position: 9 },
+        { name: 'Valve',       data_category: 'status', value_type: 'status', default_unit: 'Closed/Open', default_chart_type: 'spline', default_color: '#398439', position: 10 },
+        { name: 'Door',        data_category: 'status', value_type: 'status', default_unit: 'Closed/Open', default_chart_type: 'spline', default_color: '', position: 11 }
       ]
     }
   ])
@@ -381,6 +375,12 @@ ActiveRecord::Base.transaction do
       end
     end
 
+    interface = interfaces[name]
+    if name.start_with?('Counter') || name.start_with?('StatusCounter')
+      interface_number = name.match(/Counter(\d+)/)[1]
+      interface = interfaces["DIL#{interface_number}"]
+    end
+
     registers.push(
       name: name,
       label: name,
@@ -405,6 +405,7 @@ ActiveRecord::Base.transaction do
       default_data_collection_enabled: default_data_collection_enabled,
       default_polling_interval_seconds: default_polling_interval_seconds,
       position: index + 1,
+      interface: interface,
       plc_version: free_advance_first_version
     )
   end

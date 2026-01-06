@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_12_24_145915) do
+ActiveRecord::Schema[7.2].define(version: 2026_01_06_221548) do
   create_table "action_mailbox_inbound_emails", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "status", default: 0, null: false
     t.string "message_id", null: false
@@ -120,6 +120,20 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_24_145915) do
     t.index ["subdomain"], name: "index_clients_on_subdomain", unique: true
   end
 
+  create_table "interface_register_mappings", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "data_category", null: false
+    t.text "description"
+    t.integer "position", default: 0, null: false
+    t.bigint "interface_id", null: false
+    t.bigint "register_template_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["interface_id", "data_category"], name: "idx_on_interface_id_data_category_a557c9b2b7", unique: true
+    t.index ["interface_id", "position"], name: "index_interface_register_mappings_on_interface_id_and_position"
+    t.index ["interface_id"], name: "index_interface_register_mappings_on_interface_id"
+    t.index ["register_template_id"], name: "index_interface_register_mappings_on_register_template_id"
+  end
+
   create_table "interfaces", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "communication_type", null: false
@@ -202,6 +216,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_24_145915) do
 
   create_table "measurement_subtypes", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
+    t.string "data_category", null: false
     t.string "value_type", null: false
     t.string "default_unit", null: false
     t.string "default_chart_type", null: false
@@ -210,6 +225,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_24_145915) do
     t.bigint "measurement_type_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["data_category"], name: "index_measurement_subtypes_on_data_category"
     t.index ["measurement_type_id", "name"], name: "index_measurement_subtypes_on_measurement_type_id_and_name", unique: true
     t.index ["measurement_type_id", "position"], name: "index_measurement_subtypes_on_measurement_type_id_and_position"
     t.index ["measurement_type_id"], name: "index_measurement_subtypes_on_measurement_type_id"
@@ -218,12 +234,9 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_24_145915) do
 
   create_table "measurement_types", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
-    t.string "category", null: false
     t.integer "position", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["category", "position"], name: "index_measurement_types_on_category_and_position"
-    t.index ["category"], name: "index_measurement_types_on_category"
     t.index ["name"], name: "index_measurement_types_on_name", unique: true
   end
 
@@ -443,6 +456,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_24_145915) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "client_users", "clients", on_delete: :cascade
   add_foreign_key "client_users", "users", on_delete: :cascade
+  add_foreign_key "interface_register_mappings", "interfaces", on_delete: :cascade
+  add_foreign_key "interface_register_mappings", "register_templates", on_delete: :cascade
   add_foreign_key "interfaces", "plc_versions", on_delete: :cascade
   add_foreign_key "invitations", "clients", on_delete: :cascade
   add_foreign_key "measurement_points", "clients", on_delete: :cascade

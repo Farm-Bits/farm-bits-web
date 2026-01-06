@@ -1,46 +1,46 @@
 Address,Name,Type,Value,Um,Default,Min,Max,Description,Count,Register Type,Read Only,Category,Read Group,Read Address,Read Offset,Data Collection Enabled,Polling Interval Seconds
-8192,DIL1,BOOL,True,flag,True,0,1,DIL1 digital input,1,coil,0,sensor,io_status,8960,0,1,300
-8193,DIL2,BOOL,True,flag,True,0,1,DIL2 digital input,1,coil,0,sensor,io_status,8960,1,1,300
-8194,DIL3,BOOL,True,flag,True,0,1,DIL3 digital input,1,coil,0,sensor,io_status,8960,2,1,300
-8195,DIL4,BOOL,True,flag,True,0,1,DIL4 digital input,1,coil,0,sensor,io_status,8960,3,1,300
-8196,DIL5,BOOL,True,flag,True,0,1,DIL5 digital input,1,coil,0,sensor,io_status,8960,4,1,300
-8197,DIL6,BOOL,True,flag,True,0,1,DIL6 digital input,1,coil,0,sensor,io_status,8960,5,1,300
-8198,DIL7,BOOL,True,flag,True,0,1,DIL7 digital input,1,coil,0,sensor,io_status,8960,6,1,300
-8199,DIL8,BOOL,True,flag,True,0,1,DIL8 digital input,1,coil,0,sensor,io_status,8960,7,1,300
-8200,DIL9,BOOL,True,flag,True,0,1,DIL9 digital input,1,coil,0,sensor,io_status,8960,8,1,300
-8201,DIL10,BOOL,True,flag,True,0,1,DIL10 digital input,1,coil,0,sensor,io_status,8960,9,1,300
-8202,DIL11,BOOL,True,flag,True,0,1,DIL11 digital input,1,coil,0,sensor,io_status,8960,10,1,300
-8203,DIL12,BOOL,True,flag,True,0,1,DIL12 digital input,1,coil,0,sensor,io_status,8960,11,1,300
-8336,AIL1,INT,222,digit,-32768,,,AIL1 analogue input,1,coil,0,sensor,io_status,8960,12,1,300
-8337,AIL2,INT,-32768,digit,-32768,,,AIL2 analogue input,1,coil,0,sensor,io_status,8960,13,1,300
-8338,AIL3,INT,-32768,digit,-32768,,,AIL3 analogue input,1,coil,0,sensor,io_status,8960,14,1,300
-8339,AIL4,INT,-32768,digit,-32768,,,AIL4 analogue input,1,coil,0,sensor,io_status,8960,15,1,300
-8340,AIL5,INT,-32768,digit,-32768,,,AIL5 analogue input,1,coil,0,sensor,io_status,8960,16,1,300
-8341,AIL6,INT,-32768,digit,-32768,,,AIL6 analogue input,1,coil,0,sensor,io_status,8960,17,1,300
-8342,AIL7,INT,-32768,digit,-32768,,,AIL7 analogue input,1,coil,0,sensor,io_status,8960,18,1,300
-8343,AIL8,INT,-32768,digit,-32768,,,AIL8 analogue input,1,coil,0,sensor,io_status,8960,19,1,300
-8344,AIL9,INT,-32768,digit,-32768,,,AIL9 analogue input,1,coil,0,sensor,io_status,8960,20,1,300
-8345,AIL10,INT,-32768,digit,-32768,,,AIL10 analogue input,1,coil,0,sensor,io_status,8960,21,1,300
-8346,AIL11,INT,-32768,digit,-32768,,,AIL11 analogue input,1,coil,0,sensor,io_status,8960,22,1,300
-8347,AIL12,INT,-32768,digit,-32768,,,AIL12 analogue input,1,coil,0,sensor,io_status,8960,23,1,300
-8448,AOL1,REAL,0.0,%,0.0,,,AOL1 analogue output,1,coil,0,control,io_status,8960,36,1,300
-8449,AOL2,REAL,0.0,%,0.0,,,AOL2 analogue output,1,coil,0,control,io_status,8960,37,1,300
-8450,AOL3,REAL,0.0,%,0.0,,,AOL3 analogue output,1,coil,0,control,io_status,8960,38,1,300
-8451,AOL4,REAL,0.0,%,0.0,,,AOL4 analogue output,1,coil,0,control,io_status,8960,39,1,300
-8452,AOL5,REAL,0.0,%,0.0,,,AOL5 analogue output,1,coil,0,control,io_status,8960,40,1,300
-8453,AOL6,REAL,0.0,%,0.0,,,AOL6 analogue output,1,coil,0,control,io_status,8960,41,1,300
-8528,DOL1,BOOL,True,flag,True,0,1,DOL1 digital output,1,coil,0,control,io_status,8960,24,1,300
-8529,DOL2,BOOL,True,flag,True,0,1,DOL2 digital output,1,coil,0,control,io_status,8960,25,1,300
-8530,DOL3,BOOL,True,flag,True,0,1,DOL3 digital output,1,coil,0,control,io_status,8960,26,1,300
-8531,DOL4,BOOL,True,flag,True,0,1,DOL4 digital output,1,coil,0,control,io_status,8960,27,1,300
-8532,DOL5,BOOL,True,flag,True,0,1,DOL5 digital output,1,coil,0,control,io_status,8960,28,1,300
-8533,DOL6,BOOL,True,flag,True,0,1,DOL6 digital output,1,coil,0,control,io_status,8960,29,1,300
-8534,DOL7,BOOL,True,flag,True,0,1,DOL7 digital output,1,coil,0,control,io_status,8960,30,1,300
-8535,DOL8,BOOL,True,flag,True,0,1,DOL8 digital output,1,coil,0,control,io_status,8960,31,1,300
-8536,DOL9,BOOL,True,flag,True,0,1,DOL9 digital output,1,coil,0,control,io_status,8960,32,1,300
-8537,DOL10,BOOL,True,flag,True,0,1,DOL10 digital output,1,coil,0,control,io_status,8960,33,1,300
-8538,DOL11,BOOL,True,flag,True,0,1,DOL11 digital output,1,coil,0,control,io_status,8960,34,1,300
-8539,DOL12,BOOL,True,flag,True,0,1,DOL12 digital output,1,coil,0,control,io_status,8960,35,1,300
+8192,DIL1,BOOL,True,flag,True,0,1,DIL1 digital input,1,coil,0,status,io_status,8960,0,1,300
+8193,DIL2,BOOL,True,flag,True,0,1,DIL2 digital input,1,coil,0,status,io_status,8960,1,1,300
+8194,DIL3,BOOL,True,flag,True,0,1,DIL3 digital input,1,coil,0,status,io_status,8960,2,1,300
+8195,DIL4,BOOL,True,flag,True,0,1,DIL4 digital input,1,coil,0,status,io_status,8960,3,1,300
+8196,DIL5,BOOL,True,flag,True,0,1,DIL5 digital input,1,coil,0,status,io_status,8960,4,1,300
+8197,DIL6,BOOL,True,flag,True,0,1,DIL6 digital input,1,coil,0,status,io_status,8960,5,1,300
+8198,DIL7,BOOL,True,flag,True,0,1,DIL7 digital input,1,coil,0,status,io_status,8960,6,1,300
+8199,DIL8,BOOL,True,flag,True,0,1,DIL8 digital input,1,coil,0,status,io_status,8960,7,1,300
+8200,DIL9,BOOL,True,flag,True,0,1,DIL9 digital input,1,coil,0,status,io_status,8960,8,1,300
+8201,DIL10,BOOL,True,flag,True,0,1,DIL10 digital input,1,coil,0,status,io_status,8960,9,1,300
+8202,DIL11,BOOL,True,flag,True,0,1,DIL11 digital input,1,coil,0,status,io_status,8960,10,1,300
+8203,DIL12,BOOL,True,flag,True,0,1,DIL12 digital input,1,coil,0,status,io_status,8960,11,1,300
+8336,AIL1,INT,222,digit,-32768,,,AIL1 analogue input,1,coil,0,analog,io_status,8960,12,1,300
+8337,AIL2,INT,-32768,digit,-32768,,,AIL2 analogue input,1,coil,0,analog,io_status,8960,13,1,300
+8338,AIL3,INT,-32768,digit,-32768,,,AIL3 analogue input,1,coil,0,analog,io_status,8960,14,1,300
+8339,AIL4,INT,-32768,digit,-32768,,,AIL4 analogue input,1,coil,0,analog,io_status,8960,15,1,300
+8340,AIL5,INT,-32768,digit,-32768,,,AIL5 analogue input,1,coil,0,analog,io_status,8960,16,1,300
+8341,AIL6,INT,-32768,digit,-32768,,,AIL6 analogue input,1,coil,0,analog,io_status,8960,17,1,300
+8342,AIL7,INT,-32768,digit,-32768,,,AIL7 analogue input,1,coil,0,analog,io_status,8960,18,1,300
+8343,AIL8,INT,-32768,digit,-32768,,,AIL8 analogue input,1,coil,0,analog,io_status,8960,19,1,300
+8344,AIL9,INT,-32768,digit,-32768,,,AIL9 analogue input,1,coil,0,analog,io_status,8960,20,1,300
+8345,AIL10,INT,-32768,digit,-32768,,,AIL10 analogue input,1,coil,0,analog,io_status,8960,21,1,300
+8346,AIL11,INT,-32768,digit,-32768,,,AIL11 analogue input,1,coil,0,analog,io_status,8960,22,1,300
+8347,AIL12,INT,-32768,digit,-32768,,,AIL12 analogue input,1,coil,0,analog,io_status,8960,23,1,300
+8448,AOL1,REAL,0.0,%,0.0,,,AOL1 analogue output,1,coil,0,analog,io_status,8960,36,1,300
+8449,AOL2,REAL,0.0,%,0.0,,,AOL2 analogue output,1,coil,0,analog,io_status,8960,37,1,300
+8450,AOL3,REAL,0.0,%,0.0,,,AOL3 analogue output,1,coil,0,analog,io_status,8960,38,1,300
+8451,AOL4,REAL,0.0,%,0.0,,,AOL4 analogue output,1,coil,0,analog,io_status,8960,39,1,300
+8452,AOL5,REAL,0.0,%,0.0,,,AOL5 analogue output,1,coil,0,analog,io_status,8960,40,1,300
+8453,AOL6,REAL,0.0,%,0.0,,,AOL6 analogue output,1,coil,0,analog,io_status,8960,41,1,300
+8528,DOL1,BOOL,True,flag,True,0,1,DOL1 digital output,1,coil,0,status,io_status,8960,24,1,300
+8529,DOL2,BOOL,True,flag,True,0,1,DOL2 digital output,1,coil,0,status,io_status,8960,25,1,300
+8530,DOL3,BOOL,True,flag,True,0,1,DOL3 digital output,1,coil,0,status,io_status,8960,26,1,300
+8531,DOL4,BOOL,True,flag,True,0,1,DOL4 digital output,1,coil,0,status,io_status,8960,27,1,300
+8532,DOL5,BOOL,True,flag,True,0,1,DOL5 digital output,1,coil,0,status,io_status,8960,28,1,300
+8533,DOL6,BOOL,True,flag,True,0,1,DOL6 digital output,1,coil,0,status,io_status,8960,29,1,300
+8534,DOL7,BOOL,True,flag,True,0,1,DOL7 digital output,1,coil,0,status,io_status,8960,30,1,300
+8535,DOL8,BOOL,True,flag,True,0,1,DOL8 digital output,1,coil,0,status,io_status,8960,31,1,300
+8536,DOL9,BOOL,True,flag,True,0,1,DOL9 digital output,1,coil,0,status,io_status,8960,32,1,300
+8537,DOL10,BOOL,True,flag,True,0,1,DOL10 digital output,1,coil,0,status,io_status,8960,33,1,300
+8538,DOL11,BOOL,True,flag,True,0,1,DOL11 digital output,1,coil,0,status,io_status,8960,34,1,300
+8539,DOL12,BOOL,True,flag,True,0,1,DOL12 digital output,1,coil,0,status,io_status,8960,35,1,300
 8640,LED1,enum,0=Off,num,0=Off,0,2,Led green,1,coil,0,configuration,,,,0,
 8641,LED2,enum,0=Off,num,0=Off,0,2,Led red,1,coil,0,configuration,,,,0,
 8642,LED3,enum,0=Off,num,0=Off,0,2,Led yellow,1,coil,0,configuration,,,,0,
@@ -65,19 +65,19 @@ Address,Name,Type,Value,Um,Default,Min,Max,Description,Count,Register Type,Read 
 8749,sysClockSet_month,USINT,3,num,1,1,12,Month value (write),1,coil,0,configuration,,,,0,
 8750,sysClockSet_year,USINT,20,num,0,10,99,Year value (write),1,coil,0,configuration,,,,0,
 8751,sysClockSet_Upload,BOOL,True,flag,True,0,1,RTC upload,1,coil,0,configuration,,,,0,
-8752,FDI1_counter,UDINT,0,num,0,,,FDI1 input counter,2,coil,0,sensor,,,,1,300
+8752,FDI1_counter,UDINT,0,num,0,,,FDI1 input counter,2,coil,0,counter,,,,1,300
 8754,FDI1_frequency,REAL,0.0,Hz,0.0,,,FDI1 input frequency,2,coil,0,configuration,,,,0,
 8756,USB_Host_command,enum,0=No command,num,0=No command,0,218,USB-Host Command,2,coil,0,configuration,,,,0,
 8758,USB_Host_status,enum,0=Command completed,num,0=Command completed,0,255,Result of USB-Host command,2,coil,0,diagnostic,,,,0,
-8760,FDI1_value,BOOL,True,flag,True,0,1,FDI1 digital input,1,coil,0,sensor,,,,1,300
+8760,FDI1_value,BOOL,True,flag,True,0,1,FDI1 digital input,1,coil,0,status,,,,1,300
 8761,FDI1_reset_counter,BOOL,True,flag,True,0,1,FDI1 reset input counter value,3,coil,0,configuration,,,,0,
 8764,Ip_1_CURRENT,UINT,10,num,10,0,255,Ethernet IP address (1 st part),1,coil,0,configuration,,,,0,
 8765,Ip_2_CURRENT,UINT,0,num,0,0,255,Ethernet IP address (2 nd part),1,coil,0,configuration,,,,0,
 8766,Ip_3_CURRENT,UINT,0,num,0,0,255,Ethernet IP address (3 rd part),1,coil,0,configuration,,,,0,
 8767,Ip_4_CURRENT,UINT,100,num,100,0,255,Ethernet IP address (4 th part),1,coil,0,configuration,,,,0,
-8898,FDI2_counter,UDINT,0,num,0,,,FDI2 input counter,2,coil,0,sensor,,,,1,300
+8898,FDI2_counter,UDINT,0,num,0,,,FDI2 input counter,2,coil,0,counter,,,,1,300
 8900,FDI2_frequency,REAL,0.0,Hz,0.0,,,FDI2 input frequency,2,coil,0,configuration,,,,0,
-8902,FDI2_value,BOOL,True,flag,True,0,1,FDI2 digital input,1,coil,0,sensor,,,,1,300
+8902,FDI2_value,BOOL,True,flag,True,0,1,FDI2 digital input,1,coil,0,status,,,,1,300
 8903,FDI2_reset_counter,BOOL,True,flag,True,0,1,FDI2 reset input counter value,2,coil,0,configuration,,,,0,
 8905,DefGtwy_1_CURRENT,UINT,10,num,10,0,255,Default Gateway (1 st part),1,coil,0,configuration,,,,0,
 8906,DefGtwy_2_CURRENT,UINT,0,num,0,0,255,Default Gateway (2 nd part),1,coil,0,configuration,,,,0,
@@ -108,24 +108,24 @@ Address,Name,Type,Value,Um,Default,Min,Max,Description,Count,Register Type,Read 
 9007,WeatherPreassure,INT,0,,0,,,,1,coil,0,configuration,,,,0,
 9008,WeatherRain,INT,0,,0,,,,1,coil,0,configuration,,,,0,
 9009,NightFlag,BOOL,True,,True,,,,1,coil,0,diagnostic,,,,0,
-9010,GeneralVoltage,INT,0,,0,,,,1,coil,0,sensor,,,,0,
-9011,GeneralPower,INT,0,,0,,,,1,coil,0,sensor,,,,0,
-9012,GeneralPressure,INT,0,,0,,,,1,coil,0,sensor,,,,0,
-9013,GeneralFlow,INT,0,,0,,,,1,coil,0,sensor,,,,0,
-9014,GeneralWater,INT,0,,0,,,,1,coil,0,sensor,,,,0,
-9015,GeneralElectricalEnergy,INT,0,,0,,,,1,coil,0,sensor,,,,0,
-9020,StatusCounter1,UDINT,0,,0,,,,2,coil,0,sensor,,,,0,
-9022,StatusCounter2,UDINT,0,,0,,,,2,coil,0,sensor,,,,0,
-9024,Counter3,UDINT,0,,0,,,,2,coil,0,sensor,,,,0,
-9026,Counter4,UDINT,0,,0,,,,2,coil,0,sensor,,,,0,
-9028,Counter5,UDINT,0,,0,,,,2,coil,0,sensor,,,,0,
-9030,Counter6,UDINT,0,,0,,,,2,coil,0,sensor,,,,0,
-9032,Counter7,UDINT,0,,0,,,,2,coil,0,sensor,,,,0,
-9034,Counter8,UDINT,0,,0,,,,2,coil,0,sensor,,,,0,
-9036,Counter9,UDINT,0,,0,,,,2,coil,0,sensor,,,,0,
-9038,Counter10,UDINT,0,,0,,,,2,coil,0,sensor,,,,0,
-9040,Counter11,UDINT,0,,0,,,,2,coil,0,sensor,,,,0,
-9042,Counter12,UDINT,0,,0,,,,2,coil,0,sensor,,,,0,
+9010,GeneralVoltage,INT,0,,0,,,,1,coil,0,analog,,,,0,
+9011,GeneralPower,INT,0,,0,,,,1,coil,0,analog,,,,0,
+9012,GeneralPressure,INT,0,,0,,,,1,coil,0,analog,,,,0,
+9013,GeneralFlow,INT,0,,0,,,,1,coil,0,analog,,,,0,
+9014,GeneralWater,INT,0,,0,,,,1,coil,0,analog,,,,0,
+9015,GeneralElectricalEnergy,INT,0,,0,,,,1,coil,0,analog,,,,0,
+9020,StatusCounter1,UDINT,0,,0,,,,2,coil,0,counter,,,,0,
+9022,StatusCounter2,UDINT,0,,0,,,,2,coil,0,counter,,,,0,
+9024,Counter3,UDINT,0,,0,,,,2,coil,0,counter,,,,0,
+9026,Counter4,UDINT,0,,0,,,,2,coil,0,counter,,,,0,
+9028,Counter5,UDINT,0,,0,,,,2,coil,0,counter,,,,0,
+9030,Counter6,UDINT,0,,0,,,,2,coil,0,counter,,,,0,
+9032,Counter7,UDINT,0,,0,,,,2,coil,0,counter,,,,0,
+9034,Counter8,UDINT,0,,0,,,,2,coil,0,counter,,,,0,
+9036,Counter9,UDINT,0,,0,,,,2,coil,0,counter,,,,0,
+9038,Counter10,UDINT,0,,0,,,,2,coil,0,counter,,,,0,
+9040,Counter11,UDINT,0,,0,,,,2,coil,0,counter,,,,0,
+9042,Counter12,UDINT,0,,0,,,,2,coil,0,counter,,,,0,
 9044,ManualStart1,UDINT,0,,0,,,,2,coil,0,configuration,,,,0,
 9046,ManualStart2,UDINT,0,,0,,,,2,coil,0,configuration,,,,0,
 9048,ManualStart3,UDINT,0,,0,,,,2,coil,0,configuration,,,,0,

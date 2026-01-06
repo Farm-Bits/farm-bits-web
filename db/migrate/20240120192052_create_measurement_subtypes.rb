@@ -2,6 +2,7 @@ class CreateMeasurementSubtypes < ActiveRecord::Migration[7.0]
   def change
     create_table :measurement_subtypes do |t|
       t.string :name, null: false
+      t.string :data_category, null: false
       t.string :value_type, null: false
       t.string :default_unit, null: false
       t.string :default_chart_type, null: false
@@ -13,6 +14,7 @@ class CreateMeasurementSubtypes < ActiveRecord::Migration[7.0]
       t.timestamps
     end
 
+    add_index :measurement_subtypes, :data_category
     add_index :measurement_subtypes, [:measurement_type_id, :name], unique: true
     add_index :measurement_subtypes, [:measurement_type_id, :position]
     add_index :measurement_subtypes, :value_type

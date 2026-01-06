@@ -4,12 +4,21 @@ class Interface < ApplicationRecord
   belongs_to :plc_version
 
   has_many :register_templates, dependent: :destroy
-  accepts_nested_attributes_for :register_templates, :allow_destroy => true
+  has_many :interface_register_mappings, dependent: :destroy
+  has_many :mapped_register_templates, through: :interface_register_mappings, source: :register_template
 
   COMMUNICATION_TYPES = %w[analog_input analog_output digital_input digital_output].freeze
 
   validates :name, presence: true, uniqueness: { scope: :plc_version_id }
   validates :communication_type, presence: true, inclusion: { in: COMMUNICATION_TYPES }
+
+  def analog?
+    communication_type.start_with?('analog_')
+  end
+
+  def digital?
+    communication_type.start_with?('digital_')
+  end
 
   def input?
     communication_type.end_with?('_input')
@@ -17,5 +26,34 @@ class Interface < ApplicationRecord
 
   def output?
     communication_type.end_with?('_output')
+  end
+
+  def data_categories
+    case communication_type
+    when 'digital_input'
+      ['status', 'counter']
+    when 'digital_output'
+      ['status']
+    when 'analog_input'
+      ['analog', 'counter']
+    when 'analog_output'
+      ['analog']
+    end
+  end
+
+  def register_template_for_category(category)
+    interface_register_mappings.find_by(data_category: category)&.register_template
+  end
+
+  def category_configured?(category)
+    register_template_for_category(category).present?
+  end
+
+  def configured_categories
+    interface_register_mappings.pluck(:data_category)
+  end
+
+  def available_categories
+    data_categories - configured_categories
   end
 end

@@ -14,8 +14,8 @@ class MeasurementPoint < ApplicationRecord
   validates :chart_type_override, inclusion: { in: MeasurementSubtype::CHART_TYPES }, allow_blank: true
   validates :color_override, format: { with: /\A#[0-9A-Fa-f]{6}\z/, message: 'must be a valid hex color' }, allow_blank: true
   validates :polling_interval_seconds_override, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
-  # validate :measurement_subtype_required_for_sensor_and_control, if: :active?
-  validate :measurement_subtype_category_matches_interface
+  validate :measurement_subtype_data_category_matches_register_template
+  validate :interface_has_mapping_for_measurement_category
   validate :client_matches_site_client
 
   class WriteValidationError < StandardError;
@@ -134,6 +134,18 @@ class MeasurementPoint < ApplicationRecord
     :normal
   end
 
+  def effective_register_template
+    if register_template.interface.present? && measurement_subtype.present?
+      mapped = register_template.interface.register_template_for_category(
+        measurement_subtype.data_category
+      )
+
+      mapped || register_template
+    else
+      register_template
+    end
+  end
+
   private
     def register_template_matches_plc_version
       if !plc.present? || !register_template.present?
@@ -145,21 +157,36 @@ class MeasurementPoint < ApplicationRecord
       end
     end
 
-    # def measurement_subtype_required_for_sensor_and_control
-    #   if register_template.category.in?(%w[sensor control]) && measurement_subtype.nil?
-    #     errors.add(:measurement_subtype, "is required for #{register_template.category} registers")
-    #   end
-    # end
-
-    def measurement_subtype_category_matches_interface
-      if !register_template.interface.present? || !measurement_subtype.present?
+    def measurement_subtype_data_category_matches_register_template
+      if !measurement_subtype.present? ||
+        !register_template.present? ||
+        !register_template.category.in?(MeasurementSubtype::DATA_CATEGORIES)
         return
       end
 
-      if register_template.interface.input? && measurement_subtype.control?
-        errors.add(:measurement_subtype, "cannot be a control type on input interface")
-      elsif register_template.interface.output? && measurement_subtype.sensor?
-        errors.add(:measurement_subtype, "cannot be a sensor type on output interface")
+      if measurement_subtype.data_category != register_template.category
+        errors.add(
+          :measurement_subtype,
+          "data_category '#{measurement_subtype.data_category}' does not match " \
+          "register template category '#{register_template.category}'"
+        )
+      end
+    end
+
+    def interface_has_mapping_for_measurement_category
+      if !measurement_subtype.present? ||
+        !register_template.interface.present? ||
+        !register_template.category.in?(MeasurementSubtype::DATA_CATEGORIES)
+        return
+      end
+
+      category = measurement_subtype.data_category
+      if !register_template.interface.category_configured?(category)
+        errors.add(
+          :measurement_subtype,
+          "requires a '#{category}' register mapping for interface '#{register_template.interface.name}', " \
+          "but none is configured"
+        )
       end
     end
 

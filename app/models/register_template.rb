@@ -4,9 +4,13 @@ class RegisterTemplate < ApplicationRecord
   belongs_to :plc_version
   belongs_to :interface, optional: true
 
+  has_many :interface_register_mappings, dependent: :restrict_with_error
+
+  has_many :mapped_interfaces, through: :interface_register_mappings, source: :interface
+
   has_many :measurement_points, dependent: :restrict_with_error
 
-  CATEGORIES = %w[sensor control configuration diagnostic identification].freeze
+  CATEGORIES = %w[status analog counter configuration diagnostic identification].freeze
   REGISTER_TYPES = %w[holding input coil discrete].freeze
   DATA_TYPES = %w[
     int8 uint8 int16 uint16 int32 uint32 int64 uint64
@@ -52,6 +56,8 @@ class RegisterTemplate < ApplicationRecord
   validate :group_role_requires_group_name
   validate :validation_rules_format
   validate :bulk_read_offset_requires_bulk_read_address
+
+  after_save :ensure_interface_mapping, if: :saved_change_to_interface_id?
 
   def full_address
     "#{address}#{address_count > 1 ? "-#{address + address_count - 1}" : ''}"
@@ -150,6 +156,10 @@ class RegisterTemplate < ApplicationRecord
     end
 
     enum_values.map { |k, v| { value: k.to_i, label: v } }
+  end
+
+  def mapped_to_interface_for_category?(interface, category)
+    interface_register_mappings.exists?(interface: interface, data_category: category)
   end
 
   private
@@ -297,6 +307,22 @@ class RegisterTemplate < ApplicationRecord
     def bulk_read_offset_requires_bulk_read_address
       if bulk_read_offset.present? && bulk_read_address.blank?
         errors.add(:bulk_read_offset, 'cannot be set without bulk_read_address')
+      end
+    end
+
+    def ensure_interface_mapping
+      if !interface.present? ||
+        !category.in?(MeasurementSubtype::DATA_CATEGORIES) ||
+        !interface.data_categories.include?(category)
+        return
+      end
+
+      InterfaceRegisterMapping.find_or_create_by!(
+        interface: interface,
+        data_category: category
+      ) do |mapping|
+        mapping.register_template = self
+        mapping.description = "Default #{category} register"
       end
     end
 

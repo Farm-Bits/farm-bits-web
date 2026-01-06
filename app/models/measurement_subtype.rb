@@ -5,6 +5,7 @@ class MeasurementSubtype < ApplicationRecord
 
   has_many :register_templates, dependent: :restrict_with_error
 
+  DATA_CATEGORIES = %w[status analog counter].freeze
   VALUE_TYPES = %w[accumulative instantaneous status].freeze
   CHART_TYPES = %w[line spline areaspline bar state].freeze
   DEFAULT_AGGREGATION_CONFIGS = {
@@ -44,6 +45,7 @@ class MeasurementSubtype < ApplicationRecord
   }.freeze
 
   validates :name, presence: true, uniqueness: { scope: :measurement_type_id }
+  validates :data_category, presence: true, inclusion: { in: DATA_CATEGORIES }
   validates :value_type, presence: true, inclusion: { in: VALUE_TYPES }
   validates :default_unit, presence: true
   validates :default_chart_type, presence: true, inclusion: { in: CHART_TYPES }
