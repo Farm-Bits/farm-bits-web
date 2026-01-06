@@ -8,46 +8,63 @@ class PlcIngestionClient
   class NotFoundError < Error
   end
 
+  class ValidationError < Error
+  end
+
+  class ConnectionError < Error
+  end
+
   BASE_URL = Rails.application.credentials[:plc_ingestion][:base_url]
   TOKEN = Rails.application.credentials[:plc_ingestion][:webhook_token]
 
   class << self
-    def authorize_email(email, active: true)
+    def create_authorized_email(plc)
+      payload = {
+        authorized_email: {
+          email: plc.username,
+          password: plc.password,
+          active: plc.active
+        }
+      }
       response = HTTParty.post(
         "#{BASE_URL}/api/v1/authorized_emails",
         headers: {
           'Authorization' => "Bearer #{TOKEN}",
           'Content-Type' => 'application/json'
         },
-        body: {
-          authorized_email: {
-            email: email,
-            active: active
-          }
-        }.to_json
+        body: payload.to_json
       )
 
       handle_response(response)
     end
 
-    def update_email(email, active:)
-      response = HTTParty.patch(
-        "#{BASE_URL}/api/v1/authorized_emails/#{CGI.escape(email)}",
-        headers: {
-          'Authorization' => "Bearer #{TOKEN}",
-          'Content-Type' => 'application/json'
-        },
-        body: {
+    def update_authorized_email(plc, previous_username, password_changed)
+      if previous_username.present? && previous_username != plc.username
+        delete_authorized_email(previous_username)
+        create_authorized_email(plc)
+      else
+        payload = {
           authorized_email: {
-            active: active
+            email: plc.username,
+            active: plc.active
           }
-        }.to_json
-      )
-
-      handle_response(response)
+        }
+        if password_changed
+          payload[:authorized_email][:password] = plc.password
+        end
+        response = HTTParty.put(
+          "#{BASE_URL}/api/v1/authorized_emails",
+          headers: {
+            'Authorization' => "Bearer #{TOKEN}",
+            'Content-Type' => 'application/json'
+          },
+          body: payload.to_json
+        )
+        handle_response(response)
+      end
     end
 
-    def revoke_email(email)
+    def delete_authorized_email(email)
       response = HTTParty.delete(
         "#{BASE_URL}/api/v1/authorized_emails/#{CGI.escape(email)}",
         headers: {
@@ -55,6 +72,10 @@ class PlcIngestionClient
           'Content-Type' => 'application/json'
         }
       )
+
+      if response.code == 404
+        return
+      end
 
       handle_response(response)
     end
@@ -69,9 +90,9 @@ class PlcIngestionClient
         when 404
           raise NotFoundError, "Resource not found: #{response.body}"
         when 422
-          raise Error, "Validation failed: #{response.parsed_response['errors']&.join(', ')}"
+          raise ValidationError, "Validation failed: #{response.parsed_response['errors']&.join(', ')}"
         else
-          raise Error, "Request failed with status #{response.code}: #{response.body}"
+          raise ConnectionError, "Request failed with status #{response.code}: #{response.body}"
         end
       end
   end

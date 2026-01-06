@@ -42,10 +42,10 @@ class Plc < ApplicationRecord
   validate :client_matches_site_client
 
   after_create :create_measurement_points_from_templates
-  after_create :authorize_ingestion_email
   after_update :sync_measurement_points_client
-  after_update :update_ingestion_email_status, if: :should_update_ingestion_email?
-  after_destroy :revoke_ingestion_email
+  after_commit :sync_plc_ingestion_service, on: :create
+  after_commit :update_plc_ingestion_service, on: :update
+  after_commit :remove_plc_ingestion_service, on: :destroy
 
   def touch_last_seen!(timestamp = Time.current)
     update_column(:last_seen_at, timestamp)
@@ -101,16 +101,6 @@ class Plc < ApplicationRecord
       end
     end
 
-    def authorize_ingestion_email
-      if username.blank?
-        return
-      end
-
-      SyncPlcIngestionEmailJob.perform_later(id, 'create')
-    rescue PlcIngestionClient::Error => e
-      Rails.logger.error "Failed to authorize PLC email #{username}: #{e.message}"
-    end
-
     def sync_measurement_points_client
       update_attrs = {}
       if saved_change_to_site_id?
@@ -126,28 +116,23 @@ class Plc < ApplicationRecord
       end
     end
 
-    def should_update_ingestion_email?
-      saved_change_to_username? ||
-        (respond_to?(:saved_change_to_active?) && saved_change_to_active?)
+    def sync_plc_ingestion_service
+      PlcIngestionCreateJob.perform_later(id)
     end
 
-    def update_ingestion_email_status
-      if username.blank?
-        return
+    def update_plc_ingestion_service
+      if saved_change_to_username? ||
+        saved_change_to_password? ||
+        saved_change_to_active?
+        PlcIngestionUpdateJob.perform_later(
+          id,
+          previous_username: username_before_last_save,
+          password_changed: saved_change_to_password?
+        )
       end
-
-      SyncPlcIngestionEmailJob.perform_later(id, 'update')
-    rescue PlcIngestionClient::Error => e
-      Rails.logger.error "Failed to update PLC email status #{username}: #{e.message}"
     end
 
-    def revoke_ingestion_email
-      if username.blank?
-        return
-      end
-
-      SyncPlcIngestionEmailJob.perform_later(id, 'destroy')
-    rescue PlcIngestionClient::Error => e
-      Rails.logger.error "Failed to revoke PLC email #{username}: #{e.message}"
+    def remove_plc_ingestion_service
+      PlcIngestionDestroyJob.perform_later(username)
     end
 end
