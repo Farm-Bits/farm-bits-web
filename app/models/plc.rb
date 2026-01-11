@@ -87,12 +87,12 @@ class Plc < ApplicationRecord
         return
       end
 
-      plc_version.register_templates.find_each do |template|
+      plc_version.register_templates.includes(:interface_register_mappings).find_each do |template|
         measurement_points.create!(
           name: template.name,
           description: template.description,
           position: template.position,
-          active: true,
+          active: !template.interface_register_mappings.any? || !MeasurementSubtype::DATA_CATEGORIES.include?(template.category),
           measurement_subtype: nil,
           register_template: template,
           site: nil,

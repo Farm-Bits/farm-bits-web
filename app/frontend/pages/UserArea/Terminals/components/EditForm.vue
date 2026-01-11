@@ -36,7 +36,8 @@
   import PlcAssignmentManager from './PlcAssignmentManager.vue';
   import { useApiCall } from '@/composables/useApi';
   import { ROUTES } from '@/types/permissions';
-  import type { TerminalAssigned, Plc } from '../types';
+  import type { TerminalAssigned } from '@/types/terminal';
+  import type { Plc } from '@/types/plc';
 
   const props = defineProps<{
     terminal: TerminalAssigned;

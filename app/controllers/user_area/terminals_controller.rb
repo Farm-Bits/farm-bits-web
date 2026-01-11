@@ -6,12 +6,16 @@ class UserArea::TerminalsController < UserArea::ApplicationController
 
     terminals = policy_scope(Terminal).where(active: true)
       .includes(:model, :plcs)
-
-    render inertia: 'UserArea/Terminals/index', props: {
+    data = {
       terminals: TerminalSerializer.render_as_hash(terminals, view: :with_plcs),
       availableTerminals: available_terminals_for_activation,
       availablePlcs: available_plcs_for_activation
     }
+
+    respond_to do |format|
+      format.html { render inertia: 'UserArea/Terminals/index', props: data }
+      format.json { render json: data, status: :ok }
+    end
   end
 
   def update
@@ -65,6 +69,7 @@ class UserArea::TerminalsController < UserArea::ApplicationController
           name: p.name,
           slave: p.slave,
           private_ip: p.private_ip,
+          last_seen_at: p.last_seen_at,
           plc_version: {
             id: p.plc_version.id,
             name: p.plc_version.name,

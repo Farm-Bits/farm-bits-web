@@ -327,6 +327,10 @@ h1, h2, h3, h4, h5, h6 {
   @apply text-xl font-semibold;
 }
 
+.min-w-sm {
+  min-width: 400px;
+}
+
 /* =================================
    COREUI FRAMEWORK OVERRIDES
    ================================= */
@@ -345,15 +349,6 @@ h1, h2, h3, h4, h5, h6 {
 
 .footer {
   --cui-border-color: none;
-}
-
-.btn {
-  --cui-btn-color: white;
-  --cui-btn-bg: var(--primary-color);
-  --cui-btn-border-color: transparent;
-  --cui-btn-hover-color: white;
-  --cui-btn-hover-bg: var(--brand-green-dark-color);
-  --cui-btn-hover-border-color: transparent;
 }
 
 .btn-close {

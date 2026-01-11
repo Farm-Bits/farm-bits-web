@@ -30,6 +30,12 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       destroy: true,
       resend: true
     },
+    segments: {
+      index: true,
+      create: true,
+      update: true,
+      destroy: true
+    },
     sites: {
       index: true,
       create: true,
@@ -41,14 +47,13 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: true,
       destroy: true
     },
-    protocols: {
-      index: true,
-      create: true,
-      new: true,
-      edit: true,
+    plcs: {
       show: true,
-      update: true,
-      destroy: true
+      update: true
+    },
+    measurement_points: {
+      write: true,
+      update: true
     }
   },
   manager: {
@@ -78,6 +83,12 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       destroy: false,
       resend: false
     },
+    segments: {
+      index: true,
+      create: false,
+      update: false,
+      destroy: false
+    },
     sites: {
       index: false,
       create: false,
@@ -89,14 +100,13 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: false,
       destroy: false
     },
-    protocols: {
-      index: false,
-      create: false,
-      new: false,
-      edit: false,
-      show: false,
-      update: false,
-      destroy: false
+    plcs: {
+      show: true,
+      update: true
+    },
+    measurement_points: {
+      write: true,
+      update: true
     }
   },
   viewer: {
@@ -126,6 +136,12 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       destroy: false,
       resend: false
     },
+    segments: {
+      index: true,
+      create: false,
+      update: false,
+      destroy: false
+    },
     sites: {
       index: false,
       create: false,
@@ -137,14 +153,13 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: false,
       destroy: false
     },
-    protocols: {
-      index: false,
-      create: false,
-      new: false,
-      edit: false,
-      show: false,
-      update: false,
-      destroy: false
+    plcs: {
+      show: true,
+      update: false
+    },
+    measurement_points: {
+      write: false,
+      update: false
     }
   }
 };

@@ -6,6 +6,8 @@ class AdminUser < ApplicationRecord
   devise :database_authenticatable, :recoverable, :rememberable, :validatable,
     :trackable, :confirmable, :lockable
 
+  has_many :invitations, as: :inviter, dependent: :nullify
+
   after_commit :send_password_change_notification, if: :saved_change_to_encrypted_password?, on: :update
 
   def active_for_authentication?

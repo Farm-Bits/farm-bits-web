@@ -49,14 +49,19 @@
 
             <!-- Actions -->
             <div class="d-flex flex-column gap-2">
-              <CButton
-                color="danger"
-                variant="ghost"
-                size="sm"
-                @click="removePlc(plc)"
-                v-c-tooltip="'Remove PLC'">
-                <CIcon icon="cilTrash" />
-              </CButton>
+              <CTooltip content="Remove PLC">
+                <template #toggler="{ id, on }">
+                  <span v-on="on" class="d-inline-block">
+                    <CButton
+                      color="danger"
+                      variant="ghost"
+                      size="sm"
+                      @click="removePlc(plc)">
+                      <CIcon icon="cilTrash" />
+                    </CButton>
+                  </span>
+                </template>
+              </CTooltip>
             </div>
           </div>
         </div>
@@ -125,7 +130,7 @@
 
 <script lang="ts" setup>
   import { computed } from 'vue';
-  import type { Plc } from '../types';
+  import type { Plc } from '@/types/plc';
 
   const props = defineProps<{
     modelValue: (Plc & { customName: string })[];

@@ -178,7 +178,7 @@ ActiveRecord::Base.transaction do
   rows.each_with_index do |row, index|
     data = row
 
-    # Address,Name,Type,Value,Um,Default,Min,Max,Description,Count,Register Type,Read Only,Category,Read Group,Read Address,Read Offset,Data Collection Enabled,Polling Interval Seconds
+    # Address,Name,Type,Value,Um,Default,Min,Max,Description,Count,Register Type,Read Only,Category,Read Group,Read Address,Read Offset,Interfaces
     address = data[0].to_i
     name = data[1]
     type = data[2]
@@ -194,8 +194,7 @@ ActiveRecord::Base.transaction do
     bulk_read_group = data[13]
     bulk_read_address = data[14]
     bulk_read_offset = data[15]
-    default_data_collection_enabled = data[16].to_i
-    default_polling_interval_seconds = data[17] ? data[17].to_i : nil
+    interface_names = data[16] ? data[16].split(',').map(&:strip) : []
 
     value_format = 'numeric'
     if um == 'flag' || type == 'BOOL'
@@ -375,10 +374,13 @@ ActiveRecord::Base.transaction do
       end
     end
 
-    interface = interfaces[name]
-    if name.start_with?('Counter') || name.start_with?('StatusCounter')
-      interface_number = name.match(/Counter(\d+)/)[1]
-      interface = interfaces["DIL#{interface_number}"]
+    interface_register_mappings_attributes = interface_names.map.with_index do |iname, index|
+      {
+        category: category,
+        description: description,
+        position: index + 1,
+        interface: interfaces[iname]
+      }
     end
 
     registers.push(
@@ -402,11 +404,9 @@ ActiveRecord::Base.transaction do
       max_value: max_value,
       default_value: default_value,
       enum_values: enum_values,
-      default_data_collection_enabled: default_data_collection_enabled,
-      default_polling_interval_seconds: default_polling_interval_seconds,
       position: index + 1,
-      interface: interface,
-      plc_version: free_advance_first_version
+      plc_version: free_advance_first_version,
+      interface_register_mappings_attributes: interface_register_mappings_attributes
     )
   end
   register_templates = RegisterTemplate.create!(registers)

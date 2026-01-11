@@ -13,10 +13,16 @@ class MeasurementPoint < ApplicationRecord
   validate :register_template_matches_plc_version
   validates :chart_type_override, inclusion: { in: MeasurementSubtype::CHART_TYPES }, allow_blank: true
   validates :color_override, format: { with: /\A#[0-9A-Fa-f]{6}\z/, message: 'must be a valid hex color' }, allow_blank: true
-  validates :polling_interval_seconds_override, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
+  validates :polling_interval_seconds,
+    presence: true,
+    numericality: { only_integer: true, greater_than: 0 },
+    if: -> { data_collection_enabled }
+  validate :measurement_subtype_present_if_active_interface
   validate :measurement_subtype_data_category_matches_register_template
-  validate :interface_has_mapping_for_measurement_category
+  validate :measurement_subtype_data_category_is_present_on_interface_mapping
   validate :client_matches_site_client
+
+  before_save :deactivate_conflicting_measurement_points
 
   class WriteValidationError < StandardError;
   end
@@ -39,14 +45,6 @@ class MeasurementPoint < ApplicationRecord
 
   def effective_offset
     offset_override.presence || register_template.offset
-  end
-
-  def data_collection_enabled?
-    data_collection_enabled_override.nil? ? register_template.default_data_collection_enabled : data_collection_enabled_override
-  end
-
-  def effective_polling_interval_seconds
-    polling_interval_seconds_override.presence || register_template.default_polling_interval_seconds
   end
 
   def scale_decoded_value(decoded_value)
@@ -134,18 +132,6 @@ class MeasurementPoint < ApplicationRecord
     :normal
   end
 
-  def effective_register_template
-    if register_template.interface.present? && measurement_subtype.present?
-      mapped = register_template.interface.register_template_for_category(
-        measurement_subtype.data_category
-      )
-
-      mapped || register_template
-    else
-      register_template
-    end
-  end
-
   private
     def register_template_matches_plc_version
       if !plc.present? || !register_template.present?
@@ -154,6 +140,19 @@ class MeasurementPoint < ApplicationRecord
 
       if register_template.plc_version_id != plc.plc_version_id
         errors.add(:register_template, "must belong to the PLC's version")
+      end
+    end
+
+    def measurement_subtype_present_if_active_interface
+      if !active || measurement_subtype.present? || !register_template.present?
+        return
+      end
+
+      is_interface_measurement = register_template.interface_register_mappings
+        .where(category: MeasurementSubtype::DATA_CATEGORIES)
+        .any?
+      if is_interface_measurement
+        errors.add(:measurement_subtype, 'must be present for active interface measurements')
       end
     end
 
@@ -173,18 +172,21 @@ class MeasurementPoint < ApplicationRecord
       end
     end
 
-    def interface_has_mapping_for_measurement_category
+    def measurement_subtype_data_category_is_present_on_interface_mapping
       if !measurement_subtype.present? ||
-        !register_template.interface.present? ||
         !register_template.category.in?(MeasurementSubtype::DATA_CATEGORIES)
         return
       end
 
+      interface_categories_configured = register_template.interface_register_mappings
+        .where(category: MeasurementSubtype::DATA_CATEGORIES)
+        .pluck(:category)
+
       category = measurement_subtype.data_category
-      if !register_template.interface.category_configured?(category)
+      if interface_categories_configured.any? && !interface_categories_configured.include?(category)
         errors.add(
           :measurement_subtype,
-          "requires a '#{category}' register mapping for interface '#{register_template.interface.name}', " \
+          "requires a '#{category}' register mapping for one of the interfaces, " \
           "but none is configured"
         )
       end
@@ -200,8 +202,33 @@ class MeasurementPoint < ApplicationRecord
       end
     end
 
+    def deactivate_conflicting_measurement_points
+      if !active ||
+        !register_template.present? ||
+        !register_template.category.in?(MeasurementSubtype::DATA_CATEGORIES)
+        return
+      end
+
+      interface_ids = register_template.interface_register_mappings
+        .where(category: MeasurementSubtype::DATA_CATEGORIES)
+        .pluck(:interface_id)
+      if interface_ids.empty?
+        return
+      end
+
+      plc.measurement_points
+        .joins(register_template: :interface_register_mappings)
+        .where(active: true)
+        .where(interface_register_mappings: {
+          interface_id: interface_ids,
+          category: MeasurementSubtype::DATA_CATEGORIES
+        })
+        .where.not(id: id)
+        .update_all(active: false)
+    end
+
     def fetch_group_points
-      if !register_template.goup_name.present?
+      if !register_template.group_name.present?
         return []
       end
 

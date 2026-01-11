@@ -30,7 +30,8 @@
 </template>
 
 <script lang="ts" setup>
-  import type { Plc, Terminal } from '../types';
+  import type { Terminal } from '@/types/terminal';
+  import type { Plc } from '@/types/plc';
 
   defineProps<{
     modelValue: {

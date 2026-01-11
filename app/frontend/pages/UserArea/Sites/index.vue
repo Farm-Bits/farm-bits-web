@@ -138,7 +138,7 @@
   import useAuth from '@/composables/useAuth';
   import usePermissions from '@/composables/usePermissions';
   import { useApiCall } from '@/composables/useApi';
-  import type { Site } from '@/types/inertia';
+  import type { Site } from '@/types/location';
   import { ROUTES } from '@/types/permissions';
 
   const { sites } = useAuth();

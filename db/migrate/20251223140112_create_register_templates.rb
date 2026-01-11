@@ -41,10 +41,7 @@ class CreateRegisterTemplates < ActiveRecord::Migration[7.2]
       # Example: {"0": "Off", "1": "On", "2": "Error"}
       t.json :enum_values
 
-      t.boolean :default_data_collection_enabled, null: false, default: true
-      t.integer :default_polling_interval_seconds, default: 60
       t.integer :position, null: false, default: 0
-      t.references :interface, foreign_key: { on_delete: :cascade }
       t.references :plc_version, null: false, foreign_key: { on_delete: :cascade }
 
       t.timestamps

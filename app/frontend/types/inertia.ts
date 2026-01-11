@@ -1,6 +1,8 @@
-import type { Role } from '../types/permissions';
+import type { Role } from './permissions';
+import type { Site } from './location';
 
-export type UserScope = 'admin_users' | 'users';
+const USER_SCOPES = ['admin_users', 'users'] as const;
+export type UserScope = typeof USER_SCOPES[number];
 
 export type Client = {
   id: number;
@@ -12,16 +14,6 @@ export type User = {
   id: number;
   name: string;
   email: string;
-};
-
-export type Site = {
-  id: number;
-  name: string | null;
-  country: string | null;
-  city: string | null;
-  latitude: string | number | null;
-  longitude: string | number | null;
-  altitude: string | number | null;
 };
 
 declare module '@inertiajs/core' {

@@ -1,17 +1,4 @@
-type PlcVersion = {
-  id: number;
-  name: string;
-  description: string | null;
-};
-
-export type Plc = {
-  id: number;
-  label: string;
-  name: string;
-  slave: number;
-  private_ip: string | null;
-  plc_version: PlcVersion;
-};
+import { type Plc } from './plc';
 
 export type Terminal = {
   id: number;

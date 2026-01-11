@@ -121,14 +121,14 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_221548) do
   end
 
   create_table "interface_register_mappings", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
-    t.string "data_category", null: false
+    t.string "category", null: false
     t.text "description"
     t.integer "position", default: 0, null: false
     t.bigint "interface_id", null: false
     t.bigint "register_template_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["interface_id", "data_category"], name: "idx_on_interface_id_data_category_a557c9b2b7", unique: true
+    t.index ["interface_id", "category"], name: "index_interface_register_mappings_on_interface_id_and_category"
     t.index ["interface_id", "position"], name: "index_interface_register_mappings_on_interface_id_and_position"
     t.index ["interface_id"], name: "index_interface_register_mappings_on_interface_id"
     t.index ["register_template_id"], name: "index_interface_register_mappings_on_register_template_id"
@@ -181,8 +181,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_221548) do
     t.string "unit_override"
     t.string "chart_type_override"
     t.string "color_override"
-    t.boolean "data_collection_enabled_override"
-    t.integer "polling_interval_seconds_override"
+    t.boolean "data_collection_enabled", default: false, null: false
+    t.integer "polling_interval_seconds"
     t.decimal "factor_override", precision: 15, scale: 10
     t.decimal "offset_override", precision: 15, scale: 6
     t.decimal "alarm_low", precision: 15, scale: 6
@@ -203,9 +203,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_221548) do
     t.datetime "updated_at", null: false
     t.index ["active"], name: "index_measurement_points_on_active"
     t.index ["client_id"], name: "index_measurement_points_on_client_id"
-    t.index ["data_collection_enabled_override"], name: "index_measurement_points_on_data_collection_enabled_override"
+    t.index ["data_collection_enabled"], name: "index_measurement_points_on_data_collection_enabled"
     t.index ["measurement_subtype_id"], name: "index_measurement_points_on_measurement_subtype_id"
-    t.index ["plc_id", "data_collection_enabled_override"], name: "index_measurement_points_on_plc_and_data_collection_enabled"
+    t.index ["plc_id", "data_collection_enabled"], name: "index_measurement_points_on_plc_id_and_data_collection_enabled"
     t.index ["plc_id", "position"], name: "index_measurement_points_on_plc_id_and_position"
     t.index ["plc_id", "register_template_id"], name: "index_measurement_points_on_plc_id_and_register_template_id", unique: true
     t.index ["plc_id"], name: "index_measurement_points_on_plc_id"
@@ -322,15 +322,11 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_221548) do
     t.decimal "max_value", precision: 20, scale: 6
     t.string "default_value"
     t.json "enum_values"
-    t.boolean "default_data_collection_enabled", default: true, null: false
-    t.integer "default_polling_interval_seconds", default: 60
     t.integer "position", default: 0, null: false
-    t.bigint "interface_id"
     t.bigint "plc_version_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["category"], name: "index_register_templates_on_category"
-    t.index ["interface_id"], name: "index_register_templates_on_interface_id"
     t.index ["plc_version_id", "address"], name: "index_register_templates_on_plc_version_id_and_address", unique: true
     t.index ["plc_version_id", "bulk_read_group"], name: "index_register_templates_on_plc_version_id_and_bulk_read_group"
     t.index ["plc_version_id", "category"], name: "index_register_templates_on_plc_version_id_and_category"
@@ -474,7 +470,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_221548) do
   add_foreign_key "plcs", "plc_versions"
   add_foreign_key "plcs", "sites"
   add_foreign_key "plcs", "terminals"
-  add_foreign_key "register_templates", "interfaces", on_delete: :cascade
   add_foreign_key "register_templates", "plc_versions", on_delete: :cascade
   add_foreign_key "segments", "clients", on_delete: :cascade
   add_foreign_key "segments", "sites", on_delete: :cascade

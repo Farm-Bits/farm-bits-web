@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
-        <h1 class="h3 mb-1">Terminals & PLCs</h1>
+        <h1 class="h3 mb-1">Gateways & Controllers</h1>
         <p class="text-muted mb-0">Manage hardware installations for {{ site?.name }}</p>
       </div>
       <CButton
@@ -11,99 +11,111 @@
         color="primary"
         @click="showActivationModal = true">
         <CIcon icon="cilPlus" class="me-2" />
-        Activate Terminal
+        Activate Gateway
       </CButton>
     </div>
 
     <!-- Empty State -->
     <div v-if="terminals.length === 0" class="text-center py-5">
       <CIcon icon="cilRouter" size="4xl" class="text-muted mb-3" />
-      <h4 class="text-muted mb-2">No Terminals Installed</h4>
-      <p class="text-muted mb-4">Get started by activating your first terminal for this site.</p>
+      <h4 class="text-muted mb-2">No Gateways Installed</h4>
+      <p class="text-muted mb-4">Get started by activating your first gateway for this site.</p>
       <CButton
         v-if="permissions.terminals.update"
         color="primary"
         @click="showActivationModal = true">
-        Activate Terminal
+        Activate Gateway
       </CButton>
     </div>
 
     <!-- Terminals List -->
     <div v-else class="row g-4">
-      <div v-for="terminal in terminals" :key="terminal.id" class="col-md-6 col-lg-4">
-        <CCard class="h-100 shadow-sm hover-shadow">
-          <CCardHeader class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center">
-              <CIcon icon="cilRouter" size="lg" class="text-primary me-2" />
-              <strong>{{ terminal.name }}</strong>
-            </div>
-            <CBadge color="success">Active</CBadge>
-          </CCardHeader>
-          <CCardBody>
-            <!-- Terminal Details -->
-            <div class="mb-3">
-              <div class="d-flex justify-content-between mb-2">
-                <span class="text-muted small">IMEI:</span>
-                <span class="small font-monospace">{{ terminal.imei }}</span>
+      <div v-for="terminal in terminals" :key="terminal.id" class="col-md-3 min-w-sm">
+        <CCard class="shadow-sm">
+          <CCardHeader class="d-flex justify-content-between bg-white">
+            <div class="d-flex align-items-center gap-3">
+              <div class="terminal-icon">
+                <CIcon icon="cilRouter" size="xl" class="text-primary" />
               </div>
-              <div class="d-flex justify-content-between mb-2">
-                <span class="text-muted small">ICCID:</span>
-                <span class="small font-monospace">{{ terminal.iccid }}</span>
-              </div>
-              <div class="d-flex justify-content-between mb-2">
-                <span class="text-muted small">Phone:</span>
-                <span class="small">{{ terminal.phone_number }}</span>
-              </div>
-              <!-- <div class="d-flex justify-content-between mb-2">
-                <span class="text-muted small">Model:</span>
-                <span class="small">{{ terminal.model?.name || 'N/A' }}</span>
-              </div> -->
-            </div>
-
-            <!-- Connected PLCs -->
-            <div class="border-top pt-3">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="text-muted small">Connected PLCs:</span>
-                <CBadge color="info">{{ getPlcCount(terminal) }}</CBadge>
-              </div>
-              <div v-if="terminal.plcs && terminal.plcs.length > 0" class="small">
-                <div
-                  v-for="plc in terminal.plcs"
-                  :key="plc.id"
-                  class="d-flex justify-content-between py-1 border-bottom">
-                  <span>
-                    <CBadge color="success">Active</CBadge>
-                    <Link class="nav-link nav-link-secondary d-inline-block ms-2" :href="`/user/plcs/${plc.id}`">
-                      {{ plc.name }}
-                    </Link>
-                  </span>
-                  <span class="text-muted">Slave: {{ plc.slave }}</span>
+              <div>
+                <h5 class="mb-0">{{ terminal.name }}</h5>
+                <div class="text-muted small">
+                  <span class="me-3">IMEI: {{ terminal.imei }}</span>
+                </div>
+                <div class="text-muted small">
+                  <span v-if="terminal.phone_number">Phone: {{ terminal.phone_number }}</span>
                 </div>
               </div>
-              <div v-else class="small text-muted">
-                No PLCs Connected
-              </div>
+            </div>
+            <div class="d-flex align-items-start gap-2">
+              <CBadge class="mt-1" color="success">Active</CBadge>
+              <CDropdown>
+                <CDropdownToggle color="light" size="sm" :caret="false">
+                  <CIcon icon="cilOptions" />
+                </CDropdownToggle>
+                <CDropdownMenu>
+                  <CDropdownItem
+                    v-if="permissions.terminals.update"
+                    @click="editTerminal(terminal)">
+                    <CIcon icon="cilPencil" class="me-2" />
+                    Edit Gateway
+                  </CDropdownItem>
+                  <CDropdownDivider v-if="permissions.terminals.destroy" />
+                  <CDropdownItem
+                    v-if="permissions.terminals.destroy"
+                    class="text-danger"
+                    @click="confirmRemoveTerminal(terminal)">
+                    <CIcon icon="cilTrash" class="me-2" />
+                    Remove Gateway
+                  </CDropdownItem>
+                </CDropdownMenu>
+              </CDropdown>
+            </div>
+          </CCardHeader>
+          <CCardBody class="p-0">
+            <!-- Connected PLCs -->
+            <div v-if="terminal.plcs && terminal.plcs.length > 0">
+              <CTable hover responsive class="mb-0">
+                <CTableBody>
+                  <CTableRow v-for="plc in terminal.plcs" :key="plc.id" class="align-middle">
+                    <CTableDataCell class="text-center">
+                      <CIcon icon="cilMemory" class="text-primary" />
+                    </CTableDataCell>
+                    <CTableDataCell>
+                      <Link
+                        v-if="permissions.plcs.show"
+                        class="nav-link nav-link-secondary"
+                        :href="ROUTES.plcs_show.path.replace(':id', String(plc.id))">
+                        {{ plc.name }}
+                      </Link>
+                      <span v-else>{{ plc.name }}</span>
+                      <div class="text-muted small">{{ plc.label }}</div>
+                    </CTableDataCell>
+                    <CTableDataCell class="text-center">
+                      <CBadge color="info">{{ plc.plc_version.name }}</CBadge>
+                    </CTableDataCell>
+                    <CTableDataCell class="text-center">
+                      <CBadge color="success">
+                        <CIcon icon="cilCheckCircle" size="sm" class="me-1" />
+                        Connected
+                      </CBadge>
+                    </CTableDataCell>
+                  </CTableRow>
+                </CTableBody>
+              </CTable>
+            </div>
+            <div v-else class="text-center py-4 text-muted">
+              <CIcon icon="cilPlug" size="xl" class="mb-2" />
+              <div>No controllers connected to this gateway</div>
+              <CButton
+                v-if="permissions.terminals.update"
+                color="link"
+                size="sm"
+                @click="editTerminal(terminal)">
+                Assign Controllers
+              </CButton>
             </div>
           </CCardBody>
-          <CCardFooter class="d-flex justify-content-end gap-2">
-            <CButton
-              v-if="permissions.terminals.update"
-              color="light"
-              size="sm"
-              @click="editTerminal(terminal)">
-              <CIcon icon="cilPencil" class="me-1" />
-              Edit
-            </CButton>
-            <CButton
-              v-if="permissions.terminals.destroy"
-              color="danger"
-              size="sm"
-              variant="outline"
-              @click="confirmRemoveTerminal(terminal)">
-              <CIcon icon="cilTrash" class="me-1" />
-              Remove
-            </CButton>
-          </CCardFooter>
         </CCard>
       </div>
     </div>
@@ -116,7 +128,7 @@
       size="lg"
       backdrop="static">
       <CModalHeader>
-        <CModalTitle>Activate Terminal</CModalTitle>
+        <CModalTitle>Activate Gateway</CModalTitle>
       </CModalHeader>
       <CModalBody>
         <ActivationForm
@@ -135,7 +147,7 @@
       size="lg"
       backdrop="static">
       <CModalHeader>
-        <CModalTitle>Edit Terminal</CModalTitle>
+        <CModalTitle>Edit Gateway</CModalTitle>
       </CModalHeader>
       <CModalBody>
         <TerminalEditForm
@@ -156,13 +168,14 @@
         <CModalTitle>Confirm Removal</CModalTitle>
       </CModalHeader>
       <CModalBody>
-        <p>Are you sure you want to remove this terminal from {{ site?.name }}?</p>
+        <p>Are you sure you want to remove this gateway from {{ site?.name }}?</p>
         <div v-if="terminalToRemove" class="alert alert-warning">
-          <strong>Terminal:</strong> {{ terminalToRemove.imei }}<br>
-          <strong>PLCs Connected:</strong> {{ getPlcCount(terminalToRemove) }}
+          <strong>Gateway:</strong> {{ terminalToRemove.name }}<br>
+          <strong>IMEI:</strong> {{ terminalToRemove.imei }}<br>
+          <strong>Controllers Connected:</strong> {{ getPlcCount(terminalToRemove) }}
         </div>
         <p class="small text-muted">
-          This will unassign the terminal and all connected PLCs from this site.
+          This will unassign the gateway and all connected controllers from this site.
           The hardware can be reassigned to another site later.
         </p>
       </CModalBody>
@@ -171,7 +184,7 @@
           Cancel
         </CButton>
         <CButton color="danger" @click="removeTerminal">
-          Remove Terminal
+          Remove Gateway
         </CButton>
       </CModalFooter>
     </CModal>
@@ -187,7 +200,8 @@
   import usePermissions from '@/composables/usePermissions';
   import { useApiCall } from '@/composables/useApi';
   import { ROUTES } from '@/types/permissions';
-  import type { Terminal, TerminalAssigned, Plc } from './types';
+  import type { Terminal, TerminalAssigned } from '@/types/terminal';
+  import type { Plc } from '@/types/plc';
 
   const { permissions } = usePermissions();
   const { execute } = useApiCall();
@@ -228,16 +242,16 @@
       () => axios.delete(url),
       {
         showSuccessToast: true,
-        successMessage: 'Terminal removed successfully',
+        successMessage: 'Gateway removed successfully',
         showErrorToast: true,
-        errorTitle: 'Remove Terminal Error'
+        errorTitle: 'Remove Gateway Error'
       }
     );
 
     if (success) {
       const index = terminals.findIndex((t) => t.id === terminalToRemove.value!.id);
       if (index > -1) {
-        const plcsToRemove = terminals[index].plcs;;
+        const plcsToRemove = terminals[index].plcs;
         plcsToRemove.forEach((plc) => {
           availablePlcs.push(plc);
         });
@@ -303,11 +317,13 @@
 </script>
 
 <style scoped>
-.hover-shadow {
-    transition: box-shadow 0.2s ease-in-out;
-  }
-
-  .hover-shadow:hover {
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  .terminal-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 </style>

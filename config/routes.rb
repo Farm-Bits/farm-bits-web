@@ -55,12 +55,17 @@ Rails.application.routes.draw do
       resources :invitations, only: [:index, :create, :destroy]
       put 'invitations/:id/resend', to: 'invitations#resend'
 
+      resources :segments, only: [:index, :create, :update, :destroy]
       resources :sites, only: [:index, :create, :update, :destroy]
       resources :terminals, only: [:index, :update, :destroy]
+      resources :plcs, only: [:show, :update]
+      resources :measurement_points, only: [:update] do
+        member do
+          post :write
+        end
+      end
 
       get 'dashboard', to: 'dashboard#show'
-
-      resources :protocols
     end
   end
 

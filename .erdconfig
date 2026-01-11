@@ -3,6 +3,10 @@ attributes:
   - foreign_keys
   - inheritance
 exclude:
+  - ActionMailbox::InboundEmail
+  - ActiveStorage::Attachment
+  - ActiveStorage::Blob
+  - ActiveStorage::VariantRecord
   - Audited::Audit
   - AdminUser
 filename: erd

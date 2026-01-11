@@ -59,7 +59,7 @@
   import { between, decimal, maxValue, minValue, required } from '@vuelidate/validators';
   import LocationSelector from '@/components/LocationSelector.vue';
   import { useApiCall } from '@/composables/useApi';
-  import type { Site } from '@/types/inertia';
+  import type { Site } from '@/types/location';
   import { ROUTES } from '@/types/permissions';
 
   const props = defineProps<{

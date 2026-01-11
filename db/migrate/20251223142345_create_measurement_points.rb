@@ -7,8 +7,8 @@ class CreateMeasurementPoints < ActiveRecord::Migration[7.0]
       t.string :unit_override
       t.string :chart_type_override
       t.string :color_override
-      t.boolean :data_collection_enabled_override
-      t.integer :polling_interval_seconds_override
+      t.boolean :data_collection_enabled, null: false, default: false
+      t.integer :polling_interval_seconds
 
       t.decimal :factor_override, precision: 15, scale: 10
       t.decimal :offset_override, precision: 15, scale: 6
@@ -36,8 +36,8 @@ class CreateMeasurementPoints < ActiveRecord::Migration[7.0]
 
     add_index :measurement_points, [:plc_id, :register_template_id], unique: true
     add_index :measurement_points, :active
-    add_index :measurement_points, :data_collection_enabled_override
-    add_index :measurement_points, [:plc_id, :data_collection_enabled_override], name: 'index_measurement_points_on_plc_and_data_collection_enabled'
+    add_index :measurement_points, :data_collection_enabled
+    add_index :measurement_points, [:plc_id, :data_collection_enabled]
     add_index :measurement_points, [:plc_id, :position]
   end
 end

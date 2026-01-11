@@ -6,6 +6,10 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 
 // Components
 import {
+  CAccordion,
+  CAccordionBody,
+  CAccordionHeader,
+  CAccordionItem,
   CAlert,
   CAvatar,
   CBadge,
@@ -35,6 +39,7 @@ import {
   CFormLabel,
   CFormSelect,
   CFormText,
+  CFormTextarea,
   CHeader,
   CHeaderBrand,
   CHeaderDivider,
@@ -74,6 +79,7 @@ import {
   CTableHeaderCell,
   CTableRow,
   CTabList,
+  CTabPane,
   CTabPanel,
   CTabs,
   CToast,
@@ -88,25 +94,33 @@ import {
   cilAccountLogout,
   cilArrowRight,
   cilArrowLeft,
+  cilBan,
   cilBarChart,
   cilBellExclamation,
   cilBuilding,
+  cilChartLine,
   cilCheck,
   cilCheckAlt,
+  cilCheckCircle,
   cilCompress,
   cilDescription,
   cilEnvelopeClosed,
   cilGem,
+  cilHistory,
   cilLocationPin,
   cilLockLocked,
+  cilMemory,
   cilMenu,
   cilOptions,
   cilPencil,
   cilPeople,
   cilPlus,
   cilPuzzle,
+  cilRouter,
   cilSettings,
   cilSpeedometer,
+  cilToggleOn,
+  cilToggleOff,
   cilTrash,
   cilUser,
   cilUserPlus,
@@ -147,25 +161,33 @@ export default function () {
         cilAccountLogout,
         cilArrowRight,
         cilArrowLeft,
+        cilBan,
         cilBarChart,
         cilBellExclamation,
         cilBuilding,
+        cilChartLine,
         cilCheck,
         cilCheckAlt,
+        cilCheckCircle,
         cilCompress,
         cilDescription,
         cilEnvelopeClosed,
         cilGem,
+        cilHistory,
         cilLocationPin,
         cilLockLocked,
+        cilMemory,
         cilMenu,
         cilOptions,
         cilPencil,
         cilPeople,
         cilPlus,
         cilPuzzle,
+        cilRouter,
         cilSettings,
         cilSpeedometer,
+        cilToggleOn,
+        cilToggleOff,
         cilTrash,
         cilUser,
         cilUserPlus,
@@ -173,6 +195,10 @@ export default function () {
         cilWarning,
         cilX
       });
+      app.component('CAccordion', CAccordion);
+      app.component('CAccordionBody', CAccordionBody);
+      app.component('CAccordionHeader', CAccordionHeader);
+      app.component('CAccordionItem', CAccordionItem);
       app.component('CAlert', CAlert);
       app.component('CAvatar', CAvatar);
       app.component('CBadge', CBadge);
@@ -202,6 +228,7 @@ export default function () {
       app.component('CFormLabel', CFormLabel);
       app.component('CFormSelect', CFormSelect);
       app.component('CFormText', CFormText);
+      app.component('CFormTextarea', CFormTextarea);
       app.component('CHeader', CHeader);
       app.component('CHeaderBrand', CHeaderBrand);
       app.component('CHeaderDivider', CHeaderDivider);
@@ -242,6 +269,7 @@ export default function () {
       app.component('CTableHeaderCell', CTableHeaderCell);
       app.component('CTableRow', CTableRow);
       app.component('CTabList', CTabList);
+      app.component('CTabPane', CTabPane);
       app.component('CTabPanel', CTabPanel);
       app.component('CTabs', CTabs);
       app.component('CToast', CToast);

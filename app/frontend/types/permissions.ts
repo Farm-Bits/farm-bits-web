@@ -1,5 +1,5 @@
 // Auto-generated file - Do not edit manually
-// Generated at: 2025-11-26 15:51:08 UTC
+// Generated at: 2026-01-11 20:40:58 UTC
 
 import type { Method } from '@inertiajs/core';
 
@@ -22,7 +22,7 @@ export const ROLES = {
 } as const;
 
 // Valid controller keys
-export type ControllerKey = 'dashboard' | 'my_account' | 'client_setup' | 'users' | 'invitations' | 'sites' | 'terminals' | 'protocols';
+export type ControllerKey = 'dashboard' | 'my_account' | 'client_setup' | 'users' | 'invitations' | 'segments' | 'sites' | 'terminals' | 'plcs' | 'measurement_points';
 
 // Route permissions mapping
 export type RoutePermissions = {
@@ -52,6 +52,12 @@ export type RoutePermissions = {
     destroy: boolean;
     resend: boolean;
   };
+  segments: {
+    index: boolean;
+    create: boolean;
+    update: boolean;
+    destroy: boolean;
+  };
   sites: {
     index: boolean;
     create: boolean;
@@ -63,14 +69,13 @@ export type RoutePermissions = {
     update: boolean;
     destroy: boolean;
   };
-  protocols: {
-    index: boolean;
-    create: boolean;
-    new: boolean;
-    edit: boolean;
+  plcs: {
     show: boolean;
     update: boolean;
-    destroy: boolean;
+  };
+  measurement_points: {
+    write: boolean;
+    update: boolean;
   };
 };
 
@@ -185,6 +190,30 @@ export const ROUTES: Record<string, RouteInfo> = {
     path: '/user/invitations/:id/resend',
     verb: 'put'
   },
+  segments_index: {
+    controller: 'segments',
+    action: 'index',
+    path: '/user/segments',
+    verb: 'get'
+  },
+  segments_create: {
+    controller: 'segments',
+    action: 'create',
+    path: '/user/segments',
+    verb: 'post'
+  },
+  segments_update: {
+    controller: 'segments',
+    action: 'update',
+    path: '/user/segments/:id',
+    verb: 'patch'
+  },
+  segments_destroy: {
+    controller: 'segments',
+    action: 'destroy',
+    path: '/user/segments/:id',
+    verb: 'delete'
+  },
   sites_index: {
     controller: 'sites',
     action: 'index',
@@ -227,46 +256,28 @@ export const ROUTES: Record<string, RouteInfo> = {
     path: '/user/terminals/:id',
     verb: 'delete'
   },
-  protocols_index: {
-    controller: 'protocols',
-    action: 'index',
-    path: '/user/protocols',
-    verb: 'get'
-  },
-  protocols_create: {
-    controller: 'protocols',
-    action: 'create',
-    path: '/user/protocols',
-    verb: 'post'
-  },
-  protocols_new: {
-    controller: 'protocols',
-    action: 'new',
-    path: '/user/protocols/new',
-    verb: 'get'
-  },
-  protocols_edit: {
-    controller: 'protocols',
-    action: 'edit',
-    path: '/user/protocols/:id/edit',
-    verb: 'get'
-  },
-  protocols_show: {
-    controller: 'protocols',
+  plcs_show: {
+    controller: 'plcs',
     action: 'show',
-    path: '/user/protocols/:id',
+    path: '/user/plcs/:id',
     verb: 'get'
   },
-  protocols_update: {
-    controller: 'protocols',
+  plcs_update: {
+    controller: 'plcs',
     action: 'update',
-    path: '/user/protocols/:id',
+    path: '/user/plcs/:id',
     verb: 'patch'
   },
-  protocols_destroy: {
-    controller: 'protocols',
-    action: 'destroy',
-    path: '/user/protocols/:id',
-    verb: 'delete'
+  measurement_points_write: {
+    controller: 'measurement_points',
+    action: 'write',
+    path: '/user/measurement_points/:id/write',
+    verb: 'post'
+  },
+  measurement_points_update: {
+    controller: 'measurement_points',
+    action: 'update',
+    path: '/user/measurement_points/:id',
+    verb: 'patch'
   }
 };

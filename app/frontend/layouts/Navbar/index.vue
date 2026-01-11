@@ -85,7 +85,7 @@
   import AdminAccountDropdown from './components/AdminAccountDropdown.vue';
   import useAuth from '@/composables/useAuth';
   import usePermissions from '@/composables/usePermissions';
-  import type { Site } from '@/types/inertia';
+  import type { Site } from '@/types/location';
   import { ROUTES } from '@/types/permissions';
 
   const { isAdminUser, isSignedIn, paths, features, site, sites } = useAuth();
