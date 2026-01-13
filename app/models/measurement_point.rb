@@ -224,7 +224,23 @@ class MeasurementPoint < ApplicationRecord
           category: MeasurementSubtype::DATA_CATEGORIES
         })
         .where.not(id: id)
-        .update_all(active: false)
+        .update_all(
+          name: register_template.name,
+          description: register_template.description,
+          unit_override: nil,
+          chart_type_override: nil,
+          color_override: nil,
+          data_collection_enabled: false,
+          polling_interval_seconds: nil,
+          factor_override: nil,
+          offset_override: nil,
+          alarm_low: nil,
+          alarm_high: nil,
+          warning_low: nil,
+          warning_high: nil,
+          active: false,
+          measurement_subtype_id: nil
+        )
     end
 
     def fetch_group_points

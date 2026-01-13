@@ -103,9 +103,9 @@
   import usePermissions from '@/composables/usePermissions';
   import { ROUTES } from '@/types/permissions';
   import type { Segment } from '@/types/location';
-  import type { CommunicationType, InterfaceWithMeasurementPoints, PlcWithInterfaces } from '@/types/plc';
-  import type { MeasurementSubtype } from '@/types/measurementPoint';
-  import { COMMUNICATION_TYPE_TABS, type MeasurementPointFormData } from './types';
+  import type { CommunicationType, PlcWithInterfaces } from '@/types/plc';
+  import type { MeasurementPoint, MeasurementSubtype } from '@/types/measurementPoint';
+  import { COMMUNICATION_TYPE_TABS } from './types';
 
   const { pageProps } = useAuth<{
     plc: PlcWithInterfaces;
@@ -114,12 +114,10 @@
   }>();
   const { plc, segments, measurementSubtypes } = pageProps.value;
 
-  const { permissions } = usePermissions();
-
   const activeTab = ref<CommunicationType>('digital_input');
 
   function getInterfacesByType(type: CommunicationType) {
-    return plc.interfaces.filter(i => i.communication_type === type);
+    return plc.interfaces.filter((i) => i.communication_type === type);
   }
 
   function getInterfaceCount(type: CommunicationType) {
@@ -131,7 +129,25 @@
     return date.toLocaleString();
   }
 
-  async function handleUpdateInterface(iface: InterfaceWithMeasurementPoints) {
+  async function handleUpdateInterface(
+    updatedMeasurementPoint: MeasurementPoint,
+    siblingMeasurementPoints: MeasurementPoint[]
+  ) {
+    const pointsMap = new Map<MeasurementPoint['id'], MeasurementPoint>(
+      [updatedMeasurementPoint, ...siblingMeasurementPoints].map((p) => [p.id, p])
+    );
+
+    let remaining = pointsMap.size;
+    for (const iface of plc.interfaces) {
+      for (const mapping of iface.register_mappings) {
+        const updatedPoint = pointsMap.get(mapping.measurement_point.id);
+        if (updatedPoint) {
+          mapping.measurement_point = updatedPoint;
+          if (--remaining === 0)
+            return;
+        }
+      }
+    }
   }
 </script>
 

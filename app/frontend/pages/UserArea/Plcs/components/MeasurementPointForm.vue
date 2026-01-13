@@ -185,7 +185,6 @@
   import type { Segment } from '@/types/location';
   import { isChartType, type MeasurementPoint, type MeasurementSubtype } from '@/types/measurementPoint';
   import type { InterfaceWithMeasurementPoints } from '@/types/plc';
-  import type { MeasurementPointFormData } from '../types';
 
   const props = defineProps<{
     interface: InterfaceWithMeasurementPoints;
@@ -194,7 +193,11 @@
   }>();
 
   const emit = defineEmits<{
-    (e: 'submit', iface: InterfaceWithMeasurementPoints): void;
+    (
+      e: 'submit',
+      updatedMeasurementPoint: MeasurementPoint,
+      siblingMeasurementPoints: MeasurementPoint[]
+    ): void;
     (e: 'cancel'): void;
   }>();
 
@@ -231,7 +234,7 @@
   });
 
   const selectedSubtype = computed(() => {
-    return props.measurementSubtypes.find((s) => s.id == formData.measurement_point.measurement_subtype_id);
+    return props.measurementSubtypes.find((s) => s.id.toString() === formData.measurement_point.measurement_subtype_id);
   });
 
   const defaultUnit = computed(() => selectedSubtype.value?.default_unit || null);
@@ -245,17 +248,19 @@
         name: registerMapping?.measurement_point.name || '',
         description: registerMapping?.measurement_point.description || '',
         unit_override: registerMapping?.measurement_point.unit_override || null,
-        chart_type_override: registerMapping?.measurement_point.chart_type_override || null,
+        chart_type_override: registerMapping?.measurement_point.chart_type_override?.toString() || null,
         color_override: registerMapping?.measurement_point.color_override || null,
+        data_collection_enabled: true,
+        polling_interval_seconds: 300,
         factor_override: registerMapping?.measurement_point.factor_override || null,
         offset_override: registerMapping?.measurement_point.offset_override || null,
         alarm_low: registerMapping?.measurement_point.alarm_low || null,
         alarm_high: registerMapping?.measurement_point.alarm_high || null,
         warning_low: registerMapping?.measurement_point.warning_low || null,
         warning_high: registerMapping?.measurement_point.warning_high || null,
-        active: registerMapping?.measurement_point.active || false,
-        measurement_subtype_id: registerMapping?.measurement_point.measurement_subtype_id || null,
-        segment_id: registerMapping?.measurement_point.segment_id || null
+        active: true,
+        measurement_subtype_id: registerMapping?.measurement_point.measurement_subtype_id?.toString() || null,
+        segment_id: registerMapping?.measurement_point.segment_id?.toString() || null
       }
     };
   }
@@ -338,8 +343,10 @@
     processing.value = true;
 
     const url = ROUTES.measurement_points_update.path.replace(':id', String(formData.measurement_point.id));
-    formData.measurement_point.active = true;
-    const { success, data } = await execute<MeasurementPoint>(
+    const { success, data } = await execute<{
+      measurement_point: MeasurementPoint,
+      sibling_measurement_points: MeasurementPoint[]
+    }>(
       () => axios.put(url, { ...formData }),
       {
         showSuccessToast: true,
@@ -350,7 +357,11 @@
     );
 
     if (success) {
-      emit('submit', props.interface);
+      emit(
+        'submit',
+        data.measurement_point,
+        data.sibling_measurement_points
+      );
       resetEditTracking();
     }
 

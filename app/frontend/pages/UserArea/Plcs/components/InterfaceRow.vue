@@ -4,7 +4,7 @@
     class="align-middle"
     :class="{ 'table-warning': !isConfigured(activeRegisterMapping.measurement_point) }">
     <CTableDataCell>
-      <StatusIndicator :point="activeRegisterMapping.measurement_point" />
+      <StatusIndicator :measurementPoint="activeRegisterMapping.measurement_point" />
     </CTableDataCell>
     <CTableDataCell>
       <div class="d-flex align-items-center gap-2">
@@ -38,7 +38,13 @@
       <span v-else class="text-muted">—</span>
     </CTableDataCell>
     <CTableDataCell>
-      <ValueDisplay :point="activeRegisterMapping.measurement_point" />
+      <ValueDisplay
+        :measurementPoint="activeRegisterMapping.measurement_point"
+        :valueToDisplay="activeRegisterMapping.measurement_point.last_value"
+        :valueFormat="activeRegisterMapping.register_template.value_format"
+        :enumValues="activeRegisterMapping.register_template.enum_values" />
+      <RelativeTime
+        :dateTime="activeRegisterMapping.measurement_point.last_value_at" />
     </CTableDataCell>
     <CTableDataCell>
       <span v-if="activeRegisterMapping.measurement_point.effective_unit" class="text-muted">
@@ -75,11 +81,29 @@
             </CDropdownItem>
             <CDropdownDivider />
             <CDropdownItem
+              v-if="isEnabled(activeRegisterMapping.measurement_point)"
               class="text-danger"
               @click="toggleActive(activeRegisterMapping.measurement_point)">
-              <CIcon :icon="activeRegisterMapping.measurement_point.active ? 'cilBan' : 'cilCheckCircle'" class="me-2" />
-              {{ activeRegisterMapping.measurement_point.active ? 'Disable' : 'Enable' }}
+              <CIcon icon="cilBan" class="me-2" />
+              Disable
             </CDropdownItem>
+            <CDropdownItem
+              v-else-if="canEnable(activeRegisterMapping.measurement_point)"
+              class="text-danger"
+              @click="toggleActive(activeRegisterMapping.measurement_point)">
+              <CIcon icon="cilCheckCircle" class="me-2" />
+              Enable
+            </CDropdownItem>
+            <CTooltip v-else content="Configure Device First">
+              <template #toggler="{ id, on }">
+                <span v-on="on" class="d-inline-block">
+                  <CDropdownItem disabled>
+                    <CIcon icon="cilCheckCircle" class="me-2" />
+                    Enable
+                  </CDropdownItem>
+                </span>
+              </template>
+            </CTooltip>
           </CDropdownMenu>
         </CDropdown>
       </div>
@@ -89,8 +113,12 @@
 
 <script lang="ts" setup>
   import { computed } from 'vue';
+  import axios from 'axios';
   import StatusIndicator from './StatusIndicator.vue';
-  import ValueDisplay from './ValueDisplay.vue';
+  import ValueDisplay from '@/components/ValueDisplay.vue';
+  import RelativeTime from '@/components/RelativeTime.vue';
+  import { useApiCall } from '@/composables/useApi';
+  import { ROUTES } from '@/types/permissions';
   import type { Segment } from '@/types/location';
   import { isDataCategory, type DataCategory, type MeasurementPoint, type MeasurementSubtype } from '@/types/measurementPoint';
   import type { InterfaceWithMeasurementPoints } from '@/types/plc';
@@ -103,7 +131,14 @@
 
   const emit = defineEmits<{
     (e: 'edit', iface: InterfaceWithMeasurementPoints, registerMappings: InterfaceWithMeasurementPoints['register_mappings']): void;
+    (
+      e: 'update',
+      updatedMeasurementPoint: MeasurementPoint,
+      siblingMeasurementPoints: MeasurementPoint[]
+    ): void;
   }>();
+
+  const { execute } = useApiCall();
 
   const measurementRegisterMappings = computed(() => {
     return props.interface.register_mappings.filter((mapping) => {
@@ -115,17 +150,25 @@
     if (measurementRegisterMappings.value.length === 0)
       return null;
 
-    const mp = measurementRegisterMappings.value.find((registerMapping) => {
+    const mpActive = measurementRegisterMappings.value.find((registerMapping) => {
       return registerMapping.measurement_point.active;
     });
-    return mp || measurementRegisterMappings.value[0];
+    if (mpActive)
+      return mpActive;
+
+    const mpConfigured = measurementRegisterMappings.value.find((registerMapping) => {
+      return !!registerMapping.measurement_point.measurement_subtype_id;
+    });
+    return mpConfigured || measurementRegisterMappings.value[0];
   });
 
   const measurementSubtype = computed(() => {
     if (!activeRegisterMapping.value || !activeRegisterMapping.value.measurement_point.measurement_subtype_id)
       return null;
 
-    return props.measurementSubtypes.find((subtype) => subtype.id === activeRegisterMapping.value!.measurement_point.measurement_subtype_id)
+    return props.measurementSubtypes.find((subtype) =>
+      subtype.id === activeRegisterMapping.value!.measurement_point.measurement_subtype_id
+    ) || null;
   });
 
   const segment = computed(() => {
@@ -135,8 +178,16 @@
     return props.segments.find((segment) => segment.id === activeRegisterMapping.value!.measurement_point.segment_id)
   });
 
-  function isConfigured(point: MeasurementPoint) {
-    return !!point.measurement_subtype_id;
+  function isConfigured(measurementPoint: MeasurementPoint) {
+    return measurementPoint.active && measurementPoint.data_collection_enabled && !!measurementPoint.measurement_subtype_id;
+  }
+
+  function isEnabled(measurementPoint: MeasurementPoint) {
+    return measurementPoint.active && measurementPoint.data_collection_enabled;
+  }
+
+  function canEnable(measurementPoint: MeasurementPoint) {
+    return !!measurementPoint.measurement_subtype_id;
   }
 
   function formatDataCategory(category: DataCategory): string {
@@ -148,12 +199,39 @@
     return categories[category] || category;
   }
 
-  function viewHistory(point: MeasurementPoint) {
-    console.log('View history for:', point.id);
+  function viewHistory(measurementPoint: MeasurementPoint) {
+    console.log('View history for:', measurementPoint.id);
   }
 
-  async function toggleActive(point: MeasurementPoint) {
-    console.log('Toggle active for:', point.id);
+  async function toggleActive(measurementPoint: MeasurementPoint) {
+    const url = ROUTES.measurement_points_update.path.replace(':id', String(measurementPoint.id));
+    const willEnable = !measurementPoint.active;
+    const measurementPointData = {
+      data_collection_enabled: willEnable,
+      polling_interval_seconds: willEnable ? 300 : null,
+      active: willEnable
+    };
+
+    const { success, data } = await execute<{
+      measurement_point: MeasurementPoint,
+      sibling_measurement_points: MeasurementPoint[]
+    }>(
+      () => axios.put(url, { measurement_point: measurementPointData }),
+      {
+        showSuccessToast: true,
+        successMessage: `Interface ${props.interface.name} updated successfully`,
+        showErrorToast: true,
+        errorTitle: 'Error'
+      }
+    );
+
+    if (success) {
+      emit(
+        'update',
+        data.measurement_point,
+        data.sibling_measurement_points
+      );
+    }
   }
 </script>
 

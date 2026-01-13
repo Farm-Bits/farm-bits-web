@@ -7,7 +7,7 @@ class PlcSerializer < Blueprinter::Base
 
   view :with_interfaces do
     field :interfaces do |plc|
-      InterfaceSerializer.render_as_hash(
+      InterfaceSerializer.render_as_json(
         plc.plc_version.interfaces,
         view: :with_measurement_points,
         plc: plc

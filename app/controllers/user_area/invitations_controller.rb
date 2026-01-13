@@ -7,7 +7,7 @@ class UserArea::InvitationsController < UserArea::ApplicationController
     invitations = policy_scope(Invitation)
       .where.not(status: 'accepted')
       .order(created_at: :desc)
-    render json: InvitationSerializer.render(invitations)
+    render json: InvitationSerializer.render_as_json(invitations)
   end
 
   def create
@@ -18,7 +18,7 @@ class UserArea::InvitationsController < UserArea::ApplicationController
     invitation.client = current_client
 
     if invitation.save
-      render json: InvitationSerializer.render(invitation), status: :created
+      render json: InvitationSerializer.render_as_json(invitation), status: :created
     else
       render json: { error: invitation.errors.full_messages.to_sentence }, status: :unprocessable_entity
     end
@@ -29,7 +29,7 @@ class UserArea::InvitationsController < UserArea::ApplicationController
 
     result = @invitation&.resend
     if result && result[:success]
-      render json: InvitationSerializer.render(@invitation), status: :ok
+      render json: InvitationSerializer.render_as_json(@invitation), status: :ok
     else
       render json: { error: 'Cannot resend this invitation' }, status: :unprocessable_entity
     end

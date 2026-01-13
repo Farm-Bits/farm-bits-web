@@ -5,7 +5,10 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
     authorize @measurement_point, :update?
 
     if @measurement_point.update(measurement_point_params)
-      render json: MeasurementPointSerializer.render(@measurement_point), status: :ok
+      render json: {
+        measurement_point: MeasurementPointSerializer.render_as_json(@measurement_point),
+        sibling_measurement_points: MeasurementPointSerializer.render_as_json(sibling_measurement_points)
+      }, status: :ok
     else
       render json: { error: @measurement_point.errors.full_messages.to_sentence }, status: :unprocessable_entity
     end
@@ -21,7 +24,7 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
 
     begin
       @measurement_point.write_value!(params[:value])
-      render json: MeasurementPointSerializer.render(@measurement_point), status: :ok
+      render json: MeasurementPointSerializer.render_as_json(@measurement_point), status: :ok
     rescue MeasurementPoint::WriteValidationError => e
       render json: { error: e.message }, status: :unprocessable_entity
     rescue StandardError => e
@@ -44,6 +47,8 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
         :unit_override,
         :chart_type_override,
         :color_override,
+        :data_collection_enabled,
+        :polling_interval_seconds,
         :factor_override,
         :offset_override,
         :alarm_low,
@@ -54,5 +59,21 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
         :measurement_subtype_id,
         :segment_id
       )
+    end
+
+    def sibling_measurement_points
+      interface_ids = @measurement_point.register_template
+          &.interface_register_mappings
+          &.pluck(:interface_id)
+
+      if interface_ids.present?
+        MeasurementPoint
+          .joins(register_template: :interface_register_mappings)
+          .where(interface_register_mappings: { interface_id: interface_ids })
+          .where.not(id: @measurement_point.id)
+          .distinct
+      else
+        []
+      end
     end
 end

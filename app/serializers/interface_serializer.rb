@@ -18,8 +18,8 @@ class InterfaceSerializer < Blueprinter::Base
         measurement_point = points.find { |mp| mp.register_template_id == irm.register_template_id }
         {
           category: irm.category,
-          register_template: RegisterTemplateSerializer.render_as_hash(irm.register_template),
-          measurement_point: MeasurementPointSerializer.render_as_hash(measurement_point)
+          register_template: RegisterTemplateSerializer.render_as_json(irm.register_template),
+          measurement_point: MeasurementPointSerializer.render_as_json(measurement_point)
         }
       end
     end

@@ -13,9 +13,9 @@ class UserArea::PlcsController < UserArea::ApplicationController
         .map { |s| { id: s.id, name: s.name } }
     end
     data = {
-      plc: PlcSerializer.render_as_hash(@plc, view: :with_interfaces),
+      plc: PlcSerializer.render_as_json(@plc, view: :with_interfaces),
       segments: segments_for_site,
-      measurementSubtypes: MeasurementSubtypeSerializer.render_as_hash(measurement_subtypes)
+      measurementSubtypes: MeasurementSubtypeSerializer.render_as_json(measurement_subtypes)
     }
 
     respond_to do |format|
@@ -31,7 +31,7 @@ class UserArea::PlcsController < UserArea::ApplicationController
       @plc = policy_scope(Plc)
         .includes(plc_includes_for_serializer)
         .find(@plc.id)
-      render json: PlcSerializer.render(@plc, view: :with_interfaces), status: :ok
+      render json: PlcSerializer.render_as_json(@plc, view: :with_interfaces), status: :ok
     else
       render json: { error: @plc.errors.full_messages.to_sentence }, status: :unprocessable_entity
     end

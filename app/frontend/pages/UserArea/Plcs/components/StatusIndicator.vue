@@ -16,17 +16,17 @@
   import type { MeasurementPoint } from '@/types/measurementPoint';
 
   const props = defineProps<{
-    point: MeasurementPoint;
+    measurementPoint: MeasurementPoint;
   }>();
 
   const statusClass = computed(() => {
-    if (!props.point.active)
+    if (!props.measurementPoint.active)
       return 'status-disabled';
 
-    if (!props.point.last_decoded_value_at)
+    if (!props.measurementPoint.last_value_at)
       return 'status-unknown';
 
-    const lastSeen = new Date(props.point.last_decoded_value_at);
+    const lastSeen = new Date(props.measurementPoint.last_value_at);
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
 
     if (lastSeen < fiveMinutesAgo)
@@ -36,13 +36,13 @@
   });
 
   const statusTooltip = computed(() => {
-    if (!props.point.active)
+    if (!props.measurementPoint.active)
       return 'Disabled';
 
-    if (!props.point.last_decoded_value_at)
+    if (!props.measurementPoint.last_value_at)
       return 'No data received';
 
-    const lastSeen = new Date(props.point.last_decoded_value_at);
+    const lastSeen = new Date(props.measurementPoint.last_value_at);
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
 
     if (lastSeen < fiveMinutesAgo)

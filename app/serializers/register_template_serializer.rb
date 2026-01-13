@@ -4,6 +4,7 @@ class RegisterTemplateSerializer < Blueprinter::Base
   fields :name,
     :label,
     :description,
+    :value_format,
     :factor,
     :offset,
     :category,

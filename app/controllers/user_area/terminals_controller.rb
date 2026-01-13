@@ -7,7 +7,7 @@ class UserArea::TerminalsController < UserArea::ApplicationController
     terminals = policy_scope(Terminal).where(active: true)
       .includes(:model, :plcs)
     data = {
-      terminals: TerminalSerializer.render_as_hash(terminals, view: :with_plcs),
+      terminals: TerminalSerializer.render_as_json(terminals, view: :with_plcs),
       availableTerminals: available_terminals_for_activation,
       availablePlcs: available_plcs_for_activation
     }
@@ -22,7 +22,7 @@ class UserArea::TerminalsController < UserArea::ApplicationController
     authorize @terminal, :update?
 
     if @terminal.update(terminal_params)
-      render json: TerminalSerializer.render(@terminal, view: :with_plcs), status: :ok
+      render json: TerminalSerializer.render_as_json(@terminal, view: :with_plcs), status: :ok
     else
       render json: { error: @terminal.errors.full_messages.to_sentence }, status: :unprocessable_entity
     end
@@ -32,7 +32,7 @@ class UserArea::TerminalsController < UserArea::ApplicationController
     authorize @terminal, :destroy?
 
     if @terminal.update(active: false)
-      render json: TerminalSerializer.render(@terminal), status: :ok
+      render json: TerminalSerializer.render_as_json(@terminal), status: :ok
     else
       render json: { error: @terminal.errors.full_messages.to_sentence }, status: :unprocessable_entity
     end

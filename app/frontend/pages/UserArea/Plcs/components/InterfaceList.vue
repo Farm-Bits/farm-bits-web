@@ -29,7 +29,8 @@
           :interface="iface"
           :segments="segments"
           :measurementSubtypes="measurementSubtypes"
-          @edit="openEditModal" />
+          @edit="openEditModal"
+          @update="handleMeasurementPointSubmit" />
       </CTableBody>
     </CTable>
 
@@ -60,12 +61,12 @@
   import InterfaceRow from './InterfaceRow.vue';
   import MeasurementPointForm from './MeasurementPointForm.vue';
   import type { Segment } from '@/types/location';
-  import type { MeasurementSubtype } from '@/types/measurementPoint';
+  import type { MeasurementPoint, MeasurementSubtype } from '@/types/measurementPoint';
   import type {
     CommunicationType,
     InterfaceWithMeasurementPoints
   } from '@/types/plc';
-  import { COMMUNICATION_TYPE_TABS, type MeasurementPointFormData } from '../types';
+  import { COMMUNICATION_TYPE_TABS } from '../types';
 
   const props = defineProps<{
     interfaces: InterfaceWithMeasurementPoints[];
@@ -75,7 +76,11 @@
   }>();
 
   const emit = defineEmits<{
-    (e: 'update-interface', iface: InterfaceWithMeasurementPoints): void;
+    (
+      e: 'update-interface',
+      updatedMeasurementPoint: MeasurementPoint,
+      siblingMeasurementPoints: MeasurementPoint[]
+    ): void;
   }>();
 
   const showEditModal = ref(false);
@@ -102,8 +107,11 @@
     selectedInterface.value = null;
   }
 
-  function handleMeasurementPointSubmit(iface: InterfaceWithMeasurementPoints) {
-    emit('update-interface', iface);
+  function handleMeasurementPointSubmit(
+    updatedMeasurementPoint: MeasurementPoint,
+    siblingMeasurementPoints: MeasurementPoint[]
+  ) {
+    emit('update-interface', updatedMeasurementPoint, siblingMeasurementPoints);
     closeEditModal();
   }
 </script>

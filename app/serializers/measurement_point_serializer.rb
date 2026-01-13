@@ -14,8 +14,6 @@ class MeasurementPointSerializer < Blueprinter::Base
     :alarm_high,
     :warning_low,
     :warning_high,
-    :last_decoded_value,
-    :last_decoded_value_at,
     :position,
     :active,
     :measurement_subtype_id,
@@ -34,7 +32,11 @@ class MeasurementPointSerializer < Blueprinter::Base
     mp.effective_color
   end
 
-  field :scaled_last_decoded_value do |mp|
+  field :last_value do |mp|
     mp.scaled_last_decoded_value
+  end
+
+  field :last_value_at do |mp|
+    mp.last_decoded_value_at
   end
 end

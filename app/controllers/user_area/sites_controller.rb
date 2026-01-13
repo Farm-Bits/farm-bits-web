@@ -14,7 +14,7 @@ class UserArea::SitesController < UserArea::ApplicationController
     site.client = current_client
 
     if site.save
-      render json: SiteSerializer.render(site), status: :created
+      render json: SiteSerializer.render_as_json(site), status: :created
     else
       render json: { error: site.errors.full_messages.to_sentence }, status: :unprocessable_entity
     end
@@ -24,7 +24,7 @@ class UserArea::SitesController < UserArea::ApplicationController
     authorize @site, :update?
 
     if @site.update(site_params)
-      render json: SiteSerializer.render(@site), status: :ok
+      render json: SiteSerializer.render_as_json(@site), status: :ok
     else
       render json: { error: @site.errors.full_messages.to_sentence }, status: :unprocessable_entity
     end

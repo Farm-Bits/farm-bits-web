@@ -6,14 +6,14 @@ class UserArea::UsersController < UserArea::ApplicationController
     authorize User, :index?
 
     users = policy_scope(User)
-    render json: UserSerializer.render(users, view: :client_user, current_client: current_client), status: :ok
+    render json: UserSerializer.render_as_json(users, view: :client_user, current_client: current_client), status: :ok
   end
 
   def update
     authorize @user, :update?
 
     if @client_user.update(client_user_params)
-      render json: UserSerializer.render(@user, view: :client_user, current_client: current_client), status: :ok
+      render json: UserSerializer.render_as_json(@user, view: :client_user, current_client: current_client), status: :ok
     else
       render json: { error: @client_user.errors.full_messages.to_sentence }, status: :unprocessable_entity
     end

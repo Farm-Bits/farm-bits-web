@@ -6,11 +6,15 @@ export type CommunicationType = typeof COMMUNICATION_TYPES[number];
 const INTERFACE_CATEGORIES = ['status', 'analog', 'counter', 'interface_configuration', 'measurement_point_configuration', 'operation_mode_configuration'] as const;
 type InterfaceCategory = typeof INTERFACE_CATEGORIES[number];
 
+const VALUE_FORMATS = ['numeric', 'boolean', 'enum', 'ascii_string'] as const;
+export type ValueFormat = typeof VALUE_FORMATS[number];
+
 export type RegisterTemplate = {
   id: number;
   name: string;
   label: string;
   description: string | null;
+  value_format: ValueFormat;
   factor: number;
   offset: number;
   category: InterfaceCategory | 'configuration' | 'diagnostic';
