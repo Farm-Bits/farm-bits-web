@@ -48,15 +48,13 @@ Rails.application.routes.draw do
       get 'client_setup', to: 'client_setup#new'
       post 'client_setup', to: 'client_setup#create'
 
-      resources :users, only: [:index]
-      put 'users', to: 'users#update'
-      delete 'users', to: 'users#destroy'
+      resources :client_users, only: [:index, :update, :destroy]
 
       resources :invitations, only: [:index, :create, :destroy]
       put 'invitations/:id/resend', to: 'invitations#resend'
 
       resources :segments, only: [:index, :create, :update, :destroy]
-      resources :sites, only: [:index, :create, :update, :destroy]
+      resources :sites, only: [:index, :show, :create, :update, :destroy]
       resources :terminals, only: [:index, :update, :destroy]
       resources :plcs, only: [:show, :update]
       resources :measurement_points, only: [:update] do

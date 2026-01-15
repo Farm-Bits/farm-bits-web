@@ -1,5 +1,5 @@
 // Auto-generated file - Do not edit manually
-// Generated at: 2026-01-11 20:40:58 UTC
+// Generated at: 2026-01-15 15:28:43 UTC
 
 import type { Method } from '@inertiajs/core';
 
@@ -22,7 +22,7 @@ export const ROLES = {
 } as const;
 
 // Valid controller keys
-export type ControllerKey = 'dashboard' | 'my_account' | 'client_setup' | 'users' | 'invitations' | 'segments' | 'sites' | 'terminals' | 'plcs' | 'measurement_points';
+export type ControllerKey = 'dashboard' | 'my_account' | 'client_setup' | 'client_users' | 'invitations' | 'segments' | 'sites' | 'terminals' | 'plcs' | 'measurement_points';
 
 // Route permissions mapping
 export type RoutePermissions = {
@@ -41,7 +41,7 @@ export type RoutePermissions = {
     update: boolean;
     destroy: boolean;
   };
-  users: {
+  client_users: {
     index: boolean;
     update: boolean;
     destroy: boolean;
@@ -61,6 +61,7 @@ export type RoutePermissions = {
   sites: {
     index: boolean;
     create: boolean;
+    show: boolean;
     update: boolean;
     destroy: boolean;
   };
@@ -148,22 +149,22 @@ export const ROUTES: Record<string, RouteInfo> = {
     path: '/user/client_setup',
     verb: 'delete'
   },
-  users_index: {
-    controller: 'users',
+  client_users_index: {
+    controller: 'client_users',
     action: 'index',
-    path: '/user/users',
+    path: '/user/client_users',
     verb: 'get'
   },
-  users_update: {
-    controller: 'users',
+  client_users_update: {
+    controller: 'client_users',
     action: 'update',
-    path: '/user/users',
-    verb: 'put'
+    path: '/user/client_users/:id',
+    verb: 'patch'
   },
-  users_destroy: {
-    controller: 'users',
+  client_users_destroy: {
+    controller: 'client_users',
     action: 'destroy',
-    path: '/user/users',
+    path: '/user/client_users/:id',
     verb: 'delete'
   },
   invitations_index: {
@@ -225,6 +226,12 @@ export const ROUTES: Record<string, RouteInfo> = {
     action: 'create',
     path: '/user/sites',
     verb: 'post'
+  },
+  sites_show: {
+    controller: 'sites',
+    action: 'show',
+    path: '/user/sites/:id',
+    verb: 'get'
   },
   sites_update: {
     controller: 'sites',

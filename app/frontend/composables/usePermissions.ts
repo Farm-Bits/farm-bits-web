@@ -19,7 +19,7 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: true,
       destroy: true
     },
-    users: {
+    client_users: {
       index: true,
       update: true,
       destroy: true
@@ -38,6 +38,7 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
     },
     sites: {
       index: true,
+      show: true,
       create: true,
       update: true,
       destroy: true
@@ -72,7 +73,7 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: false,
       destroy: false
     },
-    users: {
+    client_users: {
       index: true,
       update: false,
       destroy: false
@@ -91,6 +92,7 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
     },
     sites: {
       index: false,
+      show: false,
       create: false,
       update: false,
       destroy: false
@@ -125,7 +127,7 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: false,
       destroy: false
     },
-    users: {
+    client_users: {
       index: true,
       update: false,
       destroy: false
@@ -144,6 +146,7 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
     },
     sites: {
       index: false,
+      show: false,
       create: false,
       update: false,
       destroy: false

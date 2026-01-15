@@ -181,7 +181,7 @@
 <script lang="ts" setup>
   import { computed, nextTick, onMounted, ref } from 'vue';
   import { Loader } from '@googlemaps/js-api-loader';
-  import { type Validation, type ValidationArgs } from '@vuelidate/core'
+  import { type NestedValidations } from '@vuelidate/core'
   import useToastStore from '@/stores/toast';
 
   type Location = {
@@ -193,7 +193,7 @@
   };
   const props = defineProps<{
     modelValue: Location;
-    errors: Validation<ValidationArgs<Location>, Location>;
+    errors: NestedValidations<Location>
   }>();
 
   const API_KEY = '***REMOVED***';
@@ -355,7 +355,8 @@
 
     try {
       loadingCountries.value = true;
-      const { AutocompleteSuggestion } = await google.maps.importLibrary('places');
+      const placesLib = (await google.maps.importLibrary('places')) as google.maps.PlacesLibrary;
+      const { AutocompleteSuggestion } = placesLib;
       const request = {
         input: searchCountry,
         includedPrimaryTypes: ['country'],
@@ -363,12 +364,15 @@
       };
 
       const suggestions = await AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
-      countries.value = suggestions.suggestions.map((suggestion) => {
-        return {
-          value: suggestion.placePrediction.text.text,
-          label: suggestion.placePrediction.text.text
-        };
-      });
+      countries.value = [];
+      for (const suggestion of suggestions.suggestions) {
+        const countryName = suggestion.placePrediction?.text.text;
+        if (countryName)
+          countries.value.push({
+            value: countryName,
+            label: countryName
+          });
+      }
     } catch (err) {
       console.error('Error fetching countries:', err);
     } finally {
@@ -410,7 +414,8 @@
       loadingCities.value = true;
       const countryCode = await getCountryCode(countryModel.value);
       if (countryCode) {
-        const { AutocompleteSuggestion } = await google.maps.importLibrary('places');
+      const placesLib = (await google.maps.importLibrary('places')) as google.maps.PlacesLibrary;
+      const { AutocompleteSuggestion } = placesLib;
         const request = {
           input: searchCity,
           includedPrimaryTypes: ['locality'],
@@ -419,13 +424,16 @@
         };
 
         const suggestions = await AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
-        cities.value = suggestions.suggestions.map((suggestion) => {
-          const cityName = suggestion.placePrediction.mainText?.text;
-          return {
-            value: cityName,
-            label: cityName
-          };
-        });
+        cities.value = [];
+        for (const suggestion of suggestions.suggestions) {
+          const cityName = suggestion.placePrediction?.mainText?.text;
+          if (cityName) {
+            cities.value.push({
+              value: cityName,
+              label: cityName
+            });
+          }
+        }
       }
     } catch (err) {
       console.error('Error fetching cities:', err);
@@ -549,8 +557,8 @@
         await searchCities(cityModel.value);
     }
 
-    if (isValidCoordinate(latitudeModel.value) && isValidCoordinate(longitudeModel.value))
-      displayMap.value = true;
+    // if (isValidCoordinate(latitudeModel.value) && isValidCoordinate(longitudeModel.value))
+    //   displayMap.value = true;
   });
 </script>
 

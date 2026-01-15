@@ -7,13 +7,13 @@
       <CModalTitle>Change User Role</CModalTitle>
     </CModalHeader>
     <CModalBody>
-      <div v-if="user" class="mb-4">
+      <div v-if="clientUser" class="mb-4">
         <div class="d-flex align-items-center">
           <div>
             <p class="mb-1">
-              Change role for <strong>{{ user.name }}</strong>
+              Change role for <strong>{{ clientUser.user.name }}</strong>
             </p>
-            <small class="text-muted">{{ user.email }}</small>
+            <small class="text-muted">{{ clientUser.user.email }}</small>
           </div>
         </div>
       </div>
@@ -61,13 +61,14 @@
   import { type ApiError } from '@/composables/useApi';
 
   export type ChangeRoleData = {
+    clientUserId: ClientUser['id'];
     userId: ClientUser['id'];
     role: Role;
   };
 
   const props = defineProps<{
     visible: boolean;
-    user: ClientUser | null;
+    clientUser: ClientUser | null;
   }>();
   const emit = defineEmits<{
     (e: 'close'): void;
@@ -84,11 +85,11 @@
 
   const hasRoleChanged = computed(() => {
     return selectedRole.value !== null &&
-          selectedRole.value !== props.user?.role;
+          selectedRole.value !== props.clientUser?.role;
   });
 
   function resetForm() {
-    selectedRole.value = props.user?.role || null;
+    selectedRole.value = props.clientUser?.role || null;
     submissionError.value = '';
     isLoading.value = false;
   }
@@ -99,13 +100,14 @@
   }
 
   async function handleSubmit() {
-    if (!props.user || !selectedRole.value || !hasRoleChanged.value)
+    if (!props.clientUser || !selectedRole.value || !hasRoleChanged.value)
       return;
 
     isLoading.value = true;
 
     emit('update', {
-      userId: props.user.id,
+      clientUserId: props.clientUser.id,
+      userId: props.clientUser.user_id,
       role: selectedRole.value
     }, (success, error) => {
       if (!success && error)
@@ -114,14 +116,14 @@
     });
   }
 
-  watch(() => props.user, (newUser) => {
-    if (newUser)
-      selectedRole.value = newUser.role;
+  watch(() => props.clientUser, (newClientUser) => {
+    if (newClientUser)
+      selectedRole.value = newClientUser.role;
   });
 
   watch(() => props.visible, (newValue) => {
-    if (newValue && props.user)
-      selectedRole.value = props.user.role;
+    if (newValue && props.clientUser)
+      selectedRole.value = props.clientUser.role;
     else if (!newValue)
       resetForm();
   });

@@ -24,15 +24,15 @@
         </CTableHead>
         <CTableBody>
           <!-- Users -->
-          <CTableRow v-for="user in users" :key="user.id">
+          <CTableRow v-for="clientUser in clientUsers" :key="clientUser.id">
             <CTableDataCell>
               <div class="d-flex align-items-center">
-                {{ user.name }}
+                {{ clientUser.user.name }}
               </div>
             </CTableDataCell>
-            <CTableDataCell>{{ user.email }}</CTableDataCell>
+            <CTableDataCell>{{ clientUser.user.email }}</CTableDataCell>
             <CTableDataCell>
-              {{ ROLES[user.role].name }}
+              {{ ROLES[clientUser.role].name }}
             </CTableDataCell>
             <CTableDataCell>
               <CBadge color="success">Active</CBadge>
@@ -49,17 +49,17 @@
                 <Teleport to="body">
                   <CDropdownMenu>
                     <CDropdownItem
-                      v-if="user.id !== pageProps.user.id"
-                      @click="openChangeRoleModal(user)">
+                      v-if="clientUser.user_id !== pageProps.user.id"
+                      @click="openChangeRoleModal(clientUser)">
                       <CIcon name="cilPeople" class="me-2" />
                       Change Role
                     </CDropdownItem>
-                    <CDropdownDivider v-if="user.id !== pageProps.user.id" />
+                    <CDropdownDivider v-if="clientUser.user_id !== pageProps.user.id" />
                     <CDropdownItem
-                      @click="handleUserRemove(user)"
+                      @click="handleUserRemove(clientUser)"
                       class="text-danger">
                       <CIcon name="cilUserX" class="me-2" />
-                      {{ user.id !== pageProps.user.id ? 'Remove User' : 'Leave Company' }}
+                      {{ clientUser.user_id !== pageProps.user.id ? 'Remove User' : 'Leave Company' }}
                     </CDropdownItem>
                   </CDropdownMenu>
                 </Teleport>
@@ -124,7 +124,7 @@
     <!-- Change Role Modal Component -->
     <ChangeRoleModal
       :visible="showRoleModal"
-      :user="selectedUser"
+      :clientUser="selectedClientUser"
       @close="closeRoleModal"
       @update="handleUpdateUserRole" />
   </div>
@@ -136,41 +136,44 @@
   import ChangeRoleModal, { type ChangeRoleData } from '../modals/ChangeRoleModal.vue';
   import InviteUserModal, { type InvitationData } from '../modals/InviteUserModal.vue';
   import useAuth from '@/composables/useAuth';
+  import usePermissions from '@/composables/usePermissions';
   import { useApiCall, type ApiError } from '@/composables/useApi';
-  import { ROLES } from '@/types/permissions';
+  import { ROLES, ROUTES } from '@/types/permissions';
   import type { ClientUser, Invitation } from '../types/invitation';
   import { type User } from '@/types/inertia';
 
-  const { pageProps, paths } = useAuth<{
+  const { pageProps } = useAuth<{
     user: User;
   }>();
 
+  const { permissions } = usePermissions();
   const { execute } = useApiCall();
 
-  const users = ref<ClientUser[]>([]);
+  const clientUsers = ref<ClientUser[]>([]);
   const invitations = ref<Invitation[]>([]);
   const showInviteModal = ref(false);
   const showRoleModal = ref(false);
-  const selectedUser = ref<ClientUser | null>(null);
+  const selectedClientUser = ref<ClientUser | null>(null);
 
   function openChangeRoleModal(user: ClientUser) {
-    selectedUser.value = user;
+    selectedClientUser.value = user;
     showRoleModal.value = true;
   }
 
   function closeRoleModal() {
     showRoleModal.value = false;
-    selectedUser.value = null;
+    selectedClientUser.value = null;
   }
 
-  async function handleUserRemove(user: ClientUser) {
-    if (!confirm(`Are you sure you want to remove ${user.name} from the company?`))
+  async function handleUserRemove(clientUserToRemove: ClientUser) {
+    if (!confirm(`Are you sure you want to remove ${clientUserToRemove.user.name} from the company?`))
       return;
 
+    const url = ROUTES.client_users_destroy.path.replace(':id', String(clientUserToRemove.id));
     const { success } = await execute(
       () => axios.delete(
-        paths.value.api.users,
-        { data: { client_user: { user_id: user.id } } }
+        url,
+        { data: { client_user: { user_id: clientUserToRemove.user_id } } }
       ),
       {
         showSuccessToast: true,
@@ -181,15 +184,16 @@
     );
 
     if (success) {
-      const index = users.value.findIndex((u) => u.id === user.id);
+      const index = clientUsers.value.findIndex((u) => u.id === clientUserToRemove.user_id);
       if (index > -1)
-        users.value.splice(index, 1);
+        clientUsers.value.splice(index, 1);
     }
   }
 
   async function handleResendInvitation(invitation: Invitation) {
+    const url = ROUTES.invitations_resend.path.replace(':id', String(invitation.id));
     await execute(
-      () => axios.put(`${paths.value.api.invitations}/${invitation.id}/resend`),
+      () => axios.put(url),
       {
         showSuccessToast: true,
         successMessage: 'Invitation resent successfully',
@@ -203,8 +207,9 @@
     if (!confirm(`Are you sure you want to cancel the invitation for ${invitation.email}?`))
       return;
 
+    const url = ROUTES.invitations_destroy.path.replace(':id', String(invitation.id));
     const { success } = await execute(
-      () => axios.delete(`${paths.value.api.invitations}/${invitation.id}`),
+      () => axios.delete(url),
       {
         showSuccessToast: true,
         successMessage: 'Invitation removed successfully',
@@ -224,9 +229,10 @@
     changeRoleData: ChangeRoleData,
     callback?: (success: boolean, error?: ApiError) => void
   ) {
+    const url = ROUTES.client_users_update.path.replace(':id', String(changeRoleData.clientUserId));
     const { success, data, error } = await execute<ClientUser>(
       () => axios.put(
-        paths.value.api.users,
+        url,
         { client_user: { user_id: changeRoleData.userId, role: changeRoleData.role } }
       ),
       {
@@ -236,9 +242,9 @@
     );
 
     if (success) {
-      const user = users.value.find((u) => u.id === changeRoleData.userId);
-      if (user)
-        user.role = data.role;
+      const clientUserUpdated = clientUsers.value.find((u) => u.id === changeRoleData.userId);
+      if (clientUserUpdated)
+        clientUserUpdated.role = data.role;
 
       closeRoleModal();
     }
@@ -251,7 +257,7 @@
     callback?: (success: boolean, error?: ApiError) => void
   ) {
     const { success, data, error } = await execute<Invitation>(
-      () => axios.post(paths.value.api.invitations, { invitation: inviteData }),
+      () => axios.post(ROUTES.invitations_create.path, { invitation: inviteData }),
       { showSuccessToast: true, successMessage: 'Invitation sent successfully' }
     );
 
@@ -265,17 +271,17 @@
 
   async function fetchUsers() {
     const { success, data } = await execute<ClientUser[]>(
-      () => axios.get(paths.value.api.users),
+      () => axios.get(ROUTES.client_users_index.path),
       { errorTitle: 'Load Users Error', showErrorToast: true }
     );
 
     if (success)
-      users.value = data;
+      clientUsers.value = data;
   }
 
   async function fetchInvitations() {
     const { success, data } = await execute<Invitation[]>(
-      () => axios.get(paths.value.api.invitations),
+      () => axios.get(ROUTES.invitations_index.path),
       { errorTitle: 'Load Invitations Error', showErrorToast: true }
     );
 

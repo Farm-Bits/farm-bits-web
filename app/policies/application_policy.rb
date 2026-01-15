@@ -64,11 +64,17 @@ class ApplicationPolicy
     attr_reader :current_user, :current_client, :current_client_user, :current_site, :scope
 
     def initialize(context, scope)
+      @context = context
+      @scope = scope
+
       @current_user = context[:current_user]
       @current_client = context[:current_client]
       @current_client_user = context[:current_client_user]
       @current_site = context[:current_site]
-      @scope = scope
+    end
+
+    def policy_scope!(scope)
+      Pundit.policy_scope!(@context, scope)
     end
 
     def resolve

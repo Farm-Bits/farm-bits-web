@@ -126,7 +126,8 @@ import {
   cilUserPlus,
   cilUserX,
   cilWarning,
-  cilX
+  cilX,
+  cilZoom
 } from '@coreui/icons';
 import '@coreui/coreui/dist/css/coreui.min.css';
 import ErrorMessages from './components/ErrorMessages.vue';
@@ -193,7 +194,8 @@ export default function () {
         cilUserPlus,
         cilUserX,
         cilWarning,
-        cilX
+        cilX,
+        cilZoom
       });
       app.component('CAccordion', CAccordion);
       app.component('CAccordionBody', CAccordionBody);

@@ -1,26 +1,25 @@
-class UserArea::UsersController < UserArea::ApplicationController
-  before_action :set_user, only: [:update, :destroy]
+class UserArea::ClientUsersController < UserArea::ApplicationController
   before_action :set_client_user, only: [:update, :destroy]
 
   def index
-    authorize User, :index?
+    authorize ClientUser, :index?
 
-    users = policy_scope(User)
-    render json: UserSerializer.render_as_json(users, view: :client_user, current_client: current_client), status: :ok
+    client_users = policy_scope(ClientUser)
+    render json: ClientUserSerializer.render_as_json(client_users), status: :ok
   end
 
   def update
-    authorize @user, :update?
+    authorize @client_user, :update?
 
     if @client_user.update(client_user_params)
-      render json: UserSerializer.render_as_json(@user, view: :client_user, current_client: current_client), status: :ok
+      render json: ClientUserSerializer.render_as_json(@client_user), status: :ok
     else
       render json: { error: @client_user.errors.full_messages.to_sentence }, status: :unprocessable_entity
     end
   end
 
   def destroy
-    authorize @user, :destroy?
+    authorize @client_user, :destroy?
 
     if @client_user.update(active: false)
       head :no_content
@@ -38,11 +37,7 @@ class UserArea::UsersController < UserArea::ApplicationController
       permitted
     end
 
-    def set_user
-      @user = policy_scope(User).find(params[:id])
-    end
-
     def set_client_user
-      @client_user = current_client.client_users.find_by(user: @user)
+      @client_user = current_client.client_users.find(params[:id])
     end
 end

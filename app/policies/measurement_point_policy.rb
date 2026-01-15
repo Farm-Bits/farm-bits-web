@@ -24,7 +24,7 @@ class MeasurementPointPolicy < ApplicationPolicy
       if current_client_user.admin?
         scope.all
       else
-        site_ids = policy_scope(Site).pluck(:id)
+        site_ids = policy_scope!(Site).pluck(:id)
         plc_ids = Plc.where(site_id: site_ids).pluck(:id)
         scope.where(plc_id: plc_ids)
       end

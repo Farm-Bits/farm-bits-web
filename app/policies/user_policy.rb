@@ -1,8 +1,4 @@
 class UserPolicy < ApplicationPolicy
-  def index?
-    super
-  end
-
   def show?
     super && record.id == current_user.id
   end

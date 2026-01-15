@@ -1,9 +1,12 @@
 import { type User } from '@/types/inertia';
 import type { Role } from '@/types/permissions';
 
-export type ClientUser = User & {
+export type ClientUser = {
+  id: number;
+  client_id: number;
+  user_id: number;
   role: Role;
-  status: string;
+  user: User;
 };
 
 type InvitationStatus = 'pending' | 'expired';
