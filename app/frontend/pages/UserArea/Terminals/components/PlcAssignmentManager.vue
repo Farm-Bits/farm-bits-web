@@ -51,15 +51,14 @@
             <div class="d-flex flex-column gap-2">
               <CTooltip content="Remove PLC">
                 <template #toggler="{ id, on }">
-                  <span v-on="on" class="d-inline-block">
-                    <CButton
-                      color="danger"
-                      variant="ghost"
-                      size="sm"
-                      @click="removePlc(plc)">
-                      <CIcon icon="cilTrash" />
-                    </CButton>
-                  </span>
+                  <CButton
+                    v-on="on"
+                    color="danger"
+                    variant="ghost"
+                    size="sm"
+                    @click="removePlc(plc)">
+                    <CIcon icon="cilTrash" />
+                  </CButton>
                 </template>
               </CTooltip>
             </div>

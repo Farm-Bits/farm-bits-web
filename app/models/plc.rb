@@ -41,6 +41,8 @@ class Plc < ApplicationRecord
   validate :plc_version_belongs_to_model
   validate :client_matches_site_client
 
+  attr_accessor :disable_sync_plc_ingestion_service
+
   after_create :create_measurement_points_from_templates
   after_update :sync_measurement_points_client
   after_commit :sync_plc_ingestion_service, on: :create
@@ -117,10 +119,18 @@ class Plc < ApplicationRecord
     end
 
     def sync_plc_ingestion_service
+      if disable_sync_plc_ingestion_service
+        return
+      end
+
       PlcIngestionCreateJob.perform_later(id)
     end
 
     def update_plc_ingestion_service
+      if disable_sync_plc_ingestion_service
+        return
+      end
+
       if saved_change_to_username? ||
         saved_change_to_password? ||
         saved_change_to_active?
@@ -133,6 +143,10 @@ class Plc < ApplicationRecord
     end
 
     def remove_plc_ingestion_service
+      if disable_sync_plc_ingestion_service
+        return
+      end
+
       PlcIngestionDestroyJob.perform_later(username)
     end
 end

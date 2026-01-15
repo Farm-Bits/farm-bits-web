@@ -24,18 +24,18 @@ class SitePolicy < ApplicationPolicy
 
   private
     def user_assigned_to_site?
-      current_user.site_users.exists?(site: record, active: true)
+      current_user.site_users.exists?(site: record)
     end
 
   class Scope < ApplicationPolicy::Scope
     def resolve
-      sites = scope.where(client: current_client, active: true)
+      sites = scope.where(client: current_client)
       case current_client_user.role
       when 'admin'
         sites
       when 'manager', 'viewer'
         sites.joins(:site_users)
-          .where(site_users: { user: current_user, active: true })
+          .where(site_users: { user: current_user })
           .distinct
       else
         scope.none

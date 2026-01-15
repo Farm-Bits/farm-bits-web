@@ -37,13 +37,18 @@
                 </CDropdownItem>
               </template>
               <template v-else>
-                <CDropdownDivider />
-                <CDropdownItem
-                  v-if="permissions.sites.index"
-                  class="d-flex align-items-center text-primary"
-                  @click="router.visit(ROUTES.sites_index.path)">
-                  <CIcon name="cilCompress" class="me-2" />
-                  Add Your First Site
+                <div v-if="permissions.sites.index">
+                  <CDropdownDivider />
+                  <CDropdownItem
+                    v-if="permissions.sites.index"
+                    class="d-flex align-items-center text-primary"
+                    @click="router.visit(ROUTES.sites_index.path)">
+                    <CIcon name="cilCompress" class="me-2" />
+                    Add Your First Site
+                  </CDropdownItem>
+                </div>
+                <CDropdownItem v-else disabled>
+                  No Sites Available
                 </CDropdownItem>
               </template>
             </CDropdownMenu>

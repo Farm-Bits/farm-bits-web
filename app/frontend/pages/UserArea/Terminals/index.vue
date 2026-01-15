@@ -29,8 +29,8 @@
     </div>
 
     <!-- Terminals List -->
-    <div v-else class="row g-4">
-      <div v-for="terminal in terminals" :key="terminal.id" class="col-md-3 min-w-sm">
+    <CRow v-else class="g-4">
+      <CCol v-for="terminal in terminals" :key="terminal.id" class="col-md-3 min-w-sm">
         <CCard class="shadow-sm">
           <CCardHeader class="d-flex justify-content-between bg-white">
             <div class="d-flex align-items-center gap-3">
@@ -49,7 +49,7 @@
             </div>
             <div class="d-flex align-items-start gap-2">
               <CBadge class="mt-1" color="success">Active</CBadge>
-              <CDropdown>
+              <CDropdown class="options-dropdown">
                 <CDropdownToggle color="light" size="sm" :caret="false">
                   <CIcon icon="cilOptions" />
                 </CDropdownToggle>
@@ -60,14 +60,15 @@
                     <CIcon icon="cilPencil" class="me-2" />
                     Edit Gateway
                   </CDropdownItem>
-                  <CDropdownDivider v-if="permissions.terminals.destroy" />
-                  <CDropdownItem
-                    v-if="permissions.terminals.destroy"
-                    class="text-danger"
-                    @click="confirmRemoveTerminal(terminal)">
-                    <CIcon icon="cilTrash" class="me-2" />
-                    Remove Gateway
-                  </CDropdownItem>
+                  <div v-if="permissions.terminals.destroy">
+                    <CDropdownDivider />
+                    <CDropdownItem
+                      class="text-danger"
+                      @click="confirmRemoveTerminal(terminal)">
+                      <CIcon icon="cilTrash" class="me-2" />
+                      Remove Gateway
+                    </CDropdownItem>
+                  </div>
                 </CDropdownMenu>
               </CDropdown>
             </div>
@@ -117,8 +118,8 @@
             </div>
           </CCardBody>
         </CCard>
-      </div>
-    </div>
+      </CCol>
+    </CRow>
 
     <!-- Activation Modal -->
     <CModal

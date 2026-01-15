@@ -8,7 +8,6 @@ class ClientUser < ApplicationRecord
   validates :client_id, uniqueness: { scope: :user_id }
   validates :user_id, uniqueness: { scope: :client_id }
   validates :role, presence: true
-  validate :cannot_deactivate_last_admin, if: :active_changed_to_false?
 
   before_destroy :prevent_destroy_last_admin
 
@@ -19,28 +18,14 @@ class ClientUser < ApplicationRecord
       return false
     end
 
-    if !active && !active_was
-      return false
-    end
-
-    other_active_admins = client.client_users
+    other_admins = client.client_users
       .where.not(id: id)
-      .where(role: Roleable::ROLE_IDS[:admin], active: true)
+      .where(role: Roleable::ROLE_IDS[:admin])
 
-    other_active_admins.empty?
+    other_admins.empty?
   end
 
   private
-    def active_changed_to_false?
-      active_changed? && !active
-    end
-
-    def cannot_deactivate_last_admin
-      if last_admin_for_client?
-        errors.add(:base, 'Cannot deactivate the last admin user')
-      end
-    end
-
     def prevent_destroy_last_admin
       if last_admin_for_client? && !destroyed_by_association
         errors.add(:base, 'Cannot delete the last admin user')

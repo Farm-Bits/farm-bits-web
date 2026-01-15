@@ -2,10 +2,8 @@
   <div class="status-indicator">
     <CTooltip :content="statusTooltip">
       <template #toggler="{ id, on }">
-        <span v-on="on" class="d-inline-block">
-          <div :class="['status-dot', statusClass]">
-          </div>
-        </span>
+        <div v-on="on" :class="['d-inline-block', 'status-dot', statusClass]">
+        </div>
       </template>
     </CTooltip>
   </div>

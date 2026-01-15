@@ -48,13 +48,14 @@
                 </CDropdownToggle>
                 <Teleport to="body">
                   <CDropdownMenu>
-                    <CDropdownItem
-                      v-if="clientUser.user_id !== pageProps.user.id"
-                      @click="openChangeRoleModal(clientUser)">
-                      <CIcon name="cilPeople" class="me-2" />
-                      Change Role
-                    </CDropdownItem>
-                    <CDropdownDivider v-if="clientUser.user_id !== pageProps.user.id" />
+                    <div v-if="clientUser.user_id !== pageProps.user.id">
+                      <CDropdownItem
+                        @click="openChangeRoleModal(clientUser)">
+                        <CIcon name="cilPeople" class="me-2" />
+                        Change Role
+                      </CDropdownItem>
+                      <CDropdownDivider />
+                    </div>
                     <CDropdownItem
                       @click="handleUserRemove(clientUser)"
                       class="text-danger">

@@ -38,12 +38,12 @@ class User < ApplicationRecord
   end
 
   def member_of?(client)
-    client.client_users.any? { |cu| cu.user == self && cu.active && !cu.marked_for_destruction? }
+    client.client_users.any? { |cu| cu.user == self && !cu.marked_for_destruction? }
   end
 
   def active_clients_connections
     clients.joins(:client_users)
-      .where(client_users: { user: self, active: true })
+      .where(client_users: { user: self })
       .where(active: true)
   end
 
@@ -67,13 +67,13 @@ class User < ApplicationRecord
   end
 
   def last_admin_for_any_client?
-    client_users.where(role: Roleable::ROLE_IDS[:admin], active: true).any? do |admin_client_user|
+    client_users.where(role: Roleable::ROLE_IDS[:admin]).any? do |admin_client_user|
       client = admin_client_user.client
-      other_active_admins = client.client_users
+      other_admins = client.client_users
         .where.not(user_id: id)
-        .where(role: Roleable::ROLE_IDS[:admin], active: true)
+        .where(role: Roleable::ROLE_IDS[:admin])
 
-      other_active_admins.empty?
+      other_admins.empty?
     end
   end
 

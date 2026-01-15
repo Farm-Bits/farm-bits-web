@@ -339,7 +339,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_221548) do
 
   create_table "segments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
-    t.boolean "active", default: true, null: false
     t.bigint "site_id", null: false
     t.bigint "client_id", null: false
     t.datetime "created_at", null: false
@@ -368,7 +367,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_221548) do
     t.bigint "site_id", null: false
     t.bigint "user_id", null: false
     t.string "role", default: "viewer"
-    t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["site_id", "user_id"], name: "index_site_users_on_site_id_and_user_id", unique: true
@@ -384,7 +382,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_221548) do
     t.float "longitude"
     t.float "altitude"
     t.string "time_zone", default: "UTC", null: false
-    t.boolean "active", default: true, null: false
     t.bigint "client_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

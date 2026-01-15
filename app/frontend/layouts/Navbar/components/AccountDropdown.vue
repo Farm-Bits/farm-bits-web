@@ -91,26 +91,26 @@
             </CDropdownItem>
           </div>
 
-          <CDropdownDivider v-if="otherClients.length > 0" />
-
-          <div v-if="otherClients.length > 0" class="other-clients">
-            <small class="text-muted px-3">Other Companies</small>
-            <CDropdownItem
-              v-for="otherClient in otherClients"
-              :key="otherClient.id"
-              class="d-flex align-items-center"
-              @click="visit(pathname, { data: { client_id: otherClient.id } })">
-              <div
-                class="client-avatar me-2"
-                :style="{ backgroundColor: otherClient.color }">
-                {{ getInitials(otherClient.name) }}
-              </div>
-              {{ otherClient.name }}
-            </CDropdownItem>
+          <div v-if="otherClients.length > 0">
+            <CDropdownDivider />
+            <div class="other-clients">
+              <small class="text-muted px-3">Other Companies</small>
+              <CDropdownItem
+                v-for="otherClient in otherClients"
+                :key="otherClient.id"
+                class="d-flex align-items-center"
+                @click="visit(pathname, { data: { client_id: otherClient.id } })">
+                <div
+                  class="client-avatar me-2"
+                  :style="{ backgroundColor: otherClient.color }">
+                  {{ getInitials(otherClient.name) }}
+                </div>
+                {{ otherClient.name }}
+              </CDropdownItem>
+            </div>
           </div>
 
           <CDropdownDivider />
-
           <CDropdownItem class="d-flex align-items-center" @click="visit(paths.pages.newClient)">
             <CIcon icon="cilPlus" class="me-2" />
             Create New Company

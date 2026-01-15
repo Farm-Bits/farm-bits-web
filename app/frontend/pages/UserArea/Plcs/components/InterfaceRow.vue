@@ -54,20 +54,19 @@
     </CTableDataCell>
     <CTableDataCell class="text-center">
       <div class="d-flex justify-content-center gap-1">
-        <CTooltip content="Configure Device">
+        <CTooltip v-if="permissions.measurement_points.update" content="Configure Device">
           <template #toggler="{ id, on }">
-            <span v-on="on" class="d-inline-block">
-              <CButton
-                color="primary"
-                variant="ghost"
-                size="sm"
-                @click="$emit('edit', interface, measurementRegisterMappings)">
-                <CIcon icon="cilPencil" />
-              </CButton>
-            </span>
+            <CButton
+              v-on="on"
+              color="primary"
+              variant="ghost"
+              size="sm"
+              @click="$emit('edit', interface, measurementRegisterMappings)">
+              <CIcon icon="cilPencil" />
+            </CButton>
           </template>
         </CTooltip>
-        <CDropdown variant="btn-group">
+        <CDropdown class="options-dropdown" variant="btn-group">
           <CDropdownToggle
             color="light"
             size="sm"
@@ -79,31 +78,33 @@
               <CIcon icon="cilHistory" class="me-2" />
               View History
             </CDropdownItem>
-            <CDropdownDivider />
-            <CDropdownItem
-              v-if="isEnabled(activeRegisterMapping.measurement_point)"
-              class="text-danger"
-              @click="toggleActive(activeRegisterMapping.measurement_point)">
-              <CIcon icon="cilBan" class="me-2" />
-              Disable
-            </CDropdownItem>
-            <CDropdownItem
-              v-else-if="canEnable(activeRegisterMapping.measurement_point)"
-              class="text-danger"
-              @click="toggleActive(activeRegisterMapping.measurement_point)">
-              <CIcon icon="cilCheckCircle" class="me-2" />
-              Enable
-            </CDropdownItem>
-            <CTooltip v-else content="Configure Device First">
-              <template #toggler="{ id, on }">
-                <span v-on="on" class="d-inline-block">
-                  <CDropdownItem disabled>
-                    <CIcon icon="cilCheckCircle" class="me-2" />
-                    Enable
-                  </CDropdownItem>
-                </span>
-              </template>
-            </CTooltip>
+            <div v-if="permissions.measurement_points.update">
+              <CDropdownDivider />
+              <CDropdownItem
+                v-if="isEnabled(activeRegisterMapping.measurement_point)"
+                class="text-danger"
+                @click="toggleActive(activeRegisterMapping.measurement_point)">
+                <CIcon icon="cilBan" class="me-2" />
+                Disable
+              </CDropdownItem>
+              <CDropdownItem
+                v-else-if="canEnable(activeRegisterMapping.measurement_point)"
+                class="text-danger"
+                @click="toggleActive(activeRegisterMapping.measurement_point)">
+                <CIcon icon="cilCheckCircle" class="me-2" />
+                Enable
+              </CDropdownItem>
+              <CTooltip v-else content="Configure Device First">
+                <template #toggler="{ id, on }">
+                  <span v-on="on" class="d-inline-block">
+                    <CDropdownItem disabled>
+                      <CIcon icon="cilCheckCircle" class="me-2" />
+                      Enable
+                    </CDropdownItem>
+                  </span>
+                </template>
+              </CTooltip>
+            </div>
           </CDropdownMenu>
         </CDropdown>
       </div>
@@ -117,6 +118,7 @@
   import StatusIndicator from './StatusIndicator.vue';
   import ValueDisplay from '@/components/ValueDisplay.vue';
   import RelativeTime from '@/components/RelativeTime.vue';
+  import usePermissions from '@/composables/usePermissions';
   import { useApiCall } from '@/composables/useApi';
   import { ROUTES } from '@/types/permissions';
   import type { Segment } from '@/types/location';
@@ -138,6 +140,7 @@
     ): void;
   }>();
 
+  const { permissions } = usePermissions();
   const { execute } = useApiCall();
 
   const measurementRegisterMappings = computed(() => {

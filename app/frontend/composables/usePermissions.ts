@@ -53,8 +53,8 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: true
     },
     measurement_points: {
-      write: true,
-      update: true
+      update: true,
+      write: true
     }
   },
   manager: {
@@ -107,8 +107,8 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: true
     },
     measurement_points: {
-      write: true,
-      update: true
+      update: false,
+      write: true
     }
   },
   viewer: {
@@ -161,8 +161,8 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: false
     },
     measurement_points: {
-      write: false,
-      update: false
+      update: false,
+      write: false
     }
   }
 };

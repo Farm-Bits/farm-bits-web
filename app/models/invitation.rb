@@ -133,13 +133,9 @@ class Invitation < ApplicationRecord
 
       client_user = client.client_users.find_or_initialize_by(user: user)
       if client_user.persisted?
-        if client_user.active
-          raise ActiveRecord::RecordInvalid, 'User is already a member of this client'
-        else
-          client_user.update!(role: role, active: true)
-        end
+        raise ActiveRecord::RecordInvalid, 'User is already a member of this client'
       else
-        client_user.assign_attributes(role: role, active: true)
+        client_user.assign_attributes(role: role)
         client_user.save!
       end
     end

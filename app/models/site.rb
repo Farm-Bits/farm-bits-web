@@ -8,11 +8,13 @@ class Site < ApplicationRecord
 
   has_many :users, through: :site_users
 
-  has_many :terminals, dependent: :destroy
+  has_many :terminals
+
+  has_many :plcs
 
   has_many :segments, dependent: :destroy
 
-  has_many :measurement_points, dependent: :destroy
+  has_many :measurement_points
 
   validates :name, presence: true
   validates :country, presence: true
@@ -35,6 +37,8 @@ class Site < ApplicationRecord
 
   before_validation :set_default_name, if: -> { name.blank? && client.present? }
   before_validation :set_default_time_zone
+  before_destroy :prevent_destroy_last_site
+  before_destroy :prevent_destroy_connected_site
 
   def time_zone_object
     ActiveSupport::TimeZone[time_zone]
@@ -103,5 +107,19 @@ class Site < ApplicationRecord
       self.time_zone = inferred if inferred
 
       self.time_zone ||= 'UTC'
+    end
+
+    def prevent_destroy_last_site
+      if client.sites.count <= 1
+        errors.add(:base, 'Cannot delete the last site for a client')
+        throw(:abort)
+      end
+    end
+
+    def prevent_destroy_connected_site
+      if terminals.any? || plcs.any? || measurement_points.any?
+        errors.add(:base, 'Cannot delete site with connected measurement points or terminals')
+        throw(:abort)
+      end
     end
 end

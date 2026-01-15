@@ -426,6 +426,10 @@ h1, h2, h3, h4, h5, h6 {
   min-height: unset;
 }
 
+.options-dropdown.btn-group > .btn {
+  border-radius: var(--cui-border-radius) !important;
+}
+
 .toast {
   --cui-toast-color: #4b5563; /* Gray text */
   --cui-toast-bg: white;

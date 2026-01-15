@@ -1,5 +1,5 @@
 class SiteSerializer < Blueprinter::Base
   identifier :id
 
-  fields :name, :country, :city, :latitude, :longitude, :altitude, :active
+  fields :name, :country, :city, :latitude, :longitude, :altitude
 end

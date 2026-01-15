@@ -15,8 +15,8 @@ class Client < ApplicationRecord
   validates :name, presence: true, uniqueness: { case_sensitive: false }
   validates :subdomain, presence: true, uniqueness: { case_sensitive: false }, format: { with: /\A[a-z0-9\-]+\z/ }
   validates :color, presence: true, format: { with: /\A#[0-9a-fA-F]{6}\z/, message: 'must be a valid hex color (e.g., #FF0000)' }
-  validate :must_have_at_least_one_active_admin
-  validate :must_have_at_least_one_active_site
+  validate :must_have_at_least_one_admin
+  validate :must_have_at_least_one_site
 
   attr_accessor :site_attributes
 
@@ -45,21 +45,21 @@ class Client < ApplicationRecord
   end
 
   private
-    def must_have_at_least_one_active_admin
-      active_admins = client_users.reject(&:marked_for_destruction?).select do |cu|
-        cu.role == Roleable::ROLE_IDS[:admin] && cu.active
+    def must_have_at_least_one_admin
+      admins = client_users.reject(&:marked_for_destruction?).select do |cu|
+        cu.role == Roleable::ROLE_IDS[:admin]
       end
 
-      if active_admins.empty?
-        errors.add(:base, 'must have at least one active admin')
+      if admins.empty?
+        errors.add(:base, 'must have at least one admin')
       end
     end
 
-    def must_have_at_least_one_active_site
-      active_sites = sites.reject(&:marked_for_destruction?).select(&:active)
+    def must_have_at_least_one_site
+      active_sites = sites.reject(&:marked_for_destruction?)
 
       if active_sites.empty?
-        errors.add(:base, 'must have at least one active site')
+        errors.add(:base, 'must have at least one site')
       end
     end
 

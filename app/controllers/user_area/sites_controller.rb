@@ -1,10 +1,23 @@
 class UserArea::SitesController < UserArea::ApplicationController
-  before_action :set_site, only: [:update, :destroy]
+  before_action :set_site, only: [:show, :update, :destroy]
 
   def index
     authorize Site, :index?
 
-    render inertia: 'UserArea/Sites/index'
+    @segments = policy_scope(Segment)
+    @site_users = policy_scope(SiteUser)
+    render inertia: 'UserArea/Sites/Index/index', props: {
+      segments: SegmentSerializer.render_as_json(@segments),
+      siteUsers: SiteUserSerializer.render_as_json(@site_users)
+    }
+  end
+
+  def show
+    authorize @site
+
+    render inertia: 'UserArea/Sites/Show/index', props: {
+      site: SiteSerializer.render_as_json(@site)
+    }
   end
 
   def create
@@ -33,7 +46,7 @@ class UserArea::SitesController < UserArea::ApplicationController
   def destroy
     authorize @site, :destroy?
 
-    if @site.update(active: false)
+    if @site.destroy
       head :no_content
     else
       render json: { error: @site.errors.full_messages.to_sentence }, status: :unprocessable_entity

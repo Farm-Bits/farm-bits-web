@@ -17,7 +17,7 @@ class SegmentPolicy < ApplicationPolicy
 
   class Scope < ApplicationPolicy::Scope
     def resolve
-      segments = scope.where(client: current_client, site: current_site, active: true)
+      segments = scope.where(client: current_client, site: current_site)
       case current_client_user.role
       when 'admin'
         segments
