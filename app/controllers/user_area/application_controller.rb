@@ -43,8 +43,13 @@ class UserArea::ApplicationController < ApplicationController
     end
 
     def set_current_site
-      # Use direct scope without policy_scope to avoid circular dependency
-      sites = Site.where(client_id: current_client&.id)
+      context = {
+        current_user: current_user,
+        current_client: current_client,
+        current_client_user: current_client_user,
+        current_site: nil
+      }
+      sites = SitePolicy::Scope.new(context, Site).resolve
 
       if params[:site_id]
         @current_site = sites.find_by(id: params[:site_id])
