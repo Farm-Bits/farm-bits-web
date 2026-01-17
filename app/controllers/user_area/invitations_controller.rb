@@ -38,8 +38,12 @@ class UserArea::InvitationsController < UserArea::ApplicationController
   def destroy
     authorize @invitation, :destroy?
 
-    @invitation.destroy
-    head :no_content
+    begin
+      @invitation.destroy!
+      head :no_content
+    rescue => e
+      render json: { error: @invitation.errors.full_messages.to_sentence }, status: :unprocessable_entity
+    end
   end
 
   private
@@ -48,6 +52,6 @@ class UserArea::InvitationsController < UserArea::ApplicationController
     end
 
     def set_invitation
-      @invitation = current_client.invitations.find(params[:id])
+      @invitation = policy_scope(Invitation).find_by(id: params[:id])
     end
 end

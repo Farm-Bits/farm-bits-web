@@ -1,6 +1,14 @@
 class SitePolicy < ApplicationPolicy
   def index?
-    super && current_client_user&.admin?
+    super && [
+      Roleable::ROLE_IDS[:admin], Roleable::ROLE_IDS[:site_admin]
+    ].include?(current_client_user&.role)
+  end
+
+  def show?
+    super && [
+      Roleable::ROLE_IDS[:admin], Roleable::ROLE_IDS[:site_admin]
+    ].include?(current_client_user&.role)
   end
 
   def create?
@@ -8,32 +16,26 @@ class SitePolicy < ApplicationPolicy
   end
 
   def update?
-    case current_client_user&.role
-    when 'admin'
-      super
-    when 'manager'
-      super && user_assigned_to_site?
-    else
-      false
-    end
+    super && [
+      Roleable::ROLE_IDS[:admin], Roleable::ROLE_IDS[:site_admin]
+    ].include?(current_client_user&.role)
   end
 
   def destroy?
     super && current_client_user&.admin?
   end
 
-  private
-    def user_assigned_to_site?
-      current_user.site_users.exists?(site: record)
-    end
-
   class Scope < ApplicationPolicy::Scope
     def resolve
+      if !active_context?
+        return scope.none
+      end
+
       sites = scope.where(client: current_client)
-      case current_client_user.role
-      when 'admin'
+      case current_client_user&.role
+      when Roleable::ROLE_IDS[:admin]
         sites
-      when 'manager', 'viewer'
+      when Roleable::ROLE_IDS[:site_admin], Roleable::ROLE_IDS[:manager], Roleable::ROLE_IDS[:viewer]
         sites.joins(:site_users)
           .where(site_users: { user: current_user })
           .distinct

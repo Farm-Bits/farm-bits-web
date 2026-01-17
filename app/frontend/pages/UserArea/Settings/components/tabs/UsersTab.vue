@@ -3,6 +3,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h5 class="mb-0">Company Users</h5>
       <CButton
+        v-if="permissions.invitations.create"
         color="primary"
         @click="showInviteModal = true">
         <CIcon name="cilUserPlus" class="me-2" />
@@ -48,7 +49,7 @@
                 </CDropdownToggle>
                 <Teleport to="body">
                   <CDropdownMenu>
-                    <div v-if="clientUser.user_id !== pageProps.user.id">
+                    <div v-if="clientUser.user_id !== pageProps.user.id && permissions.client_users.update">
                       <CDropdownItem
                         @click="openChangeRoleModal(clientUser)">
                         <CIcon name="cilPeople" class="me-2" />
@@ -57,6 +58,7 @@
                       <CDropdownDivider />
                     </div>
                     <CDropdownItem
+                     v-if="permissions.client_users.destroy || clientUser.user_id === pageProps.user.id"
                       @click="handleUserRemove(clientUser)"
                       class="text-danger">
                       <CIcon name="cilUserX" class="me-2" />
@@ -87,6 +89,7 @@
             </CTableDataCell>
             <CTableDataCell>
               <CDropdown
+                 v-if="permissions.invitations.resend || permissions.invitations.destroy"
                 variant="btn-group"
                 placement="bottom-end">
                 <CDropdownToggle
@@ -96,12 +99,15 @@
                 </CDropdownToggle>
                 <Teleport to="body">
                   <CDropdownMenu>
-                    <CDropdownItem @click="handleResendInvitation(invitation)">
+                    <CDropdownItem
+                      v-if="permissions.invitations.resend"
+                      @click="handleResendInvitation(invitation)">
                       <CIcon name="cilEnvelopeClosed" class="me-2" />
                       Resend Invitation
                     </CDropdownItem>
                     <CDropdownDivider />
                     <CDropdownItem
+                      v-if="permissions.invitations.destroy"
                       @click="handleInvitationRemove(invitation)"
                       class="text-danger">
                       <CIcon name="cilUserX" class="me-2" />

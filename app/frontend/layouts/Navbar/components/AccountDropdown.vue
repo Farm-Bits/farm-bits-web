@@ -1,12 +1,15 @@
 <template>
-  <div v-if="currentClient" class="dropdown">
+  <div class="dropdown">
     <button
       class="btn btn-link nav-link py-2 px-0 px-lg-2 d-flex align-items-center"
       type="button"
       @click="toggleDropdown"
       ref="dropdownToggle">
-      <CAvatar size="md" :style="{ backgroundColor: currentClient.color }">
+      <CAvatar v-if="currentClient" size="md" :style="{ backgroundColor: currentClient.color }">
         {{ getInitials(currentClient.name) }}
+      </CAvatar>
+      <CAvatar v-else size="md">
+        {{ getInitials(pageProps.user.name) }}
       </CAvatar>
     </button>
 
@@ -17,12 +20,12 @@
         <!-- Default Menu Panel -->
         <div class="dropdown-panel">
           <div class="dropdown-header d-flex align-items-center mb-2">
-              <CAvatar size="sm" :style="{ backgroundColor: currentClient.color }" class="me-2">
+              <CAvatar v-if="currentClient" size="sm" :style="{ backgroundColor: currentClient.color }" class="me-2">
                 {{ getInitials(pageProps.user.name) }}
               </CAvatar>
               <div class="user-info">
                 <div class="fw-semibold">{{ pageProps.user.name }}</div>
-                <small class="text-muted">{{ currentClient.name }}</small>
+                <small v-if="currentClient" class="text-muted">{{ currentClient.name }}</small>
               </div>
             </div>
 
@@ -38,7 +41,7 @@
           </CDropdownItem>
 
           <CDropdownItem
-            v-if="permissions.client_setup.update"
+            v-if="permissions?.client_setup.edit"
             class="d-flex align-items-center"
             @click="visit(paths.pages.editClient)">
             <CIcon icon="cilSettings" class="me-2" />
@@ -78,7 +81,7 @@
             <span class="fw-semibold">Switch Company</span>
           </div>
 
-          <div class="current-client mb-2">
+          <div v-if="currentClient" class="current-client mb-2">
             <small class="text-muted">Current Company</small>
             <CDropdownItem class="active d-flex align-items-center">
               <div

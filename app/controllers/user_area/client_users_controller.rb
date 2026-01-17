@@ -21,9 +21,10 @@ class UserArea::ClientUsersController < UserArea::ApplicationController
   def destroy
     authorize @client_user, :destroy?
 
-    if @client_user.update(active: false)
+    begin
+      @client_user.destroy!
       head :no_content
-    else
+    rescue => e
       render json: { error: @client_user.errors.full_messages.to_sentence }, status: :unprocessable_entity
     end
   end
@@ -38,6 +39,6 @@ class UserArea::ClientUsersController < UserArea::ApplicationController
     end
 
     def set_client_user
-      @client_user = current_client.client_users.find(params[:id])
+      @client_user = policy_scope(ClientUser).find_by(id: params[:id])
     end
 end

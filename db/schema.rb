@@ -102,7 +102,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_221548) do
     t.bigint "client_id", null: false
     t.bigint "user_id", null: false
     t.string "role", default: "viewer"
-    t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["client_id", "user_id"], name: "index_client_users_on_client_id_and_user_id", unique: true

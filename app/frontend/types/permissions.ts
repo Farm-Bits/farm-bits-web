@@ -1,19 +1,23 @@
 // Auto-generated file - Do not edit manually
-// Generated at: 2026-01-15 15:28:43 UTC
+// Generated at: 2026-01-17 17:26:24 UTC
 
 import type { Method } from '@inertiajs/core';
 
 // Available roles from Roleable
-export type Role = 'admin' | 'manager' | 'viewer';
+export type Role = 'admin' | 'site_admin' | 'manager' | 'viewer';
 
 export const ROLES = {
   admin: {
     name: 'Admin',
     description: 'Full access to all sites, management of company settings'
   },
+  site_admin: {
+    name: 'Site Admin',
+    description: 'Full access on assigned sites'
+  },
   manager: {
     name: 'Manager',
-    description: 'Assigned sites with edit access'
+    description: 'Control on assigned sites'
   },
   viewer: {
     name: 'Viewer',

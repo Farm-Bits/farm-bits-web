@@ -10,6 +10,7 @@ class ClientUser < ApplicationRecord
   validates :role, presence: true
 
   before_destroy :prevent_destroy_last_admin
+  after_destroy :destroy_user_if_orphaned
 
   enum :role, Roleable::ROLE_IDS
 
@@ -30,6 +31,12 @@ class ClientUser < ApplicationRecord
       if last_admin_for_client? && !destroyed_by_association
         errors.add(:base, 'Cannot delete the last admin user')
         throw(:abort)
+      end
+    end
+
+    def destroy_user_if_orphaned
+      if user.client_users.count == 0
+        user.destroy
       end
     end
 end

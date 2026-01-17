@@ -46,36 +46,4 @@
 </script>
 
 <style scoped>
-  .nav-tabs-custom .tab-item {
-    padding: 1rem 1.5rem;
-    border-bottom: 2px solid transparent;
-    color: #6c757d;
-    text-decoration: none;
-    transition: all 0.2s;
-  }
-
-  .nav-tabs-custom .tab-item:hover {
-    color: #495057;
-    border-bottom-color: #dee2e6;
-  }
-
-  .nav-tabs-custom .tab-item.active {
-    color: #0d6efd;
-    border-bottom-color: #0d6efd;
-    background-color: transparent;
-  }
-
-  .nav-tabs-custom .tab-danger {
-    color: #dc3545;
-  }
-
-  .nav-tabs-custom .tab-danger:hover {
-    color: #b02a37;
-    border-bottom-color: #f5c2c7;
-  }
-
-  .nav-tabs-custom .tab-danger.active {
-    color: #dc3545;
-    border-bottom-color: #dc3545;
-  }
 </style>

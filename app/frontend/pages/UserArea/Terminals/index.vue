@@ -7,7 +7,7 @@
         <p class="text-muted mb-0">Manage hardware installations for {{ site?.name }}</p>
       </div>
       <CButton
-        v-if="permissions.terminals.update"
+        v-if="permissions?.terminals.update"
         color="primary"
         @click="showActivationModal = true">
         <CIcon icon="cilPlus" class="me-2" />
@@ -21,7 +21,7 @@
       <h4 class="text-muted mb-2">No Gateways Installed</h4>
       <p class="text-muted mb-4">Get started by activating your first gateway for this site.</p>
       <CButton
-        v-if="permissions.terminals.update"
+        v-if="permissions?.terminals.update"
         color="primary"
         @click="showActivationModal = true">
         Activate Gateway
@@ -55,12 +55,12 @@
                 </CDropdownToggle>
                 <CDropdownMenu>
                   <CDropdownItem
-                    v-if="permissions.terminals.update"
+                    v-if="permissions?.terminals.update"
                     @click="editTerminal(terminal)">
                     <CIcon icon="cilPencil" class="me-2" />
                     Edit Gateway
                   </CDropdownItem>
-                  <div v-if="permissions.terminals.destroy">
+                  <div v-if="permissions?.terminals.destroy">
                     <CDropdownDivider />
                     <CDropdownItem
                       class="text-danger"
@@ -84,7 +84,7 @@
                     </CTableDataCell>
                     <CTableDataCell>
                       <Link
-                        v-if="permissions.plcs.show"
+                        v-if="permissions?.plcs.show"
                         class="nav-link nav-link-secondary"
                         :href="ROUTES.plcs_show.path.replace(':id', String(plc.id))">
                         {{ plc.name }}
@@ -109,7 +109,7 @@
               <CIcon icon="cilPlug" size="xl" class="mb-2" />
               <div>No controllers connected to this gateway</div>
               <CButton
-                v-if="permissions.terminals.update"
+                v-if="permissions?.terminals.update"
                 color="link"
                 size="sm"
                 @click="editTerminal(terminal)">
@@ -123,7 +123,7 @@
 
     <!-- Activation Modal -->
     <CModal
-      v-if="permissions.terminals.update"
+      v-if="permissions?.terminals.update"
       :visible="showActivationModal"
       @close="closeActivationModal"
       size="lg"
@@ -142,7 +142,7 @@
 
     <!-- Edit Modal -->
     <CModal
-      v-if="permissions.terminals.update"
+      v-if="permissions?.terminals.update"
       :visible="showEditModal"
       @close="closeEditModal"
       size="lg"

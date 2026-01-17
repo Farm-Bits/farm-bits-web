@@ -104,9 +104,11 @@ import {
   cilCheckCircle,
   cilCompress,
   cilDescription,
+  cilDrop,
   cilEnvelopeClosed,
   cilGem,
   cilHistory,
+  cilInfo,
   cilLocationPin,
   cilLockLocked,
   cilMemory,
@@ -116,6 +118,7 @@ import {
   cilPeople,
   cilPlus,
   cilPuzzle,
+  cilReload,
   cilRouter,
   cilSettings,
   cilSpeedometer,
@@ -127,6 +130,7 @@ import {
   cilUserX,
   cilWarning,
   cilX,
+  cilXCircle,
   cilZoom
 } from '@coreui/icons';
 import '@coreui/coreui/dist/css/coreui.min.css';
@@ -172,9 +176,11 @@ export default function () {
         cilCheckCircle,
         cilCompress,
         cilDescription,
+        cilDrop,
         cilEnvelopeClosed,
         cilGem,
         cilHistory,
+        cilInfo,
         cilLocationPin,
         cilLockLocked,
         cilMemory,
@@ -184,6 +190,7 @@ export default function () {
         cilPeople,
         cilPlus,
         cilPuzzle,
+        cilReload,
         cilRouter,
         cilSettings,
         cilSpeedometer,
@@ -195,6 +202,7 @@ export default function () {
         cilUserX,
         cilWarning,
         cilX,
+        cilXCircle,
         cilZoom
       });
       app.component('CAccordion', CAccordion);

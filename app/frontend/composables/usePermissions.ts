@@ -57,6 +57,60 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       write: true
     }
   },
+  site_admin: {
+    dashboard: {
+      show: true
+    },
+    my_account: {
+      show: true,
+      update: true,
+      destroy: true
+    },
+    client_setup: {
+      new: true,
+      edit: true,
+      create: true,
+      update: false,
+      destroy: false
+    },
+    client_users: {
+      index: true,
+      update: true,
+      destroy: true
+    },
+    invitations: {
+      index: true,
+      create: true,
+      destroy: true,
+      resend: true
+    },
+    segments: {
+      index: true,
+      create: true,
+      update: true,
+      destroy: true
+    },
+    sites: {
+      index: true,
+      show: true,
+      create: false,
+      update: true,
+      destroy: false
+    },
+    terminals: {
+      index: true,
+      update: true,
+      destroy: true
+    },
+    plcs: {
+      show: true,
+      update: true
+    },
+    measurement_points: {
+      update: true,
+      write: true
+    }
+  },
   manager: {
     dashboard: {
       show: true
@@ -104,7 +158,7 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
     },
     plcs: {
       show: true,
-      update: true
+      update: false
     },
     measurement_points: {
       update: false,
@@ -122,7 +176,7 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
     },
     client_setup: {
       new: true,
-      edit: true,
+      edit: false,
       create: true,
       update: false,
       destroy: false
@@ -181,7 +235,7 @@ export default function usePermissions() {
 
   const permissions = computed(() => {
     if (!role.value)
-      throw new Error('User role is not defined');
+      return null;
 
     return PERMISSION_MATRIX[role.value];
   });

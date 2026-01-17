@@ -43,7 +43,7 @@ class ApplicationPolicy
     def active_context?
       current_user&.active &&
       current_client&.active &&
-      current_client_user&.active
+      !!current_client_user
     end
 
     def record_belongs_to_current_client?
@@ -51,13 +51,21 @@ class ApplicationPolicy
         return true
       end
 
+      client_match = true
       if record.respond_to?(:client_id)
         record.client_id == current_client&.id
       elsif record.respond_to?(:client)
         record.client == current_client
-      else
-        true
       end
+
+      site_match = true
+      if record.respond_to?(:site_id)
+        record.site_id == current_site&.id
+      elsif record.respond_to?(:site)
+        record.site == current_site
+      end
+
+      client_match && site_match
     end
 
   class Scope
@@ -80,5 +88,12 @@ class ApplicationPolicy
     def resolve
       raise NoMethodError, "You must define #resolve in #{self.class}"
     end
+
+    private
+      def active_context?
+        current_user&.active &&
+        current_client&.active &&
+        !!current_client_user
+      end
   end
 end

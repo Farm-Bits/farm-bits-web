@@ -6,7 +6,7 @@
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb mb-2">
             <li class="breadcrumb-item">
-              <Link href="/user/terminals">Gateways & Controllers</Link>
+              <Link :href="ROUTES.terminals_index.path">Gateways & Controllers</Link>
             </li>
             <li class="breadcrumb-item active">{{ plc.name }}</li>
           </ol>
@@ -54,45 +54,35 @@
       </CCardBody>
     </CCard>
 
-    <!-- Interface Configuration Tabs -->
-    <CCard class="shadow-sm">
-      <div class="bg-white">
-        <CNav variant="tabs" role="tablist">
-          <CNavItem
-            v-for="tab in COMMUNICATION_TYPE_TABS"
-            :key="tab.key">
-            <CNavLink
-              :active="activeTab === tab.key"
-              @click="activeTab = tab.key"
-              role="tab"
-              class="d-flex align-items-center gap-2">
-              <CIcon :icon="tab.icon" />
-              {{ tab.label }}
-              <CBadge color="primary" shape="rounded-pill" class="ms-1">
-                {{ getInterfaceCount(tab.key) }}
-              </CBadge>
-            </CNavLink>
-          </CNavItem>
-        </CNav>
-      </div>
-      <CCardBody class="p-0">
-        <!-- Interface Tab Content -->
-        <CTabContent class="border-1">
-          <CTabPane
-            v-for="tab in COMMUNICATION_TYPE_TABS"
-            :key="tab.key"
-            :visible="activeTab === tab.key"
-            role="tabpanel">
-            <InterfaceList
-              :interfaces="getInterfacesByType(tab.key)"
-              :communicationType="tab.key"
-              :segments="segments"
-              :measurementSubtypes="measurementSubtypes"
-              @update-interface="handleUpdateInterface" />
-          </CTabPane>
-        </CTabContent>
-      </CCardBody>
-    </CCard>
+    <CTabs v-model:active-item-key="activeTab" variant="tabs">
+      <CTabList variant="tabs">
+        <CTab
+          v-for="tab in COMMUNICATION_TYPE_TABS"
+          :key="tab.key"
+          :item-key="tab.key"
+          class="tab-item">
+          <CIcon :name="tab.icon" class="me-2" />
+          {{ tab.label }}
+          <CBadge color="primary" shape="rounded-pill" class="ms-1">
+            {{ getInterfaceCount(tab.key) }}
+          </CBadge>
+        </CTab>
+      </CTabList>
+
+      <CTabContent>
+        <CTabPanel
+          v-for="tab in COMMUNICATION_TYPE_TABS"
+          :key="tab.key"
+          :item-key="tab.key">
+        <InterfaceList
+          :interfaces="getInterfacesByType(tab.key)"
+          :communicationType="tab.key"
+          :segments="segments"
+          :measurementSubtypes="measurementSubtypes"
+          @update-interface="handleUpdateInterface" />
+        </CTabPanel>
+      </CTabContent>
+    </CTabs>
   </div>
 </template>
 

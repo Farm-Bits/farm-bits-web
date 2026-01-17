@@ -4,16 +4,19 @@ class PlcPolicy < ApplicationPolicy
   end
 
   def update?
-    super && current_client_user&.admin?
-  end
-
-  def destroy?
-    super && current_client_user&.admin?
+    super && [
+      Roleable::ROLE_IDS[:admin],
+      Roleable::ROLE_IDS[:site_admin]
+    ].include?(current_client_user&.role)
   end
 
   class Scope < Scope
     def resolve
-      scope.where(site_id: current_site.id, client_id: current_client.id)
+      if !active_context?
+        return scope.none
+      end
+
+      scope.where(site: current_site)
     end
   end
 end

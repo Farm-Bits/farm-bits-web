@@ -4,29 +4,30 @@ class SegmentPolicy < ApplicationPolicy
   end
 
   def create?
-    super && current_client_user&.admin?
+    super && [
+      Roleable::ROLE_IDS[:admin], Roleable::ROLE_IDS[:site_admin]
+    ].include?(current_client_user&.role)
   end
 
   def update?
-    super && current_client_user&.admin?
+    super && [
+      Roleable::ROLE_IDS[:admin], Roleable::ROLE_IDS[:site_admin]
+    ].include?(current_client_user&.role)
   end
 
   def destroy?
-    super && current_client_user&.admin?
+    super && [
+      Roleable::ROLE_IDS[:admin], Roleable::ROLE_IDS[:site_admin]
+    ].include?(current_client_user&.role)
   end
 
   class Scope < ApplicationPolicy::Scope
     def resolve
-      segments = scope.where(client: current_client, site: current_site)
-      case current_client_user.role
-      when 'admin'
-        segments
-      when 'manager', 'viewer'
-        site_ids = policy_scope!(Site).pluck(:id)
-        segments.where(site_id: site_ids)
-      else
-        scope.none
+      if !active_context?
+        return scope.none
       end
+
+      scope.where(site: current_site)
     end
   end
 end

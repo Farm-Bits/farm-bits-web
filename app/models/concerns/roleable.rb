@@ -7,10 +7,15 @@ module Roleable
       name: 'Admin',
       description: 'Full access to all sites, management of company settings'
     },
+    site_admin: {
+      id: 'site_admin',
+      name: 'Site Admin',
+      description: 'Full access on assigned sites'
+    },
     manager: {
       id: 'manager',
       name: 'Manager',
-      description: 'Assigned sites with edit access'
+      description: 'Control on assigned sites'
     },
     viewer: {
       id: 'viewer',

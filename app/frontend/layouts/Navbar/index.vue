@@ -29,7 +29,7 @@
                 </CDropdownItem>
                 <CDropdownDivider />
                 <CDropdownItem
-                  v-if="permissions.sites.index"
+                  v-if="permissions?.sites.index"
                   class="d-flex align-items-center text-primary"
                   @click="router.visit(ROUTES.sites_index.path)">
                   <CIcon name="cilCompress" class="me-2" />
@@ -37,10 +37,9 @@
                 </CDropdownItem>
               </template>
               <template v-else>
-                <div v-if="permissions.sites.index">
+                <div v-if="permissions?.sites.index">
                   <CDropdownDivider />
                   <CDropdownItem
-                    v-if="permissions.sites.index"
                     class="d-flex align-items-center text-primary"
                     @click="router.visit(ROUTES.sites_index.path)">
                     <CIcon name="cilCompress" class="me-2" />

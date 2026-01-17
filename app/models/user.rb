@@ -27,6 +27,7 @@ class User < ApplicationRecord
   before_validation :normalize_email
   after_create :create_client_and_site_from_attributes
   before_destroy :prevent_destroy_last_admin_user
+  after_destroy :destroy_received_invitations
   after_commit :send_password_change_notification, if: :saved_change_to_encrypted_password?, on: :update
 
   def active_for_authentication?
@@ -126,6 +127,12 @@ class User < ApplicationRecord
         errors.add(:base, 'Cannot destroy user who is the last admin for one or more companies')
         throw(:abort)
       end
+    end
+
+    def destroy_received_invitations
+      invitations.destroy_all
+      invitations_received = Invitation.where(email: email, inviter_type: 'User')
+      invitations_received.destroy_all
     end
 
     def send_password_change_notification

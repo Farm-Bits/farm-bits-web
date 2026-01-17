@@ -4,7 +4,6 @@ class CreateClientUsers < ActiveRecord::Migration[7.2]
       t.references :client, null: false, foreign_key: { on_delete: :cascade }
       t.references :user, null: false, foreign_key: { on_delete: :cascade }
       t.string :role, default: 'viewer'
-      t.boolean :active, null: false, default: true
 
       t.timestamps
     end

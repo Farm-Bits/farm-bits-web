@@ -23,7 +23,7 @@ class UserArea::ApplicationController < ApplicationController
   protected
     def ensure_user_has_client_access
       if current_user.active_clients_connections.empty?
-        redirect_to user_client_setup_path
+        redirect_to user_client_setup_new_path
       end
     end
 

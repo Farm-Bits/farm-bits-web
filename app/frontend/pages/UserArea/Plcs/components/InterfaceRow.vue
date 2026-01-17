@@ -54,7 +54,7 @@
     </CTableDataCell>
     <CTableDataCell class="text-center">
       <div class="d-flex justify-content-center gap-1">
-        <CTooltip v-if="permissions.measurement_points.update" content="Configure Device">
+        <CTooltip v-if="permissions?.measurement_points.update" content="Configure Device">
           <template #toggler="{ id, on }">
             <CButton
               v-on="on"
@@ -78,7 +78,7 @@
               <CIcon icon="cilHistory" class="me-2" />
               View History
             </CDropdownItem>
-            <div v-if="permissions.measurement_points.update">
+            <div v-if="permissions?.measurement_points.update">
               <CDropdownDivider />
               <CDropdownItem
                 v-if="isEnabled(activeRegisterMapping.measurement_point)"
