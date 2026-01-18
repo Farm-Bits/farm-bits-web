@@ -3,7 +3,6 @@ class CreateSiteUsers < ActiveRecord::Migration[7.2]
     create_table :site_users do |t|
       t.references :site, null: false, foreign_key: { on_delete: :cascade }
       t.references :user, null: false, foreign_key: { on_delete: :cascade }
-      t.string :role, default: 'viewer'
 
       t.timestamps
     end

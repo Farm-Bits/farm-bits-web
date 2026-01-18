@@ -53,7 +53,9 @@ class FrontendPermissionsGenerator
       role_constants = Roleable::ROLES.map do |key, value|
         "  #{key}: {
     name: '#{value[:name]}',
-    description: '#{value[:description]}'
+    description: '#{value[:description]}',
+    level: #{value[:level]},
+    siteSpecific: #{value[:site_specific]}
   }"
       end.join(",\n")
 
@@ -68,7 +70,7 @@ class FrontendPermissionsGenerator
         // Available roles from Roleable
         export type Role = #{role_values};
 
-        export const ROLES = {
+        export const ROLES: Record<Role, { name: string; description: string; level: number; siteSpecific: boolean }> = {
         #{role_constants}
         } as const;
 

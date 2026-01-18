@@ -365,7 +365,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_221548) do
   create_table "site_users", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "site_id", null: false
     t.bigint "user_id", null: false
-    t.string "role", default: "viewer"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["site_id", "user_id"], name: "index_site_users_on_site_id_and_user_id", unique: true

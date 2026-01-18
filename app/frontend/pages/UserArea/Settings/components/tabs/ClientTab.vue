@@ -1,10 +1,5 @@
 <template>
   <div class="p-4">
-    <div class="mb-4">
-      <h5 class="mb-3">Company Information</h5>
-      <ErrorMessages class="mb-4" />
-    </div>
-
     <div class="row align-items-center py-3 border-bottom">
       <div class="col-md-3">
         <label class="form-label mb-0 fw-medium">Company Name</label>
@@ -25,7 +20,7 @@
           </div>
         </div>
       </div>
-      <div class="col-md-3 text-end">
+      <div v-if="permissions?.client_setup.update" class="col-md-3 text-end">
         <div v-if="!editingFields.client.name">
           <CButton @click="startEditing('name')">
             <CIcon name="cilPencil" class="me-1" />
@@ -70,7 +65,7 @@
           </div>
         </div>
       </div>
-      <div class="col-md-3 text-end">
+      <div v-if="permissions?.client_setup.update" class="col-md-3 text-end">
         <div v-if="!editingFields.client.color">
           <CButton @click="startEditing('color')">
             <CIcon name="cilPencil" class="me-1" />
@@ -101,11 +96,14 @@
   import { required } from '@vuelidate/validators';
   import ColorPicker from '@/components/ColorPicker.vue';
   import useAuth from '@/composables/useAuth';
+  import usePermissions from '@/composables/usePermissions';
   import { type Client } from '@/types/inertia';
 
   const { pageProps, paths } = useAuth<{
-    client: Client
+    client: Client;
   }>();
+
+  const { permissions } = usePermissions();
 
   type ClientField = Exclude<keyof Client, 'id'>;
 

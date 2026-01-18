@@ -1,27 +1,35 @@
 // Auto-generated file - Do not edit manually
-// Generated at: 2026-01-17 17:26:24 UTC
+// Generated at: 2026-01-18 21:21:19 UTC
 
 import type { Method } from '@inertiajs/core';
 
 // Available roles from Roleable
 export type Role = 'admin' | 'site_admin' | 'manager' | 'viewer';
 
-export const ROLES = {
+export const ROLES: Record<Role, { name: string; description: string; level: number; siteSpecific: boolean }> = {
   admin: {
     name: 'Admin',
-    description: 'Full access to all sites, management of company settings'
+    description: 'Full access to all sites, management of company settings',
+    level: 5,
+    siteSpecific: false
   },
   site_admin: {
     name: 'Site Admin',
-    description: 'Full access on assigned sites'
+    description: 'Full access on assigned sites',
+    level: 4,
+    siteSpecific: true
   },
   manager: {
     name: 'Manager',
-    description: 'Control on assigned sites'
+    description: 'Control on assigned sites',
+    level: 3,
+    siteSpecific: true
   },
   viewer: {
     name: 'Viewer',
-    description: 'Assigned sites, read-only'
+    description: 'Assigned sites, read-only',
+    level: 2,
+    siteSpecific: true
   }
 } as const;
 

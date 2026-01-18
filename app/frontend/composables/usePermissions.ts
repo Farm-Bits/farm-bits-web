@@ -221,15 +221,6 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
   }
 };
 
-function isActionKeyForController(
-  controllerKey: keyof RoutePermissions,
-  actionKey: string
-): actionKey is keyof RoutePermissions[typeof controllerKey] {
-  const sampleRole = Object.keys(PERMISSION_MATRIX)[0] as Role;
-  const controllerPermissions = PERMISSION_MATRIX[sampleRole][controllerKey];
-  return actionKey in controllerPermissions;
-}
-
 export default function usePermissions() {
   const { role } = useAuth();
 
@@ -240,21 +231,7 @@ export default function usePermissions() {
     return PERMISSION_MATRIX[role.value];
   });
 
-  function canAccess(
-    controller: keyof RoutePermissions,
-    action: string
-  ): boolean {
-    if (!role.value)
-      return false;
-
-    if (!isActionKeyForController(controller, action))
-      return false;
-
-    return PERMISSION_MATRIX[role.value][controller]?.[action] === true;
-  }
-
   return {
-    permissions,
-    canAccess
+    permissions
   };
 }

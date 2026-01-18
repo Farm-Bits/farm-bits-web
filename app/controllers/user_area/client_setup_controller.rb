@@ -1,10 +1,10 @@
 class UserArea::ClientSetupController < UserArea::ApplicationController
-  skip_before_action :ensure_user_has_client_access
+  skip_before_action :ensure_user_has_client_access, only: [:new, :create]
 
   def new
     authorize Client, :new?
 
-    errors = current_user.active_clients_connections.any? ? nil : ['You do not have access to any company. Create one now.']
+    errors = current_user.active_clients_connections.empty? ? nil : ['You do not have access to any company. Create one now.']
     render inertia: 'UserArea/ClientSetupForm', props: {
       errors: errors
     }
@@ -13,7 +13,12 @@ class UserArea::ClientSetupController < UserArea::ApplicationController
   def edit
     authorize current_client, :edit?
 
-    render inertia: 'UserArea/Settings/index'
+    @segments = policy_scope(Segment)
+    @site_users = policy_scope(SiteUser)
+    render inertia: 'UserArea/Settings/index', props: {
+      segments: SegmentSerializer.render_as_json(@segments),
+      siteUsers: SiteUserSerializer.render_as_json(@site_users)
+    }
   end
 
   def create

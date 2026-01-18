@@ -14,7 +14,7 @@ class InvitationPolicy < ApplicationPolicy
   end
 
   def resend?
-    super && [
+    active_context? && record_belongs_to_current_client? && [
       Roleable::ROLE_IDS[:admin],
       Roleable::ROLE_IDS[:site_admin]
     ].include?(current_client_user&.role)

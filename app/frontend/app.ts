@@ -14,6 +14,7 @@ import {
   CAvatar,
   CBadge,
   CButton,
+  CButtonGroup,
   CCard,
   CCardBody,
   CCardFooter,
@@ -120,6 +121,7 @@ import {
   cilPuzzle,
   cilReload,
   cilRouter,
+  cilRunning,
   cilSettings,
   cilSpeedometer,
   cilToggleOn,
@@ -192,6 +194,7 @@ export default function () {
         cilPuzzle,
         cilReload,
         cilRouter,
+        cilRunning,
         cilSettings,
         cilSpeedometer,
         cilToggleOn,
@@ -213,6 +216,7 @@ export default function () {
       app.component('CAvatar', CAvatar);
       app.component('CBadge', CBadge);
       app.component('CButton', CButton);
+      app.component('CButtonGroup', CButtonGroup);
       app.component('CCard', CCard);
       app.component('CCardBody', CCardBody);
       app.component('CCardFooter', CCardFooter);

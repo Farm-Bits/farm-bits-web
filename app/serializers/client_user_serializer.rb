@@ -6,4 +6,8 @@ class ClientUserSerializer < Blueprinter::Base
   field :user do |client_user|
     client_user.user.as_json(only: [:id, :name, :email])
   end
+
+  field :site_ids do |client_user|
+    client_user.user.site_users.pluck(:site_id)
+  end
 end

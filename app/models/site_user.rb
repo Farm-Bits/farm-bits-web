@@ -7,10 +7,7 @@ class SiteUser < ApplicationRecord
 
   validates :site_id, uniqueness: { scope: :user_id }
   validates :user_id, uniqueness: { scope: :site_id }
-  validates :role, presence: true
   validate :user_must_be_client_member
-
-  enum :role, Roleable::ROLE_IDS
 
   private
     def user_must_be_client_member
