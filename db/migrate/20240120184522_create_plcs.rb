@@ -18,14 +18,12 @@ class CreatePlcs < ActiveRecord::Migration[7.0]
       t.references :plc_version, null: false, foreign_key: true
       t.references :terminal, foreign_key: true
       t.references :site, foreign_key: true
-      t.references :client, foreign_key: true
 
       t.timestamps
     end
 
     add_index :plcs, :serial_number, unique: true
     add_index :plcs, :active
-    add_index :plcs, [:client_id, :active]
     add_index :plcs, [:terminal_id, :active]
   end
 end

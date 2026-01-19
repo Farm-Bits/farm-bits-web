@@ -33,4 +33,10 @@ module Roleable
   }.freeze
 
   ROLE_IDS = ROLES.transform_values { |v| v[:id] }.freeze
+
+  ROLES.each do |key, attributes|
+    define_method "#{key}?" do
+      role == attributes[:id]
+    end
+  end
 end

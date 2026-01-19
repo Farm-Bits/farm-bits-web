@@ -14,7 +14,6 @@ class CreateTerminals < ActiveRecord::Migration[7.0]
       t.boolean :active, null: false, default: true
       t.references :model, null: false, foreign_key: true
       t.references :site, foreign_key: true
-      t.references :client, foreign_key: true
 
       t.timestamps
     end
@@ -23,7 +22,6 @@ class CreateTerminals < ActiveRecord::Migration[7.0]
     add_index :terminals, :serial_number, unique: true
     add_index :terminals, :iccid, unique: true
     add_index :terminals, :active
-    add_index :terminals, [:client_id, :active]
     add_index :terminals, [:site_id, :active]
   end
 end

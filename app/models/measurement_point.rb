@@ -6,7 +6,6 @@ class MeasurementPoint < ApplicationRecord
   belongs_to :plc
   belongs_to :segment, optional: true
   belongs_to :site, optional: true
-  belongs_to :client, optional: true
 
   validates :name, presence: true
   validates :register_template_id, uniqueness: { scope: :plc_id }
@@ -20,7 +19,6 @@ class MeasurementPoint < ApplicationRecord
   validate :measurement_subtype_present_if_active_interface
   validate :measurement_subtype_data_category_matches_register_template
   validate :measurement_subtype_data_category_is_present_on_interface_mapping
-  validate :client_matches_site_client
 
   before_save :deactivate_conflicting_measurement_points
 
@@ -189,16 +187,6 @@ class MeasurementPoint < ApplicationRecord
           "requires a '#{category}' register mapping for one of the interfaces, " \
           "but none is configured"
         )
-      end
-    end
-
-    def client_matches_site_client
-      if segment.present? && segment.client_id != client_id
-        errors.add(:client, 'must match the client of the assigned segment')
-      end
-
-      if site.present? && site.client_id != client_id
-        errors.add(:client, 'must match the client of the assigned site')
       end
     end
 

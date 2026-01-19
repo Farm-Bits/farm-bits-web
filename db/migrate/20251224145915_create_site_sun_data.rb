@@ -6,7 +6,6 @@ class CreateSiteSunData < ActiveRecord::Migration[7.2]
       t.datetime :sunset, null: false
       t.datetime :solar_noon
       t.references :site, null: false, foreign_key: { on_delete: :cascade }
-      t.references :client, null: false, foreign_key: { on_delete: :cascade }
 
       t.timestamps
     end

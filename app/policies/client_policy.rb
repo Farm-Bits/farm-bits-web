@@ -1,6 +1,6 @@
 class ClientPolicy < ApplicationPolicy
   def create?
-    current_user&.active
+    true
   end
 
   def new?
@@ -8,25 +8,19 @@ class ClientPolicy < ApplicationPolicy
   end
 
   def edit?
-    active_context? && record == current_client && [
-      Roleable::ROLE_IDS[:admin], Roleable::ROLE_IDS[:site_admin], Roleable::ROLE_IDS[:manager]
-    ].include?(current_client_user&.role)
+    admin? || site_admin? || manager?
   end
 
   def update?
-    active_context? && record == current_client && current_client_user&.admin?
+    admin?
   end
 
   def destroy?
-    active_context? && record == current_client && current_client_user&.admin?
+    admin?
   end
 
   class Scope < ApplicationPolicy::Scope
     def resolve
-      if !active_context?
-        return scope.none
-      end
-
       scope.joins(:client_users)
         .where(client_users: { user: current_user })
         .where(active: true)

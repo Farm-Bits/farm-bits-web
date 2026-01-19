@@ -3,7 +3,6 @@ class Terminal < ApplicationRecord
 
   belongs_to :model
   belongs_to :site, optional: true
-  belongs_to :client, optional: true
 
   encrypts :username
   encrypts :password
@@ -21,7 +20,6 @@ class Terminal < ApplicationRecord
   validates :username, presence: true
   validates :password, presence: true
   validate :model_is_terminal_type
-  validate :client_matches_site_client
 
   after_update :remove_plcs_if_deactivated, if: -> { saved_change_to_active? && !active? }
 
@@ -56,12 +54,6 @@ class Terminal < ApplicationRecord
 
       if model.device_type != 'terminal'
         errors.add(:model, 'must be a terminal model')
-      end
-    end
-
-    def client_matches_site_client
-      if site.present? && site.client_id != client_id
-        errors.add(:client, 'must match the client of the assigned site')
       end
     end
 

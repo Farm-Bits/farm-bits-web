@@ -1,38 +1,22 @@
 class InvitationPolicy < ApplicationPolicy
   def index?
-    super && [
-      Roleable::ROLE_IDS[:admin],
-      Roleable::ROLE_IDS[:site_admin]
-    ].include?(current_client_user&.role)
+    admin? || site_admin?
   end
 
   def create?
-    super && [
-      Roleable::ROLE_IDS[:admin],
-      Roleable::ROLE_IDS[:site_admin]
-    ].include?(current_client_user&.role)
+    admin? || site_admin?
   end
 
   def resend?
-    active_context? && record_belongs_to_current_client? && [
-      Roleable::ROLE_IDS[:admin],
-      Roleable::ROLE_IDS[:site_admin]
-    ].include?(current_client_user&.role)
+    admin? || site_admin?
   end
 
   def destroy?
-    super && [
-      Roleable::ROLE_IDS[:admin],
-      Roleable::ROLE_IDS[:site_admin]
-    ].include?(current_client_user&.role)
+    admin? || site_admin?
   end
 
   class Scope < ApplicationPolicy::Scope
     def resolve
-      if !active_context?
-        return scope.none
-      end
-
       # TODO: implement role-based access control here
       # invitation do not have site association, so we cannot filter by site
       # case current_client_user.role

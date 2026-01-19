@@ -1,32 +1,26 @@
 class SitePolicy < ApplicationPolicy
   def index?
-    super
+    true
   end
 
   def show?
-    super
+    true
   end
 
   def create?
-    super && current_client_user&.admin?
+    admin?
   end
 
   def update?
-    super && [
-      Roleable::ROLE_IDS[:admin], Roleable::ROLE_IDS[:site_admin]
-    ].include?(current_client_user&.role)
+    admin? || site_admin?
   end
 
   def destroy?
-    super && current_client_user&.admin?
+    admin?
   end
 
   class Scope < ApplicationPolicy::Scope
     def resolve
-      if !active_context?
-        return scope.none
-      end
-
       sites = scope.where(client: current_client)
       case current_client_user&.role
       when Roleable::ROLE_IDS[:admin]

@@ -5,7 +5,6 @@ class Plc < ApplicationRecord
   belongs_to :plc_version
   belongs_to :terminal, optional: true
   belongs_to :site, optional: true
-  belongs_to :client, optional: true
 
   encrypts :username
   encrypts :password
@@ -39,12 +38,11 @@ class Plc < ApplicationRecord
   validates :web_password, presence: true
   validate :model_is_plc_type
   validate :plc_version_belongs_to_model
-  validate :client_matches_site_client
 
   attr_accessor :disable_sync_plc_ingestion_service
 
   after_create :create_measurement_points_from_templates
-  after_update :sync_measurement_points_client
+  after_update :sync_measurement_points_site
   after_commit :sync_plc_ingestion_service, on: :create
   after_commit :update_plc_ingestion_service, on: :update
   after_commit :remove_plc_ingestion_service, on: :destroy
@@ -74,16 +72,6 @@ class Plc < ApplicationRecord
       end
     end
 
-    def client_matches_site_client
-      if site.present? && site.client_id != client_id
-        errors.add(:client, 'must match the client of the assigned site')
-      end
-
-      if terminal.present? && terminal.client_id != client_id
-        errors.add(:client, 'must match the client of the assigned terminal')
-      end
-    end
-
     def create_measurement_points_from_templates
       if !plc_version.present?
         return
@@ -97,20 +85,15 @@ class Plc < ApplicationRecord
           active: !template.interface_register_mappings.any? || !MeasurementSubtype::DATA_CATEGORIES.include?(template.category),
           measurement_subtype: nil,
           register_template: template,
-          site: nil,
-          client: client
+          site: site
         )
       end
     end
 
-    def sync_measurement_points_client
+    def sync_measurement_points_site
       update_attrs = {}
       if saved_change_to_site_id?
         update_attrs[:site_id] = site_id
-      end
-
-      if saved_change_to_client_id?
-        update_attrs[:client_id] = client_id
       end
 
       if !update_attrs.empty?

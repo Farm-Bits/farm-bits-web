@@ -3,7 +3,6 @@ class CreateSegments < ActiveRecord::Migration[7.0]
     create_table :segments do |t|
       t.string :name, null: false
       t.references :site, null: false, foreign_key: { on_delete: :cascade }
-      t.references :client, null: false, foreign_key: { on_delete: :cascade }
 
       t.timestamps
     end

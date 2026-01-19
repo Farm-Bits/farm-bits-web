@@ -11,16 +11,22 @@ class ApplicationPolicy
     @record = record
   end
 
+  Roleable::ROLE_IDS.each_key do |role_key|
+    define_method "#{role_key}?" do
+      current_client_user&.send("#{role_key}?")
+    end
+  end
+
   def index?
-    active_context?
+    true
   end
 
   def show?
-    active_context? && record_belongs_to_current_client?
+    true
   end
 
   def create?
-    active_context?
+    admin?
   end
 
   def new?
@@ -28,7 +34,7 @@ class ApplicationPolicy
   end
 
   def update?
-    active_context? && record_belongs_to_current_client?
+    admin?
   end
 
   def edit?
@@ -36,37 +42,8 @@ class ApplicationPolicy
   end
 
   def destroy?
-    active_context? && record_belongs_to_current_client?
+    admin?
   end
-
-  private
-    def active_context?
-      current_user&.active &&
-      current_client&.active &&
-      !!current_client_user
-    end
-
-    def record_belongs_to_current_client?
-      if record.nil?
-        return true
-      end
-
-      client_match = true
-      if record.respond_to?(:client_id)
-        record.client_id == current_client&.id
-      elsif record.respond_to?(:client)
-        record.client == current_client
-      end
-
-      site_match = true
-      if record.respond_to?(:site_id)
-        record.site_id == current_site&.id
-      elsif record.respond_to?(:site)
-        record.site == current_site
-      end
-
-      client_match && site_match
-    end
 
   class Scope
     attr_reader :current_user, :current_client, :current_client_user, :current_site, :scope
@@ -88,12 +65,5 @@ class ApplicationPolicy
     def resolve
       raise NoMethodError, "You must define #resolve in #{self.class}"
     end
-
-    private
-      def active_context?
-        current_user&.active &&
-        current_client&.active &&
-        !!current_client_user
-      end
   end
 end

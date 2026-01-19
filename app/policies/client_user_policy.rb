@@ -1,28 +1,18 @@
 class ClientUserPolicy < ApplicationPolicy
   def index?
-    super
+    true
   end
 
   def update?
-    super && [
-      Roleable::ROLE_IDS[:admin],
-      Roleable::ROLE_IDS[:site_admin]
-    ].include?(current_client_user&.role)
+    admin? || site_admin?
   end
 
   def destroy?
-    super && [
-      Roleable::ROLE_IDS[:admin],
-      Roleable::ROLE_IDS[:site_admin]
-    ].include?(current_client_user&.role)
+    admin? || site_admin?
   end
 
   class Scope < ApplicationPolicy::Scope
     def resolve
-      if !active_context?
-        return scope.none
-      end
-
       site_user_ids = SiteUser.where(site: current_site).pluck(:user_id)
       scope.where(client: current_client)
         .where(
