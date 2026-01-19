@@ -8,7 +8,9 @@ export type ClientUser = {
   user_id: number;
   role: Role;
   user: User;
-  site_ids?: Site['id'][];
+  visible_site_ids: Site['id'][];
+  total_sites_count: number;
+  has_other_sites: boolean;
 };
 
 type InvitationStatus = 'pending' | 'expired';

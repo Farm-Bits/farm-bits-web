@@ -7,6 +7,21 @@
       <CModalTitle>Change User Role</CModalTitle>
     </CModalHeader>
     <CModalBody>
+      <CAlert
+        v-if="clientUser?.has_other_sites"
+        color="info"
+        class="mb-3">
+        <div class="d-flex">
+          <CIcon name="cilInfo" class="me-2 mt-1" />
+          <div>
+            <strong>Partial View:</strong> This user has access to
+            <strong>{{ clientUser.total_sites_count }} site(s)</strong>, but you can only
+            modify access for the <strong>{{ clientUser.visible_site_ids.length }} site(s)</strong>
+            you can see. Changes here will only affect visible sites.
+          </div>
+        </div>
+      </CAlert>
+
       <CForm @submit.prevent="handleSubmit">
         <!-- User Info -->
         <CCard color="light" class="mb-4">
@@ -149,7 +164,7 @@
     const roleChanged = formData.role !== props.clientUser?.role;
     const siteAccessChanged = !arraysEqual(
       formData.site_ids.sort(),
-      (props.clientUser?.site_ids || []).sort()
+      (props.clientUser?.visible_site_ids || []).sort()
     );
     return roleChanged || siteAccessChanged;
   });
@@ -190,7 +205,7 @@
 
   function resetForm() {
     formData.role = props.clientUser?.role || 'viewer';
-    formData.site_ids = [...(props.clientUser?.site_ids || [])];
+    formData.site_ids = [...(props.clientUser?.visible_site_ids || [])];
 
     errors.submission = '';
     errors.role = '';
@@ -258,7 +273,7 @@
 
     // Restore sites when switching to site-specific role
     if (!oldRoleNeedsSites && newRoleNeedsSites)
-      formData.site_ids = [...(props.clientUser?.site_ids || [])];
+      formData.site_ids = [...(props.clientUser?.visible_site_ids || [])];
   });
 </script>
 

@@ -58,6 +58,12 @@ class ApplicationPolicy
       @current_site = context[:current_site]
     end
 
+    Roleable::ROLE_IDS.each_key do |role_key|
+      define_method "#{role_key}?" do
+        current_client_user&.send("#{role_key}?")
+      end
+    end
+
     def policy_scope!(scope)
       Pundit.policy_scope!(@context, scope)
     end

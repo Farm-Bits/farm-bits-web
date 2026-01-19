@@ -335,13 +335,6 @@ h1, h2, h3, h4, h5, h6 {
    COREUI FRAMEWORK OVERRIDES
    ================================= */
 
-.alert {
-  --cui-alert-color: var(--cui-danger);
-  --cui-alert-padding-x: 0;
-  --cui-alert-padding-y: 0;
-  --cui-alert-margin-bottom: 0;
-}
-
 .header {
   --cui-border-color: none;
   box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.2);

@@ -36,7 +36,7 @@
       </div>
 
       <!-- Time Zone Selector -->
-      <div class="mt-3">
+      <div v-if="isEditMode" class="mt-3">
         <label for="timeZone" class="form-label">
           Time Zone *
         </label>
@@ -129,7 +129,7 @@
   import { reactive, ref, computed, watch } from 'vue';
   import axios from 'axios';
   import { useVuelidate } from '@vuelidate/core';
-  import { between, decimal, maxValue, minValue, required } from '@vuelidate/validators';
+  import { between, decimal, maxValue, minValue, required, requiredIf } from '@vuelidate/validators';
   import LocationSelector from '@/components/LocationSelector.vue';
   import { useApiCall } from '@/composables/useApi';
   import type { SiteWithSegments } from '@/types/inertia';
@@ -141,8 +141,9 @@
     _destroy?: boolean;
   };
 
-  type SiteAttributes = Omit<Site, 'id'> & {
+  type SiteAttributes = Omit<Site, 'id' | 'time_zone'> & {
     id?: Site['id'];
+    time_zone: string | null;
     segments_attributes: SegmentAttributes[]
   };
 
@@ -168,7 +169,7 @@
       latitude: null,
       longitude: null,
       altitude: null,
-      time_zone: 'UTC',
+      time_zone: null,
       segments_attributes: []
     }
   });
@@ -195,7 +196,7 @@
         minValue: minValue(-431),
         maxValue: maxValue(8849)
       },
-      time_zone: { required }
+      time_zone: { required: requiredIf(() => isEditMode.value) }
     }
   }));
 
@@ -313,7 +314,7 @@
       latitude: null,
       longitude: null,
       altitude: null,
-      time_zone: 'UTC',
+      time_zone: null,
       segments_attributes: []
     };
 

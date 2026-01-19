@@ -13,7 +13,7 @@ class UserArea::ApplicationController < ApplicationController
       client: current_client,
       role: current_client_user&.role,
       clients: @clients,
-      site: SiteSerializer.render_as_json(current_site, view: :with_segments),
+      site: current_site ? SiteSerializer.render_as_json(current_site, view: :with_segments) : nil,
       sites: SiteSerializer.render_as_json(policy_scope(Site))
     }
   end

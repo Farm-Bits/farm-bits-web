@@ -370,7 +370,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_221548) do
     t.float "latitude"
     t.float "longitude"
     t.float "altitude"
-    t.string "time_zone", default: "UTC", null: false
+    t.string "time_zone", null: false
     t.bigint "client_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

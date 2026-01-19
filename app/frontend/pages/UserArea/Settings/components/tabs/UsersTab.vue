@@ -99,7 +99,7 @@
             </CTableDataCell>
             <CTableDataCell>
               <div class="small text-medium-emphasis">
-                {{ getSiteAccessText(invitation) }}
+                <!-- {{ getSiteAccessText(invitation.role, invitation.site_ids) }} -->
               </div>
             </CTableDataCell>
             <CTableDataCell>
@@ -225,10 +225,9 @@
   import { ROLES, type Role, ROUTES } from '@/types/permissions';
   import InviteUserModal from '../modals/InviteUserModal.vue';
   import ChangeRoleModal from '../modals/ChangeRoleModal.vue';
-  import type { Site } from '@/types/location';
   import type { ClientUser, Invitation } from '../types/invitation';
 
-  const { user, role } = useAuth();
+  const { user, role, sites } = useAuth();
   const { permissions } = usePermissions();
   const { execute } = useApiCall();
 
@@ -266,21 +265,20 @@
     return currentLevel >= userLevel;
   }
 
-  function getSiteAccessText(userable: { role: Role; site_ids?: Site['id'][] }): string {
-    const clientUserRole = userable.role;
+  function getSiteAccessText(clientUser: ClientUser) {
+    if (!ROLES[clientUser.role].siteSpecific) {
+      let accessText = 'All sites';
+      if (clientUser.has_other_sites)
+        accessText += ` (and ${clientUser.total_sites_count - (clientUser.visible_site_ids.length)} more)`;
+      return accessText;
+    }
 
-    if (!ROLES[clientUserRole].siteSpecific)
-      return 'All sites';
-
-    if (!userable.site_ids)
-      return '—';
-
-    const count = userable.site_ids?.length;
-    if (count === 0)
-      return 'No sites';
-    if (count === 1)
-      return '1 site';
-    return `${count} sites`;
+    const accessSites = clientUser.visible_site_ids.map((sid) =>
+      sites.value?.find((site) => site.id === sid)?.name || '●') || [];
+    let accessText = accessSites.join(', ');
+    if (clientUser.has_other_sites)
+      accessText += ` (and ${clientUser.total_sites_count - (clientUser.visible_site_ids.length)} more)`;
+    return accessText;
   }
 
   function getRoleColor(role: Role) {
@@ -325,10 +323,8 @@
 
   async function handleRoleUpdated(updatedClientUser: ClientUser) {
     const clientUserUpdated = clientUsers.value.find((u) => u.id === updatedClientUser.id);
-    if (clientUserUpdated) {
-      clientUserUpdated.role = updatedClientUser.role;
-      clientUserUpdated.site_ids = updatedClientUser.site_ids;
-    }
+    if (clientUserUpdated)
+      Object.assign(clientUserUpdated, updatedClientUser);
 
     closeChangeRoleModal();
   }

@@ -13,12 +13,7 @@ class UserArea::ClientSetupController < UserArea::ApplicationController
   def edit
     authorize current_client, :edit?
 
-    @segments = policy_scope(Segment)
-    @site_users = policy_scope(SiteUser)
-    render inertia: 'UserArea/Settings/index', props: {
-      segments: SegmentSerializer.render_as_json(@segments),
-      siteUsers: SiteUserSerializer.render_as_json(@site_users)
-    }
+    render inertia: 'UserArea/Settings/index'
   end
 
   def create
