@@ -2,14 +2,14 @@
   <CForm @submit.prevent="handleSubmit">
     <!-- Terminal Details -->
     <TerminalDetailsForm
-      v-model="form"
+      v-model="formData"
       :terminal="terminal"
       :availablePlcs="localAvailablePlcs" />
 
     <!-- PLC Assignment Section -->
     <div class="pt-3 mb-3">
       <PlcAssignmentManager
-        v-model="form.plc_assignments"
+        v-model="formData.plc_assignments"
         :availablePlcs="localAvailablePlcs" />
     </div>
 
@@ -50,7 +50,7 @@
 
   const { execute } = useApiCall();
 
-  const form = reactive({
+  const formData = reactive({
     customName: '',
     plc_assignments: [] as (Plc & { customName: string })[]
   });
@@ -60,10 +60,10 @@
   const processing = ref(false);
 
   onMounted(() => {
-    form.customName = props.terminal.name || '';
+    formData.customName = props.terminal.name || '';
 
     if (props.terminal.plcs) {
-      form.plc_assignments = props.terminal.plcs.map((plc) => ({
+      formData.plc_assignments = props.terminal.plcs.map((plc) => ({
         ...plc,
         customName: plc.name
       }));
@@ -81,8 +81,8 @@
 
     const submitData = {
       terminal: {
-        name: form.customName,
-        plc_assignments: form.plc_assignments
+        name: formData.customName,
+        plc_assignments: formData.plc_assignments
           .filter((a) => a.id)
           .map((a) => ({ id: a.id, name: a.customName }))
       }

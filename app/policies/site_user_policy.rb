@@ -1,8 +1,4 @@
 class SiteUserPolicy < ApplicationPolicy
-  def index?
-    super
-  end
-
   class Scope < ApplicationPolicy::Scope
     def resolve
       if !active_context?

@@ -1,10 +1,12 @@
 class MeasurementPointPolicy < ApplicationPolicy
   def update?
-    super && current_client_user&.admin?
+    super && [
+      Roleable::ROLE_IDS[:admin], Roleable::ROLE_IDS[:site_admin]
+    ].include?(current_client_user&.role)
   end
 
   def write?
-    super && [
+    active_context? && record_belongs_to_current_client? && [
       Roleable::ROLE_IDS[:admin], Roleable::ROLE_IDS[:site_admin], Roleable::ROLE_IDS[:manager]
     ].include?(current_client_user&.role)
   end

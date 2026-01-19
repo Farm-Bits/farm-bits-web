@@ -4,30 +4,23 @@ class UserArea::SitesController < UserArea::ApplicationController
   def index
     authorize Site, :index?
 
-    @segments = policy_scope(Segment)
-    @site_users = policy_scope(SiteUser)
-    render inertia: 'UserArea/Sites/Index/index', props: {
-      segments: SegmentSerializer.render_as_json(@segments),
-      siteUsers: SiteUserSerializer.render_as_json(@site_users)
-    }
+    sites = policy_scope(Site).includes(:segments)
+    render json: SiteSerializer.render_as_json(sites, view: :with_segments)
   end
 
   def show
     authorize @site
 
-    render inertia: 'UserArea/Sites/Show/index', props: {
-      site: SiteSerializer.render_as_json(@site)
-    }
+    render json: SiteSerializer.render_as_json(@site, view: :with_segments)
   end
 
   def create
     authorize Site, :create?
 
-    site = Site.new(site_params)
-    site.client = current_client
+    site = current_client.sites.build(site_params)
 
     if site.save
-      render json: SiteSerializer.render_as_json(site), status: :created
+      render json: SiteSerializer.render_as_json(site, view: :with_segments), status: :created
     else
       render json: { error: site.errors.full_messages.to_sentence }, status: :unprocessable_entity
     end
@@ -37,7 +30,7 @@ class UserArea::SitesController < UserArea::ApplicationController
     authorize @site, :update?
 
     if @site.update(site_params)
-      render json: SiteSerializer.render_as_json(@site), status: :ok
+      render json: SiteSerializer.render_as_json(@site, view: :with_segments), status: :ok
     else
       render json: { error: @site.errors.full_messages.to_sentence }, status: :unprocessable_entity
     end
@@ -46,19 +39,22 @@ class UserArea::SitesController < UserArea::ApplicationController
   def destroy
     authorize @site, :destroy?
 
-    if @site.destroy
+    begin
+      @site.destroy!
       head :no_content
-    else
+    rescue => e
       render json: { error: @site.errors.full_messages.to_sentence }, status: :unprocessable_entity
     end
   end
 
   private
     def site_params
-      params.require(:site).permit(:name, :country, :city, :latitude, :longitude, :altitude)
+      params.require(:site).permit(:name, :country, :city, :latitude, :longitude, :altitude, :time_zone,
+        segments_attributes: [:id, :name, :_destroy]
+      )
     end
 
     def set_site
-      @site = current_client.sites.find_by(id: params[:id])
+      @site = policy_scope(Site).find_by(id: params[:id])
     end
 end

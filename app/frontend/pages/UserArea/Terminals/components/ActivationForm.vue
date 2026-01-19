@@ -3,7 +3,7 @@
     <div class="mb-3">
       <CFormLabel class="fw-semibold">Select Terminal</CFormLabel>
       <CFormSelect
-        v-model="form.terminal_id"
+        v-model="formData.terminal_id"
         :invalid="!!errors.terminal_id"
         @change="handleTerminalSelect">
         <option value="">-- Select a terminal --</option>
@@ -22,7 +22,7 @@
     <!-- Selected Terminal Details Card -->
     <div v-if="selectedTerminalDetails">
       <TerminalDetailsForm
-        v-model="form"
+        v-model="formData"
         :terminal="selectedTerminalDetails"
         :availablePlcs="availablePlcs" />
     </div>
@@ -30,7 +30,7 @@
     <!-- PLC Assignment Section -->
     <div class="pt-3 mb-3">
       <PlcAssignmentManager
-        v-model="form.plc_assignments"
+        v-model="formData.plc_assignments"
         :availablePlcs="availablePlcs" />
     </div>
 
@@ -71,7 +71,7 @@
 
   const { execute } = useApiCall();
 
-  const form = reactive({
+  const formData = reactive({
     terminal_id: '',
     customName: '',
     plc_assignments: [] as (Plc & { customName: string })[]
@@ -81,16 +81,16 @@
   const processing = ref(false);
 
   const selectedTerminalDetails = computed(() => {
-    if (!form.terminal_id)
+    if (!formData.terminal_id)
       return null;
 
-    return props.availableTerminals.find((t) => t.id === parseInt(form.terminal_id));
+    return props.availableTerminals.find((t) => t.id === parseInt(formData.terminal_id));
   });
 
   function handleTerminalSelect() {
     delete errors.value.terminal_id;
     nextTick(() => {
-      form.customName = selectedTerminalDetails.value?.name || '';
+      formData.customName = selectedTerminalDetails.value?.name || '';
     });
   }
 
@@ -99,7 +99,7 @@
     errors.value = {};
 
     const selectedTerminal = props.availableTerminals.find(
-      (t) => t.id === parseInt(form.terminal_id)
+      (t) => t.id === parseInt(formData.terminal_id)
     );
 
     if (!selectedTerminal) {
@@ -110,11 +110,11 @@
 
     const submitData = {
       terminal: {
-        name: form.customName,
+        name: formData.customName,
         iccid: selectedTerminal.iccid,
         phone_number: selectedTerminal.phone_number,
         active: true,
-        plc_assignments: form.plc_assignments
+        plc_assignments: formData.plc_assignments
           .filter((a) => a.id)
           .map((a) => ({ id: a.id, name: a.customName }))
       }

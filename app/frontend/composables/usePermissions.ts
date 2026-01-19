@@ -30,12 +30,6 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       destroy: true,
       resend: true
     },
-    segments: {
-      index: true,
-      create: true,
-      update: true,
-      destroy: true
-    },
     sites: {
       index: true,
       show: true,
@@ -83,12 +77,6 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       create: true,
       destroy: true,
       resend: true
-    },
-    segments: {
-      index: true,
-      create: true,
-      update: true,
-      destroy: true
     },
     sites: {
       index: true,
@@ -138,12 +126,6 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       destroy: false,
       resend: false
     },
-    segments: {
-      index: true,
-      create: false,
-      update: false,
-      destroy: false
-    },
     sites: {
       index: false,
       show: false,
@@ -191,12 +173,6 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       create: false,
       destroy: false,
       resend: false
-    },
-    segments: {
-      index: true,
-      create: false,
-      update: false,
-      destroy: false
     },
     sites: {
       index: false,

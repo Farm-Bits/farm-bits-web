@@ -21,14 +21,3 @@ export type Invitation = {
   expired: boolean;
   site_ids?: Site['id'][];
 };
-
-export type ChangeRoleData = {
-  role: Role;
-  site_ids?: Site['id'][];
-};
-
-export type InvitationData = {
-  email: string;
-  role: Role;
-  site_ids?: Site['id'][];
-};

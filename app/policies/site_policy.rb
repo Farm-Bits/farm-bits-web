@@ -1,14 +1,10 @@
 class SitePolicy < ApplicationPolicy
   def index?
-    super && [
-      Roleable::ROLE_IDS[:admin], Roleable::ROLE_IDS[:site_admin]
-    ].include?(current_client_user&.role)
+    super
   end
 
   def show?
-    super && [
-      Roleable::ROLE_IDS[:admin], Roleable::ROLE_IDS[:site_admin]
-    ].include?(current_client_user&.role)
+    super
   end
 
   def create?

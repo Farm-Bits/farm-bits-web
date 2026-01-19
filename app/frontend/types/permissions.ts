@@ -1,5 +1,5 @@
 // Auto-generated file - Do not edit manually
-// Generated at: 2026-01-18 21:21:19 UTC
+// Generated at: 2026-01-19 17:00:16 UTC
 
 import type { Method } from '@inertiajs/core';
 
@@ -34,7 +34,7 @@ export const ROLES: Record<Role, { name: string; description: string; level: num
 } as const;
 
 // Valid controller keys
-export type ControllerKey = 'dashboard' | 'my_account' | 'client_setup' | 'client_users' | 'invitations' | 'segments' | 'sites' | 'terminals' | 'plcs' | 'measurement_points';
+export type ControllerKey = 'dashboard' | 'my_account' | 'client_setup' | 'client_users' | 'invitations' | 'sites' | 'terminals' | 'plcs' | 'measurement_points';
 
 // Route permissions mapping
 export type RoutePermissions = {
@@ -63,12 +63,6 @@ export type RoutePermissions = {
     create: boolean;
     destroy: boolean;
     resend: boolean;
-  };
-  segments: {
-    index: boolean;
-    create: boolean;
-    update: boolean;
-    destroy: boolean;
   };
   sites: {
     index: boolean;
@@ -202,30 +196,6 @@ export const ROUTES: Record<string, RouteInfo> = {
     action: 'resend',
     path: '/user/invitations/:id/resend',
     verb: 'put'
-  },
-  segments_index: {
-    controller: 'segments',
-    action: 'index',
-    path: '/user/segments',
-    verb: 'get'
-  },
-  segments_create: {
-    controller: 'segments',
-    action: 'create',
-    path: '/user/segments',
-    verb: 'post'
-  },
-  segments_update: {
-    controller: 'segments',
-    action: 'update',
-    path: '/user/segments/:id',
-    verb: 'patch'
-  },
-  segments_destroy: {
-    controller: 'segments',
-    action: 'destroy',
-    path: '/user/segments/:id',
-    verb: 'delete'
   },
   sites_index: {
     controller: 'sites',

@@ -1,5 +1,5 @@
 class PlcPolicy < ApplicationPolicy
-  def index?
+  def show?
     super
   end
 

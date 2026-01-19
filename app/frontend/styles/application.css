@@ -884,3 +884,11 @@ h1, h2, h3, h4, h5, h6 {
 .map-container {
   @apply w-full h-80 rounded-xl border border-gray-200 shadow-sm bg-gray-100;
 }
+
+/* =================================
+   TABLES
+   ================================= */
+
+.table > tbody {
+  vertical-align: middle;
+}

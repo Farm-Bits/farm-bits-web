@@ -13,6 +13,7 @@ class Site < ApplicationRecord
   has_many :plcs
 
   has_many :segments, dependent: :destroy
+  accepts_nested_attributes_for :segments, allow_destroy: true
 
   has_many :measurement_points
 
@@ -37,6 +38,7 @@ class Site < ApplicationRecord
 
   before_validation :set_default_name, if: -> { name.blank? && client.present? }
   before_validation :set_default_time_zone
+  before_validation :set_client_on_segments
   before_destroy :prevent_destroy_last_site
   before_destroy :prevent_destroy_connected_site
 
@@ -103,10 +105,24 @@ class Site < ApplicationRecord
     end
 
     def set_default_time_zone
+      if time_zone.present?
+        return
+      end
+
       inferred = infer_time_zone
-      self.time_zone = inferred if inferred
+      if inferred
+        self.time_zone = inferred
+      end
 
       self.time_zone ||= 'UTC'
+    end
+
+    def set_client_on_segments
+      segments.each do |segment|
+        if segment.client_id.nil?
+          segment.client_id = client_id
+        end
+      end
     end
 
     def prevent_destroy_last_site

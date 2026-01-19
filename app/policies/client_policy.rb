@@ -3,6 +3,10 @@ class ClientPolicy < ApplicationPolicy
     current_user&.active
   end
 
+  def new?
+    create?
+  end
+
   def edit?
     active_context? && record == current_client && [
       Roleable::ROLE_IDS[:admin], Roleable::ROLE_IDS[:site_admin], Roleable::ROLE_IDS[:manager]

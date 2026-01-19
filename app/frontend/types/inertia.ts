@@ -1,5 +1,5 @@
 import type { Role } from './permissions';
-import type { Site } from './location';
+import type { Segment, Site } from './location';
 
 const USER_SCOPES = ['admin_users', 'users'] as const;
 export type UserScope = typeof USER_SCOPES[number];
@@ -16,6 +16,10 @@ export type User = {
   email: string;
 };
 
+export type SiteWithSegments = Site & {
+  segments: Segment[];
+};
+
 declare module '@inertiajs/core' {
   interface PageProps {
     userScope?: UserScope;
@@ -23,7 +27,7 @@ declare module '@inertiajs/core' {
     client?: Client;
     role?: Role;
     clients?: Client[];
-    site?: Site;
+    site?: SiteWithSegments;
     sites?: Site[];
   }
 };

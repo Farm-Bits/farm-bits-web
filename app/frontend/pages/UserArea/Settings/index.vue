@@ -54,7 +54,7 @@
           </CTabPanel>
 
           <CTabPanel v-if="permissions?.sites.index" item-key="sites">
-            <SitesManagementTab />
+            <SitesTab />
           </CTabPanel>
 
           <CTabPanel v-if="permissions?.client_setup.destroy" item-key="danger">
@@ -70,7 +70,7 @@
   import { ref } from 'vue';
   import ClientTab from './components/tabs/ClientTab.vue';
   import UsersTab from './components/tabs/UsersTab.vue';
-  import SitesManagementTab from './components/tabs/SitesManagementTab.vue';
+  import SitesTab from './components/tabs/SitesTab.vue';
   import DangerTab from './components/tabs/DangerTab.vue';
   import usePermissions from '@/composables/usePermissions';
 

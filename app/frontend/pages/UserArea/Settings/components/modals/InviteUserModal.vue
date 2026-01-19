@@ -22,7 +22,7 @@
             type="email"
             placeholder="Enter email address"
             required
-            v-model="form.email"
+            v-model="formData.email"
             :invalid="!!errors.email" />
           <CFormFeedback v-if="errors.email" invalid>
             {{ errors.email }}
@@ -41,7 +41,7 @@
               :id="`role-${roleId}`"
               :label="`${roleData.name} - ${roleData.description}`"
               :value="roleId"
-              v-model="form.role" />
+              v-model="formData.role" />
           </div>
           <CFormFeedback v-if="errors.role" invalid>
             {{ errors.role }}
@@ -65,7 +65,7 @@
                 :id="`site-${site.id}`"
                 :label="site.name"
                 :value="String(site.id)"
-                :checked="form.site_ids.includes(site.id)"
+                :checked="formData.site_ids.includes(site.id)"
                 @change="toggleSite(site.id)" />
             </CCardBody>
           </CCard>
@@ -94,11 +94,12 @@
 
 <script lang="ts" setup>
   import { ref, reactive, computed, watch } from 'vue';
-  import { type ApiError } from '@/composables/useApi';
+  import axios from 'axios';
   import { ROLES, type Role } from '@/types/permissions';
-  import type { Site } from '@/types/location';
   import useAuth from '@/composables/useAuth';
-  import type { InvitationData } from '../types/invitation';
+  import { useApiCall } from '@/composables/useApi';
+  import { ROUTES } from '@/types/permissions';
+  import type { Invitation } from '../types/invitation';
 
   const props = defineProps<{
     visible: boolean;
@@ -106,16 +107,13 @@
 
   const emit = defineEmits<{
     (e: 'close'): void;
-    (
-      e: 'invite',
-      data: InvitationData,
-      callback?: (success: boolean, error?: ApiError) => void
-    ): void;
+    (e: 'invite', data: Invitation): void;
   }>();
 
   const { role, sites } = useAuth();
+  const { execute } = useApiCall();
 
-  const form = reactive({
+  const formData = reactive({
     email: '',
     role: 'viewer' as Role,
     site_ids: [] as number[]
@@ -146,13 +144,13 @@
   });
 
   const selectedRoleNeedsSites = computed(() => {
-    return ROLES[form.role]?.siteSpecific || false;
+    return ROLES[formData.role]?.siteSpecific || false;
   });
 
   const isFormValid = computed(() => {
-    const hasEmail = form.email.trim() !== '' && isValidEmail(form.email);
-    const hasRole = !!form.role;
-    const hasSitesIfNeeded = !selectedRoleNeedsSites.value || form.site_ids.length > 0;
+    const hasEmail = formData.email.trim() !== '' && isValidEmail(formData.email);
+    const hasRole = !!formData.role;
+    const hasSitesIfNeeded = !selectedRoleNeedsSites.value || formData.site_ids.length > 0;
     const noErrors = !errors.email && !errors.role && !errors.site_ids;
 
     return hasEmail && hasRole && hasSitesIfNeeded && noErrors;
@@ -168,18 +166,18 @@
     errors.role = '';
     errors.site_ids = '';
 
-    if (!form.email.trim())
+    if (!formData.email.trim())
       errors.email = 'Email address is required';
-    else if (!isValidEmail(form.email))
+    else if (!isValidEmail(formData.email))
       errors.email = 'Please enter a valid email address';
 
-    if (!form.role)
+    if (!formData.role)
       errors.role = 'Please select a role';
 
     if (selectedRoleNeedsSites.value) {
-      if (form.site_ids.length === 0)
+      if (formData.site_ids.length === 0)
         errors.site_ids = 'Please select at least one site for this role';
-      else if (form.site_ids.some((id) => !sites.value?.some((site) => site.id === id)))
+      else if (formData.site_ids.some((id) => !sites.value?.some((site) => site.id === id)))
         errors.site_ids = 'One or more selected sites are invalid';
     }
 
@@ -187,20 +185,20 @@
   }
 
   function toggleSite(siteId: number) {
-    const index = form.site_ids.indexOf(siteId);
+    const index = formData.site_ids.indexOf(siteId);
     if (index > -1)
-      form.site_ids.splice(index, 1);
+      formData.site_ids.splice(index, 1);
     else
-      form.site_ids.push(siteId);
+      formData.site_ids.push(siteId);
 
-    if (form.site_ids.length > 0)
+    if (formData.site_ids.length > 0)
       errors.site_ids = '';
   }
 
   function resetForm() {
-    form.email = '';
-    form.role = 'viewer';
-    form.site_ids = [];
+    formData.email = '';
+    formData.role = 'viewer';
+    formData.site_ids = [];
 
     errors.submission = '';
     errors.email = '';
@@ -221,22 +219,27 @@
 
     isLoading.value = true;
 
-    const invitationData: InvitationData = {
-      email: form.email.trim(),
-      role: form.role,
-      site_ids: selectedRoleNeedsSites.value ? form.site_ids : undefined
+    const body = {
+      invitation: {
+        email: formData.email.trim(),
+        role: formData.role,
+        site_ids: selectedRoleNeedsSites.value ? formData.site_ids : undefined
+      }
     };
-
-    emit(
-      'invite',
-      invitationData,
-      (success, error) => {
-        if (!success && error)
-          errors.submission = error.error;
-
-        isLoading.value = false;
+    const { success, data, error } = await execute<Invitation>(
+      () => axios.post(ROUTES.invitations_create.path, body),
+      {
+        showSuccessToast: true,
+        successMessage: 'Invitation sent successfully'
       }
     );
+
+    if (success)
+      emit('invite', data);
+    else
+      errors.submission = error.error || 'An error occurred while sending the invitation';
+
+    isLoading.value = false;
   }
 
   watch(() => props.visible, (newValue) => {
@@ -246,7 +249,7 @@
 
   watch(() => selectedRoleNeedsSites.value, (needsSites, previousNeedsSites) => {
     if (!needsSites && previousNeedsSites) {
-      form.site_ids = [];
+      formData.site_ids = [];
       errors.site_ids = '';
     }
   });

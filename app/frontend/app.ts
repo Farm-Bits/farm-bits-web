@@ -48,6 +48,8 @@ import {
   CHeaderToggler,
   CInputGroup,
   CInputGroupText,
+  CListGroup,
+  CListGroupItem,
   CModal,
   CModalBody,
   CModalFooter,
@@ -251,6 +253,8 @@ export default function () {
       app.component('CInputGroup', CInputGroup);
       app.component('CInputGroupText', CInputGroupText);
       app.component('CIcon', CIcon);
+      app.component('CListGroup', CListGroup);
+      app.component('CListGroupItem', CListGroupItem);
       app.component('CModal', CModal);
       app.component('CModalBody', CModalBody);
       app.component('CModalFooter', CModalFooter);

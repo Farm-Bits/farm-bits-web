@@ -3,7 +3,7 @@
     <CCardHeader>
       <div class="d-flex justify-content-between align-items-center">
         <div>
-          <h5 class="mb-1">User Management</h5>
+          <h5 class="mb-1">Users Management</h5>
           <p class="text-medium-emphasis small mb-0">
             Manage user access and permissions
           </p>
@@ -27,7 +27,7 @@
             <CTableHeaderCell>Email</CTableHeaderCell>
             <CTableHeaderCell>Role</CTableHeaderCell>
             <CTableHeaderCell>Sites</CTableHeaderCell>
-            <CTableHeaderCell style="width: 150px">Actions</CTableHeaderCell>
+            <CTableHeaderCell style="width: 100px">Actions</CTableHeaderCell>
           </CTableRow>
         </CTableHead>
         <CTableBody>
@@ -64,20 +64,20 @@
                 </CTooltip>
                 <CTooltip
                   v-if="(permissions?.client_users.destroy && canManageUser(clientUser)) || clientUser.user_id === user?.id"
-                  :content="clientUser.user_id === user?.id ? 'Leave Company' : 'Remove user'">
+                  :content="clientUser.user_id === user?.id ? 'Leave Company' : 'Delete user'">
                   <template #toggler="{ id, on }">
                     <CButton
                       v-if="clientUser.user_id === user?.id"
                       v-on="on"
                       color="light"
-                      @click="openRemoveUserModal(clientUser)">
+                      @click="openDeleteUserModal(clientUser)">
                       <CIcon name="cilRunning" />
                     </CButton>
                     <CButton
                       v-else
                       v-on="on"
                       color="light"
-                      @click="openRemoveUserModal(clientUser)">
+                      @click="openDeleteUserModal(clientUser)">
                       <CIcon name="cilTrash" />
                     </CButton>
                   </template>
@@ -146,21 +146,21 @@
       :visible="showChangeRoleModal"
       :clientUser="editingClientUser"
       @close="closeChangeRoleModal"
-      @update="handleRoleUpdate" />
+      @update="handleRoleUpdated" />
 
     <!-- Delete User Confirmation Modal -->
     <CModal
       :visible="showDeleteModal"
-      @close="closeRemoveUserModal">
+      @close="closeDeleteUserModal">
       <CModalHeader>
-        <CModalTitle>Remove User</CModalTitle>
+        <CModalTitle>Delete User</CModalTitle>
       </CModalHeader>
       <CModalBody>
-        <p v-if="clientUserToRemove?.user_id === user?.id">
+        <p v-if="clientUserToDelete?.user_id === user?.id">
           Leave the company?
         </p>
         <p v-else>
-          Remove <strong>{{ clientUserToRemove?.user.name }}</strong> from your organization?
+          Delete <strong>{{ clientUserToDelete?.user.name }}</strong> from your organization?
         </p>
         <CAlert color="danger" class="d-flex align-items-center mb-0">
           <CIcon name="cilWarning" class="me-2" />
@@ -170,15 +170,15 @@
       <CModalFooter>
         <CButton
           color="secondary"
-          @click="closeRemoveUserModal">
+          @click="closeDeleteUserModal">
           Cancel
         </CButton>
         <CButton
           color="danger"
           :disabled="isDeletingClientUser"
-          @click="handleRemoveClientUser">
+          @click="handleDeleteClientUser">
           <CSpinner v-if="isDeletingClientUser" size="sm" class="me-2" />
-          {{ isDeletingClientUser ? 'Removing...' : 'Remove User' }}
+          {{ isDeletingClientUser ? 'Deleting...' : 'Delete User' }}
         </CButton>
       </CModalFooter>
     </CModal>
@@ -221,12 +221,12 @@
   import axios from 'axios';
   import useAuth from '@/composables/useAuth';
   import usePermissions from '@/composables/usePermissions';
-  import { useApiCall, type ApiError } from '@/composables/useApi';
+  import { useApiCall } from '@/composables/useApi';
   import { ROLES, type Role, ROUTES } from '@/types/permissions';
   import InviteUserModal from '../modals/InviteUserModal.vue';
   import ChangeRoleModal from '../modals/ChangeRoleModal.vue';
   import type { Site } from '@/types/location';
-  import type { ChangeRoleData, ClientUser, Invitation, InvitationData } from '../types/invitation';
+  import type { ClientUser, Invitation } from '../types/invitation';
 
   const { user, role } = useAuth();
   const { permissions } = usePermissions();
@@ -241,7 +241,7 @@
   const editingClientUser = ref<ClientUser | null>(null);
 
   const showDeleteModal = ref(false);
-  const clientUserToRemove = ref<ClientUser | null>(null);
+  const clientUserToDelete = ref<ClientUser | null>(null);
   const isDeletingClientUser = ref(false);
 
   const showDeleteInvitationModal = ref(false);
@@ -303,14 +303,14 @@
     editingClientUser.value = null;
   }
 
-  function openRemoveUserModal(clientUser: ClientUser) {
-    clientUserToRemove.value = clientUser;
+  function openDeleteUserModal(clientUser: ClientUser) {
+    clientUserToDelete.value = clientUser;
     showDeleteModal.value = true;
   }
 
-  function closeRemoveUserModal() {
+  function closeDeleteUserModal() {
     showDeleteModal.value = false;
-    clientUserToRemove.value = null;
+    clientUserToDelete.value = null;
   }
 
   function openDeleteInvitationModal(invitation: Invitation) {
@@ -323,83 +323,47 @@
     invitationToDelete.value = null;
   }
 
-  async function handleRoleUpdate(
-    changeRoleData: ChangeRoleData,
-    callback?: (success: boolean, error?: ApiError) => void
-  ) {
-    if (!editingClientUser.value)
-      return;
-
-    const url = ROUTES.client_users_update.path.replace(':id', String(editingClientUser.value.id));
-    const { success, data, error } = await execute(
-      () => axios.patch(url, {
-        client_user: {
-          id: editingClientUser.value!.id,
-          user_id: editingClientUser.value!.user_id,
-          role: changeRoleData.role,
-          site_ids: changeRoleData.site_ids
-        }
-      }),
-      {
-        showSuccessToast: true,
-        successMessage: 'User role updated successfully'
-      }
-    );
-
-    if (success) {
-      const clientUserUpdated = clientUsers.value.find((u) => u.id === editingClientUser.value!.id);
-      if (clientUserUpdated) {
-        clientUserUpdated.role = data.role;
-        clientUserUpdated.site_ids = data.site_ids;
-      }
-
-      closeChangeRoleModal();
+  async function handleRoleUpdated(updatedClientUser: ClientUser) {
+    const clientUserUpdated = clientUsers.value.find((u) => u.id === updatedClientUser.id);
+    if (clientUserUpdated) {
+      clientUserUpdated.role = updatedClientUser.role;
+      clientUserUpdated.site_ids = updatedClientUser.site_ids;
     }
 
-    callback?.(success, error);
+    closeChangeRoleModal();
   }
 
-  async function handleRemoveClientUser() {
-    if (!clientUserToRemove.value)
+  async function handleDeleteClientUser() {
+    if (!clientUserToDelete.value)
       return;
 
     isDeletingClientUser.value = true;
 
-    const url = ROUTES.client_users_destroy.path.replace(':id', String(clientUserToRemove.value.id));
+    const url = ROUTES.client_users_destroy.path.replace(':id', String(clientUserToDelete.value.id));
     const { success } = await execute(
       () => axios.delete(url),
       {
         showSuccessToast: true,
-        successMessage: 'User removed successfully',
+        successMessage: 'User deleted successfully',
         showErrorToast: true,
         errorTitle: 'Delete Error'
       }
     );
 
     if (success) {
-      const index = clientUsers.value.findIndex((u) => u.id === clientUserToRemove.value!.id);
+      const index = clientUsers.value.findIndex((u) => u.id === clientUserToDelete.value!.id);
       if (index > -1)
         clientUsers.value.splice(index, 1);
 
-      closeRemoveUserModal();
+      closeDeleteUserModal();
     }
 
     isDeletingClientUser.value = false;
   }
 
-  async function handleInvite(invitationData: InvitationData) {
-    const { success, data, error } = await execute<Invitation>(
-      () => axios.post(ROUTES.invitations_create.path, { invitation: invitationData }),
-      {
-        showSuccessToast: true,
-        successMessage: 'Invitation sent successfully'
-      }
-    );
-
-    if (success) {
-      invitations.value.push(data);
-      closeInviteModal();
-    }
+  async function handleInvite(invitation: Invitation) {
+    invitations.value.push(invitation);
+    closeInviteModal();
   }
 
   async function resendInvitation(invitation: Invitation) {

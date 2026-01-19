@@ -39,7 +39,7 @@
               :label="`${roleData.name} - ${roleData.description}`"
               :value="roleId"
               :disabled="roleId === clientUser?.role"
-              v-model="form.role" />
+              v-model="formData.role" />
           </div>
           <CFormFeedback v-if="errors.role" invalid>
             {{ errors.role }}
@@ -63,7 +63,7 @@
                 :id="`site-${site.id}`"
                 :label="site.name"
                 :value="String(site.id)"
-                :checked="form.site_ids.includes(site.id)"
+                :checked="formData.site_ids.includes(site.id)"
                 @change="toggleSite(site.id)" />
             </CCardBody>
           </CCard>
@@ -92,10 +92,12 @@
 
 <script lang="ts" setup>
   import { ref, reactive, computed, watch } from 'vue';
+  import axios from 'axios';
   import { ROLES, type Role } from '@/types/permissions';
-  import type { ChangeRoleData, ClientUser } from '../types/invitation';
+  import type { ClientUser } from '../types/invitation';
   import useAuth from '@/composables/useAuth';
-  import type { ApiError } from '@/composables/useApi';
+  import { useApiCall } from '@/composables/useApi';
+  import { ROUTES } from '@/types/permissions';
   import type { Site } from '@/types/location';
 
   const props = defineProps<{
@@ -105,16 +107,13 @@
 
   const emit = defineEmits<{
     (e: 'close'): void;
-    (
-      e: 'update',
-      changeRoleData: ChangeRoleData,
-      callback?: (success: boolean, error?: ApiError) => void
-    ): void;
+    (e: 'update', updatedClientUser: ClientUser): void;
   }>();
 
   const { role, sites } = useAuth();
+  const { execute } = useApiCall();
 
-  const form = reactive({
+  const formData = reactive({
     role: 'viewer' as Role,
     site_ids: [] as Site['id'][]
   });
@@ -143,13 +142,13 @@
   });
 
   const selectedRoleNeedsSites = computed(() => {
-    return ROLES[form.role]?.siteSpecific || false;
+    return ROLES[formData.role]?.siteSpecific || false;
   });
 
   const hasChanges = computed(() => {
-    const roleChanged = form.role !== props.clientUser?.role;
+    const roleChanged = formData.role !== props.clientUser?.role;
     const siteAccessChanged = !arraysEqual(
-      form.site_ids.sort(),
+      formData.site_ids.sort(),
       (props.clientUser?.site_ids || []).sort()
     );
     return roleChanged || siteAccessChanged;
@@ -165,13 +164,13 @@
     errors.role = '';
     errors.site_ids = '';
 
-    if (!form.role)
+    if (!formData.role)
       errors.role = 'Please select a role';
 
     if (selectedRoleNeedsSites.value) {
-      if (form.site_ids.length === 0)
+      if (formData.site_ids.length === 0)
         errors.site_ids = 'Please select at least one site for this role';
-      else if (form.site_ids.some((id) => !sites.value?.some((site) => site.id === id)))
+      else if (formData.site_ids.some((id) => !sites.value?.some((site) => site.id === id)))
         errors.site_ids = 'One or more selected sites are invalid';
     }
 
@@ -179,19 +178,19 @@
   }
 
   function toggleSite(siteId: number) {
-    const index = form.site_ids.indexOf(siteId);
+    const index = formData.site_ids.indexOf(siteId);
     if (index > -1)
-      form.site_ids.splice(index, 1);
+      formData.site_ids.splice(index, 1);
     else
-      form.site_ids.push(siteId);
+      formData.site_ids.push(siteId);
 
-    if (form.site_ids.length > 0)
+    if (formData.site_ids.length > 0)
       errors.site_ids = '';
   }
 
   function resetForm() {
-    form.role = props.clientUser?.role || 'viewer';
-    form.site_ids = [...(props.clientUser?.site_ids || [])];
+    formData.role = props.clientUser?.role || 'viewer';
+    formData.site_ids = [...(props.clientUser?.site_ids || [])];
 
     errors.submission = '';
     errors.role = '';
@@ -206,26 +205,37 @@
   }
 
   async function handleSubmit() {
+    if (!props.clientUser)
+      return;
+
     if (!validateForm())
       return;
 
     isLoading.value = true;
 
-    const updateData: ChangeRoleData = {
-      role: form.role,
-      site_ids: selectedRoleNeedsSites.value ? form.site_ids : undefined
+    const body = {
+      client_user: {
+        id: props.clientUser.id,
+        user_id: props.clientUser.user_id,
+        role: formData.role,
+        site_ids: selectedRoleNeedsSites.value ? formData.site_ids : undefined
+      }
     };
-
-    emit(
-      'update',
-      updateData,
-      (success, error) => {
-        if (!success && error)
-          errors.submission = error.error;
-
-        isLoading.value = false;
+    const url = ROUTES.client_users_update.path.replace(':id', String(props.clientUser.id));
+    const { success, data, error } = await execute<ClientUser>(
+      () => axios.patch(url, body),
+      {
+        showSuccessToast: true,
+        successMessage: 'User role updated successfully'
       }
     );
+
+    if (success)
+      emit('update', data);
+    else
+      errors.submission = error.error || 'An error occurred while updating the user role';
+
+    isLoading.value = false;
   }
 
   watch(() => props.visible, (newValue) => {
@@ -233,7 +243,7 @@
       resetForm();
   });
 
-  watch(() => form.role, (newRole, oldRole) => {
+  watch(() => formData.role, (newRole, oldRole) => {
     if (!oldRole)
       return;
 
@@ -242,14 +252,13 @@
 
     // Clear sites when switching to non-site-specific role
     if (oldRoleNeedsSites && !newRoleNeedsSites) {
-      form.site_ids = [];
+      formData.site_ids = [];
       errors.site_ids = '';
     }
 
     // Restore sites when switching to site-specific role
-    if (!oldRoleNeedsSites && newRoleNeedsSites) {
-      form.site_ids = [...(props.clientUser?.site_ids || [])];
-    }
+    if (!oldRoleNeedsSites && newRoleNeedsSites)
+      formData.site_ids = [...(props.clientUser?.site_ids || [])];
   });
 </script>
 
