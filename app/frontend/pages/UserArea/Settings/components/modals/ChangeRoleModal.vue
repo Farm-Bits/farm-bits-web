@@ -8,7 +8,7 @@
     </CModalHeader>
     <CModalBody>
       <CAlert
-        v-if="clientUser?.has_other_sites"
+        v-if="clientUser && clientUserHasOtherSites(clientUser)"
         color="info"
         class="mb-3">
         <div class="d-flex">
@@ -175,6 +175,10 @@
     return a.every((val, idx) => val === b[idx]);
   }
 
+  function clientUserHasOtherSites(clientUser: ClientUser) {
+    return clientUser.total_sites_count > clientUser.visible_site_ids.length;
+  }
+
   function validateForm(): boolean {
     errors.role = '';
     errors.site_ids = '';
@@ -231,7 +235,7 @@
     const body = {
       client_user: {
         id: props.clientUser.id,
-        user_id: props.clientUser.user_id,
+        user_id: props.clientUser.user.id,
         role: formData.role,
         site_ids: selectedRoleNeedsSites.value ? formData.site_ids : undefined
       }

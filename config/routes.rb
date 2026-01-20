@@ -50,6 +50,7 @@ Rails.application.routes.draw do
 
       resources :client_users, only: [:index, :update, :destroy]
 
+      # resources :invitations, only: [:index, :create, :update, :destroy]
       resources :invitations, only: [:index, :create, :destroy]
       put 'invitations/:id/resend', to: 'invitations#resend'
 

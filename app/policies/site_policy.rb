@@ -26,8 +26,8 @@ class SitePolicy < ApplicationPolicy
       when Roleable::ROLE_IDS[:admin]
         sites
       when Roleable::ROLE_IDS[:site_admin], Roleable::ROLE_IDS[:manager], Roleable::ROLE_IDS[:viewer]
-        sites.joins(:site_users)
-          .where(site_users: { user: current_user })
+        sites.joins(:client_user_sites)
+          .where(client_user_sites: { client_user: current_client_user })
           .distinct
       else
         scope.none

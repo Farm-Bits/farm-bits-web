@@ -26,7 +26,7 @@
             <CTableHeaderCell>User</CTableHeaderCell>
             <CTableHeaderCell>Email</CTableHeaderCell>
             <CTableHeaderCell>Role</CTableHeaderCell>
-            <CTableHeaderCell>Sites</CTableHeaderCell>
+            <CTableHeaderCell>Site Access</CTableHeaderCell>
             <CTableHeaderCell style="width: 100px">Actions</CTableHeaderCell>
           </CTableRow>
         </CTableHead>
@@ -51,7 +51,7 @@
             <CTableDataCell>
               <CButtonGroup size="sm">
                 <CTooltip
-                  v-if="permissions?.client_users.update && canManageUser(clientUser) && clientUser.user_id !== user?.id"
+                  v-if="permissions?.client_users.update && canManageUser(clientUser) && clientUser.user.id !== user?.id"
                   content="Change role">
                   <template #toggler="{ id, on }">
                     <CButton
@@ -63,11 +63,11 @@
                   </template>
                 </CTooltip>
                 <CTooltip
-                  v-if="(permissions?.client_users.destroy && canManageUser(clientUser)) || clientUser.user_id === user?.id"
-                  :content="clientUser.user_id === user?.id ? 'Leave Company' : 'Delete user'">
+                  v-if="(permissions?.client_users.destroy && canManageUser(clientUser)) || clientUser.user.id === user?.id"
+                  :content="clientUser.user.id === user?.id ? 'Leave Company' : 'Delete user'">
                   <template #toggler="{ id, on }">
                     <CButton
-                      v-if="clientUser.user_id === user?.id"
+                      v-if="clientUser.user.id === user?.id"
                       v-on="on"
                       color="light"
                       @click="openDeleteUserModal(clientUser)">
@@ -95,17 +95,17 @@
               <CBadge :color="getRoleColor(invitation.role)">
                 {{ ROLES[invitation.role].name }}
               </CBadge>
-              ({{ invitation.expired ? 'Expired' : 'Pending' }} invitation)
+              ({{ invitation.status === 'expired' ? 'Expired' : 'Pending' }} invitation)
             </CTableDataCell>
             <CTableDataCell>
               <div class="small text-medium-emphasis">
-                <!-- {{ getSiteAccessText(invitation.role, invitation.site_ids) }} -->
+                {{ getSiteAccessText(invitation) }}
               </div>
             </CTableDataCell>
             <CTableDataCell>
               <CButtonGroup size="sm">
                 <CTooltip
-                  v-if="permissions?.invitations.resend && !invitation.expired"
+                  v-if="permissions?.invitations.resend && canManageUser(invitation)"
                   content="Resend invitation">
                   <template #toggler="{ id, on }">
                     <CButton
@@ -117,7 +117,7 @@
                   </template>
                 </CTooltip>
                 <CTooltip
-                  v-if="permissions?.invitations.destroy"
+                  v-if="permissions?.invitations.destroy && canManageUser(invitation)"
                   content="Cancel invitation">
                   <template #toggler="{ id, on }">
                   <CButton
@@ -156,7 +156,7 @@
         <CModalTitle>Delete User</CModalTitle>
       </CModalHeader>
       <CModalBody>
-        <p v-if="clientUserToDelete?.user_id === user?.id">
+        <p v-if="clientUserToDelete?.user.id === user?.id">
           Leave the company?
         </p>
         <p v-else>
@@ -255,29 +255,30 @@
     showInviteModal.value = false;
   }
 
-  function canManageUser(clientUser: ClientUser) {
+  function canManageUser(userable: ClientUser | Invitation) {
     if (!role.value)
       return false;
 
     const currentLevel = ROLES[role.value].level;
-    const userLevel = ROLES[clientUser.role].level;
+    const userLevel = ROLES[userable.role].level;
 
     return currentLevel >= userLevel;
   }
 
-  function getSiteAccessText(clientUser: ClientUser) {
-    if (!ROLES[clientUser.role].siteSpecific) {
-      let accessText = 'All sites';
-      if (clientUser.has_other_sites)
-        accessText += ` (and ${clientUser.total_sites_count - (clientUser.visible_site_ids.length)} more)`;
-      return accessText;
-    }
+  function clientUserHasOtherSites(userable: ClientUser | Invitation) {
+    return userable.total_sites_count > userable.visible_site_ids.length;
+  }
 
-    const accessSites = clientUser.visible_site_ids.map((sid) =>
+  // function getSiteAccessText(clientUser: ClientUser) {
+  function getSiteAccessText(userable: ClientUser | Invitation) {
+    if (!ROLES[userable.role].siteSpecific)
+      return 'All sites of the company';
+
+    const accessSites = userable.visible_site_ids.map((sid) =>
       sites.value?.find((site) => site.id === sid)?.name || '●') || [];
     let accessText = accessSites.join(', ');
-    if (clientUser.has_other_sites)
-      accessText += ` (and ${clientUser.total_sites_count - (clientUser.visible_site_ids.length)} more)`;
+    if (clientUserHasOtherSites(userable))
+      accessText += ` (and ${userable.total_sites_count - (userable.visible_site_ids.length)} more)`;
     return accessText;
   }
 

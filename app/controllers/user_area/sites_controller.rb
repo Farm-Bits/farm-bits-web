@@ -55,6 +55,6 @@ class UserArea::SitesController < UserArea::ApplicationController
     end
 
     def set_site
-      @site = policy_scope(Site).find_by(id: params[:id])
+      @site = policy_scope(Site).find(params[:id])
     end
 end

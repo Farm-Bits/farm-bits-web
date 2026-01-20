@@ -3,10 +3,10 @@ class Site < ApplicationRecord
 
   belongs_to :client
 
-  has_many :site_users, dependent: :destroy
-  accepts_nested_attributes_for :site_users
+  has_many :client_user_sites, dependent: :destroy
+  accepts_nested_attributes_for :client_user_sites
 
-  has_many :users, through: :site_users
+  has_many :users, through: :client_user_sites
 
   has_many :terminals
 
@@ -59,7 +59,7 @@ class Site < ApplicationRecord
     def city_must_be_valid_if_present
       if city.present? && country.present?
         service = GoogleMapsService.new
-        unless service.valid_city?(city, country)
+        if !service.valid_city?(city, country)
           errors.add(:city, 'is not a valid city in the specified country')
         end
       end

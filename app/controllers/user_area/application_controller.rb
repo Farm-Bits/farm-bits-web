@@ -19,6 +19,7 @@ class UserArea::ApplicationController < ApplicationController
   end
 
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
+  rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
 
   protected
     def ensure_user_has_client_access
@@ -31,14 +32,18 @@ class UserArea::ApplicationController < ApplicationController
       @clients = current_user.active_clients_connections
 
       if params[:client_id]
-        @current_client = @clients.find(params[:client_id])
+        @current_client = @clients.find_by(id: params[:client_id])
+        if !@current_client
+          flash[:alert] = "You don't have access to that company."
+          redirect_to root_path
+          return
+        end
       elsif session[:current_client_id]
         @current_client = @clients.find_by(id: session[:current_client_id])
       end
+
       @current_client ||= @clients.first
-
       @current_client_user = current_user.client_user_for(@current_client)
-
       session[:current_client_id] = @current_client&.id
     end
 
@@ -53,12 +58,16 @@ class UserArea::ApplicationController < ApplicationController
 
       if params[:site_id]
         @current_site = sites.find_by(id: params[:site_id])
+        if !@current_site
+          flash[:alert] = "You don't have access to that site."
+          redirect_to root_path
+          return
+        end
       elsif session[:current_site_id]
         @current_site = sites.find_by(id: session[:current_site_id])
-      else
-        @current_site = sites.first
       end
 
+      @current_site ||= sites.first
       session[:current_site_id] = @current_site&.id
     end
 
@@ -97,6 +106,13 @@ class UserArea::ApplicationController < ApplicationController
       respond_to do |format|
         format.html { redirect_to root_path, alert: 'You are not authorized to perform this action.' }
         format.json { render json: { error: 'Not authorized' }, status: :forbidden }
+      end
+    end
+
+    def record_not_found(exception)
+      respond_to do |format|
+        format.html { redirect_to root_path, alert: "That record doesn't exist or you don't have access to it." }
+        format.json { render json: { error: 'Record not found' }, status: :forbidden }
       end
     end
 end

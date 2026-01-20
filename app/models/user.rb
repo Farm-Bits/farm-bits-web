@@ -6,10 +6,6 @@ class User < ApplicationRecord
 
   has_many :clients, through: :client_users
 
-  has_many :site_users, dependent: :destroy
-  has_many :sites, through: :site_users
-  accepts_nested_attributes_for :sites
-
   has_many :invitations, as: :inviter, dependent: :nullify
 
   # Include default devise modules. Others available are:

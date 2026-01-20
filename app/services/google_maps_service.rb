@@ -37,6 +37,11 @@ class GoogleMapsService
     end
 
     begin
+      country_code = country_code_for(country_name)
+      if !country_code
+        return false
+      end
+
       search_query = "#{city_name}, #{country_name}"
       response = self.class.get('/place/textsearch/json', {
         query: {
@@ -48,8 +53,14 @@ class GoogleMapsService
 
       if response.success? && response['status'] == 'OK'
         return response['results'].any? do |result|
-          result['name'].downcase.include?(city_name.downcase) &&
-            result['formatted_address'].downcase.include?(country_name.downcase)
+          city_matches = result['name'].downcase == city_name.downcase
+
+          country_matches = false
+          if result['place_id']
+            country_matches = city_in_country?(result['place_id'], country_code)
+          end
+
+          city_matches && country_matches
         end
       end
 
@@ -146,4 +157,27 @@ class GoogleMapsService
     Rails.logger.error("Error fetching time zone: #{e.message}")
     nil
   end
+
+  private
+    def city_in_country?(place_id, country_code)
+      details_response = self.class.get('/place/details/json', {
+        query: {
+          place_id: place_id,
+          fields: 'address_components',
+          key: @api_key
+        }
+      })
+
+      if details_response.success? && details_response['status'] == 'OK'
+        address_components = details_response['result']['address_components']
+        country_component = address_components.find { |c| c['types'].include?('country') }
+
+        return country_component && country_component['short_name'] == country_code
+      end
+
+      return false
+    rescue => e
+      Rails.logger.error("Error checking if city is in country: #{e.message}")
+      return false
+    end
 end

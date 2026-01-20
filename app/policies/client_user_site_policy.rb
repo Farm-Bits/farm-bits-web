@@ -1,4 +1,4 @@
-class SiteUserPolicy < ApplicationPolicy
+class ClientUserSitePolicy < ApplicationPolicy
   class Scope < ApplicationPolicy::Scope
     def resolve
       scope.where(site: current_site)

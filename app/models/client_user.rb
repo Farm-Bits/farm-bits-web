@@ -5,6 +5,10 @@ class ClientUser < ApplicationRecord
   belongs_to :client
   belongs_to :user
 
+  has_many :client_user_sites, dependent: :destroy
+  has_many :sites, through: :client_user_sites
+  accepts_nested_attributes_for :sites
+
   validates :client_id, uniqueness: { scope: :user_id }
   validates :user_id, uniqueness: { scope: :client_id }
   validates :role, presence: true

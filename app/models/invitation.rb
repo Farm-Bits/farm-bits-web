@@ -5,6 +5,10 @@ class Invitation < ApplicationRecord
   belongs_to :inviter, polymorphic: true
   belongs_to :client, optional: true
 
+  has_many :invitation_sites, dependent: :destroy
+  has_many :sites, through: :invitation_sites
+  accepts_nested_attributes_for :sites
+
   validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :role, presence: true, if: -> { inviter_type == 'User' }
   validates :role, absence: true, if: -> { inviter_type == 'AdminUser' }
@@ -136,6 +140,9 @@ class Invitation < ApplicationRecord
         raise ActiveRecord::RecordInvalid, 'User is already a member of this client'
       else
         client_user.assign_attributes(role: role)
+        sites.each do |site|
+          client_user.client_user_sites.build(site: site)
+        end
         client_user.save!
       end
     end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_01_06_221548) do
+ActiveRecord::Schema[7.2].define(version: 2026_01_20_101646) do
   create_table "action_mailbox_inbound_emails", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "status", default: 0, null: false
     t.string "message_id", null: false
@@ -98,6 +98,16 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_221548) do
     t.index ["user_id", "user_type"], name: "user_index"
   end
 
+  create_table "client_user_sites", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "client_user_id", null: false
+    t.bigint "site_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["client_user_id", "site_id"], name: "index_client_user_sites_on_client_user_id_and_site_id", unique: true
+    t.index ["client_user_id"], name: "index_client_user_sites_on_client_user_id"
+    t.index ["site_id"], name: "index_client_user_sites_on_site_id"
+  end
+
   create_table "client_users", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "client_id", null: false
     t.bigint "user_id", null: false
@@ -145,6 +155,16 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_221548) do
     t.index ["plc_version_id", "name"], name: "index_interfaces_on_plc_version_id_and_name", unique: true
     t.index ["plc_version_id", "position"], name: "index_interfaces_on_plc_version_id_and_position"
     t.index ["plc_version_id"], name: "index_interfaces_on_plc_version_id"
+  end
+
+  create_table "invitation_sites", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "invitation_id", null: false
+    t.bigint "site_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["invitation_id", "site_id"], name: "index_invitation_sites_on_invitation_id_and_site_id", unique: true
+    t.index ["invitation_id"], name: "index_invitation_sites_on_invitation_id"
+    t.index ["site_id"], name: "index_invitation_sites_on_site_id"
   end
 
   create_table "invitations", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -353,16 +373,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_221548) do
     t.index ["site_id"], name: "index_site_sun_data_on_site_id"
   end
 
-  create_table "site_users", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
-    t.bigint "site_id", null: false
-    t.bigint "user_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["site_id", "user_id"], name: "index_site_users_on_site_id_and_user_id", unique: true
-    t.index ["site_id"], name: "index_site_users_on_site_id"
-    t.index ["user_id"], name: "index_site_users_on_user_id"
-  end
-
   create_table "sites", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "country", null: false
@@ -433,11 +443,15 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_221548) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "client_user_sites", "client_users", on_delete: :cascade
+  add_foreign_key "client_user_sites", "sites", on_delete: :cascade
   add_foreign_key "client_users", "clients", on_delete: :cascade
   add_foreign_key "client_users", "users", on_delete: :cascade
   add_foreign_key "interface_register_mappings", "interfaces", on_delete: :cascade
   add_foreign_key "interface_register_mappings", "register_templates", on_delete: :cascade
   add_foreign_key "interfaces", "plc_versions", on_delete: :cascade
+  add_foreign_key "invitation_sites", "invitations"
+  add_foreign_key "invitation_sites", "sites"
   add_foreign_key "invitations", "clients", on_delete: :cascade
   add_foreign_key "measurement_points", "measurement_subtypes", on_delete: :cascade
   add_foreign_key "measurement_points", "plcs", on_delete: :cascade
@@ -454,8 +468,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_221548) do
   add_foreign_key "register_templates", "plc_versions", on_delete: :cascade
   add_foreign_key "segments", "sites", on_delete: :cascade
   add_foreign_key "site_sun_data", "sites", on_delete: :cascade
-  add_foreign_key "site_users", "sites", on_delete: :cascade
-  add_foreign_key "site_users", "users", on_delete: :cascade
   add_foreign_key "sites", "clients", on_delete: :cascade
   add_foreign_key "terminals", "models"
   add_foreign_key "terminals", "sites"

@@ -7,6 +7,10 @@ class InvitationPolicy < ApplicationPolicy
     admin? || site_admin?
   end
 
+  # def update?
+  #   admin? || site_admin?
+  # end
+
   def resend?
     admin? || site_admin?
   end
@@ -17,18 +21,17 @@ class InvitationPolicy < ApplicationPolicy
 
   class Scope < ApplicationPolicy::Scope
     def resolve
-      # TODO: implement role-based access control here
-      # invitation do not have site association, so we cannot filter by site
-      # case current_client_user.role
-      # when 'admin'
-      # when 'site_admin', 'manager', 'viewer'
-      #   sites = policy_scope!(Site)
-      #   site_client_users.where(site: sites)
-      # else
-      #   scope.none
-      # end
-
-      scope.where(client: current_client)
+      if admin?
+        scope.where(client: current_client)
+      else
+        invitation_site_ids = policy_scope!(InvitationSite).select(:invitation_id)
+        scope.where(client: current_client)
+          .where(
+            "invitations.role = ? OR invitations.id IN (?)",
+            Roleable::ROLE_IDS[:admin],
+            invitation_site_ids
+          )
+      end
     end
   end
 end

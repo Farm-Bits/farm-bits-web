@@ -16,12 +16,12 @@ class ClientUserPolicy < ApplicationPolicy
       if admin?
         scope.where(client: current_client)
       else
-        site_user_ids = policy_scope!(SiteUser).pluck(:user_id)
+        client_user_site_ids = policy_scope!(ClientUserSite).select(:client_user_id)
         scope.where(client: current_client)
           .where(
-            "client_users.role = ? OR client_users.user_id IN (?)",
+            "client_users.role = ? OR client_users.id IN (?)",
             Roleable::ROLE_IDS[:admin],
-            site_user_ids
+            client_user_site_ids
           )
       end
     end
