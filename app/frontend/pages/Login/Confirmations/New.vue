@@ -45,7 +45,11 @@
             </p>
           </div>
 
-          <CButton type="submit" class="btn-gradient-green btn-full-width">
+          <CButton
+            :disabled="isLoading"
+            type="submit"
+            class="btn-gradient-green btn-full-width">
+            <CSpinner v-if="isLoading" size="sm" class="me-2" />
             Resend Confirmation Email
           </CButton>
         </CForm>
@@ -70,6 +74,7 @@
 </template>
 
 <script lang="ts" setup>
+  import { ref } from 'vue';
   import { useForm } from '@inertiajs/vue3';
   import { useVuelidate } from '@vuelidate/core';
   import { required, email } from '@vuelidate/validators';
@@ -82,6 +87,8 @@
       email: null
     }
   });
+
+  const isLoading = ref(false);
 
   function rules() {
     return {
@@ -107,7 +114,11 @@
       return;
     }
 
+    isLoading.value = true;
+
     formData.post(paths.value.actions.confirmation);
+
+    isLoading.value = false;
   }
 </script>
 

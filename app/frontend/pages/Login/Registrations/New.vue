@@ -153,7 +153,11 @@
 
             <!-- Submit Button -->
             <div class="form-submit-section">
-              <CButton type="submit" class="btn-gradient-green btn-full-width text-lg">
+              <CButton
+                :disabled="isLoading"
+                type="submit"
+                class="btn-gradient-green btn-full-width text-lg">
+                <CSpinner v-if="isLoading" size="sm" class="me-2" />
                 Create Account
               </CButton>
             </div>
@@ -175,7 +179,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed } from 'vue';
+  import { computed, ref } from 'vue';
   import { useForm } from '@inertiajs/vue3';
   import { useVuelidate } from '@vuelidate/core';
   import { between, decimal, email, maxValue, minLength, minValue, required, sameAs } from '@vuelidate/validators';
@@ -202,6 +206,8 @@
       }
     }
   });
+
+  const isLoading = ref(false);
 
   const passwordStrength = computed(() => {
     let strength = 0;
@@ -281,7 +287,11 @@
       return;
     }
 
+    isLoading.value = true;
+
     formData.post(paths.value.actions.signUp);
+
+    isLoading.value = false;
   }
 </script>
 

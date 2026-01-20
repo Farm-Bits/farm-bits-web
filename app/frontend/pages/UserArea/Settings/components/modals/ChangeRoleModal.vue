@@ -169,7 +169,7 @@
     return roleChanged || siteAccessChanged;
   });
 
-  function arraysEqual<T>(a: T[], b: T[]): boolean {
+  function arraysEqual<T>(a: T[], b: T[]) {
     if (a.length !== b.length)
       return false;
     return a.every((val, idx) => val === b[idx]);
@@ -179,7 +179,7 @@
     return clientUser.total_sites_count > clientUser.visible_site_ids.length;
   }
 
-  function validateForm(): boolean {
+  function validateForm() {
     errors.role = '';
     errors.site_ids = '';
 

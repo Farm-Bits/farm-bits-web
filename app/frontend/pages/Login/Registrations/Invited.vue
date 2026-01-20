@@ -124,7 +124,11 @@
 
             <!-- Submit Button -->
             <div class="form-submit-section">
-              <CButton type="submit" class="btn-gradient-green btn-full-width text-lg">
+              <CButton
+                :disabled="isLoading"
+                type="submit"
+                class="btn-gradient-green btn-full-width text-lg">
+                <CSpinner v-if="isLoading" size="sm" class="me-2" />
                 Join
               </CButton>
             </div>
@@ -136,7 +140,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed } from 'vue';
+  import { computed, ref } from 'vue';
   import { useForm } from '@inertiajs/vue3';
   import { useVuelidate } from '@vuelidate/core';
   import { email, minLength, required, sameAs } from '@vuelidate/validators';
@@ -158,6 +162,8 @@
       password_confirmation: ''
     }
   });
+
+  const isLoading = ref(false);
 
   const passwordStrength = computed(() => {
     let strength = 0;
@@ -214,7 +220,11 @@
       return;
     }
 
+    isLoading.value = true;
+
     formData.put(window.location.href);
+
+    isLoading.value = false;
   }
 </script>
 

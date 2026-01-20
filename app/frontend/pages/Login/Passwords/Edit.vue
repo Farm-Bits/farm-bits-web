@@ -86,8 +86,9 @@
 
           <CButton
             type="submit"
-            :disabled="!isFormValid"
+            :disabled="!isFormValid || isLoading"
             class="btn-gradient-green btn-full-width">
+            <CSpinner v-if="isLoading" size="sm" class="me-2" />
             Update Password
           </CButton>
         </CForm>
@@ -114,7 +115,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed } from 'vue';
+  import { computed, ref } from 'vue';
   import { usePage, useForm } from '@inertiajs/vue3';
   import { useVuelidate } from '@vuelidate/core';
   import { minLength, required, sameAs } from '@vuelidate/validators';
@@ -165,6 +166,8 @@
   const passwordStrengthTextClass = computed(() => passwordStrengthInfo.value.textColor);
   const passwordStrengthText = computed(() => passwordStrengthInfo.value.text);
 
+  const isLoading = ref(false);
+
   function rules() {
     return {
       [rootObjectName.value]: {
@@ -194,7 +197,11 @@
       return;
     }
 
+    isLoading.value = true;
+
     formData.put(paths.value.actions.resetPassword);
+
+    isLoading.value = false;
   }
 </script>
 
