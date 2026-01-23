@@ -27,26 +27,9 @@
                   :active="site?.id === otherSite.id">
                   {{ otherSite.name }}
                 </CDropdownItem>
-                <CDropdownDivider />
-                <CDropdownItem
-                  v-if="permissions?.sites.index"
-                  class="d-flex align-items-center text-primary"
-                  @click="router.visit(ROUTES.sites_index.path)">
-                  <CIcon name="cilCompress" class="me-2" />
-                  Manage Sites
-                </CDropdownItem>
               </template>
               <template v-else>
-                <div v-if="permissions?.sites.index">
-                  <CDropdownDivider />
-                  <CDropdownItem
-                    class="d-flex align-items-center text-primary"
-                    @click="router.visit(ROUTES.sites_index.path)">
-                    <CIcon name="cilCompress" class="me-2" />
-                    Add Your First Site
-                  </CDropdownItem>
-                </div>
-                <CDropdownItem v-else disabled>
+                <CDropdownItem disabled>
                   No Sites Available
                 </CDropdownItem>
               </template>

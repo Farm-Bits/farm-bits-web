@@ -61,8 +61,8 @@
               color="primary"
               variant="ghost"
               size="sm"
-              @click="$emit('edit', interface, measurementRegisterMappings)">
-              <CIcon icon="cilPencil" />
+              @click="$emit('edit', interface)">
+              <CIcon icon="cilSettings" />
             </CButton>
           </template>
         </CTooltip>
@@ -132,7 +132,7 @@
   }>();
 
   const emit = defineEmits<{
-    (e: 'edit', iface: InterfaceWithMeasurementPoints, registerMappings: InterfaceWithMeasurementPoints['register_mappings']): void;
+    (e: 'edit', iface: InterfaceWithMeasurementPoints): void;
     (
       e: 'update',
       updatedMeasurementPoint: MeasurementPoint,
@@ -145,7 +145,7 @@
 
   const measurementRegisterMappings = computed(() => {
     return props.interface.register_mappings.filter((mapping) => {
-      return isDataCategory(mapping.category);
+      return isDataCategory(mapping.register_template.category);
     });
   });
 
@@ -182,11 +182,11 @@
   });
 
   function isConfigured(measurementPoint: MeasurementPoint) {
-    return measurementPoint.active && measurementPoint.data_collection_enabled && !!measurementPoint.measurement_subtype_id;
+    return measurementPoint.active && !!measurementPoint.measurement_subtype_id;
   }
 
   function isEnabled(measurementPoint: MeasurementPoint) {
-    return measurementPoint.active && measurementPoint.data_collection_enabled;
+    return measurementPoint.active;
   }
 
   function canEnable(measurementPoint: MeasurementPoint) {
@@ -210,8 +210,8 @@
     const url = ROUTES.measurement_points_update.path.replace(':id', String(measurementPoint.id));
     const willEnable = !measurementPoint.active;
     const measurementPointData = {
-      data_collection_enabled: willEnable,
-      polling_interval_seconds: willEnable ? 300 : null,
+      // data_collection_enabled: willEnable,
+      // polling_interval_seconds: willEnable ? 300 : null,
       active: willEnable
     };
 

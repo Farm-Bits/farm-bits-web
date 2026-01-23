@@ -21,6 +21,7 @@ class MeasurementPoint < ApplicationRecord
   validate :measurement_subtype_data_category_is_present_on_interface_mapping
 
   before_save :deactivate_conflicting_measurement_points
+  after_commit :sync_to_plc_registers, on: :update
 
   class WriteValidationError < StandardError;
   end
@@ -130,6 +131,32 @@ class MeasurementPoint < ApplicationRecord
     :normal
   end
 
+  def interface_registers_for_category(category)
+    interface_ids = register_template.interface_register_mappings
+      .pluck(:interface_id)
+
+    if interface_ids.empty?
+      return RegisterTemplate.none
+    end
+
+    RegisterTemplate
+      .joins(:interface_register_mappings)
+      .where(
+        category: category,
+        interface_register_mappings: { interface_id: interface_ids }
+      )
+      .where.not(sync_field: [nil, ''])
+      .distinct
+  end
+
+  def configuration_measurement_points
+    interface_registers_for_category(['interface_configuration', 'operation_mode_configuration'])
+  end
+
+  def syncable_registers
+    interface_registers_for_category('measurement_point_configuration')
+  end
+
   private
     def register_template_matches_plc_version
       if !plc.present? || !register_template.present?
@@ -231,6 +258,19 @@ class MeasurementPoint < ApplicationRecord
         )
     end
 
+    def sync_to_plc_registers
+      previous_changes.each_key do |field|
+        register = syncable_registers.find_by(sync_field: field)
+        if !register
+          next
+        end
+
+        new_value = read_attribute(field)
+        plc_value = transform_value_for_plc(register, new_value)
+        write_to_plc_register(register, plc_value)
+      end
+    end
+
     def fetch_group_points
       if !register_template.group_name.present?
         return []
@@ -275,10 +315,10 @@ class MeasurementPoint < ApplicationRecord
 
     def serialize_for_storage(decoded_value)
       case register_template.value_format
-      when 'ascii_string'
-        decoded_value.to_s
       when 'boolean'
         decoded_value ? '1' : '0'
+      when 'ascii_string', 'time_of_day', 'duration_seconds'
+        decoded_value.to_s
       else
         decoded_value.to_s
       end

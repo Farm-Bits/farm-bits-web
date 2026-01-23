@@ -1,7 +1,7 @@
 import { type Segment } from './location';
 import { type RegisterTemplate } from './plc';
 
-type MeasurementType = {
+export type MeasurementType = {
   id: number;
   name: string;
   position: number;
@@ -38,8 +38,8 @@ export type MeasurementPoint = {
   unit_override: string | null;
   chart_type_override: ChartType | null;
   color_override: string | null;
-  data_collection_enabled: boolean;
-  polling_interval_seconds: number | null;
+  // data_collection_enabled: boolean;
+  // polling_interval_seconds: number | null;
   factor_override: number | null;
   offset_override: number | null;
   alarm_low: number | null;

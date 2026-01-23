@@ -5,8 +5,7 @@ class Site < ApplicationRecord
 
   has_many :client_user_sites, dependent: :destroy
   accepts_nested_attributes_for :client_user_sites
-
-  has_many :users, through: :client_user_sites
+  has_many :client_users, through: :client_user_sites
 
   has_many :terminals
 
@@ -38,7 +37,6 @@ class Site < ApplicationRecord
 
   before_validation :set_default_name, if: -> { name.blank? && client.present? }
   before_validation :set_default_time_zone
-  before_validation :set_client_on_segments
   before_destroy :prevent_destroy_last_site
   before_destroy :prevent_destroy_connected_site
 
@@ -115,14 +113,6 @@ class Site < ApplicationRecord
       end
 
       self.time_zone ||= 'UTC'
-    end
-
-    def set_client_on_segments
-      segments.each do |segment|
-        if segment.client_id.nil?
-          segment.client_id = client_id
-        end
-      end
     end
 
     def prevent_destroy_last_site

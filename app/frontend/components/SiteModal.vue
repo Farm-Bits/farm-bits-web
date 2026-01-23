@@ -90,7 +90,7 @@
               <CFormInput
                 v-model="segment.name"
                 placeholder="Segment name"
-                :invalid="!segment.name?.trim()"
+                :invalid="segment.name !== '' && !segment.name?.trim()"
                 size="sm" />
             </div>
             <CButton

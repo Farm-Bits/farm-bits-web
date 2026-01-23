@@ -178,7 +178,7 @@ ActiveRecord::Base.transaction do
   rows.each_with_index do |row, index|
     data = row
 
-    # Address,Name,Type,Value,Um,Default,Min,Max,Description,Count,Register Type,Read Only,Category,Read Group,Read Address,Read Offset,Interfaces
+    # Address,Name,Type,Value,Um,Default,Min,Max,Description,Count,Register Type,Read Only,Category,Read Group,Read Address,Read Offset,Interfaces,Sync Field
     address = data[0].to_i
     name = data[1]
     type = data[2]
@@ -195,9 +195,14 @@ ActiveRecord::Base.transaction do
     bulk_read_address = data[14]
     bulk_read_offset = data[15]
     interface_names = data[16] ? data[16].split(',').map(&:strip) : []
+    sync_field = data[17]
 
     value_format = 'numeric'
-    if um == 'flag' || type == 'BOOL'
+    if name.include?('Time') || name.start_with?('ManualStart')
+      value_format = 'time_of_day'
+    elsif if name.include?('Duration') || name.start_with?('ManualOn') || name.start_with?('DcOn')
+      value_format = 'duration_seconds'
+    elsif um == 'flag' || type == 'BOOL'
       value_format = 'boolean'
     elsif ['BYTE', 'WORD', 'DWORD', 'STRING', 'WSTRING'].include?(type)
       value_format = 'ascii_string'
@@ -376,7 +381,6 @@ ActiveRecord::Base.transaction do
 
     interface_register_mappings_attributes = interface_names.map.with_index do |iname, index|
       {
-        category: category,
         description: description,
         position: index + 1,
         interface: interfaces[iname]
@@ -396,6 +400,7 @@ ActiveRecord::Base.transaction do
       factor: 1,
       offset: 0,
       category: category,
+      sync_field: sync_field,
       bulk_read_group: bulk_read_group,
       bulk_read_address: bulk_read_address,
       bulk_read_offset: bulk_read_offset,

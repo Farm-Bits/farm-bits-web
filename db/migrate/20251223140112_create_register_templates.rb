@@ -22,9 +22,11 @@ class CreateRegisterTemplates < ActiveRecord::Migration[7.2]
       # status (device status flags, diagnostic info)
       # identification (device info like serial, firmware version)
       t.string :category, null: false
+      t.string :sync_field
       t.string :group_name
       t.string :group_role
       t.json :validation_rules
+      t.json :visibility_conditions
 
       t.string :bulk_read_group
       t.integer :bulk_read_address

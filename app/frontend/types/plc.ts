@@ -6,24 +6,81 @@ export type CommunicationType = typeof COMMUNICATION_TYPES[number];
 const INTERFACE_CATEGORIES = ['status', 'analog', 'counter', 'interface_configuration', 'measurement_point_configuration', 'operation_mode_configuration'] as const;
 type InterfaceCategory = typeof INTERFACE_CATEGORIES[number];
 
-const VALUE_FORMATS = ['numeric', 'boolean', 'enum', 'ascii_string'] as const;
+export function isConfigurationCategory(category: string) {
+  return ['interface_configuration'].includes(category);
+}
+
+const VALUE_FORMATS = ['numeric', 'boolean', 'enum', 'ascii_string', 'time_of_day', 'duration_seconds'] as const;
 export type ValueFormat = typeof VALUE_FORMATS[number];
+
+type DataType =
+  | 'int8' | 'uint8'
+  | 'int16' | 'uint16'
+  | 'int32' | 'uint32'
+  | 'int64' | 'uint64'
+  | 'float32' | 'float64'
+  | 'boolean' | 'string';
+
+/**
+ * Visibility conditions for conditional display of configuration fields.
+ * Keys are group_role names of controller registers.
+ * Values are the expected values (or array of values) that make this field visible.
+ *
+ * Example:
+ * {
+ *   "input_type_selector": ["3", "11"]  // Visible when input type is 4-20mA or 0-20mA
+ * }
+ */
+type VisibilityConditions = Record<string, string | string[]>;
+
+/**
+ * Validation rules for cross-field validation within a group.
+ */
+type ValidationRules = {
+  /** Field is required when another field has a specific value */
+  required_when?: {
+    group_role: string;
+    equals: string | number;
+  };
+
+  /** At least one of these roles must have a value */
+  one_of_required?: string[];
+
+  /** This value must be less than the value of another field */
+  less_than?: {
+    group_role: string;
+  };
+
+  /** This value must be greater than the value of another field */
+  greater_than?: {
+    group_role: string;
+  };
+
+  /** Custom validation message */
+  message?: string;
+};
 
 export type RegisterTemplate = {
   id: number;
   name: string;
   label: string;
   description: string | null;
+  address_count: number;
+  data_type: DataType;
   value_format: ValueFormat;
   factor: number;
   offset: number;
   category: InterfaceCategory | 'configuration' | 'diagnostic';
   group_name: string | null;
+  group_role: string | null;
+  validation_rules: ValidationRules | null;
+  visibility_conditions: VisibilityConditions | null;
   read_only: boolean;
   min_value: number | null;
   max_value: number | null;
   default_value: string | null;
   enum_values: Record<string, string> | null;
+  position: number;
 };
 
 export type Interface = {
@@ -35,12 +92,14 @@ export type Interface = {
   data_categories: DataCategory[];
 };
 
+export type RegisterMapping = {
+  register_template: RegisterTemplate;
+  measurement_point: MeasurementPoint;
+  position: number;
+};
+
 export type InterfaceWithMeasurementPoints = Interface & {
-  register_mappings: {
-    category: InterfaceCategory;
-    register_template: RegisterTemplate;
-    measurement_point: MeasurementPoint;
-  }[];
+  register_mappings: RegisterMapping[];
 };
 
 type PlcVersion = {
@@ -64,25 +123,3 @@ export type Plc = {
 export type PlcWithInterfaces = Plc & {
   interfaces: InterfaceWithMeasurementPoints[];
 };
-
-
-// export type PlcShowResponse = {
-//   plc: PlcWithInterfaces;
-//   segments: Segment[];
-//   measurementSubtypes: MeasurementSubtype[];
-//   availableRegisterTemplates: RegisterTemplate[];
-// };
-
-// // ============================================
-// // Configuration Register Types (non-interface)
-// // ============================================
-
-// export type ConfigurationRegister = MeasurementPoint & {
-//   register_template: RegisterTemplate & {
-//     category: 'configuration';
-//   };
-// };
-
-
-// export const CHART_TYPES = ['line', 'spline', 'areaspline', 'bar', 'state'] as const;
-// export type ChartType = typeof CHART_TYPES[number];

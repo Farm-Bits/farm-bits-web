@@ -22,10 +22,12 @@ class RegisterTemplate < ApplicationRecord
   ].freeze
   BYTE_ORDERS = %w[big_endian little_endian big_endian_swap little_endian_swap].freeze
   VALUE_FORMATS = %w[
-    numeric      # Raw numeric value (default)
-    boolean      # 0/1 as false/true
-    enum         # Numeric value mapped to enum_values
-    ascii_string # Character codes forming ASCII text
+    numeric          # Raw numeric value (default)
+    boolean          # 0/1 as false/true
+    enum             # Numeric value mapped to enum_values
+    ascii_string     # Character codes forming ASCII text
+    time_of_day      # Time of day in minutes (0-1439)
+    duration_seconds # Duration in seconds
   ].freeze
 
   validates :name, presence: true, uniqueness: { scope: :plc_version_id }
@@ -52,6 +54,8 @@ class RegisterTemplate < ApplicationRecord
   validate :address_range_does_not_overlap
   validate :group_role_requires_group_name
   validate :validation_rules_format
+  validate :visibility_conditions_format
+  validate :measurement_point_configuration_category_requires_sync_field
   validate :bulk_read_offset_requires_bulk_read_address
 
   def full_address
@@ -117,14 +121,18 @@ class RegisterTemplate < ApplicationRecord
 
   def decode_data(data)
     case value_format
-    when 'ascii_string'
-      decode_ascii_string(data)
-    when 'enum'
-      data.first
-    when 'boolean'
-      data.first != 0
     when 'numeric'
       decode_numeric(data)
+    when 'boolean'
+      data.first != 0
+    when 'enum'
+      data.first
+    when 'ascii_string'
+      decode_ascii_string(data)
+    when 'time_of_day'
+      decode_time_of_day(data)
+    when 'duration_seconds'
+      decode_duration_seconds(data)
     else
       data.first
     end
@@ -132,14 +140,18 @@ class RegisterTemplate < ApplicationRecord
 
   def encode_value(value)
     case value_format
-    when 'ascii_string'
-      encode_ascii_string(value)
-    when 'enum'
-      [value.to_i]
-    when 'boolean'
-      [value ? 1 : 0]
     when 'numeric'
       encode_numeric(value)
+    when 'boolean'
+      [value ? 1 : 0]
+    when 'enum'
+      [value.to_i]
+    when 'ascii_string'
+      encode_ascii_string(value)
+    when 'time_of_day'
+      encode_time_of_day(value)
+    when 'duration_seconds'
+      encode_duration_seconds(value)
     else
       [value.to_i]
     end
@@ -295,21 +307,39 @@ class RegisterTemplate < ApplicationRecord
       end
     end
 
+    def visibility_conditions_format
+      if visibility_conditions.blank?
+        return
+      end
+
+      if !visibility_conditions.is_a?(Hash)
+        errors.add(:visibility_conditions, 'must be a JSON object')
+        return
+      end
+
+      visibility_conditions.each do |controller_role, expected_values|
+        if !controller_role.is_a?(String) || controller_role.blank?
+          errors.add(:visibility_conditions, 'keys must be non-empty strings (group_role references)')
+          next
+        end
+
+        normalized = Array.wrap(expected_values)
+        if !normalized.all? { |v| v.is_a?(String) || v.is_a?(Numeric) }
+          errors.add(:visibility_conditions, "values for '#{controller_role}' must be strings or numbers")
+        end
+      end
+    end
+
+    def measurement_point_configuration_category_requires_sync_field
+      if category == 'measurement_point_configuration' && sync_field.blank?
+        errors.add(:sync_field, "must be set for 'measurement_point_configuration' category registers")
+      end
+    end
+
     def bulk_read_offset_requires_bulk_read_address
       if bulk_read_offset.present? && bulk_read_address.blank?
         errors.add(:bulk_read_offset, 'cannot be set without bulk_read_address')
       end
-    end
-
-    def decode_ascii_string(data)
-      data.flat_map do |value|
-        high_byte = (value >> 8) & 0xFF
-        low_byte = value & 0xFF
-        [high_byte, low_byte]
-      end
-      .take_while { |byte| byte != 0 }
-      .pack('C*')
-      .force_encoding('ASCII')
     end
 
     def decode_numeric(data)
@@ -347,11 +377,38 @@ class RegisterTemplate < ApplicationRecord
       end
     end
 
-    def encode_ascii_string(value)
-      padded = value.to_s.ljust(address_count * 2, "\x00")
+    def decode_ascii_string(data)
+      data.flat_map do |value|
+        high_byte = (value >> 8) & 0xFF
+        low_byte = value & 0xFF
+        [high_byte, low_byte]
+      end
+      .take_while { |byte| byte != 0 }
+      .pack('C*')
+      .force_encoding('ASCII')
+    end
 
-      padded.bytes.each_slice(2).map do |high, low|
-        (high << 8) | (low || 0)
+    def decode_time_of_day(data)
+      total_minutes = decode_numeric(data).to_i
+      total_minutes = total_minutes.clamp(0, 1439)
+
+      hours = total_minutes / 60
+      minutes = total_minutes % 60
+
+      format('%02d:%02d', hours, minutes)
+    end
+
+    def decode_duration_seconds(data)
+      total_seconds = decode_numeric(data).to_i
+
+      hours = total_seconds / 3600
+      minutes = (total_seconds % 3600) / 60
+      seconds = total_seconds % 60
+
+      if hours > 0
+        format('%02d:%02d:%02d', hours, minutes, seconds)
+      else
+        format('%02d:%02d', minutes, seconds)
       end
     end
 
@@ -374,5 +431,43 @@ class RegisterTemplate < ApplicationRecord
       else
         [value.to_i]
       end
+    end
+
+    def encode_ascii_string(value)
+      padded = value.to_s.ljust(address_count * 2, "\x00")
+
+      padded.bytes.each_slice(2).map do |high, low|
+        (high << 8) | (low || 0)
+      end
+    end
+
+    def encode_time_of_day(value)
+      minutes = if value.is_a?(String) && value.include?(':')
+        parts = value.split(':')
+        (parts[0].to_i * 60) + parts[1].to_i
+      else
+        value.to_i
+      end
+
+      minutes = minutes.clamp(0, 1439)
+      encode_numeric(minutes)
+    end
+
+    def encode_duration_seconds(value)
+      seconds = if value.is_a?(String) && value.include?(':')
+        parts = value.split(':').map(&:to_i)
+        case parts.length
+        when 3
+          (parts[0] * 3600) + (parts[1] * 60) + parts[2]
+        when 2
+          (parts[0] * 60) + parts[1]
+        else
+          value.to_i
+        end
+      else
+        value.to_i
+      end
+
+      encode_numeric(seconds)
     end
 end
