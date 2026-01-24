@@ -1,17 +1,9 @@
-class InvitationPolicy < ApplicationPolicy
+class CompanyUserPolicy < ApplicationPolicy
   def index?
-    admin? || site_admin?
+    true
   end
 
-  def create?
-    admin? || site_admin?
-  end
-
-  # def update?
-  #   admin? || site_admin?
-  # end
-
-  def resend?
+  def update?
     admin? || site_admin?
   end
 
@@ -24,12 +16,12 @@ class InvitationPolicy < ApplicationPolicy
       if admin?
         scope.where(company: current_company)
       else
-        invitation_site_ids = policy_scope!(InvitationSite).select(:invitation_id)
+        company_user_site_ids = policy_scope!(CompanyUserSite).select(:company_user_id)
         scope.where(company: current_company)
           .where(
-            "invitations.role = ? OR invitations.id IN (?)",
+            "company_users.role = ? OR company_users.id IN (?)",
             Roleable::ROLE_IDS[:admin],
-            invitation_site_ids
+            company_user_site_ids
           )
       end
     end

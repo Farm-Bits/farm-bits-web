@@ -7,7 +7,7 @@ class InvitationMailerPreview < ActionMailer::Preview
       email: Faker::Internet.email
     )
 
-    client = Client.new(
+    company = Company.new(
       id: Faker::Number.between(from: 1, to: 100),
       name: Faker::Company.name
     )
@@ -19,7 +19,7 @@ class InvitationMailerPreview < ActionMailer::Preview
       email: Faker::Internet.email,
       inviter: user,
       inviter_type: 'User',
-      client: client,
+      company: company,
       role: role,
       token: Faker::Alphanumeric.alphanumeric(number: 32),
       expires_at: Faker::Time.forward(days: 7)
@@ -35,7 +35,7 @@ class InvitationMailerPreview < ActionMailer::Preview
       email: Faker::Internet.email
     )
 
-    client = Client.new(
+    company = Company.new(
       id: Faker::Number.between(from: 1, to: 100),
       name: Faker::Company.name
     )
@@ -47,7 +47,7 @@ class InvitationMailerPreview < ActionMailer::Preview
       email: Faker::Internet.email,
       inviter: user,
       inviter_type: 'User',
-      client: client,
+      company: company,
       role: role,
       token: Faker::Alphanumeric.alphanumeric(number: 32),
       expires_at: Faker::Time.forward(days: 7)
@@ -63,7 +63,7 @@ class InvitationMailerPreview < ActionMailer::Preview
       email: Faker::Internet.email
     )
 
-    client = Client.new(
+    company = Company.new(
       id: Faker::Number.between(from: 1, to: 100),
       name: Faker::Company.name
     )
@@ -75,7 +75,7 @@ class InvitationMailerPreview < ActionMailer::Preview
       email: Faker::Internet.email,
       inviter: user,
       inviter_type: 'User',
-      client: client,
+      company: company,
       role: role,
       token: Faker::Alphanumeric.alphanumeric(number: 32),
       expires_at: Faker::Time.forward(days: 7)
@@ -91,7 +91,7 @@ class InvitationMailerPreview < ActionMailer::Preview
       email: Faker::Internet.email
     )
 
-    client = Client.new(
+    company = Company.new(
       id: Faker::Number.between(from: 1, to: 100),
       name: Faker::Company.name
     )
@@ -103,7 +103,7 @@ class InvitationMailerPreview < ActionMailer::Preview
       email: Faker::Internet.email,
       inviter: user,
       inviter_type: 'User',
-      client: client,
+      company: company,
       role: role,
       token: Faker::Alphanumeric.alphanumeric(number: 32),
       expires_at: Faker::Time.forward(days: 7)
@@ -138,7 +138,7 @@ class InvitationMailerPreview < ActionMailer::Preview
       email: Faker::Internet.email
     )
 
-    client = Client.new(
+    company = Company.new(
       id: Faker::Number.between(from: 1, to: 100),
       name: Faker::Company.name
     )
@@ -150,7 +150,7 @@ class InvitationMailerPreview < ActionMailer::Preview
       email: Faker::Internet.email,
       inviter: user,
       inviter_type: 'User',
-      client: client,
+      company: company,
       role: role,
       token: Faker::Alphanumeric.alphanumeric(number: 32),
       expires_at: Faker::Time.backward(days: 2)
@@ -166,7 +166,7 @@ class InvitationMailerPreview < ActionMailer::Preview
       email: Faker::Internet.email
     )
 
-    client = Client.new(
+    company = Company.new(
       id: Faker::Number.between(from: 1, to: 100),
       name: "#{Faker::Company.name} #{Faker::Company.suffix} International Solutions and Consulting Services LLC"
     )
@@ -178,7 +178,7 @@ class InvitationMailerPreview < ActionMailer::Preview
       email: Faker::Internet.email,
       inviter: user,
       inviter_type: 'User',
-      client: client,
+      company: company,
       role: role,
       token: Faker::Alphanumeric.alphanumeric(number: 32),
       expires_at: Faker::Time.forward(days: 1)

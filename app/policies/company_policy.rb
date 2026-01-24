@@ -1,4 +1,4 @@
-class ClientPolicy < ApplicationPolicy
+class CompanyPolicy < ApplicationPolicy
   def create?
     true
   end
@@ -21,8 +21,8 @@ class ClientPolicy < ApplicationPolicy
 
   class Scope < ApplicationPolicy::Scope
     def resolve
-      scope.joins(:client_users)
-        .where(client_users: { user: current_user })
+      scope.joins(:company_users)
+        .where(company_users: { user: current_user })
         .where(active: true)
         .distinct
     end

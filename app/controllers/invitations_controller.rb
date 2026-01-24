@@ -23,8 +23,8 @@ class InvitationsController < ApplicationController
         result = invitation.accept!(existing_user)
         if result && result[:success]
           sign_in(existing_user)
-          if invitation.client_id
-            session[:current_client_id] = invitation.client_id
+          if invitation.company_id
+            session[:current_company_id] = invitation.company_id
           end
           redirect_to root_path
         else
@@ -84,8 +84,8 @@ class InvitationsController < ApplicationController
     end
 
     if result && result[:success]
-      if invitation.client_id
-        session[:current_client_id] = invitation.client_id
+      if invitation.company_id
+        session[:current_company_id] = invitation.company_id
       end
 
       user = result[:user]

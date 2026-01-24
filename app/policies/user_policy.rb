@@ -13,10 +13,10 @@ class UserPolicy < ApplicationPolicy
 
   class Scope < ApplicationPolicy::Scope
     def resolve
-      client_user_ids = policy_scope!(ClientUser)
+      company_user_ids = policy_scope!(CompanyUser)
         .pluck(:user_id)
 
-      scope.where(id: client_user_ids)
+      scope.where(id: company_user_ids)
         .where(active: true)
     end
   end

@@ -60,7 +60,7 @@
           <CCard class="border">
             <CCardBody class="p-3" style="max-height: 300px; overflow-y: auto;">
               <CFormCheck
-                v-for="site in sites"
+                v-for="site in accessibleSites"
                 :key="site.id"
                 :id="`site-${site.id}`"
                 :label="site.name"
@@ -110,7 +110,7 @@
     (e: 'invite', data: Invitation): void;
   }>();
 
-  const { role, sites } = useAuth();
+  const { currentRole, accessibleSites } = useAuth();
   const { execute } = useApiCall();
 
   const formData = reactive({
@@ -129,10 +129,10 @@
   const isLoading = ref(false);
 
   const availableRoles = computed(() => {
-    if (!role.value)
+    if (!currentRole.value)
       return ROLES;
 
-    const currentLevel = ROLES[role.value].level;
+    const currentLevel = ROLES[currentRole.value].level;
     const filteredRoles: Partial<typeof ROLES> = {};
 
     Object.entries(ROLES).forEach(([roleId, roleData]) => {
@@ -177,7 +177,7 @@
     if (selectedRoleNeedsSites.value) {
       if (formData.site_ids.length === 0)
         errors.site_ids = 'Please select at least one site for this role';
-      else if (formData.site_ids.some((id) => !sites.value?.some((site) => site.id === id)))
+      else if (formData.site_ids.some((id) => !accessibleSites.value?.some((site) => site.id === id)))
         errors.site_ids = 'One or more selected sites are invalid';
     }
 

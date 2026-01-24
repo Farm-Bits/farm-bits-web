@@ -2,19 +2,19 @@ class UserArea::ApplicationController < ApplicationController
   include Pundit::Authorization
 
   before_action :authenticate_user!
-  before_action :ensure_user_has_client_access
-  before_action :set_current_client
+  before_action :ensure_user_has_company_access
+  before_action :set_current_company
   before_action :set_current_site
   after_action :verify_pundit_authorization
   inertia_share do
     {
       userScope: 'users',
-      user: current_user,
-      client: current_client,
-      role: current_client_user&.role,
-      clients: @clients,
-      site: current_site ? SiteSerializer.render_as_json(current_site, view: :with_segments) : nil,
-      sites: SiteSerializer.render_as_json(policy_scope(Site))
+      currentUser: current_user,
+      currentCompany: current_company,
+      currentRole: current_company_user&.role,
+      accessibleCompanies: @companies,
+      currentSite: current_site ? SiteSerializer.render_as_json(current_site, view: :with_segments) : nil,
+      accessibleSites: SiteSerializer.render_as_json(policy_scope(Site))
     }
   end
 
@@ -22,36 +22,36 @@ class UserArea::ApplicationController < ApplicationController
   rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
 
   protected
-    def ensure_user_has_client_access
-      if current_user.active_clients_connections.empty?
-        redirect_to user_client_setup_new_path
+    def ensure_user_has_company_access
+      if current_user.active_companies_connections.empty?
+        redirect_to user_company_setup_new_path
       end
     end
 
-    def set_current_client
-      @clients = current_user.active_clients_connections
+    def set_current_company
+      @companies = current_user.active_companies_connections
 
-      if params[:client_id]
-        @current_client = @clients.find_by(id: params[:client_id])
-        if !@current_client
+      if params[:company_id]
+        @current_company = @companies.find_by(id: params[:company_id])
+        if !@current_company
           flash[:alert] = "You don't have access to that company."
           redirect_to root_path
           return
         end
-      elsif session[:current_client_id]
-        @current_client = @clients.find_by(id: session[:current_client_id])
+      elsif session[:current_company_id]
+        @current_company = @companies.find_by(id: session[:current_company_id])
       end
 
-      @current_client ||= @clients.first
-      @current_client_user = current_user.client_user_for(@current_client)
-      session[:current_client_id] = @current_client&.id
+      @current_company ||= @companies.first
+      @current_company_user = current_user.company_user_for(@current_company)
+      session[:current_company_id] = @current_company&.id
     end
 
     def set_current_site
       context = {
         current_user: current_user,
-        current_client: current_client,
-        current_client_user: current_client_user,
+        current_company: current_company,
+        current_company_user: current_company_user,
         current_site: nil
       }
       sites = SitePolicy::Scope.new(context, Site).resolve
@@ -71,12 +71,12 @@ class UserArea::ApplicationController < ApplicationController
       session[:current_site_id] = @current_site&.id
     end
 
-    def current_client
-      @current_client
+    def current_company
+      @current_company
     end
 
-    def current_client_user
-      @current_client_user
+    def current_company_user
+      @current_company_user
     end
 
     def current_site
@@ -86,8 +86,8 @@ class UserArea::ApplicationController < ApplicationController
     def pundit_user
       {
         current_user: current_user,
-        current_client: current_client,
-        current_client_user: current_client_user,
+        current_company: current_company,
+        current_company_user: current_company_user,
         current_site: current_site
       }
     end

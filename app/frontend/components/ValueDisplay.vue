@@ -62,7 +62,41 @@
       const key = String(value);
       return props.enumValues?.[key] ?? `Server Configuration Error (${key})`;
     },
-    ascii_string: (value) => String(value ?? '—')
+    ascii_string: (value) => String(value ?? '—'),
+    time_of_day: (value) => {
+      if (value === null)
+        return '—';
+
+      if (typeof value === 'string' && value.includes(':'))
+        return value;
+
+      const totalMinutes = typeof value === 'number' ? value : parseInt(String(value), 10);
+      if (isNaN(totalMinutes))
+        return '—';
+
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    },
+    duration_seconds: (value) => {
+      if (value === null)
+        return '—';
+
+      if (typeof value === 'string' && value.includes(':'))
+        return value;
+
+      const totalSeconds = typeof value === 'number' ? value : parseInt(String(value), 10);
+      if (isNaN(totalSeconds))
+        return '—';
+
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      if (hours > 0)
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
   };
 
   const formattedValue = computed(() =>

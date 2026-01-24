@@ -4,7 +4,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
         <h1 class="h3 mb-1">Gateways & Controllers</h1>
-        <p class="text-muted mb-0">Manage hardware installations for {{ site?.name }}</p>
+        <p class="text-muted mb-0">Manage hardware installations for {{ currentSite?.name }}</p>
       </div>
       <CButton
         v-if="permissions?.terminals.update"
@@ -169,7 +169,7 @@
         <CModalTitle>Confirm Removal</CModalTitle>
       </CModalHeader>
       <CModalBody>
-        <p>Are you sure you want to remove this gateway from {{ site?.name }}?</p>
+        <p>Are you sure you want to remove this gateway from {{ currentSite?.name }}?</p>
         <div v-if="terminalToRemove" class="alert alert-warning">
           <strong>Gateway:</strong> {{ terminalToRemove.name }}<br>
           <strong>IMEI:</strong> {{ terminalToRemove.imei }}<br>
@@ -207,7 +207,7 @@
   const { permissions } = usePermissions();
   const { execute } = useApiCall();
 
-  const { site, pageProps } = useAuth<{
+  const { currentSite, pageProps } = useAuth<{
     terminals: TerminalAssigned[];
     availableTerminals: Terminal[];
     availablePlcs: Plc[];

@@ -1,11 +1,11 @@
 class Site < ApplicationRecord
   audited
 
-  belongs_to :client
+  belongs_to :company
 
-  has_many :client_user_sites, dependent: :destroy
-  accepts_nested_attributes_for :client_user_sites
-  has_many :client_users, through: :client_user_sites
+  has_many :company_user_sites, dependent: :destroy
+  accepts_nested_attributes_for :company_user_sites
+  has_many :company_users, through: :company_user_sites
 
   has_many :terminals
 
@@ -35,7 +35,7 @@ class Site < ApplicationRecord
     less_than_or_equal_to: 8849
   }, allow_blank: true
 
-  before_validation :set_default_name, if: -> { name.blank? && client.present? }
+  before_validation :set_default_name, if: -> { name.blank? && company.present? }
   before_validation :set_default_time_zone
   before_destroy :prevent_destroy_last_site
   before_destroy :prevent_destroy_connected_site
@@ -71,7 +71,7 @@ class Site < ApplicationRecord
     end
 
     def set_default_name
-      other_sites = client.sites.to_a.select { |p| p != self && !p.marked_for_destruction? }
+      other_sites = company.sites.to_a.select { |p| p != self && !p.marked_for_destruction? }
 
       if other_sites.empty?
         self.name = 'My First Site'
@@ -116,8 +116,8 @@ class Site < ApplicationRecord
     end
 
     def prevent_destroy_last_site
-      if client.sites.count <= 1
-        errors.add(:base, 'Cannot delete the last site for a client')
+      if company.sites.count <= 1
+        errors.add(:base, 'Cannot delete the last site for a company')
         throw(:abort)
       end
     end

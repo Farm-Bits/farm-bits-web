@@ -7,8 +7,8 @@ RSpec.describe 'User Registration', type: :request, inertia: true do
       email: 'test@example.com',
       password: 'password123',
       password_confirmation: 'password123',
-      client_attributes: {
-        name: 'Test Client',
+      company_attributes: {
+        name: 'Test Company',
         site_attributes: {
           country: 'France',
           city: 'Paris',
@@ -25,8 +25,8 @@ RSpec.describe 'User Registration', type: :request, inertia: true do
       expect(User.count).to eq(@user_count)
     end
 
-    it 'does not create a client' do
-      expect(Client.count).to eq(@client_count)
+    it 'does not create a company' do
+      expect(Company.count).to eq(@company_count)
     end
 
     it 'does not create a site' do
@@ -56,7 +56,7 @@ RSpec.describe 'User Registration', type: :request, inertia: true do
     context 'with valid attributes' do
       before do
         @user_count = User.count
-        @client_count = Client.count
+        @company_count = Company.count
         @site_count = Site.count
         @email_count = ActionMailer::Base.deliveries.count
 
@@ -72,17 +72,17 @@ RSpec.describe 'User Registration', type: :request, inertia: true do
         expect(user.confirmed_at).to eq(nil)
       end
 
-      it 'creates an active client' do
-        client = Client.last
-        expect(Client.count).to eq(@client_count + 1)
-        expect(client.name).to eq(@valid_user_attributes[:client_attributes][:name])
-        expect(client.active).to eq(true)
+      it 'creates an active company' do
+        company = Company.last
+        expect(Company.count).to eq(@company_count + 1)
+        expect(company.name).to eq(@valid_user_attributes[:company_attributes][:name])
+        expect(company.active).to eq(true)
       end
 
       it 'creates an active site' do
         site = Site.last
         expect(Site.count).to eq(@site_count + 1)
-        expect(site.name).to eq(@valid_user_attributes[:client_attributes][:site_attributes][:name])
+        expect(site.name).to eq(@valid_user_attributes[:company_attributes][:site_attributes][:name])
         expect(site.active).to eq(true)
       end
 
@@ -98,20 +98,20 @@ RSpec.describe 'User Registration', type: :request, inertia: true do
         expect(flash[:notice]).to eq('A message with a confirmation link has been sent to your email address. Please follow the link to activate your account.')
       end
 
-      it 'associates the user with the client and site' do
+      it 'associates the user with the company and site' do
         user = User.last
-        client = Client.last
+        company = Company.last
         site = Site.last
-        expect(user.client).to eq(client)
-        expect(client.sites).to include(site)
-        expect(client.users).to include(user)
+        expect(user.company).to eq(company)
+        expect(company.sites).to include(site)
+        expect(company.users).to include(user)
       end
     end
 
     context 'with invalid email' do
       before do
         @user_count = User.count
-        @client_count = Client.count
+        @company_count = Company.count
         @site_count = Site.count
         @email_count = ActionMailer::Base.deliveries.count
 
@@ -127,7 +127,7 @@ RSpec.describe 'User Registration', type: :request, inertia: true do
     context 'with missing password' do
       before do
         @user_count = User.count
-        @client_count = Client.count
+        @company_count = Company.count
         @site_count = Site.count
         @email_count = ActionMailer::Base.deliveries.count
 
@@ -143,7 +143,7 @@ RSpec.describe 'User Registration', type: :request, inertia: true do
     context 'with password confirmation mismatch' do
       before do
         @user_count = User.count
-        @client_count = Client.count
+        @company_count = Company.count
         @site_count = Site.count
         @email_count = ActionMailer::Base.deliveries.count
 
@@ -156,15 +156,15 @@ RSpec.describe 'User Registration', type: :request, inertia: true do
       include_examples 'user registration fails'
     end
 
-    context 'without client attributes' do
+    context 'without company attributes' do
       before do
         @user_count = User.count
-        @client_count = Client.count
+        @company_count = Company.count
         @site_count = Site.count
         @email_count = ActionMailer::Base.deliveries.count
 
         invalid_attributes = @valid_user_attributes.dup
-        invalid_attributes.delete(:client_attributes)
+        invalid_attributes.delete(:company_attributes)
 
         post user_registration_path, params: { user: invalid_attributes }
       end
@@ -175,12 +175,12 @@ RSpec.describe 'User Registration', type: :request, inertia: true do
     context 'with missing site' do
       before do
         @user_count = User.count
-        @client_count = Client.count
+        @company_count = Company.count
         @site_count = Site.count
         @email_count = ActionMailer::Base.deliveries.count
 
         invalid_attributes = @valid_user_attributes.deep_dup
-        invalid_attributes[:client_attributes].delete(:site_attributes)
+        invalid_attributes[:company_attributes].delete(:site_attributes)
 
         post user_registration_path, params: { user: invalid_attributes }
       end

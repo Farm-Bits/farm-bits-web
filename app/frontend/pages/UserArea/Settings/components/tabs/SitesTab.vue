@@ -145,7 +145,7 @@
   import type { Site } from '@/types/location';
   import { ROUTES } from '@/types/permissions';
 
-  const { site, sites } = useAuth();
+  const { currentSite, accessibleSites } = useAuth();
   const { permissions } = usePermissions();
   const { execute } = useApiCall();
 
@@ -200,12 +200,12 @@
   }
 
   function handleSiteUpdate(updatedSite: SiteWithSegments) {
-    if (sites.value) {
-      const index = sites.value.findIndex((s) => s.id === updatedSite.id);
+    if (accessibleSites.value) {
+      const index = accessibleSites.value.findIndex((s) => s.id === updatedSite.id);
       if (index > -1)
-        sites.value[index] = updatedSite;
+        accessibleSites.value[index] = updatedSite;
       else
-        sites.value.push(updatedSite);
+        accessibleSites.value.push(updatedSite);
     }
 
     const availableIndex = sitesAvailable.value.findIndex((s) => s.id === updatedSite.id);
@@ -214,8 +214,8 @@
     else
       sitesAvailable.value.push(updatedSite);
 
-    if (site.value && site.value.id === updatedSite.id)
-      Object.assign(site.value, updatedSite);
+    if (currentSite.value && currentSite.value.id === updatedSite.id)
+      Object.assign(currentSite.value, updatedSite);
 
     closeSiteModal();
   }
@@ -238,17 +238,17 @@
     );
 
     if (success) {
-      if (sites.value) {
-        const index = sites.value.findIndex((s) => s.id === siteToDelete.value!.id);
+      if (accessibleSites.value) {
+        const index = accessibleSites.value.findIndex((s) => s.id === siteToDelete.value!.id);
         if (index > -1)
-          sites.value.splice(index, 1);
+          accessibleSites.value.splice(index, 1);
 
         const availableIndex = sitesAvailable.value.findIndex((s) => s.id === siteToDelete.value!.id);
         if (availableIndex > -1)
           sitesAvailable.value.splice(availableIndex, 1);
       }
 
-      if (site.value && site.value.id === siteToDelete.value.id)
+      if (currentSite.value && currentSite.value.id === siteToDelete.value.id)
         window.location.reload();
 
       closeDeleteSiteModal();

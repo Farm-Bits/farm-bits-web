@@ -2,9 +2,9 @@ class User < ApplicationRecord
   audited
   include Roleable
 
-  has_many :client_users, dependent: :destroy
+  has_many :company_users, dependent: :destroy
 
-  has_many :clients, through: :client_users
+  has_many :companies, through: :company_users
 
   has_many :invitations, as: :inviter, dependent: :nullify
 
@@ -18,10 +18,10 @@ class User < ApplicationRecord
   validates :email, uniqueness: { case_sensitive: false }
   validate :cannot_deactivate_last_admin_user, if: :active_changed_to_false?
 
-  attr_accessor :client_attributes, :current_client_user
+  attr_accessor :company_attributes, :current_company_user
 
   before_validation :normalize_email
-  after_create :create_client_and_site_from_attributes
+  after_create :create_company_and_site_from_attributes
   before_destroy :prevent_destroy_last_admin_user
   after_destroy :destroy_received_invitations
   after_commit :send_password_change_notification, if: :saved_change_to_encrypted_password?, on: :update
@@ -34,39 +34,39 @@ class User < ApplicationRecord
     active ? super : 'Your account is disabled'
   end
 
-  def member_of?(client)
-    client.client_users.any? { |cu| cu.user == self && !cu.marked_for_destruction? }
+  def member_of?(company)
+    company.company_users.any? { |cu| cu.user == self && !cu.marked_for_destruction? }
   end
 
-  def active_clients_connections
-    clients.joins(:client_users)
-      .where(client_users: { user: self })
+  def active_companies_connections
+    companies.joins(:company_users)
+      .where(company_users: { user: self })
       .where(active: true)
   end
 
-  def client_user_for(client)
-    client_id = client.is_a?(Client) ? client.id : client.to_i
+  def company_user_for(company)
+    company_id = company.is_a?(Company) ? company.id : company.to_i
 
-    @client_user_cache ||= {}
+    @company_user_cache ||= {}
 
-    if @client_user_cache.key?(client_id)
-      return @client_user_cache[client_id]
+    if @company_user_cache.key?(company_id)
+      return @company_user_cache[company_id]
     end
 
-    if client_users.loaded?
-      client_user = client_users.find { |cu| cu.client_id == client_id }
+    if company_users.loaded?
+      company_user = company_users.find { |cu| cu.company_id == company_id }
     else
-      client_user = client_users.find_by(client_id: client_id)
+      company_user = company_users.find_by(company_id: company_id)
     end
 
-    @client_user_cache[client_id] = client_user
-    client_user
+    @company_user_cache[company_id] = company_user
+    company_user
   end
 
-  def last_admin_for_any_client?
-    client_users.where(role: Roleable::ROLE_IDS[:admin]).any? do |admin_client_user|
-      client = admin_client_user.client
-      other_admins = client.client_users
+  def last_admin_for_any_company?
+    company_users.where(role: Roleable::ROLE_IDS[:admin]).any? do |admin_company_user|
+      company = admin_company_user.company
+      other_admins = company.company_users
         .where.not(user_id: id)
         .where(role: Roleable::ROLE_IDS[:admin])
 
@@ -79,21 +79,21 @@ class User < ApplicationRecord
       active_changed? && !active
     end
 
-    def create_client_and_site_from_attributes
-      if !client_attributes.present?
+    def create_company_and_site_from_attributes
+      if !company_attributes.present?
         return
       end
 
       begin
-        client_attrs = client_attributes.merge(
-          client_users_attributes: [{ user: self, role: Roleable::ROLE_IDS[:admin] }],
+        company_attrs = company_attributes.merge(
+          company_users_attributes: [{ user: self, role: Roleable::ROLE_IDS[:admin] }],
         )
-        client = Client.create!(client_attrs)
+        company = Company.create!(company_attrs)
       rescue ActiveRecord::RecordInvalid => e
         if e.record != self
-          if e.record.is_a?(Client)
+          if e.record.is_a?(Company)
             e.record.errors.each do |error|
-              errors.add(:client, "#{error.attribute} #{error.message}")
+              errors.add(:company, "#{error.attribute} #{error.message}")
             end
           elsif e.record.is_a?(Site)
             e.record.errors.each do |error|
@@ -107,7 +107,7 @@ class User < ApplicationRecord
     end
 
     def cannot_deactivate_last_admin_user
-      if last_admin_for_any_client?
+      if last_admin_for_any_company?
         errors.add(:base, 'Cannot deactivate user who is the last admin for one or more companies')
       end
     end
@@ -119,7 +119,7 @@ class User < ApplicationRecord
     end
 
     def prevent_destroy_last_admin_user
-      if last_admin_for_any_client?
+      if last_admin_for_any_company?
         errors.add(:base, 'Cannot destroy user who is the last admin for one or more companies')
         throw(:abort)
       end

@@ -67,12 +67,12 @@
                   id="company"
                   name="company"
                   placeholder="Enter your company name"
-                  v-model="formData[rootObjectName].client_attributes.name"
-                  :invalid="v$[rootObjectName].client_attributes.name.$error"
-                  @blur="v$[rootObjectName].client_attributes.name.$touch()"
+                  v-model="formData[rootObjectName].company_attributes.name"
+                  :invalid="v$[rootObjectName].company_attributes.name.$error"
+                  @blur="v$[rootObjectName].company_attributes.name.$touch()"
                   class="form-input" />
-                <div class="form-error" v-if="v$[rootObjectName].client_attributes.name.$error">
-                  {{ v$[rootObjectName].client_attributes.name.$errors[0].$message }}
+                <div class="form-error" v-if="v$[rootObjectName].company_attributes.name.$error">
+                  {{ v$[rootObjectName].company_attributes.name.$errors[0].$message }}
                 </div>
               </div>
             </div>
@@ -147,8 +147,8 @@
               </h3>
 
               <LocationSelector
-                v-model="formData[rootObjectName].client_attributes.site_attributes"
-                :errors="v$[rootObjectName].client_attributes.site_attributes" />
+                v-model="formData[rootObjectName].company_attributes.site_attributes"
+                :errors="v$[rootObjectName].company_attributes.site_attributes" />
             </div>
 
             <!-- Submit Button -->
@@ -194,7 +194,7 @@
       email: null,
       password: '',
       password_confirmation: '',
-      client_attributes: {
+      company_attributes: {
         name: null,
         site_attributes: {
           country: null,
@@ -247,7 +247,7 @@
         email: { required, email },
         password: { required, minLength: minLength(8) },
         password_confirmation: { required, sameAs: sameAs(formData[rootObjectName.value].password) },
-        client_attributes: {
+        company_attributes: {
           name: { required },
           site_attributes: {
             country: { required },
@@ -289,9 +289,14 @@
 
     isLoading.value = true;
 
-    formData.post(paths.value.actions.signUp);
-
-    isLoading.value = false;
+    formData.post(
+      paths.value.actions.signUp,
+      {
+        onFinish: () => {
+          isLoading.value = false;
+        }
+      }
+    );
   }
 </script>
 

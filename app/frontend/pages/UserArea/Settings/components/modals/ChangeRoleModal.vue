@@ -8,15 +8,15 @@
     </CModalHeader>
     <CModalBody>
       <CAlert
-        v-if="clientUser && clientUserHasOtherSites(clientUser)"
+        v-if="companyUser && companyUserHasOtherSites(companyUser)"
         color="info"
         class="mb-3">
         <div class="d-flex">
           <CIcon name="cilInfo" class="me-2 mt-1" />
           <div>
             <strong>Partial View:</strong> This user has access to
-            <strong>{{ clientUser.total_sites_count }} site(s)</strong>, but you can only
-            modify access for the <strong>{{ clientUser.visible_site_ids.length }} site(s)</strong>
+            <strong>{{ companyUser.total_sites_count }} site(s)</strong>, but you can only
+            modify access for the <strong>{{ companyUser.visible_site_ids.length }} site(s)</strong>
             you can see. Changes here will only affect visible sites.
           </div>
         </div>
@@ -29,8 +29,8 @@
             <div class="d-flex align-items-center">
               <CIcon name="cilUser" size="xl" class="text-primary me-3" />
               <div>
-                <div class="fw-semibold">{{ clientUser?.user.name }}</div>
-                <div class="text-medium-emphasis small">{{ clientUser?.user.email }}</div>
+                <div class="fw-semibold">{{ companyUser?.user.name }}</div>
+                <div class="text-medium-emphasis small">{{ companyUser?.user.email }}</div>
               </div>
             </div>
           </CCardBody>
@@ -53,7 +53,7 @@
               :id="`role-${roleId}`"
               :label="`${roleData.name} - ${roleData.description}`"
               :value="roleId"
-              :disabled="roleId === clientUser?.role"
+              :disabled="roleId === companyUser?.role"
               v-model="formData.role" />
           </div>
           <CFormFeedback v-if="errors.role" invalid>
@@ -73,7 +73,7 @@
           <CCard class="border">
             <CCardBody class="p-3" style="max-height: 300px; overflow-y: auto;">
               <CFormCheck
-                v-for="site in sites"
+                v-for="site in accessibleSites"
                 :key="site.id"
                 :id="`site-${site.id}`"
                 :label="site.name"
@@ -109,7 +109,7 @@
   import { ref, reactive, computed, watch } from 'vue';
   import axios from 'axios';
   import { ROLES, type Role } from '@/types/permissions';
-  import type { ClientUser } from '../types/invitation';
+  import type { CompanyUser } from '../types/invitation';
   import useAuth from '@/composables/useAuth';
   import { useApiCall } from '@/composables/useApi';
   import { ROUTES } from '@/types/permissions';
@@ -117,15 +117,15 @@
 
   const props = defineProps<{
     visible: boolean;
-    clientUser: ClientUser | null;
+    companyUser: CompanyUser | null;
   }>();
 
   const emit = defineEmits<{
     (e: 'close'): void;
-    (e: 'update', updatedClientUser: ClientUser): void;
+    (e: 'update', updatedCompanyUser: CompanyUser): void;
   }>();
 
-  const { role, sites } = useAuth();
+  const { currentRole, accessibleSites } = useAuth();
   const { execute } = useApiCall();
 
   const formData = reactive({
@@ -142,10 +142,10 @@
   const isLoading = ref(false);
 
   const availableRoles = computed(() => {
-    if (!role.value)
+    if (!currentRole.value)
       return ROLES;
 
-    const currentLevel = ROLES[role.value].level;
+    const currentLevel = ROLES[currentRole.value].level;
     const filteredRoles: Partial<typeof ROLES> = {};
 
     Object.entries(ROLES).forEach(([roleId, roleData]) => {
@@ -161,10 +161,10 @@
   });
 
   const hasChanges = computed(() => {
-    const roleChanged = formData.role !== props.clientUser?.role;
+    const roleChanged = formData.role !== props.companyUser?.role;
     const siteAccessChanged = !arraysEqual(
       formData.site_ids.sort(),
-      (props.clientUser?.visible_site_ids || []).sort()
+      (props.companyUser?.visible_site_ids || []).sort()
     );
     return roleChanged || siteAccessChanged;
   });
@@ -175,8 +175,8 @@
     return a.every((val, idx) => val === b[idx]);
   }
 
-  function clientUserHasOtherSites(clientUser: ClientUser) {
-    return clientUser.total_sites_count > clientUser.visible_site_ids.length;
+  function companyUserHasOtherSites(companyUser: CompanyUser) {
+    return companyUser.total_sites_count > companyUser.visible_site_ids.length;
   }
 
   function validateForm() {
@@ -189,7 +189,7 @@
     if (selectedRoleNeedsSites.value) {
       if (formData.site_ids.length === 0)
         errors.site_ids = 'Please select at least one site for this role';
-      else if (formData.site_ids.some((id) => !sites.value?.some((site) => site.id === id)))
+      else if (formData.site_ids.some((id) => !accessibleSites.value?.some((site) => site.id === id)))
         errors.site_ids = 'One or more selected sites are invalid';
     }
 
@@ -208,8 +208,8 @@
   }
 
   function resetForm() {
-    formData.role = props.clientUser?.role || 'viewer';
-    formData.site_ids = [...(props.clientUser?.visible_site_ids || [])];
+    formData.role = props.companyUser?.role || 'viewer';
+    formData.site_ids = [...(props.companyUser?.visible_site_ids || [])];
 
     errors.submission = '';
     errors.role = '';
@@ -224,7 +224,7 @@
   }
 
   async function handleSubmit() {
-    if (!props.clientUser)
+    if (!props.companyUser)
       return;
 
     if (!validateForm())
@@ -233,15 +233,15 @@
     isLoading.value = true;
 
     const body = {
-      client_user: {
-        id: props.clientUser.id,
-        user_id: props.clientUser.user.id,
+      company_user: {
+        id: props.companyUser.id,
+        user_id: props.companyUser.user.id,
         role: formData.role,
         site_ids: selectedRoleNeedsSites.value ? formData.site_ids : undefined
       }
     };
-    const url = ROUTES.client_users_update.path.replace(':id', String(props.clientUser.id));
-    const { success, data, error } = await execute<ClientUser>(
+    const url = ROUTES.company_users_update.path.replace(':id', String(props.companyUser.id));
+    const { success, data, error } = await execute<CompanyUser>(
       () => axios.patch(url, body),
       {
         showSuccessToast: true,
@@ -277,7 +277,7 @@
 
     // Restore sites when switching to site-specific role
     if (!oldRoleNeedsSites && newRoleNeedsSites)
-      formData.site_ids = [...(props.clientUser?.visible_site_ids || [])];
+      formData.site_ids = [...(props.companyUser?.visible_site_ids || [])];
   });
 </script>
 

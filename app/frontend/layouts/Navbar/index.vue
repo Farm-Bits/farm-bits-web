@@ -16,16 +16,16 @@
           <CDropdown variant="nav-item">
             <CDropdownToggle class="d-flex align-items-center">
               <CIcon name="cilLocationPin" class="me-1" />
-              {{ site?.name || 'No Sites Configured' }}
+              {{ currentSite?.name || 'No Sites Configured' }}
             </CDropdownToggle>
             <CDropdownMenu>
-              <template v-if="sites && sites.length > 0">
+              <template v-if="accessibleSites && accessibleSites.length > 0">
                 <CDropdownItem
-                  v-for="otherSite in sites"
-                  :key="otherSite.id"
-                  @click="onSelectSite(otherSite.id)"
-                  :active="site?.id === otherSite.id">
-                  {{ otherSite.name }}
+                  v-for="site in accessibleSites"
+                  :key="site.id"
+                  @click="onSelectSite(site.id)"
+                  :active="currentSite?.id === site.id">
+                  {{ site.name }}
                 </CDropdownItem>
               </template>
               <template v-else>
@@ -58,7 +58,7 @@
         <template v-else>
           <!-- Admin users get a simpler dropdown -->
           <AdminAccountDropdown v-if="isAdminUser" />
-          <!-- Regular users get the full client-switching dropdown -->
+          <!-- Regular users get the full company-switching dropdown -->
           <AccountDropdown v-else />
         </template>
       </CHeaderNav>
@@ -75,7 +75,7 @@
   import type { Site } from '@/types/location';
   import { ROUTES } from '@/types/permissions';
 
-  const { isAdminUser, isSignedIn, paths, features, site, sites } = useAuth();
+  const { isAdminUser, isSignedIn, paths, features, currentSite, accessibleSites } = useAuth();
   const { permissions } = usePermissions();
 
   function onSelectSite(siteId: Site['id']) {

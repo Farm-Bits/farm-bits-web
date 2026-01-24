@@ -11,7 +11,7 @@
       <CTabs v-model:active-item-key="activeTab" variant="tabs">
         <CTabList variant="tabs">
           <CTab
-            v-if="permissions?.client_setup.edit"
+            v-if="permissions?.company_setup.edit"
             item-key="company"
             class="tab-item">
             <CIcon name="cilBuilding" class="me-2" />
@@ -19,7 +19,7 @@
           </CTab>
 
           <CTab
-            v-if="permissions?.client_users.index"
+            v-if="permissions?.company_users.index"
             item-key="users"
             class="tab-item">
             <CIcon name="cilPeople" class="me-2" />
@@ -35,7 +35,7 @@
           </CTab>
 
           <CTab
-            v-if="permissions?.client_setup.destroy"
+            v-if="permissions?.company_setup.destroy"
             item-key="danger"
             class="tab-item tab-danger">
             <CIcon name="cilWarning" class="me-2" />
@@ -45,11 +45,11 @@
 
         <!-- Tab Content -->
         <CTabContent>
-          <CTabPanel v-if="permissions?.client_setup.edit" item-key="company">
-            <ClientTab />
+          <CTabPanel v-if="permissions?.company_setup.edit" item-key="company">
+            <CompanyTab />
           </CTabPanel>
 
-          <CTabPanel v-if="permissions?.client_users.index" item-key="users">
+          <CTabPanel v-if="permissions?.company_users.index" item-key="users">
             <UsersTab />
           </CTabPanel>
 
@@ -57,7 +57,7 @@
             <SitesTab />
           </CTabPanel>
 
-          <CTabPanel v-if="permissions?.client_setup.destroy" item-key="danger">
+          <CTabPanel v-if="permissions?.company_setup.destroy" item-key="danger">
             <DangerTab />
           </CTabPanel>
         </CTabContent>
@@ -68,7 +68,7 @@
 
 <script lang="ts" setup>
   import { ref } from 'vue';
-  import ClientTab from './components/tabs/ClientTab.vue';
+  import CompanyTab from './components/tabs/CompanyTab.vue';
   import UsersTab from './components/tabs/UsersTab.vue';
   import SitesTab from './components/tabs/SitesTab.vue';
   import DangerTab from './components/tabs/DangerTab.vue';

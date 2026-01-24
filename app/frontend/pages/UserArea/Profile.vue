@@ -247,18 +247,15 @@
   import { useVuelidate } from '@vuelidate/core';
   import { email, minLength, required, sameAs } from '@vuelidate/validators';
   import useAuth from '@/composables/useAuth';
-  import { type User } from '@/types/inertia';
 
-  const { pageProps, paths } = useAuth<{
-    user: User
-  }>();
+  const { paths, currentUser } = useAuth();
 
   type UserField = 'name' | 'email' | 'password';
 
   const formData = useForm({
     user: {
-      name: pageProps.value.user.name,
-      email: pageProps.value.user.email,
+      name: currentUser.value?.name,
+      email: currentUser.value?.email,
       current_password: '',
       password: '',
       password_confirmation: ''
@@ -266,8 +263,8 @@
   });
   const originalData = reactive({
     user: {
-      name: pageProps.value.user.name,
-      email: pageProps.value.user.email
+      name: currentUser.value?.name,
+      email: currentUser.value?.email
     }
   });
   const editingFields = reactive({

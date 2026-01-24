@@ -12,6 +12,7 @@ class InvitationMailer < ApplicationMailer
       setup_admin_user_invitation
     else
       Rails.logger.warn "Unknown inviter type: #{@invitation.inviter_type}"
+      return
     end
 
     mail(
@@ -23,9 +24,9 @@ class InvitationMailer < ApplicationMailer
 
   private
     def setup_user_invitation
-      @client = @invitation.client
+      @company = @invitation.company
       @role = @invitation.role
-      @subject = "You're invited to join #{@client.name}"
+      @subject = "You're invited to join #{@company.name}"
       @template_name = 'invite_user'
     end
 

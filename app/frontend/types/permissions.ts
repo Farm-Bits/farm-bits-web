@@ -1,5 +1,5 @@
 // Auto-generated file - Do not edit manually
-// Generated at: 2026-01-19 17:00:16 UTC
+// Generated at: 2026-01-24 19:37:42 UTC
 
 import type { Method } from '@inertiajs/core';
 
@@ -34,7 +34,7 @@ export const ROLES: Record<Role, { name: string; description: string; level: num
 } as const;
 
 // Valid controller keys
-export type ControllerKey = 'dashboard' | 'my_account' | 'client_setup' | 'client_users' | 'invitations' | 'sites' | 'terminals' | 'plcs' | 'measurement_points';
+export type ControllerKey = 'dashboard' | 'my_account' | 'company_setup' | 'company_users' | 'invitations' | 'sites' | 'terminals' | 'plcs' | 'measurement_points';
 
 // Route permissions mapping
 export type RoutePermissions = {
@@ -46,14 +46,14 @@ export type RoutePermissions = {
     update: boolean;
     destroy: boolean;
   };
-  client_setup: {
+  company_setup: {
     new: boolean;
     edit: boolean;
     create: boolean;
     update: boolean;
     destroy: boolean;
   };
-  client_users: {
+  company_users: {
     index: boolean;
     update: boolean;
     destroy: boolean;
@@ -125,52 +125,52 @@ export const ROUTES: Record<string, RouteInfo> = {
     path: '/user/my_account',
     verb: 'delete'
   },
-  client_setup_new: {
-    controller: 'client_setup',
+  company_setup_new: {
+    controller: 'company_setup',
     action: 'new',
-    path: '/user/client_setup/new',
+    path: '/user/company_setup/new',
     verb: 'get'
   },
-  client_setup_edit: {
-    controller: 'client_setup',
+  company_setup_edit: {
+    controller: 'company_setup',
     action: 'edit',
-    path: '/user/client_setup/edit',
+    path: '/user/company_setup/edit',
     verb: 'get'
   },
-  client_setup_create: {
-    controller: 'client_setup',
+  company_setup_create: {
+    controller: 'company_setup',
     action: 'create',
-    path: '/user/client_setup',
+    path: '/user/company_setup',
     verb: 'post'
   },
-  client_setup_update: {
-    controller: 'client_setup',
+  company_setup_update: {
+    controller: 'company_setup',
     action: 'update',
-    path: '/user/client_setup',
+    path: '/user/company_setup',
     verb: 'put'
   },
-  client_setup_destroy: {
-    controller: 'client_setup',
+  company_setup_destroy: {
+    controller: 'company_setup',
     action: 'destroy',
-    path: '/user/client_setup',
+    path: '/user/company_setup',
     verb: 'delete'
   },
-  client_users_index: {
-    controller: 'client_users',
+  company_users_index: {
+    controller: 'company_users',
     action: 'index',
-    path: '/user/client_users',
+    path: '/user/company_users',
     verb: 'get'
   },
-  client_users_update: {
-    controller: 'client_users',
+  company_users_update: {
+    controller: 'company_users',
     action: 'update',
-    path: '/user/client_users/:id',
+    path: '/user/company_users/:id',
     verb: 'patch'
   },
-  client_users_destroy: {
-    controller: 'client_users',
+  company_users_destroy: {
+    controller: 'company_users',
     action: 'destroy',
-    path: '/user/client_users/:id',
+    path: '/user/company_users/:id',
     verb: 'delete'
   },
   invitations_index: {

@@ -5,23 +5,23 @@
         <label class="form-label mb-0 fw-medium">Company Name</label>
       </div>
       <div class="col-md-6">
-        <div v-if="!editingFields.client.name" class="d-flex align-items-center">
-          <span class="text-body">{{ formData.client.name }}</span>
+        <div v-if="!editingFields.company.name" class="d-flex align-items-center">
+          <span class="text-body">{{ formData.company.name }}</span>
         </div>
         <div v-else>
           <CFormInput
-            v-model="formData.client.name"
+            v-model="formData.company.name"
             placeholder="Enter company name"
-            :invalid="v$.client.name.$error"
-            @blur="v$.client.name.$touch()"
+            :invalid="v$.company.name.$error"
+            @blur="v$.company.name.$touch()"
             class="mb-2" />
-          <div class="form-error" v-if="v$.client.name.$error">
-            {{ v$.client.name.$errors[0].$message }}
+          <div class="form-error" v-if="v$.company.name.$error">
+            {{ v$.company.name.$errors[0].$message }}
           </div>
         </div>
       </div>
-      <div v-if="permissions?.client_setup.update" class="col-md-3 text-end">
-        <div v-if="!editingFields.client.name">
+      <div v-if="permissions?.company_setup.update" class="col-md-3 text-end">
+        <div v-if="!editingFields.company.name">
           <CButton @click="startEditing('name')">
             <CIcon name="cilPencil" class="me-1" />
             Edit
@@ -29,7 +29,7 @@
         </div>
         <div v-else class="d-flex gap-2 justify-content-end">
           <CButton
-            :disabled="!hasChanges('name') || v$.client.name.$error"
+            :disabled="!hasChanges('name') || v$.company.name.$error"
             @click="saveField('name')">
             <CIcon name="cilCheck" class="me-1" />
             Update
@@ -47,26 +47,26 @@
         <label class="form-label mb-0 fw-medium">Color</label>
       </div>
       <div class="col-md-6">
-        <div v-if="!editingFields.client.color" class="d-flex align-items-center">
+        <div v-if="!editingFields.company.color" class="d-flex align-items-center">
           <div
             class="color-preview me-2"
-            :style="{ backgroundColor: formData.client.color }"></div>
-          <span class="text-body">{{ formData.client.color }}</span>
+            :style="{ backgroundColor: formData.company.color }"></div>
+          <span class="text-body">{{ formData.company.color }}</span>
         </div>
         <div v-else>
           <div class="d-flex align-items-center gap-2 mb-2">
             <ColorPicker
-              v-model="formData.client.color"
-              :invalid="v$.client.color.$error"
-              @blur="v$.client.color.$touch()" />
+              v-model="formData.company.color"
+              :invalid="v$.company.color.$error"
+              @blur="v$.company.color.$touch()" />
           </div>
-          <div class="form-error" v-if="v$.client.color.$error">
-            {{ v$.client.color.$errors[0].$message }}
+          <div class="form-error" v-if="v$.company.color.$error">
+            {{ v$.company.color.$errors[0].$message }}
           </div>
         </div>
       </div>
-      <div v-if="permissions?.client_setup.update" class="col-md-3 text-end">
-        <div v-if="!editingFields.client.color">
+      <div v-if="permissions?.company_setup.update" class="col-md-3 text-end">
+        <div v-if="!editingFields.company.color">
           <CButton @click="startEditing('color')">
             <CIcon name="cilPencil" class="me-1" />
             Edit
@@ -74,7 +74,7 @@
         </div>
         <div v-else class="d-flex gap-2 justify-content-end">
           <CButton
-            :disabled="!hasChanges('color') || v$.client.color.$error"
+            :disabled="!hasChanges('color') || v$.company.color.$error"
             @click="saveField('color')">
             <CIcon name="cilCheck" class="me-1" />
             Update
@@ -97,28 +97,30 @@
   import ColorPicker from '@/components/ColorPicker.vue';
   import useAuth from '@/composables/useAuth';
   import usePermissions from '@/composables/usePermissions';
-  import { type Client } from '@/types/inertia';
+  import { type Company } from '@/types/inertia';
 
-  const { pageProps, paths } = useAuth<{
-    client: Client;
-  }>();
+  const { pageProps, paths, currentCompany } = useAuth();
 
   const { permissions } = usePermissions();
 
-  type ClientField = Exclude<keyof Client, 'id'>;
+  type CompanyField = Exclude<keyof Company, 'id'>;
 
   const formData = useForm({
-    client: {
-      ...pageProps.value.client
+    company: {
+      name: '',
+      color: '',
+      ...currentCompany.value
     }
   });
   const originalData = reactive({
-    client: {
-      ...pageProps.value.client
+    company: {
+      name: '',
+      color: '',
+      ...currentCompany.value
     }
   });
   const editingFields = reactive({
-    client: {
+    company: {
       name: false,
       color: false
     }
@@ -132,7 +134,7 @@
 
   function rules() {
     return {
-      client: {
+      company: {
         name: { required },
         color: {
           required,
@@ -147,37 +149,37 @@
 
   const v$ = useVuelidate(rules, formData);
 
-  function startEditing(field: ClientField) {
-    editingFields.client[field] = true;
+  function startEditing(field: CompanyField) {
+    editingFields.company[field] = true;
   }
 
-  function cancelEditing(field: ClientField) {
-    formData.client[field] = originalData.client[field];
-    editingFields.client[field] = false;
-    v$.value.client[field].$reset();
+  function cancelEditing(field: CompanyField) {
+    formData.company[field] = originalData.company[field];
+    editingFields.company[field] = false;
+    v$.value.company[field].$reset();
   }
 
-  function hasChanges(field: ClientField) {
-    return formData.client[field] !== originalData.client[field];
+  function hasChanges(field: CompanyField) {
+    return formData.company[field] !== originalData.company[field];
   }
 
-  async function saveField(field: ClientField) {
-    // if (!features.value.canManageClientSettings)
+  async function saveField(field: CompanyField) {
+    // if (!features.value.canManageCompanySettings)
     //   return;
 
-    const fieldValidation = v$.value.client[field];
+    const fieldValidation = v$.value.company[field];
     await fieldValidation.$validate();
 
-    const isValid = await v$.value.client[field].$validate();
+    const isValid = await v$.value.company[field].$validate();
     if (!isValid)
       return;
 
     formData.transform((data) => {
-      return { client: { [field]: data.client[field] } };
-    }).put(paths.value.actions.clientSetup, {
+      return { company: { [field]: data.company[field] } };
+    }).put(paths.value.actions.companySetup, {
       onSuccess: () => {
-        originalData.client[field] = formData.client[field];
-        editingFields.client  [field] = false;
+        originalData.company[field] = formData.company[field];
+        editingFields.company  [field] = false;
       }
     });
   }

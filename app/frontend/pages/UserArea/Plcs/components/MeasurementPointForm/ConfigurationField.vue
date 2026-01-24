@@ -44,7 +44,7 @@
     </template>
 
     <!-- Enum (Select) -->
-    <template v-if="mapping.register_template.value_format === 'enum'">
+    <template v-else-if="mapping.register_template.value_format === 'enum'">
       <CFormSelect
         :model-value="currentValue"
         @update:model-value="handleChange"

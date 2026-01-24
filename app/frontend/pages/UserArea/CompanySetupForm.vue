@@ -30,12 +30,12 @@
                   id="company"
                   name="company"
                   placeholder="Enter your company name"
-                  v-model="formData.client.name"
-                  :invalid="v$.client.name.$error"
-                  @blur="v$.client.name.$touch()"
+                  v-model="formData.company.name"
+                  :invalid="v$.company.name.$error"
+                  @blur="v$.company.name.$touch()"
                   class="form-input" />
-                <div class="form-error" v-if="v$.client.name.$error">
-                  {{ v$.client.name.$errors[0].$message }}
+                <div class="form-error" v-if="v$.company.name.$error">
+                  {{ v$.company.name.$errors[0].$message }}
                 </div>
               </div>
             </div>
@@ -47,8 +47,8 @@
               </h3>
 
               <LocationSelector
-                v-model="formData.client.site_attributes"
-                :errors="v$.client.site_attributes" />
+                v-model="formData.company.site_attributes"
+                :errors="v$.company.site_attributes" />
             </div>
 
             <!-- Submit Button -->
@@ -74,7 +74,7 @@
   const { paths } = useAuth();
 
   const formData = useForm({
-    client: {
+    company: {
       name: null,
       site_attributes: {
         country: null,
@@ -88,7 +88,7 @@
 
   function rules() {
     return {
-      client: {
+      company: {
         name: { required },
         site_attributes: {
           country: { required },
@@ -124,7 +124,7 @@
       return;
     }
 
-    formData.post(paths.value.actions.clientSetup);
+    formData.post(paths.value.actions.companySetup);
   }
 </script>
 

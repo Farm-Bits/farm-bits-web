@@ -16,7 +16,7 @@ class UserArea::InvitationsController < UserArea::ApplicationController
 
     invitation = Invitation.new(invitation_params)
     invitation.inviter = current_user
-    invitation.client = current_client
+    invitation.company = current_company
 
     if !invitation.admin? && invitation_site_params[:site_ids].present?
       build_site_assignments(invitation, invitation_site_params[:site_ids])

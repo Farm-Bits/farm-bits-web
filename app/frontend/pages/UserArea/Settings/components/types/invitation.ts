@@ -2,7 +2,7 @@ import { type User } from '@/types/inertia';
 import type { Site } from '@/types/location';
 import type { Role } from '@/types/permissions';
 
-export type ClientUser = {
+export type CompanyUser = {
   id: number;
   role: Role;
   user: User;

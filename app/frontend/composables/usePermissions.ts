@@ -12,14 +12,14 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: true,
       destroy: true
     },
-    client_setup: {
+    company_setup: {
       new: true,
       edit: true,
       create: true,
       update: true,
       destroy: true
     },
-    client_users: {
+    company_users: {
       index: true,
       update: true,
       destroy: true
@@ -60,14 +60,14 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: true,
       destroy: true
     },
-    client_setup: {
+    company_setup: {
       new: true,
       edit: true,
       create: true,
       update: false,
       destroy: false
     },
-    client_users: {
+    company_users: {
       index: true,
       update: true,
       destroy: true
@@ -108,14 +108,14 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: true,
       destroy: true
     },
-    client_setup: {
+    company_setup: {
       new: true,
       edit: true,
       create: true,
       update: false,
       destroy: false
     },
-    client_users: {
+    company_users: {
       index: true,
       update: false,
       destroy: false
@@ -156,14 +156,14 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: true,
       destroy: true
     },
-    client_setup: {
+    company_setup: {
       new: true,
       edit: false,
       create: true,
       update: false,
       destroy: false
     },
-    client_users: {
+    company_users: {
       index: true,
       update: false,
       destroy: false
@@ -198,13 +198,13 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
 };
 
 export default function usePermissions() {
-  const { role } = useAuth();
+  const { currentRole } = useAuth();
 
   const permissions = computed(() => {
-    if (!role.value)
+    if (!currentRole.value)
       return null;
 
-    return PERMISSION_MATRIX[role.value];
+    return PERMISSION_MATRIX[currentRole.value];
   });
 
   return {

@@ -98,9 +98,14 @@
 
     isLoading.value = true;
 
-    formData.post(paths.value.actions.resetPassword);
-
-    isLoading.value = false;
+    formData.post(
+      paths.value.actions.resetPassword,
+      {
+        onFinish: () => {
+          isLoading.value = false;
+        }
+      }
+    );
   }
 </script>
 

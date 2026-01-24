@@ -165,9 +165,14 @@
 
     isLoading.value = true;
 
-    formData.post(paths.value.actions.signIn);
-
-    isLoading.value = false;
+    formData.post(
+      paths.value.actions.signIn,
+      {
+        onFinish: () => {
+          isLoading.value = false;
+        }
+      }
+    );
   }
 </script>
 

@@ -3,7 +3,7 @@ class Invitation < ApplicationRecord
   include Roleable
 
   belongs_to :inviter, polymorphic: true
-  belongs_to :client, optional: true
+  belongs_to :company, optional: true
 
   has_many :invitation_sites, dependent: :destroy
   has_many :sites, through: :invitation_sites
@@ -13,8 +13,8 @@ class Invitation < ApplicationRecord
   validates :role, presence: true, if: -> { inviter_type == 'User' }
   validates :role, absence: true, if: -> { inviter_type == 'AdminUser' }
   validates :status, inclusion: { in: %w[pending expired accepted] }
-  validates :client, presence: true, if: -> { inviter_type == 'User' }
-  validates :client, absence: true, if: -> { inviter_type == 'AdminUser' }
+  validates :company, presence: true, if: -> { inviter_type == 'User' }
+  validates :company, absence: true, if: -> { inviter_type == 'AdminUser' }
   validate :user_not_already_member, on: :create
   validate :admin_user_not_already_exists, on: :create
 
@@ -95,11 +95,11 @@ class Invitation < ApplicationRecord
 
   private
     def user_not_already_member
-      if inviter_type != 'User' || !client.present?
+      if inviter_type != 'User' || !company.present?
         return
       end
 
-      existing_invitation = Invitation.where(email: email, client: client)
+      existing_invitation = Invitation.where(email: email, company: company)
         .where.not(status: 'accepted')
         .first
       if existing_invitation
@@ -107,7 +107,7 @@ class Invitation < ApplicationRecord
       end
 
       existing_user = User.find_by(email: email)
-      if existing_user&.member_of?(client)
+      if existing_user&.member_of?(company)
         errors.add(:email, 'is already a member of this organization')
       end
     end
@@ -132,18 +132,18 @@ class Invitation < ApplicationRecord
 
     def accept_user_invitation!(user)
       if !user.is_a?(User)
-        raise ArgumentError, 'Invalid user type for client invitation'
+        raise ArgumentError, 'Invalid user type for company invitation'
       end
 
-      client_user = client.client_users.find_or_initialize_by(user: user)
-      if client_user.persisted?
-        raise ActiveRecord::RecordInvalid, 'User is already a member of this client'
+      company_user = company.company_users.find_or_initialize_by(user: user)
+      if company_user.persisted?
+        raise ActiveRecord::RecordInvalid, 'User is already a member of this company'
       else
-        client_user.assign_attributes(role: role)
+        company_user.assign_attributes(role: role)
         sites.each do |site|
-          client_user.client_user_sites.build(site: site)
+          company_user.company_user_sites.build(site: site)
         end
-        client_user.save!
+        company_user.save!
       end
     end
 

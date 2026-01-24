@@ -200,7 +200,7 @@ ActiveRecord::Base.transaction do
     value_format = 'numeric'
     if name.include?('Time') || name.start_with?('ManualStart')
       value_format = 'time_of_day'
-    elsif if name.include?('Duration') || name.start_with?('ManualOn') || name.start_with?('DcOn')
+    elsif name.include?('Duration') || name.start_with?('ManualOn') || name.start_with?('DcOn')
       value_format = 'duration_seconds'
     elsif um == 'flag' || type == 'BOOL'
       value_format = 'boolean'

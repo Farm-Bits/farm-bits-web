@@ -8,12 +8,12 @@ class CreateInvitations < ActiveRecord::Migration[7.2]
       t.datetime :expires_at, null: false
       t.datetime :accepted_at
       t.references :inviter, null: false, polymorphic: true
-      t.references :client, foreign_key: { on_delete: :cascade }
+      t.references :company, foreign_key: { on_delete: :cascade }
 
       t.timestamps
     end
 
-    add_index :invitations, [:client_id, :email], unique: true
+    add_index :invitations, [:company_id, :email], unique: true
     add_index :invitations, :email
     add_index :invitations, :token, unique: true
     add_index :invitations, [:email, :inviter_type]

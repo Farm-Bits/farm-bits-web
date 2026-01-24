@@ -17,7 +17,7 @@ class UserArea::SitesController < UserArea::ApplicationController
   def create
     authorize Site, :create?
 
-    site = current_client.sites.build(site_params)
+    site = current_company.sites.build(site_params)
 
     if site.save
       render json: SiteSerializer.render_as_json(site, view: :with_segments), status: :created

@@ -1,19 +1,19 @@
 # frozen_string_literal: true
 
 class ApplicationPolicy
-  attr_reader :current_user, :current_client, :current_client_user, :current_site, :record
+  attr_reader :current_user, :current_company, :current_company_user, :current_site, :record
 
   def initialize(context, record)
     @current_user = context[:current_user]
-    @current_client = context[:current_client]
-    @current_client_user = context[:current_client_user]
+    @current_company = context[:current_company]
+    @current_company_user = context[:current_company_user]
     @current_site = context[:current_site]
     @record = record
   end
 
   Roleable::ROLE_IDS.each_key do |role_key|
     define_method "#{role_key}?" do
-      current_client_user&.send("#{role_key}?")
+      current_company_user&.send("#{role_key}?")
     end
   end
 
@@ -46,21 +46,21 @@ class ApplicationPolicy
   end
 
   class Scope
-    attr_reader :current_user, :current_client, :current_client_user, :current_site, :scope
+    attr_reader :current_user, :current_company, :current_company_user, :current_site, :scope
 
     def initialize(context, scope)
       @context = context
       @scope = scope
 
       @current_user = context[:current_user]
-      @current_client = context[:current_client]
-      @current_client_user = context[:current_client_user]
+      @current_company = context[:current_company]
+      @current_company_user = context[:current_company_user]
       @current_site = context[:current_site]
     end
 
     Roleable::ROLE_IDS.each_key do |role_key|
       define_method "#{role_key}?" do
-        current_client_user&.send("#{role_key}?")
+        current_company_user&.send("#{role_key}?")
       end
     end
 

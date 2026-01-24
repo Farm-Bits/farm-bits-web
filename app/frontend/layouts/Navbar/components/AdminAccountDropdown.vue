@@ -6,7 +6,7 @@
       @click="toggleDropdown"
       ref="dropdownToggle">
       <CAvatar size="md" color="danger">
-        {{ getInitials(pageProps.user.name) }}
+        {{ initialsCurrentUser }}
       </CAvatar>
     </button>
 
@@ -15,10 +15,10 @@
       ref="dropdownMenu">
       <div class="dropdown-header d-flex align-items-center mb-2">
         <CAvatar size="sm" color="danger" class="me-2">
-          {{ getInitials(pageProps.user.name) }}
+          {{ initialsCurrentUser }}
         </CAvatar>
         <div class="user-info">
-          <div class="fw-semibold">{{ pageProps.user.name }}</div>
+          <div class="fw-semibold">{{ currentUser?.name }}</div>
           <small class="text-muted">System Administrator</small>
         </div>
       </div>
@@ -71,25 +71,25 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, onMounted, onUnmounted } from 'vue';
+  import { computed, ref, onMounted, onUnmounted } from 'vue';
   import { router } from '@inertiajs/vue3';
   import useAuth from '@/composables/useAuth';
-  import { type User } from '@/types/inertia';
 
-  const { pageProps, paths } = useAuth<{
-    user: User;
-  }>();
+  const { paths, currentUser } = useAuth();
 
   const isOpen = ref(false);
   const dropdownToggle = ref<HTMLElement | null>(null);
   const dropdownMenu = ref<HTMLElement | null>(null);
 
+  const initialsCurrentUser = computed(() => {
+    if (!currentUser.value)
+      return '';
+
+    return (currentUser.value.name.match(/\b\w/g) || []).join('').toUpperCase();
+  });
+
   function toggleDropdown() {
     isOpen.value = !isOpen.value;
-  }
-
-  function getInitials(name: string) {
-    return (name.match(/\b\w/g) || []).join('').toUpperCase();
   }
 
   function handleClickOutside(event: MouseEvent) {

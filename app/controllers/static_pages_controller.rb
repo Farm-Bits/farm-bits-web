@@ -1,6 +1,6 @@
 class StaticPagesController < ApplicationController
   def home
-    redirect_params = params.permit(:client_id)
+    redirect_params = params.permit(:company_id)
 
     if current_user
       return redirect_to user_dashboard_path(redirect_params)

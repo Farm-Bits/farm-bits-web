@@ -39,16 +39,16 @@ Rails.application.routes.draw do
       put 'my_account' => 'my_account#update'
       delete 'my_account' => 'my_account#destroy'
 
-      get 'client_setup/new' => 'client_setup#new'
-      get 'client_setup/edit' => 'client_setup#edit'
-      post 'client_setup' => 'client_setup#create'
-      put 'client_setup' => 'client_setup#update'
-      delete 'client_setup' => 'client_setup#destroy'
+      get 'company_setup/new' => 'company_setup#new'
+      get 'company_setup/edit' => 'company_setup#edit'
+      post 'company_setup' => 'company_setup#create'
+      put 'company_setup' => 'company_setup#update'
+      delete 'company_setup' => 'company_setup#destroy'
 
-      get 'client_setup', to: 'client_setup#new'
-      post 'client_setup', to: 'client_setup#create'
+      get 'company_setup', to: 'company_setup#new'
+      post 'company_setup', to: 'company_setup#create'
 
-      resources :client_users, only: [:index, :update, :destroy]
+      resources :company_users, only: [:index, :update, :destroy]
 
       # resources :invitations, only: [:index, :create, :update, :destroy]
       resources :invitations, only: [:index, :create, :destroy]

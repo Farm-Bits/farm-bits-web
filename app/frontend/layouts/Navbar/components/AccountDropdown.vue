@@ -5,11 +5,11 @@
       type="button"
       @click="toggleDropdown"
       ref="dropdownToggle">
-      <CAvatar v-if="currentClient" size="md" :style="{ backgroundColor: currentClient.color }">
-        {{ getInitials(currentClient.name) }}
+      <CAvatar v-if="currentCompany" size="md" :style="{ backgroundColor: currentCompany.color }">
+        {{ getInitials(currentCompany.name) }}
       </CAvatar>
-      <CAvatar v-else size="md">
-        {{ getInitials(pageProps.user.name) }}
+      <CAvatar v-else-if="currentUser" size="md">
+        {{ getInitials(currentUser.name) }}
       </CAvatar>
     </button>
 
@@ -19,17 +19,18 @@
       <div class="dropdown-container" :style="containerStyle">
         <!-- Default Menu Panel -->
         <div class="dropdown-panel">
-          <div class="dropdown-header d-flex align-items-center mb-2">
-              <CAvatar v-if="currentClient" size="sm" :style="{ backgroundColor: currentClient.color }" class="me-2">
-                {{ getInitials(pageProps.user.name) }}
+          <div v-if="currentCompany && currentUser">
+            <div class="dropdown-header d-flex align-items-center mb-2">
+              <CAvatar size="sm" :style="{ backgroundColor: currentCompany.color }" class="me-2">
+                {{ getInitials(currentUser.name) }}
               </CAvatar>
               <div class="user-info">
-                <div class="fw-semibold">{{ pageProps.user.name }}</div>
-                <small v-if="currentClient" class="text-muted">{{ currentClient.name }}</small>
+                <div class="fw-semibold">{{ currentUser.name }}</div>
+                <small class="text-muted">{{ currentCompany.name }}</small>
               </div>
             </div>
-
-          <CDropdownDivider />
+            <CDropdownDivider />
+          </div>
 
           <CDropdownHeader>Account</CDropdownHeader>
 
@@ -41,16 +42,16 @@
           </CDropdownItem>
 
           <CDropdownItem
-            v-if="permissions?.client_setup.edit"
+            v-if="permissions?.company_setup.edit"
             class="d-flex align-items-center"
-            @click="visit(paths.pages.editClient)">
+            @click="visit(paths.pages.editCompany)">
             <CIcon icon="cilSettings" class="me-2" />
             Settings
           </CDropdownItem>
 
           <CDropdownItem
-            v-if="isClientConnected"
-            @click="showClientPanel"
+            v-if="isCompanyConnected"
+            @click="showCompanyPanel"
             class="d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center">
               <CIcon icon="cilPeople" class="me-2" />
@@ -69,8 +70,8 @@
           </CDropdownItem>
         </div>
 
-        <!-- Clients Panel -->
-        <div v-if="isClientConnected" class="dropdown-panel">
+        <!-- Companies Panel -->
+        <div v-if="isCompanyConnected" class="dropdown-panel">
           <div class="dropdown-header d-flex align-items-center">
             <button
               @click="showDefaultPanel"
@@ -81,40 +82,40 @@
             <span class="fw-semibold">Switch Company</span>
           </div>
 
-          <div v-if="currentClient" class="current-client mb-2">
+          <div v-if="currentCompany" class="current-company mb-2">
             <small class="text-muted">Current Company</small>
             <CDropdownItem class="active d-flex align-items-center">
               <div
-                class="client-avatar me-2"
-                :style="{ backgroundColor: currentClient.color }">
-                {{ getInitials(currentClient.name) }}
+                class="company-avatar me-2"
+                :style="{ backgroundColor: currentCompany.color }">
+                {{ getInitials(currentCompany.name) }}
               </div>
-              {{ currentClient.name }}
+              {{ currentCompany.name }}
               <CIcon icon="cilCheckAlt" class="ms-auto text-success" size="sm" />
             </CDropdownItem>
           </div>
 
-          <div v-if="otherClients.length > 0">
+          <div v-if="otherCompanies.length > 0">
             <CDropdownDivider />
-            <div class="other-clients">
+            <div class="other-companies">
               <small class="text-muted px-3">Other Companies</small>
               <CDropdownItem
-                v-for="otherClient in otherClients"
-                :key="otherClient.id"
+                v-for="otherCompany in otherCompanies"
+                :key="otherCompany.id"
                 class="d-flex align-items-center"
-                @click="visit(pathname, { data: { client_id: otherClient.id } })">
+                @click="visit(pathname, { data: { company_id: otherCompany.id } })">
                 <div
-                  class="client-avatar me-2"
-                  :style="{ backgroundColor: otherClient.color }">
-                  {{ getInitials(otherClient.name) }}
+                  class="company-avatar me-2"
+                  :style="{ backgroundColor: otherCompany.color }">
+                  {{ getInitials(otherCompany.name) }}
                 </div>
-                {{ otherClient.name }}
+                {{ otherCompany.name }}
               </CDropdownItem>
             </div>
           </div>
 
           <CDropdownDivider />
-          <CDropdownItem class="d-flex align-items-center" @click="visit(paths.pages.newClient)">
+          <CDropdownItem class="d-flex align-items-center" @click="visit(paths.pages.newCompany)">
             <CIcon icon="cilPlus" class="me-2" />
             Create New Company
           </CDropdownItem>
@@ -125,33 +126,29 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
+  import { ref, computed, onMounted, onUnmounted } from 'vue';
   import { router } from '@inertiajs/vue3';
   import useAuth from '@/composables/useAuth';
   import usePermissions from '@/composables/usePermissions';
-  import { type User } from '@/types/inertia';
 
-  const { pageProps, userScope, paths, client, clients } = useAuth<{
-    user: User;
-  }>();
+  const { userScope, paths, currentUser, currentCompany, accessibleCompanies } = useAuth();
   const { permissions } = usePermissions();
 
   const pathname = window.location.pathname;
 
   const isOpen = ref(false);
-  const currentPanel = ref<'default' | 'clients'>('default');
+  const currentPanel = ref<'default' | 'companies'>('default');
   const dropdownToggle = ref<HTMLElement | null>(null);
   const dropdownMenu = ref<HTMLElement | null>(null);
 
-  const isClientConnected = computed(() => userScope.value !== 'admin_users');
+  const isCompanyConnected = computed(() => userScope.value !== 'admin_users');
 
-  const currentClient = reactive(client);
-  const otherClients = computed(() =>
-    clients.value.filter((c) => c.id !== currentClient.value?.id)
+  const otherCompanies = computed(() =>
+    accessibleCompanies.value.filter((c) => c.id !== currentCompany.value?.id)
   );
 
   const containerStyle = computed(() => ({
-    transform: `translateX(${currentPanel.value === 'clients' ? '-50%' : '0%'})`,
+    transform: `translateX(${currentPanel.value === 'companies' ? '-50%' : '0%'})`,
     transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
   }));
 
@@ -168,8 +165,8 @@
     return (name.match(/\b\w/g) || []).join('').toUpperCase();
   }
 
-  function showClientPanel() {
-    currentPanel.value = 'clients';
+  function showCompanyPanel() {
+    currentPanel.value = 'companies';
   }
 
   function showDefaultPanel() {
@@ -233,7 +230,7 @@
     flex-shrink: 0;
   }
 
-  .client-avatar {
+  .company-avatar {
     width: 24px;
     height: 24px;
     border-radius: 4px;
@@ -246,11 +243,11 @@
     flex-shrink: 0;
   }
 
-  .current-client {
+  .current-company {
     padding: 0 1rem;
   }
 
-  .other-clients small {
+  .other-companies small {
     display: block;
     padding: 0.5rem 0 0.25rem 0;
     font-weight: 500;

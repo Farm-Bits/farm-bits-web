@@ -132,15 +132,14 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
       interface_ids = @measurement_point.register_template
           &.interface_register_mappings
           &.pluck(:interface_id)
-
-      if interface_ids.present?
-        MeasurementPoint
-          .joins(register_template: :interface_register_mappings)
-          .where(interface_register_mappings: { interface_id: interface_ids })
-          .where.not(id: @measurement_point.id)
-          .distinct
-      else
-        []
+      if !interface_ids.present?
+        return []
       end
+
+      MeasurementPoint
+        .joins(register_template: :interface_register_mappings)
+        .where(interface_register_mappings: { interface_id: interface_ids })
+        .where.not(id: @measurement_point.id)
+        .distinct
     end
 end

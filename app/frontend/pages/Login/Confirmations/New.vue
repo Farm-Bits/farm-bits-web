@@ -116,9 +116,14 @@
 
     isLoading.value = true;
 
-    formData.post(paths.value.actions.confirmation);
-
-    isLoading.value = false;
+    formData.post(
+      paths.value.actions.confirmation,
+      {
+        onFinish: () => {
+          isLoading.value = false;
+        }
+      }
+    );
   }
 </script>
 

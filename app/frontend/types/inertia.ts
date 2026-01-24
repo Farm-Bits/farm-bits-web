@@ -4,7 +4,7 @@ import type { Segment, Site } from './location';
 const USER_SCOPES = ['admin_users', 'users'] as const;
 export type UserScope = typeof USER_SCOPES[number];
 
-export type Client = {
+export type Company = {
   id: number;
   name: string;
   color: string;
@@ -23,11 +23,11 @@ export type SiteWithSegments = Site & {
 declare module '@inertiajs/core' {
   interface PageProps {
     userScope?: UserScope;
-    user?: User;
-    client?: Client;
-    role?: Role;
-    clients?: Client[];
-    site?: SiteWithSegments;
-    sites?: Site[];
+    currentUser?: User;
+    currentCompany?: Company;
+    currentRole?: Role;
+    accessibleCompanies?: Company[];
+    currentSite?: SiteWithSegments;
+    accessibleSites?: Site[];
   }
 };

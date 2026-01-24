@@ -1,6 +1,6 @@
-You're Invited to Join <%= @client.name %>!
+You're Invited to Join <%= @company.name %>!
 
-<%= @inviter.name %> has invited you to join <%= @client.name %> with the role of <%= @role.titleize %>.
+<%= @inviter.name %> has invited you to join <%= @company.name %> with the role of <%= @role.titleize %>.
 
 <% case @role %>
 <% when 'admin' %>
@@ -19,5 +19,5 @@ This invitation will expire on <%= @expires_at.strftime("%B %d, %Y at %I:%M %p")
 If you don't want to accept this invitation, you can simply ignore this email.
 
 ---
-This invitation was sent by <%= @inviter.name %> from <%= @client.name %>.
+This invitation was sent by <%= @inviter.name %> from <%= @company.name %>.
 If you have any questions, please contact your inviter directly.

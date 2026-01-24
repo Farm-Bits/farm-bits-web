@@ -31,53 +31,53 @@
           </CTableRow>
         </CTableHead>
         <CTableBody>
-          <CTableRow v-for="clientUser in clientUsers" :key="clientUser.id">
+          <CTableRow v-for="companyUser in companyUsers" :key="companyUser.id">
             <CTableDataCell>
-              <div class="fw-semibold">{{ clientUser.user.name }}</div>
+              <div class="fw-semibold">{{ companyUser.user.name }}</div>
             </CTableDataCell>
             <CTableDataCell>
-              <code class="text-medium-emphasis small">{{ clientUser.user.email }}</code>
+              <code class="text-medium-emphasis small">{{ companyUser.user.email }}</code>
             </CTableDataCell>
             <CTableDataCell>
-              <CBadge :color="getRoleColor(clientUser.role)">
-                {{ ROLES[clientUser.role].name }}
+              <CBadge :color="getRoleColor(companyUser.role)">
+                {{ ROLES[companyUser.role].name }}
               </CBadge>
             </CTableDataCell>
             <CTableDataCell>
               <div class="small text-medium-emphasis">
-                {{ getSiteAccessText(clientUser) }}
+                {{ getSiteAccessText(companyUser) }}
               </div>
             </CTableDataCell>
             <CTableDataCell>
               <CButtonGroup size="sm">
                 <CTooltip
-                  v-if="permissions?.client_users.update && canManageUser(clientUser) && clientUser.user.id !== user?.id"
+                  v-if="permissions?.company_users.update && canManageUser(companyUser) && companyUser.user.id !== currentUser?.id"
                   content="Change role">
                   <template #toggler="{ id, on }">
                     <CButton
                       v-on="on"
                       color="light"
-                      @click="openChangeRoleModal(clientUser)">
+                      @click="openChangeRoleModal(companyUser)">
                       <CIcon name="cilPencil" />
                     </CButton>
                   </template>
                 </CTooltip>
                 <CTooltip
-                  v-if="(permissions?.client_users.destroy && canManageUser(clientUser)) || clientUser.user.id === user?.id"
-                  :content="clientUser.user.id === user?.id ? 'Leave Company' : 'Delete user'">
+                  v-if="(permissions?.company_users.destroy && canManageUser(companyUser)) || companyUser.user.id === currentUser?.id"
+                  :content="companyUser.user.id === currentUser?.id ? 'Leave Company' : 'Delete user'">
                   <template #toggler="{ id, on }">
                     <CButton
-                      v-if="clientUser.user.id === user?.id"
+                      v-if="companyUser.user.id === currentUser?.id"
                       v-on="on"
                       color="light"
-                      @click="openDeleteUserModal(clientUser)">
+                      @click="openDeleteUserModal(companyUser)">
                       <CIcon name="cilRunning" />
                     </CButton>
                     <CButton
                       v-else
                       v-on="on"
                       color="light"
-                      @click="openDeleteUserModal(clientUser)">
+                      @click="openDeleteUserModal(companyUser)">
                       <CIcon name="cilTrash" />
                     </CButton>
                   </template>
@@ -144,7 +144,7 @@
     <!-- Change Role Modal -->
     <ChangeRoleModal
       :visible="showChangeRoleModal"
-      :clientUser="editingClientUser"
+      :companyUser="editingCompanyUser"
       @close="closeChangeRoleModal"
       @update="handleRoleUpdated" />
 
@@ -156,11 +156,11 @@
         <CModalTitle>Delete User</CModalTitle>
       </CModalHeader>
       <CModalBody>
-        <p v-if="clientUserToDelete?.user.id === user?.id">
+        <p v-if="companyUserToDelete?.user.id === currentUser?.id">
           Leave the company?
         </p>
         <p v-else>
-          Delete <strong>{{ clientUserToDelete?.user.name }}</strong> from your organization?
+          Delete <strong>{{ companyUserToDelete?.user.name }}</strong> from your organization?
         </p>
         <CAlert color="danger" class="d-flex align-items-center mb-0">
           <CIcon name="cilWarning" class="me-2" />
@@ -175,10 +175,10 @@
         </CButton>
         <CButton
           color="danger"
-          :disabled="isDeletingClientUser"
-          @click="handleDeleteClientUser">
-          <CSpinner v-if="isDeletingClientUser" size="sm" class="me-2" />
-          {{ isDeletingClientUser ? 'Deleting...' : 'Delete User' }}
+          :disabled="isDeletingCompanyUser"
+          @click="handleDeleteCompanyUser">
+          <CSpinner v-if="isDeletingCompanyUser" size="sm" class="me-2" />
+          {{ isDeletingCompanyUser ? 'Deleting...' : 'Delete User' }}
         </CButton>
       </CModalFooter>
     </CModal>
@@ -225,23 +225,23 @@
   import { ROLES, type Role, ROUTES } from '@/types/permissions';
   import InviteUserModal from '../modals/InviteUserModal.vue';
   import ChangeRoleModal from '../modals/ChangeRoleModal.vue';
-  import type { ClientUser, Invitation } from '../types/invitation';
+  import type { CompanyUser, Invitation } from '../types/invitation';
 
-  const { user, role, sites } = useAuth();
+  const { currentUser, currentRole, accessibleSites } = useAuth();
   const { permissions } = usePermissions();
   const { execute } = useApiCall();
 
-  const clientUsers = ref<ClientUser[]>([]);
+  const companyUsers = ref<CompanyUser[]>([]);
   const invitations = ref<Invitation[]>([]);
 
   const showInviteModal = ref(false);
 
   const showChangeRoleModal = ref(false);
-  const editingClientUser = ref<ClientUser | null>(null);
+  const editingCompanyUser = ref<CompanyUser | null>(null);
 
   const showDeleteModal = ref(false);
-  const clientUserToDelete = ref<ClientUser | null>(null);
-  const isDeletingClientUser = ref(false);
+  const companyUserToDelete = ref<CompanyUser | null>(null);
+  const isDeletingCompanyUser = ref(false);
 
   const showDeleteInvitationModal = ref(false);
   const invitationToDelete = ref<Invitation | null>(null);
@@ -255,29 +255,28 @@
     showInviteModal.value = false;
   }
 
-  function canManageUser(userable: ClientUser | Invitation) {
-    if (!role.value)
+  function canManageUser(userable: CompanyUser | Invitation) {
+    if (!currentRole.value)
       return false;
 
-    const currentLevel = ROLES[role.value].level;
+    const currentLevel = ROLES[currentRole.value].level;
     const userLevel = ROLES[userable.role].level;
 
     return currentLevel >= userLevel;
   }
 
-  function clientUserHasOtherSites(userable: ClientUser | Invitation) {
+  function companyUserHasOtherSites(userable: CompanyUser | Invitation) {
     return userable.total_sites_count > userable.visible_site_ids.length;
   }
 
-  // function getSiteAccessText(clientUser: ClientUser) {
-  function getSiteAccessText(userable: ClientUser | Invitation) {
+  function getSiteAccessText(userable: CompanyUser | Invitation) {
     if (!ROLES[userable.role].siteSpecific)
       return 'All sites of the company';
 
     const accessSites = userable.visible_site_ids.map((sid) =>
-      sites.value?.find((site) => site.id === sid)?.name || '●') || [];
+      accessibleSites.value?.find((site) => site.id === sid)?.name || '●') || [];
     let accessText = accessSites.join(', ');
-    if (clientUserHasOtherSites(userable))
+    if (companyUserHasOtherSites(userable))
       accessText += ` (and ${userable.total_sites_count - (userable.visible_site_ids.length)} more)`;
     return accessText;
   }
@@ -292,24 +291,24 @@
     return colors[role];
   }
 
-  function openChangeRoleModal(clientUser: ClientUser) {
-    editingClientUser.value = clientUser;
+  function openChangeRoleModal(companyUser: CompanyUser) {
+    editingCompanyUser.value = companyUser;
     showChangeRoleModal.value = true;
   }
 
   function closeChangeRoleModal() {
     showChangeRoleModal.value = false;
-    editingClientUser.value = null;
+    editingCompanyUser.value = null;
   }
 
-  function openDeleteUserModal(clientUser: ClientUser) {
-    clientUserToDelete.value = clientUser;
+  function openDeleteUserModal(companyUser: CompanyUser) {
+    companyUserToDelete.value = companyUser;
     showDeleteModal.value = true;
   }
 
   function closeDeleteUserModal() {
     showDeleteModal.value = false;
-    clientUserToDelete.value = null;
+    companyUserToDelete.value = null;
   }
 
   function openDeleteInvitationModal(invitation: Invitation) {
@@ -322,21 +321,21 @@
     invitationToDelete.value = null;
   }
 
-  async function handleRoleUpdated(updatedClientUser: ClientUser) {
-    const clientUserUpdated = clientUsers.value.find((u) => u.id === updatedClientUser.id);
-    if (clientUserUpdated)
-      Object.assign(clientUserUpdated, updatedClientUser);
+  async function handleRoleUpdated(updatedCompanyUser: CompanyUser) {
+    const companyUserUpdated = companyUsers.value.find((u) => u.id === updatedCompanyUser.id);
+    if (companyUserUpdated)
+      Object.assign(companyUserUpdated, updatedCompanyUser);
 
     closeChangeRoleModal();
   }
 
-  async function handleDeleteClientUser() {
-    if (!clientUserToDelete.value)
+  async function handleDeleteCompanyUser() {
+    if (!companyUserToDelete.value)
       return;
 
-    isDeletingClientUser.value = true;
+    isDeletingCompanyUser.value = true;
 
-    const url = ROUTES.client_users_destroy.path.replace(':id', String(clientUserToDelete.value.id));
+    const url = ROUTES.company_users_destroy.path.replace(':id', String(companyUserToDelete.value.id));
     const { success } = await execute(
       () => axios.delete(url),
       {
@@ -348,14 +347,14 @@
     );
 
     if (success) {
-      const index = clientUsers.value.findIndex((u) => u.id === clientUserToDelete.value!.id);
+      const index = companyUsers.value.findIndex((u) => u.id === companyUserToDelete.value!.id);
       if (index > -1)
-        clientUsers.value.splice(index, 1);
+        companyUsers.value.splice(index, 1);
 
       closeDeleteUserModal();
     }
 
-    isDeletingClientUser.value = false;
+    isDeletingCompanyUser.value = false;
   }
 
   async function handleInvite(invitation: Invitation) {
@@ -406,19 +405,19 @@
 
   async function loadData() {
     await Promise.all([
-      loadClientUsers(),
+      loadCompanyUsers(),
       loadInvitations()
     ]);
   }
 
-  async function loadClientUsers() {
-    const { success, data } = await execute<ClientUser[]>(
-      () => axios.get(ROUTES.client_users_index.path),
+  async function loadCompanyUsers() {
+    const { success, data } = await execute<CompanyUser[]>(
+      () => axios.get(ROUTES.company_users_index.path),
       { errorTitle: 'Load Users Error',   showErrorToast: true }
     );
 
     if (success)
-      clientUsers.value = data;
+      companyUsers.value = data;
   }
 
   async function loadInvitations() {

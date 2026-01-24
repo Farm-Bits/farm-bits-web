@@ -7,13 +7,13 @@ export default function useAuth<T extends PageProps>() {
 
   const pageProps = computed(() => page.props);
   const userScope = computed(() => page.props.userScope ? page.props.userScope : 'users');
-  const isSignedIn = computed(() => !!page.props.user);
-  const user = computed(() => page.props.user);
-  const role = computed(() => page.props.role);
-  const client = computed(() => page.props.client);
-  const clients = computed(() => page.props.clients || []);
-  const site = computed(() => page.props.site);
-  const sites = computed(() => page.props.sites);
+  const isSignedIn = computed(() => !!page.props.currentUser);
+  const currentUser = computed(() => page.props.currentUser);
+  const currentRole = computed(() => page.props.currentRole);
+  const currentCompany = computed(() => page.props.currentCompany);
+  const accessibleCompanies = computed(() => page.props.accessibleCompanies || []);
+  const currentSite = computed(() => page.props.currentSite);
+  const accessibleSites = computed(() => page.props.accessibleSites);
 
   const isAdminUser = computed(() => {
     return isSignedIn.value && userScope.value === 'admin_users';
@@ -37,8 +37,8 @@ export default function useAuth<T extends PageProps>() {
       forgotPassword: `/${userScope.value}/password/new`,
       confirmation: `/${userScope.value}/confirmation/new`,
       unlock: `/${userScope.value}/unlock/new`,
-      newClient: `/${rootObjectName.value}/client_setup`,
-      editClient: `/${rootObjectName.value}/client_setup/edit`,
+      newCompany: `/${rootObjectName.value}/company_setup`,
+      editCompany: `/${rootObjectName.value}/company_setup/edit`,
       myAccount: `/${rootObjectName.value}/my_account`
     },
     actions: {
@@ -48,7 +48,7 @@ export default function useAuth<T extends PageProps>() {
       resetPassword: `/${userScope.value}/password`,
       confirmation: `/${userScope.value}/confirmation`,
       unlock: `/${userScope.value}/unlock`,
-      clientSetup: `/${rootObjectName.value}/client_setup`
+      companySetup: `/${rootObjectName.value}/company_setup`
     },
     api: {
       users: `/${rootObjectName.value}/users`,
@@ -68,12 +68,12 @@ export default function useAuth<T extends PageProps>() {
     pageProps,
     userScope,
     isSignedIn,
-    user,
-    client,
-    role,
-    clients,
-    site,
-    sites,
+    currentUser,
+    currentCompany,
+    currentRole,
+    accessibleCompanies,
+    currentSite,
+    accessibleSites,
     isAdminUser,
     rootObjectName,
     paths,

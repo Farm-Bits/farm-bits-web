@@ -18,7 +18,6 @@ class MeasurementPoint < ApplicationRecord
     if: -> { data_collection_enabled }
   validate :measurement_subtype_present_if_active_interface
   validate :measurement_subtype_data_category_matches_register_template
-  validate :measurement_subtype_data_category_is_present_on_interface_mapping
 
   before_save :deactivate_conflicting_measurement_points
   after_commit :sync_to_plc_registers, on: :update
@@ -131,30 +130,35 @@ class MeasurementPoint < ApplicationRecord
     :normal
   end
 
-  def interface_registers_for_category(category)
-    interface_ids = register_template.interface_register_mappings
-      .pluck(:interface_id)
-
+  def configuration_measurement_points
+    interface_ids = register_template.interface_register_mappings.pluck(:interface_id)
     if interface_ids.empty?
-      return RegisterTemplate.none
+      return MeasurementPoint.none
     end
 
-    RegisterTemplate
-      .joins(:interface_register_mappings)
-      .where(
-        category: category,
-        interface_register_mappings: { interface_id: interface_ids }
-      )
-      .where.not(sync_field: [nil, ''])
+    MeasurementPoint
+      .joins(register_template: :interface_register_mappings)
+      .where(plc_id: plc_id)
+      .where(register_templates: { category: ['interface_configuration', 'operation_mode_configuration'] })
+      .where(interface_register_mappings: { interface_id: interface_ids })
+      .includes(:register_template)
       .distinct
   end
 
-  def configuration_measurement_points
-    interface_registers_for_category(['interface_configuration', 'operation_mode_configuration'])
-  end
+  def syncable_measurement_points
+    interface_ids = register_template.interface_register_mappings.pluck(:interface_id)
+    if interface_ids.empty?
+      return MeasurementPoint.none
+    end
 
-  def syncable_registers
-    interface_registers_for_category('measurement_point_configuration')
+    MeasurementPoint
+      .joins(register_template: :interface_register_mappings)
+      .where(plc_id: plc_id)
+      .where(register_templates: { category: 'measurement_point_configuration' })
+      .where(interface_register_mappings: { interface_id: interface_ids })
+      .where.not(register_templates: { sync_field: [nil, ''] })
+      .includes(:register_template)
+      .distinct
   end
 
   private
@@ -173,10 +177,12 @@ class MeasurementPoint < ApplicationRecord
         return
       end
 
-      is_interface_measurement = register_template.interface_register_mappings
-        .where(category: MeasurementSubtype::DATA_CATEGORIES)
-        .any?
-      if is_interface_measurement
+      if !register_template.category.in?(MeasurementSubtype::DATA_CATEGORIES)
+        return
+      end
+
+      has_interface_mapping = register_template.interface_register_mappings.any?
+      if has_interface_mapping
         errors.add(:measurement_subtype, 'must be present for active interface measurements')
       end
     end
@@ -197,26 +203,6 @@ class MeasurementPoint < ApplicationRecord
       end
     end
 
-    def measurement_subtype_data_category_is_present_on_interface_mapping
-      if !measurement_subtype.present? ||
-        !register_template.category.in?(MeasurementSubtype::DATA_CATEGORIES)
-        return
-      end
-
-      interface_categories_configured = register_template.interface_register_mappings
-        .where(category: MeasurementSubtype::DATA_CATEGORIES)
-        .pluck(:category)
-
-      category = measurement_subtype.data_category
-      if interface_categories_configured.any? && !interface_categories_configured.include?(category)
-        errors.add(
-          :measurement_subtype,
-          "requires a '#{category}' register mapping for one of the interfaces, " \
-          "but none is configured"
-        )
-      end
-    end
-
     def deactivate_conflicting_measurement_points
       if !active ||
         !register_template.present? ||
@@ -224,9 +210,7 @@ class MeasurementPoint < ApplicationRecord
         return
       end
 
-      interface_ids = register_template.interface_register_mappings
-        .where(category: MeasurementSubtype::DATA_CATEGORIES)
-        .pluck(:interface_id)
+      interface_ids = register_template.interface_register_mappings.pluck(:interface_id)
       if interface_ids.empty?
         return
       end
@@ -234,10 +218,8 @@ class MeasurementPoint < ApplicationRecord
       plc.measurement_points
         .joins(register_template: :interface_register_mappings)
         .where(active: true)
-        .where(interface_register_mappings: {
-          interface_id: interface_ids,
-          category: MeasurementSubtype::DATA_CATEGORIES
-        })
+        .where(register_templates: { category: MeasurementSubtype::DATA_CATEGORIES })
+        .where(interface_register_mappings: { interface_id: interface_ids })
         .where.not(id: id)
         .update_all(
           name: register_template.name,
@@ -260,14 +242,14 @@ class MeasurementPoint < ApplicationRecord
 
     def sync_to_plc_registers
       previous_changes.each_key do |field|
-        register = syncable_registers.find_by(sync_field: field)
-        if !register
+        measurement_point = syncable_measurement_points.find_by(sync_field: field)
+        if !measurement_point
           next
         end
 
         new_value = read_attribute(field)
-        plc_value = transform_value_for_plc(register, new_value)
-        write_to_plc_register(register, plc_value)
+        # plc_value = transform_value_for_plc(register, new_value)
+        # write_to_plc_register(register, plc_value)
       end
     end
 

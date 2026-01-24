@@ -199,9 +199,14 @@
 
     isLoading.value = true;
 
-    formData.put(paths.value.actions.resetPassword);
-
-    isLoading.value = false;
+    formData.put(
+      paths.value.actions.resetPassword,
+      {
+        onFinish: () => {
+          isLoading.value = false;
+        }
+      }
+    );
   }
 </script>
 

@@ -222,9 +222,14 @@
 
     isLoading.value = true;
 
-    formData.put(window.location.href);
-
-    isLoading.value = false;
+    formData.put(
+      window.location.href,
+      {
+        onFinish: () => {
+          isLoading.value = false;
+        }
+      }
+    );
   }
 </script>
 

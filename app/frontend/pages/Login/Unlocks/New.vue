@@ -117,9 +117,14 @@
 
     isLoading.value = true;
 
-    formData.post(paths.value.actions.unlock);
-
-    isLoading.value = false;
+    formData.post(
+      paths.value.actions.unlock,
+      {
+        onFinish: () => {
+          isLoading.value = false;
+        }
+      }
+    );
   }
 </script>
 

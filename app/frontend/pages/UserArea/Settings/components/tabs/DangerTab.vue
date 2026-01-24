@@ -42,16 +42,16 @@
           This action cannot be undone!
         </CAlert>
         <p class="mb-3">
-          You are about to permanently delete <strong>{{ pageProps.client.name }}</strong> and all associated data.
+          You are about to permanently delete <strong>{{ currentCompany?.name }}</strong> and all associated data.
         </p>
         <div class="mb-3">
           <CFormLabel for="confirmDelete">
-            Type <strong>{{ pageProps.client.name }}</strong> to confirm:
+            Type <strong>{{ currentCompany?.name }}</strong> to confirm:
           </CFormLabel>
           <CFormInput
             id="confirmDelete"
             v-model="deleteConfirmation"
-            :placeholder="pageProps.client.name"
+            :placeholder="currentCompany?.name"
             :invalid="deleteConfirmationError" />
           <CFormFeedback :invalid="true" v-if="deleteConfirmationError">
             Company name does not match
@@ -66,14 +66,14 @@
         </CButton>
         <form
           ref="deleteForm"
-          @submit.prevent="deleteClient"
-          :action="paths.actions.clientSetup"
+          @submit.prevent="deleteCompany"
+          :action="paths.actions.companySetup"
           method="post">
           <input type="hidden" name="_method" value="delete">
           <CButton
             color="danger"
             type="submit"
-            :disabled="deleteConfirmation !== pageProps.client.name">
+            :disabled="deleteConfirmation !== currentCompany?.name">
             <CIcon name="cilTrash" class="me-2" />
             Delete Company
           </CButton>
@@ -86,11 +86,8 @@
 <script lang="ts" setup>
   import { ref } from 'vue';
   import useAuth from '@/composables/useAuth';
-  import { type Client } from '@/types/inertia';
 
-  const { pageProps, paths } = useAuth<{
-    client: Client
-  }>();
+  const { paths, currentCompany } = useAuth();
 
   const showDeleteModal = ref(false);
   const deleteConfirmation = ref('');
@@ -103,11 +100,11 @@
     deleteConfirmationError.value = false;
   }
 
-  function deleteClient() {
-    // if (!features.value.canManageClientSettings)
+  function deleteCompany() {
+    // if (!features.value.canManageCompanySettings)
     //   return;
 
-    if (deleteConfirmation.value !== pageProps.value.client.name) {
+    if (deleteConfirmation.value !== currentCompany.value?.name) {
       deleteConfirmationError.value = true;
       return;
     }
