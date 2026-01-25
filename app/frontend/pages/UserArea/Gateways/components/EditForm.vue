@@ -1,9 +1,9 @@
 <template>
   <CForm @submit.prevent="handleSubmit">
-    <!-- Terminal Details -->
-    <TerminalDetailsForm
+    <!-- Gateway Details -->
+    <GatewayDetailsForm
       v-model="formData"
-      :terminal="terminal"
+      :gateway="gateway"
       :availablePlcs="localAvailablePlcs" />
 
     <!-- PLC Assignment Section -->
@@ -23,7 +23,7 @@
         color="primary"
         :disabled="processing">
         <CSpinner v-if="processing" size="sm" class="me-2" />
-        Update Terminal
+        Update Gateway
       </CButton>
     </div>
   </CForm>
@@ -32,20 +32,20 @@
 <script lang="ts" setup>
   import { ref, reactive, onMounted } from 'vue';
   import axios from 'axios';
-  import TerminalDetailsForm from './TerminalDetailsForm.vue';
+  import GatewayDetailsForm from './GatewayDetailsForm.vue';
   import PlcAssignmentManager from './PlcAssignmentManager.vue';
   import { useApiCall } from '@/composables/useApi';
   import { ROUTES } from '@/types/permissions';
-  import type { TerminalAssigned } from '@/types/terminal';
+  import type { GatewayAssigned } from '@/types/gateway';
   import type { Plc } from '@/types/plc';
 
   const props = defineProps<{
-    terminal: TerminalAssigned;
+    gateway: GatewayAssigned;
     availablePlcs: Plc[];
   }>();
   const emit = defineEmits<{
     (e: 'cancel'): void;
-    (e: 'success', oldTerminal: TerminalAssigned, newTerminal: TerminalAssigned): void;
+    (e: 'success', oldGateway: GatewayAssigned, newGateway: GatewayAssigned): void;
   }>();
 
   const { execute } = useApiCall();
@@ -60,10 +60,10 @@
   const processing = ref(false);
 
   onMounted(() => {
-    formData.customName = props.terminal.name || '';
+    formData.customName = props.gateway.name || '';
 
-    if (props.terminal.plcs) {
-      formData.plc_assignments = props.terminal.plcs.map((plc) => ({
+    if (props.gateway.plcs) {
+      formData.plc_assignments = props.gateway.plcs.map((plc) => ({
         ...plc,
         customName: plc.name
       }));
@@ -71,7 +71,7 @@
 
     localAvailablePlcs.value = [
       ...props.availablePlcs,
-      ...props.terminal.plcs
+      ...props.gateway.plcs
     ];
   });
 
@@ -80,7 +80,7 @@
     errors.value = {};
 
     const submitData = {
-      terminal: {
+      gateway: {
         name: formData.customName,
         plc_assignments: formData.plc_assignments
           .filter((a) => a.id)
@@ -88,19 +88,19 @@
       }
     };
 
-    const url = ROUTES.terminals_update.path.replace(':id', String(props.terminal.id));
-    const { success, data } = await execute<TerminalAssigned>(
+    const url = ROUTES.gateways_update.path.replace(':id', String(props.gateway.id));
+    const { success, data } = await execute<GatewayAssigned>(
       () => axios.put(url, submitData),
       {
         showSuccessToast: true,
-        successMessage: 'Terminal updated successfully',
+        successMessage: 'Gateway updated successfully',
         showErrorToast: true,
-        errorTitle: 'Update Terminal Error'
+        errorTitle: 'Update Gateway Error'
       }
     );
 
     if (success)
-      emit('success', props.terminal, data);
+      emit('success', props.gateway, data);
 
     processing.value = false;
   }

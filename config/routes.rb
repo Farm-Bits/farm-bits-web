@@ -55,7 +55,7 @@ Rails.application.routes.draw do
       put 'invitations/:id/resend', to: 'invitations#resend'
 
       resources :sites, only: [:index, :show, :create, :update, :destroy]
-      resources :terminals, only: [:index, :update, :destroy]
+      resources :gateways, only: [:index, :update, :destroy]
       resources :plcs, only: [:show, :update]
       resources :measurement_points, only: [:update] do
         member do

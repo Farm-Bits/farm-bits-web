@@ -3,7 +3,7 @@ class Plc < ApplicationRecord
 
   belongs_to :model
   belongs_to :plc_version
-  belongs_to :terminal, optional: true
+  belongs_to :gateway, optional: true
   belongs_to :site, optional: true
 
   encrypts :username
@@ -28,10 +28,10 @@ class Plc < ApplicationRecord
     with: /\A(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\z/
   }
   validates :private_ip, uniqueness: {
-    scope: :terminal_id,
-    message: 'is already assigned to another PLC on this terminal',
-    conditions: -> { where.not(terminal_id: nil) }
-  }, if: -> { terminal_id.present? }
+    scope: :gateway_id,
+    message: 'is already assigned to another PLC on this gateway',
+    conditions: -> { where.not(gateway_id: nil) }
+  }, if: -> { gateway_id.present? }
   validates :username, presence: true
   validates :password, presence: true
   validates :web_username, presence: true

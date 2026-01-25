@@ -113,7 +113,7 @@
         <p>Are you sure you want to delete <strong>{{ siteToDelete?.name }}</strong>?</p>
         <p class="text-danger mb-0">
           <CIcon name="cilWarning" class="me-2" />
-          This will also delete all segments, terminals, and data associated with this site.
+          This will also delete all segments, gateways, and data associated with this site.
         </p>
       </CModalBody>
       <CModalFooter>

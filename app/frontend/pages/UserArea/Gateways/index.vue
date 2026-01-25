@@ -7,7 +7,7 @@
         <p class="text-muted mb-0">Manage hardware installations for {{ currentSite?.name }}</p>
       </div>
       <CButton
-        v-if="permissions?.terminals.update"
+        v-if="permissions?.gateways.update"
         color="primary"
         @click="showActivationModal = true">
         <CIcon icon="cilPlus" class="me-2" />
@@ -16,34 +16,34 @@
     </div>
 
     <!-- Empty State -->
-    <div v-if="terminals.length === 0" class="text-center py-5">
+    <div v-if="gateways.length === 0" class="text-center py-5">
       <CIcon icon="cilRouter" size="4xl" class="text-muted mb-3" />
       <h4 class="text-muted mb-2">No Gateways Installed</h4>
       <p class="text-muted mb-4">Get started by activating your first gateway for this site.</p>
       <CButton
-        v-if="permissions?.terminals.update"
+        v-if="permissions?.gateways.update"
         color="primary"
         @click="showActivationModal = true">
         Activate Gateway
       </CButton>
     </div>
 
-    <!-- Terminals List -->
+    <!-- Gateways List -->
     <CRow v-else class="g-4">
-      <CCol v-for="terminal in terminals" :key="terminal.id" class="col-md-3 min-w-sm">
+      <CCol v-for="gateway in gateways" :key="gateway.id" class="col-md-3 min-w-sm">
         <CCard class="shadow-sm">
           <CCardHeader class="d-flex justify-content-between bg-white">
             <div class="d-flex align-items-center gap-3">
-              <div class="terminal-icon">
+              <div class="gateway-icon">
                 <CIcon icon="cilRouter" size="xl" class="text-primary" />
               </div>
               <div>
-                <h5 class="mb-0">{{ terminal.name }}</h5>
+                <h5 class="mb-0">{{ gateway.name }}</h5>
                 <div class="text-muted small">
-                  <span class="me-3">IMEI: {{ terminal.imei }}</span>
+                  <span class="me-3">IMEI: {{ gateway.imei }}</span>
                 </div>
                 <div class="text-muted small">
-                  <span v-if="terminal.phone_number">Phone: {{ terminal.phone_number }}</span>
+                  <span v-if="gateway.phone_number">Phone: {{ gateway.phone_number }}</span>
                 </div>
               </div>
             </div>
@@ -55,16 +55,16 @@
                 </CDropdownToggle>
                 <CDropdownMenu>
                   <CDropdownItem
-                    v-if="permissions?.terminals.update"
-                    @click="editTerminal(terminal)">
+                    v-if="permissions?.gateways.update"
+                    @click="editGateway(gateway)">
                     <CIcon icon="cilPencil" class="me-2" />
                     Edit Gateway
                   </CDropdownItem>
-                  <div v-if="permissions?.terminals.destroy">
+                  <div v-if="permissions?.gateways.destroy">
                     <CDropdownDivider />
                     <CDropdownItem
                       class="text-danger"
-                      @click="confirmRemoveTerminal(terminal)">
+                      @click="confirmRemoveGateway(gateway)">
                       <CIcon icon="cilTrash" class="me-2" />
                       Remove Gateway
                     </CDropdownItem>
@@ -75,10 +75,10 @@
           </CCardHeader>
           <CCardBody class="p-0">
             <!-- Connected PLCs -->
-            <div v-if="terminal.plcs && terminal.plcs.length > 0">
+            <div v-if="gateway.plcs && gateway.plcs.length > 0">
               <CTable hover responsive class="mb-0">
                 <CTableBody>
-                  <CTableRow v-for="plc in terminal.plcs" :key="plc.id" class="align-middle">
+                  <CTableRow v-for="plc in gateway.plcs" :key="plc.id" class="align-middle">
                     <CTableDataCell class="text-center">
                       <CIcon icon="cilMemory" class="text-primary" />
                     </CTableDataCell>
@@ -109,10 +109,10 @@
               <CIcon icon="cilPlug" size="xl" class="mb-2" />
               <div>No controllers connected to this gateway</div>
               <CButton
-                v-if="permissions?.terminals.update"
+                v-if="permissions?.gateways.update"
                 color="link"
                 size="sm"
-                @click="editTerminal(terminal)">
+                @click="editGateway(gateway)">
                 Assign Controllers
               </CButton>
             </div>
@@ -123,7 +123,7 @@
 
     <!-- Activation Modal -->
     <CModal
-      v-if="permissions?.terminals.update"
+      v-if="permissions?.gateways.update"
       :visible="showActivationModal"
       @close="closeActivationModal"
       size="lg"
@@ -133,7 +133,7 @@
       </CModalHeader>
       <CModalBody>
         <ActivationForm
-          :availableTerminals="availableTerminals"
+          :availableGateways="availableGateways"
           :availablePlcs="availablePlcs"
           @success="handleActivationSuccess"
           @cancel="closeActivationModal" />
@@ -142,7 +142,7 @@
 
     <!-- Edit Modal -->
     <CModal
-      v-if="permissions?.terminals.update"
+      v-if="permissions?.gateways.update"
       :visible="showEditModal"
       @close="closeEditModal"
       size="lg"
@@ -151,9 +151,9 @@
         <CModalTitle>Edit Gateway</CModalTitle>
       </CModalHeader>
       <CModalBody>
-        <TerminalEditForm
-          v-if="selectedTerminal"
-          :terminal="selectedTerminal"
+        <GatewayEditForm
+          v-if="selectedGateway"
+          :gateway="selectedGateway"
           :availablePlcs="availablePlcs"
           @success="handleEditSuccess"
           @cancel="closeEditModal" />
@@ -170,10 +170,10 @@
       </CModalHeader>
       <CModalBody>
         <p>Are you sure you want to remove this gateway from {{ currentSite?.name }}?</p>
-        <div v-if="terminalToRemove" class="alert alert-warning">
-          <strong>Gateway:</strong> {{ terminalToRemove.name }}<br>
-          <strong>IMEI:</strong> {{ terminalToRemove.imei }}<br>
-          <strong>Controllers Connected:</strong> {{ getPlcCount(terminalToRemove) }}
+        <div v-if="gatewayToRemove" class="alert alert-warning">
+          <strong>Gateway:</strong> {{ gatewayToRemove.name }}<br>
+          <strong>IMEI:</strong> {{ gatewayToRemove.imei }}<br>
+          <strong>Controllers Connected:</strong> {{ getPlcCount(gatewayToRemove) }}
         </div>
         <p class="small text-muted">
           This will unassign the gateway and all connected controllers from this site.
@@ -184,7 +184,7 @@
         <CButton color="secondary" @click="closeConfirmModal">
           Cancel
         </CButton>
-        <CButton color="danger" @click="removeTerminal">
+        <CButton color="danger" @click="removeGateway">
           Remove Gateway
         </CButton>
       </CModalFooter>
@@ -196,49 +196,49 @@
   import { ref } from 'vue';
   import axios from 'axios';
   import ActivationForm from './components/ActivationForm.vue';
-  import TerminalEditForm from './components/EditForm.vue';
+  import GatewayEditForm from './components/EditForm.vue';
   import useAuth from '@/composables/useAuth';
   import usePermissions from '@/composables/usePermissions';
   import { useApiCall } from '@/composables/useApi';
   import { ROUTES } from '@/types/permissions';
-  import type { Terminal, TerminalAssigned } from '@/types/terminal';
+  import type { Gateway, GatewayAssigned } from '@/types/gateway';
   import type { Plc } from '@/types/plc';
 
   const { permissions } = usePermissions();
   const { execute } = useApiCall();
 
   const { currentSite, pageProps } = useAuth<{
-    terminals: TerminalAssigned[];
-    availableTerminals: Terminal[];
+    gateways: GatewayAssigned[];
+    availableGateways: Gateway[];
     availablePlcs: Plc[];
   }>();
-  const { terminals, availableTerminals, availablePlcs } = pageProps.value;
+  const { gateways, availableGateways, availablePlcs } = pageProps.value;
 
   const showActivationModal = ref(false);
   const showEditModal = ref(false);
   const showConfirmModal = ref(false);
-  const selectedTerminal = ref<TerminalAssigned | null>(null);
-  const terminalToRemove = ref<TerminalAssigned | null>(null);
+  const selectedGateway = ref<GatewayAssigned | null>(null);
+  const gatewayToRemove = ref<GatewayAssigned | null>(null);
 
-  function getPlcCount(terminal: TerminalAssigned): number {
-    return terminal.plcs?.length || 0;
+  function getPlcCount(gateway: GatewayAssigned): number {
+    return gateway.plcs?.length || 0;
   }
 
-  function editTerminal(terminal: TerminalAssigned) {
-    selectedTerminal.value = terminal;
+  function editGateway(gateway: GatewayAssigned) {
+    selectedGateway.value = gateway;
     showEditModal.value = true;
   }
 
-  function confirmRemoveTerminal(terminal: TerminalAssigned) {
-    terminalToRemove.value = terminal;
+  function confirmRemoveGateway(gateway: GatewayAssigned) {
+    gatewayToRemove.value = gateway;
     showConfirmModal.value = true;
   }
 
-  async function removeTerminal() {
-    if (!terminalToRemove.value)
+  async function removeGateway() {
+    if (!gatewayToRemove.value)
       return;
 
-    const url = ROUTES.terminals_destroy.path.replace(':id', String(terminalToRemove.value.id));
+    const url = ROUTES.gateways_destroy.path.replace(':id', String(gatewayToRemove.value.id));
     const { success } = await execute(
       () => axios.delete(url),
       {
@@ -250,17 +250,17 @@
     );
 
     if (success) {
-      const index = terminals.findIndex((t) => t.id === terminalToRemove.value!.id);
+      const index = gateways.findIndex((t) => t.id === gatewayToRemove.value!.id);
       if (index > -1) {
-        const plcsToRemove = terminals[index].plcs;
+        const plcsToRemove = gateways[index].plcs;
         plcsToRemove.forEach((plc) => {
           availablePlcs.push(plc);
         });
-        terminals.splice(index, 1);
+        gateways.splice(index, 1);
       }
 
-      terminalToRemove.value.plcs = [];
-      availableTerminals.push(terminalToRemove.value);
+      gatewayToRemove.value.plcs = [];
+      availableGateways.push(gatewayToRemove.value);
 
       closeConfirmModal();
     }
@@ -272,43 +272,43 @@
 
   function closeEditModal() {
     showEditModal.value = false;
-    selectedTerminal.value = null;
+    selectedGateway.value = null;
   }
 
   function closeConfirmModal() {
     showConfirmModal.value = false;
-    terminalToRemove.value = null;
+    gatewayToRemove.value = null;
   }
 
-  function handleActivationSuccess(terminal: TerminalAssigned) {
-    const index = availableTerminals.findIndex((t) => t.id === terminal.id);
+  function handleActivationSuccess(gateway: GatewayAssigned) {
+    const index = availableGateways.findIndex((t) => t.id === gateway.id);
     if (index > -1)
-      availableTerminals.splice(index, 1);
+      availableGateways.splice(index, 1);
 
-    terminal.plcs.forEach((plc) => {
+    gateway.plcs.forEach((plc) => {
       const plcWasAvailableIndex = availablePlcs.findIndex((p) => p.id === plc.id);
       if (plcWasAvailableIndex > -1)
         availablePlcs.splice(plcWasAvailableIndex, 1);
     });
 
-    terminals.push(terminal);
+    gateways.push(gateway);
 
     closeActivationModal();
   }
 
-  function handleEditSuccess(oldTerminal: TerminalAssigned, newTerminal: TerminalAssigned) {
-    const index = terminals.findIndex((t) => t.id === newTerminal.id);
+  function handleEditSuccess(oldGateway: GatewayAssigned, newGateway: GatewayAssigned) {
+    const index = gateways.findIndex((t) => t.id === newGateway.id);
     if (index !== -1)
-      terminals.splice(index, 1, newTerminal);
+      gateways.splice(index, 1, newGateway);
 
-    newTerminal.plcs.forEach((plc) => {
+    newGateway.plcs.forEach((plc) => {
       const plcWasAvailableIndex = availablePlcs.findIndex((p) => p.id === plc.id);
       if (plcWasAvailableIndex !== -1)
         availablePlcs.splice(plcWasAvailableIndex, 1);
     });
 
-    oldTerminal.plcs.forEach((plc) => {
-      const plcIsStillAssigned = newTerminal.plcs.some((p) => p.id === plc.id);
+    oldGateway.plcs.forEach((plc) => {
+      const plcIsStillAssigned = newGateway.plcs.some((p) => p.id === plc.id);
       if (!plcIsStillAssigned)
         availablePlcs.push(plc);
     });
@@ -318,7 +318,7 @@
 </script>
 
 <style scoped>
-  .terminal-icon {
+  .gateway-icon {
     width: 48px;
     height: 48px;
     border-radius: 12px;

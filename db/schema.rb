@@ -127,6 +127,31 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_20_101646) do
     t.index ["user_id"], name: "index_company_users_on_user_id"
   end
 
+  create_table "gateways", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "label", null: false
+    t.string "name", null: false
+    t.string "imei", null: false
+    t.string "serial_number", null: false
+    t.string "iccid", null: false
+    t.string "phone_number", null: false
+    t.string "private_ip", null: false
+    t.text "username", null: false
+    t.text "password", null: false
+    t.datetime "last_seen_at"
+    t.boolean "active", default: true, null: false
+    t.bigint "model_id", null: false
+    t.bigint "site_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_gateways_on_active"
+    t.index ["iccid"], name: "index_gateways_on_iccid", unique: true
+    t.index ["imei"], name: "index_gateways_on_imei", unique: true
+    t.index ["model_id"], name: "index_gateways_on_model_id"
+    t.index ["serial_number"], name: "index_gateways_on_serial_number", unique: true
+    t.index ["site_id", "active"], name: "index_gateways_on_site_id_and_active"
+    t.index ["site_id"], name: "index_gateways_on_site_id"
+  end
+
   create_table "interface_register_mappings", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.text "description"
     t.integer "position", default: 0, null: false
@@ -295,17 +320,17 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_20_101646) do
     t.boolean "active", default: true, null: false
     t.bigint "model_id", null: false
     t.bigint "plc_version_id", null: false
-    t.bigint "terminal_id"
+    t.bigint "gateway_id"
     t.bigint "site_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["active"], name: "index_plcs_on_active"
+    t.index ["gateway_id", "active"], name: "index_plcs_on_gateway_id_and_active"
+    t.index ["gateway_id"], name: "index_plcs_on_gateway_id"
     t.index ["model_id"], name: "index_plcs_on_model_id"
     t.index ["plc_version_id"], name: "index_plcs_on_plc_version_id"
     t.index ["serial_number"], name: "index_plcs_on_serial_number", unique: true
     t.index ["site_id"], name: "index_plcs_on_site_id"
-    t.index ["terminal_id", "active"], name: "index_plcs_on_terminal_id_and_active"
-    t.index ["terminal_id"], name: "index_plcs_on_terminal_id"
   end
 
   create_table "register_templates", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -386,31 +411,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_20_101646) do
     t.index ["company_id"], name: "index_sites_on_company_id"
   end
 
-  create_table "terminals", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
-    t.string "label", null: false
-    t.string "name", null: false
-    t.string "imei", null: false
-    t.string "serial_number", null: false
-    t.string "iccid", null: false
-    t.string "phone_number", null: false
-    t.string "private_ip", null: false
-    t.text "username", null: false
-    t.text "password", null: false
-    t.datetime "last_seen_at"
-    t.boolean "active", default: true, null: false
-    t.bigint "model_id", null: false
-    t.bigint "site_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["active"], name: "index_terminals_on_active"
-    t.index ["iccid"], name: "index_terminals_on_iccid", unique: true
-    t.index ["imei"], name: "index_terminals_on_imei", unique: true
-    t.index ["model_id"], name: "index_terminals_on_model_id"
-    t.index ["serial_number"], name: "index_terminals_on_serial_number", unique: true
-    t.index ["site_id", "active"], name: "index_terminals_on_site_id_and_active"
-    t.index ["site_id"], name: "index_terminals_on_site_id"
-  end
-
   create_table "users", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "email", default: "", null: false
@@ -445,6 +445,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_20_101646) do
   add_foreign_key "company_user_sites", "sites", on_delete: :cascade
   add_foreign_key "company_users", "companies", on_delete: :cascade
   add_foreign_key "company_users", "users", on_delete: :cascade
+  add_foreign_key "gateways", "models"
+  add_foreign_key "gateways", "sites"
   add_foreign_key "interface_register_mappings", "interfaces", on_delete: :cascade
   add_foreign_key "interface_register_mappings", "register_templates", on_delete: :cascade
   add_foreign_key "interfaces", "plc_versions", on_delete: :cascade
@@ -459,14 +461,12 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_20_101646) do
   add_foreign_key "measurement_subtypes", "measurement_types", on_delete: :cascade
   add_foreign_key "models", "manufacturers", on_delete: :cascade
   add_foreign_key "plc_versions", "models", on_delete: :cascade
+  add_foreign_key "plcs", "gateways"
   add_foreign_key "plcs", "models"
   add_foreign_key "plcs", "plc_versions"
   add_foreign_key "plcs", "sites"
-  add_foreign_key "plcs", "terminals"
   add_foreign_key "register_templates", "plc_versions", on_delete: :cascade
   add_foreign_key "segments", "sites", on_delete: :cascade
   add_foreign_key "site_sun_data", "sites", on_delete: :cascade
   add_foreign_key "sites", "companies", on_delete: :cascade
-  add_foreign_key "terminals", "models"
-  add_foreign_key "terminals", "sites"
 end

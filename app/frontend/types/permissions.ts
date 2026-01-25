@@ -1,5 +1,5 @@
 // Auto-generated file - Do not edit manually
-// Generated at: 2026-01-24 19:37:42 UTC
+// Generated at: 2026-01-25 07:50:32 UTC
 
 import type { Method } from '@inertiajs/core';
 
@@ -34,7 +34,7 @@ export const ROLES: Record<Role, { name: string; description: string; level: num
 } as const;
 
 // Valid controller keys
-export type ControllerKey = 'dashboard' | 'my_account' | 'company_setup' | 'company_users' | 'invitations' | 'sites' | 'terminals' | 'plcs' | 'measurement_points';
+export type ControllerKey = 'dashboard' | 'my_account' | 'company_setup' | 'company_users' | 'invitations' | 'sites' | 'gateways' | 'plcs' | 'measurement_points';
 
 // Route permissions mapping
 export type RoutePermissions = {
@@ -71,7 +71,7 @@ export type RoutePermissions = {
     update: boolean;
     destroy: boolean;
   };
-  terminals: {
+  gateways: {
     index: boolean;
     update: boolean;
     destroy: boolean;
@@ -227,22 +227,22 @@ export const ROUTES: Record<string, RouteInfo> = {
     path: '/user/sites/:id',
     verb: 'delete'
   },
-  terminals_index: {
-    controller: 'terminals',
+  gateways_index: {
+    controller: 'gateways',
     action: 'index',
-    path: '/user/terminals',
+    path: '/user/gateways',
     verb: 'get'
   },
-  terminals_update: {
-    controller: 'terminals',
+  gateways_update: {
+    controller: 'gateways',
     action: 'update',
-    path: '/user/terminals/:id',
+    path: '/user/gateways/:id',
     verb: 'patch'
   },
-  terminals_destroy: {
-    controller: 'terminals',
+  gateways_destroy: {
+    controller: 'gateways',
     action: 'destroy',
-    path: '/user/terminals/:id',
+    path: '/user/gateways/:id',
     verb: 'delete'
   },
   plcs_show: {

@@ -1,29 +1,29 @@
 <template>
   <CForm @submit.prevent="handleSubmit">
     <div class="mb-3">
-      <CFormLabel class="fw-semibold">Select Terminal</CFormLabel>
+      <CFormLabel class="fw-semibold">Select Gateway</CFormLabel>
       <CFormSelect
-        v-model="formData.terminal_id"
-        :invalid="!!errors.terminal_id"
-        @change="handleTerminalSelect">
-        <option value="">-- Select a terminal --</option>
+        v-model="formData.gateway_id"
+        :invalid="!!errors.gateway_id"
+        @change="handleGatewaySelect">
+        <option value="">-- Select a gateway --</option>
         <option
-          v-for="terminal in availableTerminals"
-          :key="terminal.id"
-          :value="terminal.id">
-          {{ terminal.label }} ({{ terminal.name }})
+          v-for="gateway in availableGateways"
+          :key="gateway.id"
+          :value="gateway.id">
+          {{ gateway.label }} ({{ gateway.name }})
         </option>
       </CFormSelect>
-      <CFormFeedback v-if="errors.terminal_id" invalid>
-        {{ errors.terminal_id }}
+      <CFormFeedback v-if="errors.gateway_id" invalid>
+        {{ errors.gateway_id }}
       </CFormFeedback>
     </div>
 
-    <!-- Selected Terminal Details Card -->
-    <div v-if="selectedTerminalDetails">
-      <TerminalDetailsForm
+    <!-- Selected Gateway Details Card -->
+    <div v-if="selectedGatewayDetails">
+      <GatewayDetailsForm
         v-model="formData"
-        :terminal="selectedTerminalDetails"
+        :gateway="selectedGatewayDetails"
         :availablePlcs="availablePlcs" />
     </div>
 
@@ -44,7 +44,7 @@
         color="primary"
         :disabled="processing">
         <CSpinner v-if="processing" size="sm" class="me-2" />
-        Activate Terminal
+        Activate Gateway
       </CButton>
     </div>
   </CForm>
@@ -53,26 +53,26 @@
 <script lang="ts" setup>
   import { ref, reactive, computed, nextTick } from 'vue';
   import axios from 'axios';
-  import TerminalDetailsForm from './TerminalDetailsForm.vue';
+  import GatewayDetailsForm from './GatewayDetailsForm.vue';
   import PlcAssignmentManager from './PlcAssignmentManager.vue';
   import { useApiCall } from '@/composables/useApi';
   import { ROUTES } from '@/types/permissions';
-  import type { Terminal, TerminalAssigned } from '@/types/terminal';
+  import type { Gateway, GatewayAssigned } from '@/types/gateway';
   import type { Plc } from '@/types/plc';
 
   const props = defineProps<{
-    availableTerminals: Terminal[];
+    availableGateways: Gateway[];
     availablePlcs: Plc[];
   }>();
   const emit = defineEmits<{
     (e: 'cancel'): void;
-    (e: 'success', site: TerminalAssigned): void;
+    (e: 'success', site: GatewayAssigned): void;
   }>();
 
   const { execute } = useApiCall();
 
   const formData = reactive({
-    terminal_id: '',
+    gateway_id: '',
     customName: '',
     plc_assignments: [] as (Plc & { customName: string })[]
   });
@@ -80,17 +80,17 @@
   const errors = ref<Record<string, string>>({});
   const processing = ref(false);
 
-  const selectedTerminalDetails = computed(() => {
-    if (!formData.terminal_id)
+  const selectedGatewayDetails = computed(() => {
+    if (!formData.gateway_id)
       return null;
 
-    return props.availableTerminals.find((t) => t.id === parseInt(formData.terminal_id));
+    return props.availableGateways.find((t) => t.id === parseInt(formData.gateway_id));
   });
 
-  function handleTerminalSelect() {
-    delete errors.value.terminal_id;
+  function handleGatewaySelect() {
+    delete errors.value.gateway_id;
     nextTick(() => {
-      formData.customName = selectedTerminalDetails.value?.name || '';
+      formData.customName = selectedGatewayDetails.value?.name || '';
     });
   }
 
@@ -98,21 +98,21 @@
     processing.value = true;
     errors.value = {};
 
-    const selectedTerminal = props.availableTerminals.find(
-      (t) => t.id === parseInt(formData.terminal_id)
+    const selectedGateway = props.availableGateways.find(
+      (t) => t.id === parseInt(formData.gateway_id)
     );
 
-    if (!selectedTerminal) {
-      errors.value.terminal_id = 'Please select a terminal';
+    if (!selectedGateway) {
+      errors.value.gateway_id = 'Please select a gateway';
       processing.value = false;
       return;
     }
 
     const submitData = {
-      terminal: {
+      gateway: {
         name: formData.customName,
-        iccid: selectedTerminal.iccid,
-        phone_number: selectedTerminal.phone_number,
+        iccid: selectedGateway.iccid,
+        phone_number: selectedGateway.phone_number,
         active: true,
         plc_assignments: formData.plc_assignments
           .filter((a) => a.id)
@@ -120,14 +120,14 @@
       }
     };
 
-    const url = ROUTES.terminals_update.path.replace(':id', String(selectedTerminal.id));
-    const { success, data } = await execute<TerminalAssigned>(
+    const url = ROUTES.gateways_update.path.replace(':id', String(selectedGateway.id));
+    const { success, data } = await execute<GatewayAssigned>(
       () => axios.put(url, submitData),
       {
         showSuccessToast: true,
-        successMessage: 'Terminal added successfully',
+        successMessage: 'Gateway added successfully',
         showErrorToast: true,
-        errorTitle: 'Add Terminal Error'
+        errorTitle: 'Add Gateway Error'
       }
     );
 

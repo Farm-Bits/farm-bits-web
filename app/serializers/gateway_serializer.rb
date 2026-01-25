@@ -1,4 +1,4 @@
-class TerminalSerializer < Blueprinter::Base
+class GatewaySerializer < Blueprinter::Base
   identifier :id
 
   fields :label, :name, :imei, :iccid, :phone_number

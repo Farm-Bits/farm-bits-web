@@ -37,7 +37,7 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: true,
       destroy: true
     },
-    terminals: {
+    gateways: {
       index: true,
       update: true,
       destroy: true
@@ -85,7 +85,7 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: true,
       destroy: false
     },
-    terminals: {
+    gateways: {
       index: true,
       update: true,
       destroy: true
@@ -133,7 +133,7 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: false,
       destroy: false
     },
-    terminals: {
+    gateways: {
       index: true,
       update: false,
       destroy: false
@@ -181,7 +181,7 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: false,
       destroy: false
     },
-    terminals: {
+    gateways: {
       index: true,
       update: false,
       destroy: false

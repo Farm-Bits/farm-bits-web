@@ -10,7 +10,7 @@
       </div>
 
       <div v-if="modelValue.length === 0" class="text-muted text-center py-3">
-        No PLCs assigned. Click "Add PLC" to connect a PLC to this terminal.
+        No PLCs assigned. Click "Add PLC" to connect a PLC to this gateway.
       </div>
 
       <div

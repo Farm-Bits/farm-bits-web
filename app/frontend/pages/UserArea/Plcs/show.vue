@@ -6,7 +6,7 @@
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb mb-2">
             <li class="breadcrumb-item">
-              <Link :href="ROUTES.terminals_index.path">Gateways & Controllers</Link>
+              <Link :href="ROUTES.gateways_index.path">Gateways & Controllers</Link>
             </li>
             <li class="breadcrumb-item active">{{ plc.name }}</li>
           </ol>

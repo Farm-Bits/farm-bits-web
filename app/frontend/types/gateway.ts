@@ -1,6 +1,6 @@
 import { type Plc } from './plc';
 
-export type Terminal = {
+export type Gateway = {
   id: number;
   label: string;
   name: string;
@@ -10,6 +10,6 @@ export type Terminal = {
   private_ip: string;
 };
 
-export type TerminalAssigned = Terminal & {
+export type GatewayAssigned = Gateway & {
   plcs: Plc[];
 };

@@ -13,8 +13,8 @@
     <CIcon name="cilMenu" size="lg" @click="store.toggleSidebar" class="sidebar-toggler" />
 
     <CSidebarNav>
-      <CNavItem v-if="permissions?.terminals.index">
-        <Link :href="ROUTES.terminals_index.path" class="nav-link">
+      <CNavItem v-if="permissions?.gateways.index">
+        <Link :href="ROUTES.gateways_index.path" class="nav-link">
           <CIcon customClassName="nav-icon" name="cilSpeedometer" />
           Devices
         </Link>

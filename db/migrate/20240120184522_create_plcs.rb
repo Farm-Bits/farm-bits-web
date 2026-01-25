@@ -16,7 +16,7 @@ class CreatePlcs < ActiveRecord::Migration[7.0]
       t.boolean :active, null: false, default: true
       t.references :model, null: false, foreign_key: true
       t.references :plc_version, null: false, foreign_key: true
-      t.references :terminal, foreign_key: true
+      t.references :gateway, foreign_key: true
       t.references :site, foreign_key: true
 
       t.timestamps
@@ -24,6 +24,6 @@ class CreatePlcs < ActiveRecord::Migration[7.0]
 
     add_index :plcs, :serial_number, unique: true
     add_index :plcs, :active
-    add_index :plcs, [:terminal_id, :active]
+    add_index :plcs, [:gateway_id, :active]
   end
 end

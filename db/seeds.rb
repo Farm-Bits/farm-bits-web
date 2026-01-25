@@ -418,6 +418,6 @@ ActiveRecord::Base.transaction do
 
   semtech_manufacturer = Manufacturer.create!(
     name: 'Semtech',
-    models_attributes: [{ name: 'LX40 EMEA', device_type: 'terminal' }]
+    models_attributes: [{ name: 'LX40 EMEA', device_type: 'gateway' }]
   )
 end

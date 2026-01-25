@@ -1,4 +1,4 @@
-class TerminalPolicy < ApplicationPolicy
+class GatewayPolicy < ApplicationPolicy
   def index?
     true
   end

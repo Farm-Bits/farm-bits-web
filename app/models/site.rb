@@ -7,7 +7,7 @@ class Site < ApplicationRecord
   accepts_nested_attributes_for :company_user_sites
   has_many :company_users, through: :company_user_sites
 
-  has_many :terminals
+  has_many :gateways
 
   has_many :plcs
 
@@ -123,8 +123,8 @@ class Site < ApplicationRecord
     end
 
     def prevent_destroy_connected_site
-      if terminals.any? || plcs.any? || measurement_points.any?
-        errors.add(:base, 'Cannot delete site with connected measurement points or terminals')
+      if gateways.any? || plcs.any? || measurement_points.any?
+        errors.add(:base, 'Cannot delete site with connected measurement points or gateways')
         throw(:abort)
       end
     end

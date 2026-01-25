@@ -6,38 +6,38 @@
       <CFormInput
         v-model="modelValue.customName"
         size="sm"
-        placeholder="Enter Terminal name" />
+        placeholder="Enter Gateway name" />
     </div>
 
     <!-- Metadata -->
     <div class="metadata">
       <span class="metadata-item">
-        <strong>Label:</strong> {{ terminal.label }}
+        <strong>Label:</strong> {{ gateway.label }}
       </span>
       <span class="metadata-item">
-        <strong>IMEI:</strong> {{ terminal.imei }}
-      </span>
-      <span class="metadata-separator">•</span>
-      <span class="metadata-item">
-        <strong>ICCID:</strong> {{ terminal.iccid }}
+        <strong>IMEI:</strong> {{ gateway.imei }}
       </span>
       <span class="metadata-separator">•</span>
       <span class="metadata-item">
-        <strong>Phone:</strong> {{ terminal.phone_number || 'N/A' }}
+        <strong>ICCID:</strong> {{ gateway.iccid }}
+      </span>
+      <span class="metadata-separator">•</span>
+      <span class="metadata-item">
+        <strong>Phone:</strong> {{ gateway.phone_number || 'N/A' }}
       </span>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-  import type { Terminal } from '@/types/terminal';
+  import type { Gateway } from '@/types/gateway';
   import type { Plc } from '@/types/plc';
 
   defineProps<{
     modelValue: {
       customName: string;
     };
-    terminal: Terminal;
+    gateway: Gateway;
     availablePlcs: Plc[];
   }>();
 </script>
