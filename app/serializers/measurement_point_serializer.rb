@@ -8,17 +8,35 @@ class MeasurementPointSerializer < Blueprinter::Base
     :color_override,
     :data_collection_enabled,
     :polling_interval_seconds,
-    :factor_override,
-    :offset_override,
-    :alarm_low,
-    :alarm_high,
-    :warning_low,
-    :warning_high,
     :position,
     :active,
     :measurement_subtype_id,
     :register_template_id,
     :segment_id
+
+  field :factor_override do |mp|
+    mp.factor_override&.to_f
+  end
+
+  field :offset_override do |mp|
+    mp.offset_override&.to_f
+  end
+
+  field :alarm_low do |mp|
+    mp.alarm_low&.to_f
+  end
+
+  field :alarm_high do |mp|
+    mp.alarm_high&.to_f
+  end
+
+  field :warning_low do |mp|
+    mp.warning_low&.to_f
+  end
+
+  field :warning_high do |mp|
+    mp.warning_high&.to_f
+  end
 
   field :effective_unit do |mp|
     mp.effective_unit

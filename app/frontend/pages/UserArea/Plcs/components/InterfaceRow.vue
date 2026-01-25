@@ -29,7 +29,7 @@
       <span v-else class="text-muted">—</span>
     </CTableDataCell>
     <CTableDataCell>
-      <code class="small">{{ interface.name }}</code>
+      <code class="small">{{ iface.name }}</code>
     </CTableDataCell>
     <CTableDataCell>
       <span v-if="segment" class="badge bg-light text-dark">
@@ -38,11 +38,10 @@
       <span v-else class="text-muted">—</span>
     </CTableDataCell>
     <CTableDataCell>
-      <ValueDisplay
-        :measurementPoint="activeRegisterMapping.measurement_point"
-        :valueToDisplay="activeRegisterMapping.measurement_point.last_value"
-        :valueFormat="activeRegisterMapping.register_template.value_format"
-        :enumValues="activeRegisterMapping.register_template.enum_values" />
+      <RegisterField
+        v-model="activeRegisterMapping.measurement_point.last_value"
+        :registerMapping="activeRegisterMapping"
+        :isEditing="false" />
       <RelativeTime
         :dateTime="activeRegisterMapping.measurement_point.last_value_at" />
     </CTableDataCell>
@@ -61,7 +60,7 @@
               color="primary"
               variant="ghost"
               size="sm"
-              @click="$emit('edit', interface)">
+              @click="$emit('edit', iface)">
               <CIcon icon="cilSettings" />
             </CButton>
           </template>
@@ -116,7 +115,7 @@
   import { computed } from 'vue';
   import axios from 'axios';
   import StatusIndicator from './StatusIndicator.vue';
-  import ValueDisplay from '@/components/ValueDisplay.vue';
+  import RegisterField from '@/components/RegisterField.vue';
   import RelativeTime from '@/components/RelativeTime.vue';
   import usePermissions from '@/composables/usePermissions';
   import { useApiCall } from '@/composables/useApi';
@@ -125,8 +124,12 @@
   import { isDataCategory, type DataCategory, type MeasurementPoint, type MeasurementSubtype } from '@/types/measurementPoint';
   import type { InterfaceWithMeasurementPoints } from '@/types/plc';
 
-  const props = defineProps<{
-    interface: InterfaceWithMeasurementPoints;
+  const {
+    iface,
+    segments,
+    measurementSubtypes
+  } = defineProps<{
+    iface: InterfaceWithMeasurementPoints;
     segments: Segment[];
     measurementSubtypes: MeasurementSubtype[];
   }>();
@@ -144,7 +147,7 @@
   const { execute } = useApiCall();
 
   const measurementRegisterMappings = computed(() => {
-    return props.interface.register_mappings.filter((mapping) => {
+    return iface.register_mappings.filter((mapping) => {
       return isDataCategory(mapping.register_template.category);
     });
   });
@@ -169,7 +172,7 @@
     if (!activeRegisterMapping.value || !activeRegisterMapping.value.measurement_point.measurement_subtype_id)
       return null;
 
-    return props.measurementSubtypes.find((subtype) =>
+    return measurementSubtypes.find((subtype) =>
       subtype.id === activeRegisterMapping.value!.measurement_point.measurement_subtype_id
     ) || null;
   });
@@ -178,7 +181,7 @@
     if (!activeRegisterMapping.value || !activeRegisterMapping.value.measurement_point.segment_id)
       return null;
 
-    return props.segments.find((segment) => segment.id === activeRegisterMapping.value!.measurement_point.segment_id)
+    return segments.find((segment) => segment.id === activeRegisterMapping.value!.measurement_point.segment_id)
   });
 
   function isConfigured(measurementPoint: MeasurementPoint) {
@@ -222,7 +225,7 @@
       () => axios.put(url, { measurement_point: measurementPointData }),
       {
         showSuccessToast: true,
-        successMessage: `Interface ${props.interface.name} updated successfully`,
+        successMessage: `Interface ${iface.name} updated successfully`,
         showErrorToast: true,
         errorTitle: 'Error'
       }

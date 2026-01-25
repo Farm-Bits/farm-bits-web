@@ -1,5 +1,5 @@
 <template>
-  <div class="container-fluid px-4 py-4">
+  <CContainer fluid class="px-4 py-4">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
@@ -189,7 +189,7 @@
         </CButton>
       </CModalFooter>
     </CModal>
-  </div>
+  </CContainer>
 </template>
 
 <script lang="ts" setup>

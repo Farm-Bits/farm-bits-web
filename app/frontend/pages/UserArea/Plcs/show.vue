@@ -1,7 +1,7 @@
 <template>
-  <div class="container-fluid px-4 py-4">
+  <CContainer fluid class="px-4 py-4">
     <!-- Header with Breadcrumb -->
-    <div class="d-flex justify-content-between align-items-start mb-4">
+    <CRow class="mb-3">
       <div>
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb mb-2">
@@ -16,7 +16,7 @@
           Configure interfaces and measurement points for <strong>{{ plc.name }}</strong>
         </p>
       </div>
-    </div>
+    </CRow>
 
     <!-- PLC Info Card -->
     <CCard class="mb-4 shadow-sm">
@@ -67,6 +67,10 @@
             {{ getInterfaceCount(tab.key) }}
           </CBadge>
         </CTab>
+        <CTab item-key="configuration" class="tab-item">
+          <CIcon icon="cilSettings" />
+          Configuration
+        </CTab>
       </CTabList>
 
       <CTabContent>
@@ -81,14 +85,18 @@
           :measurementSubtypes="measurementSubtypes"
           @update-interface="handleUpdateInterface" />
         </CTabPanel>
+        <CTabPanel item-key="configuration">
+          <ConfigurationPanel :plc="plc" />
+        </CTabPanel>
       </CTabContent>
     </CTabs>
-  </div>
+  </CContainer>
 </template>
 
 <script lang="ts" setup>
   import { ref } from 'vue';
   import InterfaceList from './components/InterfaceList.vue';
+  import ConfigurationPanel from './components/ConfigurationPanel.vue';
   import useAuth from '@/composables/useAuth';
   import usePermissions from '@/composables/usePermissions';
   import { ROUTES } from '@/types/permissions';

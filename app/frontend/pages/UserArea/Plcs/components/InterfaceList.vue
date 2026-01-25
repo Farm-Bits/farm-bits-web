@@ -26,7 +26,7 @@
       <CTableBody>
         <InterfaceRow
           v-for="iface in interfaces" :key="iface.id"
-          :interface="iface"
+          :iface="iface"
           :segments="segments"
           :measurementSubtypes="measurementSubtypes"
           @edit="openEditModal"
@@ -46,7 +46,7 @@
       <CModalBody>
         <MeasurementPointForm
           v-if="selectedInterface"
-          :interface="selectedInterface"
+          :iface="selectedInterface"
           :segments="segments"
           :measurementSubtypes="measurementSubtypes"
           @submit="handleMeasurementPointSubmit"
@@ -68,7 +68,12 @@
   } from '@/types/plc';
   import { COMMUNICATION_TYPE_TABS } from '../types';
 
-  const props = defineProps<{
+  const {
+    interfaces,
+    communicationType,
+    segments,
+    measurementSubtypes
+  } = defineProps<{
     interfaces: InterfaceWithMeasurementPoints[];
     communicationType: CommunicationType;
     segments: Segment[];
@@ -87,7 +92,7 @@
   const selectedInterface = ref<InterfaceWithMeasurementPoints | null>(null);
 
   const communicationTypeLabel = computed(() => {
-    const tab = COMMUNICATION_TYPE_TABS.find((t) => t.key === props.communicationType);
+    const tab = COMMUNICATION_TYPE_TABS.find((t) => t.key === communicationType);
     return tab ? tab.label : 'Unknown';
   });
 

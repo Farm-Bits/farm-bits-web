@@ -50,8 +50,8 @@ export type MeasurementPoint = {
   last_value_at: string | null;
   position: number;
   active: boolean;
-  effective_unit: string;
-  effective_chart_type: ChartType;
+  effective_unit: string | null;
+  effective_chart_type: ChartType | null;
   effective_color: string | null;
   measurement_subtype_id: MeasurementSubtype['id'] | null;
   register_template_id: RegisterTemplate['id'];

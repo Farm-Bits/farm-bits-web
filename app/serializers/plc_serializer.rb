@@ -13,5 +13,19 @@ class PlcSerializer < Blueprinter::Base
         plc: plc
       )
     end
+
+    field :register_mappings do |plc|
+      non_interface_measurement_points = plc.measurement_points.select do |mp|
+        !mp.register_template.interface_register_mappings.any?
+      end.sort_by(&:position)
+
+      non_interface_measurement_points.map do |mp|
+        {
+          register_template: RegisterTemplateSerializer.render_as_json(mp.register_template),
+          measurement_point: MeasurementPointSerializer.render_as_json(mp),
+          position: mp.position
+        }
+      end
+    end
   end
 end

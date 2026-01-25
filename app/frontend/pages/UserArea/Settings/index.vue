@@ -1,5 +1,5 @@
 <template>
-  <div class="container-fluid py-4">
+  <CContainer fluid class="px-4 py-4">
     <CRow class="mb-4">
       <CCol>
         <h1 class="mb-1">Company Settings</h1>
@@ -63,7 +63,7 @@
         </CTabContent>
       </CTabs>
     </CCardHeader>
-  </div>
+  </CContainer>
 </template>
 
 <script lang="ts" setup>

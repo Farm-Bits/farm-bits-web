@@ -122,4 +122,6 @@ export type Plc = {
 
 export type PlcWithInterfaces = Plc & {
   interfaces: InterfaceWithMeasurementPoints[];
+  register_mappings: RegisterMapping[];
 };
+

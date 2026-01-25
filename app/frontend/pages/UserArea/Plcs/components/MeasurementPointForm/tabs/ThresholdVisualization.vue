@@ -88,7 +88,13 @@
 <script lang="ts" setup>
   import { computed } from 'vue';
 
-  const props = defineProps<{
+  const {
+    alarmLow,
+    warningLow,
+    warningHigh,
+    alarmHigh,
+    unit
+  } = defineProps<{
     alarmLow: number | null;
     warningLow: number | null;
     warningHigh: number | null;
@@ -96,10 +102,10 @@
     unit: string;
   }>();
 
-  const hasAlarmLow = computed(() => props.alarmLow !== null && props.alarmLow !== undefined);
-  const hasWarningLow = computed(() => props.warningLow !== null && props.warningLow !== undefined);
-  const hasWarningHigh = computed(() => props.warningHigh !== null && props.warningHigh !== undefined);
-  const hasAlarmHigh = computed(() => props.alarmHigh !== null && props.alarmHigh !== undefined);
+  const hasAlarmLow = computed(() => alarmLow !== null && alarmLow !== undefined);
+  const hasWarningLow = computed(() => warningLow !== null && warningLow !== undefined);
+  const hasWarningHigh = computed(() => warningHigh !== null && warningHigh !== undefined);
+  const hasAlarmHigh = computed(() => alarmHigh !== null && alarmHigh !== undefined);
 
   const hasAnyThreshold = computed(() =>
     hasAlarmLow.value || hasWarningLow.value || hasWarningHigh.value || hasAlarmHigh.value
@@ -107,15 +113,14 @@
 
   const visualRange = computed(() => {
     const values = [
-      props.alarmLow,
-      props.warningLow,
-      props.warningHigh,
-      props.alarmHigh
+      alarmLow,
+      warningLow,
+      warningHigh,
+      alarmHigh
     ].filter((v): v is number => v !== null && v !== undefined);
 
-    if (values.length === 0) {
+    if (values.length === 0)
       return { min: 0, max: 100 };
-    }
 
     const min = Math.min(...values);
     const max = Math.max(...values);
@@ -140,23 +145,23 @@
     if (!hasAlarmLow.value)
       return '0%';
 
-    return `${valueToPercent(props.alarmLow)}%`;
+    return `${valueToPercent(alarmLow)}%`;
   });
 
   const warningLowWidth = computed(() => {
     if (!hasWarningLow.value)
       return '0%';
 
-    const start = hasAlarmLow.value ? valueToPercent(props.alarmLow) : 0;
-    const end = valueToPercent(props.warningLow);
+    const start = hasAlarmLow.value ? valueToPercent(alarmLow) : 0;
+    const end = valueToPercent(warningLow);
     return `${end - start}%`;
   });
 
   const normalWidth = computed(() => {
-    const start = hasWarningLow.value ? valueToPercent(props.warningLow) :
-                  hasAlarmLow.value ? valueToPercent(props.alarmLow) : 0;
-    const end = hasWarningHigh.value ? valueToPercent(props.warningHigh) :
-                hasAlarmHigh.value ? valueToPercent(props.alarmHigh) : 100;
+    const start = hasWarningLow.value ? valueToPercent(warningLow) :
+                  hasAlarmLow.value ? valueToPercent(alarmLow) : 0;
+    const end = hasWarningHigh.value ? valueToPercent(warningHigh) :
+                hasAlarmHigh.value ? valueToPercent(alarmHigh) : 100;
     return `${end - start}%`;
   });
 
@@ -164,8 +169,8 @@
     if (!hasWarningHigh.value)
       return '0%';
 
-    const start = valueToPercent(props.warningHigh);
-    const end = hasAlarmHigh.value ? valueToPercent(props.alarmHigh) : 100;
+    const start = valueToPercent(warningHigh);
+    const end = hasAlarmHigh.value ? valueToPercent(alarmHigh) : 100;
     return `${end - start}%`;
   });
 
@@ -173,20 +178,20 @@
     if (!hasAlarmHigh.value)
       return '0%';
 
-    return `${100 - valueToPercent(props.alarmHigh)}%`;
+    return `${100 - valueToPercent(alarmHigh)}%`;
   });
 
-  const alarmLowPosition = computed(() => `${valueToPercent(props.alarmLow)}%`);
-  const warningLowPosition = computed(() => `${valueToPercent(props.warningLow)}%`);
-  const warningHighPosition = computed(() => `${valueToPercent(props.warningHigh)}%`);
-  const alarmHighPosition = computed(() => `${valueToPercent(props.alarmHigh)}%`);
+  const alarmLowPosition = computed(() => `${valueToPercent(alarmLow)}%`);
+  const warningLowPosition = computed(() => `${valueToPercent(warningLow)}%`);
+  const warningHighPosition = computed(() => `${valueToPercent(warningHigh)}%`);
+  const alarmHighPosition = computed(() => `${valueToPercent(alarmHigh)}%`);
 
   function formatValue(value: number | null) {
     if (value === null)
       return '';
 
     const formatted = Number.isInteger(value) ? value.toString() : value.toFixed(2);
-    return props.unit ? `${formatted} ${props.unit}` : formatted;
+    return unit ? `${formatted} ${unit}` : formatted;
   }
 </script>
 
