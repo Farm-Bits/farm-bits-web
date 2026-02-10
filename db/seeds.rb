@@ -420,4 +420,246 @@ ActiveRecord::Base.transaction do
     name: 'Semtech',
     models_attributes: [{ name: 'LX40 EMEA', device_type: 'gateway' }]
   )
+
+  # Example: Setting up visibility conditions for Analog Input configuration registers
+  #
+  # The input type selector (Cfg_AI1, Cfg_AI2, etc.) determines which calibration
+  # registers are relevant. For example:
+  #   - NTC sensors (values 0, 2, 7) need NTC gain/offset
+  #   - PT1000 sensors (values 6, 8) need PT1000 gain/offset
+  #   - 4-20mA inputs (value 3) need mA gain/offset
+  #   - 0-10V inputs (value 4) need 10V gain/offset
+  #   - etc.
+  #
+  # The Cfg_AI* register enum values:
+  #   0 = NTC(NK103)
+  #   1 = DI (Digital Input mode)
+  #   2 = NTC(103AT)
+  #   3 = 4/20mA
+  #   4 = 0/10V
+  #   5 = 0/5V(Ratiometric)
+  #   6 = PT1000
+  #   7 = hO(NTC)
+  #   8 = daO(PT1000)
+  #   9 = PTC
+  #   10 = 0/5V
+  #   11 = 0/20mA
+
+  # This method sets up the proper group structure and visibility conditions
+  def setup_analog_input_configuration(plc_version)
+    # For each analog input interface (AI1-AI12), set up the group
+    (1..12).each do |ai_num|
+      interface_name = "AI#{ai_num}"
+      group_name = "analog_input_#{ai_num}_config"
+
+      # Find the input type selector register
+      input_type_register = plc_version.register_templates.find_by(name: "Cfg_#{interface_name}")
+      next unless input_type_register
+
+      # Update the input type selector to be the controller
+      input_type_register.update!(
+        group_name: group_name,
+        group_role: "input_type_selector",
+        visibility_conditions: {} # Always visible
+      )
+
+      # NTC gain/offset - visible for NTC types (0, 2, 7)
+      ntc_values = %w[0 2 7]
+      update_calibration_register(
+        plc_version,
+        "Gain_Ntc_#{interface_name}",
+        group_name,
+        "ntc_gain",
+        { "input_type_selector" => ntc_values }
+      )
+      update_calibration_register(
+        plc_version,
+        "Offs_Ntc_#{interface_name}",
+        group_name,
+        "ntc_offset",
+        { "input_type_selector" => ntc_values }
+      )
+
+      # PT1000 gain/offset - visible for PT1000 types (6, 8)
+      pt1000_values = %w[6 8]
+      update_calibration_register(
+        plc_version,
+        "Gain_PT1000_#{interface_name}",
+        group_name,
+        "pt1000_gain",
+        { "input_type_selector" => pt1000_values }
+      )
+      update_calibration_register(
+        plc_version,
+        "Offs_PT1000_#{interface_name}",
+        group_name,
+        "pt1000_offset",
+        { "input_type_selector" => pt1000_values }
+      )
+
+      # 4-20mA gain/offset - visible for mA types (3, 11)
+      ma_values = %w[3 11]
+      update_calibration_register(
+        plc_version,
+        "Gain_mA_#{interface_name}",
+        group_name,
+        "ma_gain",
+        { "input_type_selector" => ma_values }
+      )
+      update_calibration_register(
+        plc_version,
+        "Offs_mA_#{interface_name}",
+        group_name,
+        "ma_offset",
+        { "input_type_selector" => ma_values }
+      )
+
+      # 0-10V gain/offset - visible for 10V type (4)
+      v10_values = %w[4]
+      update_calibration_register(
+        plc_version,
+        "Gain_10V_#{interface_name}",
+        group_name,
+        "v10_gain",
+        { "input_type_selector" => v10_values }
+      )
+      update_calibration_register(
+        plc_version,
+        "Offs_10V_#{interface_name}",
+        group_name,
+        "v10_offset",
+        { "input_type_selector" => v10_values }
+      )
+
+      # 0-5V gain/offset - visible for 5V type (10)
+      v5_values = %w[10]
+      update_calibration_register(
+        plc_version,
+        "Gain_5V_#{interface_name}",
+        group_name,
+        "v5_gain",
+        { "input_type_selector" => v5_values }
+      )
+      update_calibration_register(
+        plc_version,
+        "Offs_5V_#{interface_name}",
+        group_name,
+        "v5_offset",
+        { "input_type_selector" => v5_values }
+      )
+
+      # 0-5Vr (ratiometric) gain/offset - visible for 5Vr type (5)
+      v5r_values = %w[5]
+      update_calibration_register(
+        plc_version,
+        "Gain_5Vr_#{interface_name}",
+        group_name,
+        "v5r_gain",
+        { "input_type_selector" => v5r_values }
+      )
+      update_calibration_register(
+        plc_version,
+        "Offs_5Vr_#{interface_name}",
+        group_name,
+        "v5r_offset",
+        { "input_type_selector" => v5r_values }
+      )
+
+      # PTC gain/offset - visible for PTC type (9)
+      ptc_values = %w[9]
+      update_calibration_register(
+        plc_version,
+        "Gain_PTC_#{interface_name}",
+        group_name,
+        "ptc_gain",
+        { "input_type_selector" => ptc_values }
+      )
+      update_calibration_register(
+        plc_version,
+        "Offs_PTC_#{interface_name}",
+        group_name,
+        "ptc_offset",
+        { "input_type_selector" => ptc_values }
+      )
+
+      # Full scale min/max - visible for scalable types (3, 4, 5, 10, 11)
+      scalable_values = %w[3 4 5 10 11]
+      update_scale_register(
+        plc_version,
+        "FullScaleMin_#{interface_name}",
+        group_name,
+        "scale_min",
+        { "input_type_selector" => scalable_values },
+        { "less_than" => { "group_role" => "scale_max" } }
+      )
+      update_scale_register(
+        plc_version,
+        "FullScaleMax_#{interface_name}",
+        group_name,
+        "scale_max",
+        { "input_type_selector" => scalable_values },
+        { "greater_than" => { "group_role" => "scale_min" } }
+      )
+
+      # Calibration (differential) - always visible when not in DI mode
+      non_di_values = %w[0 2 3 4 5 6 7 8 9 10 11]
+      update_calibration_register(
+        plc_version,
+        "Calibration_#{interface_name}",
+        group_name,
+        "calibration_diff",
+        { "input_type_selector" => non_di_values }
+      )
+    end
+  end
+
+  def update_calibration_register(plc_version, name, group_name, role, visibility)
+    register = plc_version.register_templates.find_by(name: name)
+    return unless register
+
+    register.update!(
+      group_name: group_name,
+      group_role: role,
+      visibility_conditions: visibility
+    )
+  end
+
+  def update_scale_register(plc_version, name, group_name, role, visibility, validation)
+    register = plc_version.register_templates.find_by(name: name)
+    return unless register
+
+    register.update!(
+      group_name: group_name,
+      group_role: role,
+      visibility_conditions: visibility,
+      validation_rules: validation
+    )
+  end
+
+  # Example: Set up digital input configuration (FDI)
+  def setup_digital_input_configuration(plc_version)
+    (1..8).each do |fdi_num|
+      interface_name = "FDI#{fdi_num}"
+      group_name = "digital_input_#{fdi_num}_config"
+
+      # Frequency setting - always visible for digital inputs
+      freq_register = plc_version.register_templates.find_by(name: "#{interface_name}_frequency")
+      freq_register&.update!(
+        group_name: group_name,
+        group_role: "frequency",
+        visibility_conditions: {}
+      )
+
+      # Reset counter - always visible
+      reset_register = plc_version.register_templates.find_by(name: "#{interface_name}_reset_counter")
+      reset_register&.update!(
+        group_name: group_name,
+        group_role: "reset_counter",
+        visibility_conditions: {}
+      )
+    end
+  end
+
+  setup_analog_input_configuration(free_advance_first_version)
+  setup_digital_input_configuration(free_advance_first_version)
 end
