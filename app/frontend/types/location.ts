@@ -10,6 +10,5 @@ export type Site = {
   city: string | null;
   latitude: string | number | null;
   longitude: string | number | null;
-  altitude: string | number | null;
   time_zone: string;
 };

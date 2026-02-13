@@ -13,8 +13,7 @@ RSpec.describe 'User Registration', type: :request, inertia: true do
           country: 'France',
           city: 'Paris',
           latitude: 48.858904,
-          longitude: 2.3058348,
-          altitude: 35.0
+          longitude: 2.3058348
         }
       }
     }

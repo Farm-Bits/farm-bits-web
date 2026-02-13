@@ -59,6 +59,6 @@ class UserArea::CompanySetupController < UserArea::ApplicationController
 
   private
     def company_params
-      params.require(:company).permit(:name, :color, site_attributes: [:country, :city, :latitude, :longitude, :altitude])
+      params.require(:company).permit(:name, :color, site_attributes: [:country, :city, :latitude, :longitude])
     end
 end

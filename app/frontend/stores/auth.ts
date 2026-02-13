@@ -9,7 +9,6 @@ type FormState = {
   city?: string | null;
   latitude?: number | null;
   longitude?: number | null;
-  altitude?: number | null;
 };
 
 export default defineStore('auth', () => {
@@ -20,7 +19,6 @@ export default defineStore('auth', () => {
   const city = ref<string | null>(null);
   const latitude = ref<number | null>(null);
   const longitude = ref<number | null>(null);
-  const altitude = ref<number | null>(null);
   const timeoutId = ref<number | null>(null);
   const expiresAt = ref<number | null>(null);
 
@@ -32,7 +30,6 @@ export default defineStore('auth', () => {
     city.value = null;
     latitude.value = null;
     longitude.value = null;
-    altitude.value = null;
     expiresAt.value = null;
 
     if (timeoutId.value) {
@@ -49,7 +46,6 @@ export default defineStore('auth', () => {
     city.value = formData.city ?? null;
     latitude.value = formData.latitude ?? null;
     longitude.value = formData.longitude ?? null;
-    altitude.value = formData.altitude ?? null;
 
     const timeoutMinutes = 10;
     expiresAt.value = Date.now() + (timeoutMinutes * 60 * 1000);
@@ -70,8 +66,7 @@ export default defineStore('auth', () => {
       country: country.value,
       city: city.value,
       latitude: latitude.value,
-      longitude: longitude.value,
-      altitude: altitude.value
+      longitude: longitude.value
     };
   });
 
@@ -83,7 +78,6 @@ export default defineStore('auth', () => {
     city,
     latitude,
     longitude,
-    altitude,
     timeoutId,
     expiresAt,
     formState,

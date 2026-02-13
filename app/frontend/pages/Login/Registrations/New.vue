@@ -182,7 +182,7 @@
   import { computed, ref } from 'vue';
   import { useForm } from '@inertiajs/vue3';
   import { useVuelidate } from '@vuelidate/core';
-  import { between, decimal, email, maxValue, minLength, minValue, required, sameAs } from '@vuelidate/validators';
+  import { between, decimal, email, minLength, required, sameAs } from '@vuelidate/validators';
   import LocationSelector from '@/components/LocationSelector.vue';
   import useAuth from '@/composables/useAuth';
 
@@ -200,8 +200,7 @@
           country: null,
           city: null,
           latitude: null,
-          longitude: null,
-          altitude: null
+          longitude: null
         }
       }
     }
@@ -259,11 +258,6 @@
             longitude: {
               decimal,
               between: between(-180, 180)
-            },
-            altitude: {
-              decimal,
-              minValue: minValue(-431),
-              maxValue: maxValue(8849)
             }
           }
         }

@@ -7,6 +7,8 @@ class Site < ApplicationRecord
   accepts_nested_attributes_for :company_user_sites
   has_many :company_users, through: :company_user_sites
 
+  has_many :site_sun_data, dependent: :delete_all
+
   has_many :gateways
 
   has_many :plcs
@@ -30,15 +32,13 @@ class Site < ApplicationRecord
     greater_than_or_equal_to: -180,
     less_than_or_equal_to: 180
   }, allow_blank: true
-  validates :altitude, numericality: {
-    greater_than_or_equal_to: -431,
-    less_than_or_equal_to: 8849
-  }, allow_blank: true
 
   before_validation :set_default_name, if: -> { name.blank? && company.present? }
   before_validation :set_default_time_zone
   before_destroy :prevent_destroy_last_site
   before_destroy :prevent_destroy_connected_site
+  after_commit :sync_sun_data, on: :create
+  after_commit :resync_sun_data_if_location_changed, on: :update
 
   def time_zone_object
     ActiveSupport::TimeZone[time_zone]
@@ -127,5 +127,40 @@ class Site < ApplicationRecord
         errors.add(:base, 'Cannot delete site with connected measurement points or gateways')
         throw(:abort)
       end
+    end
+
+    def sync_sun_data
+      SiteSunDataSyncJob.perform_async(id)
+    end
+
+    def clear_geocoded_coordinates
+      if saved_change_to_city? || saved_change_to_country?
+        update_columns(geocoded_latitude: nil, geocoded_longitude: nil)
+      end
+    end
+
+    def resync_sun_data_if_location_changed
+      coordinates_changed = saved_change_to_latitude? || saved_change_to_longitude?
+      geocode_source_changed = saved_change_to_city? || saved_change_to_country?
+
+      if !coordinates_changed && !geocode_source_changed
+        return
+      end
+
+      if geocode_source_changed
+        update_columns(geocoded_latitude: nil, geocoded_longitude: nil)
+      end
+
+      has_coordinates = latitude.present? && longitude.present?
+      if !has_coordinates && country.blank?
+        return
+      end
+
+      site_sun_data.delete_all
+      SiteSunDataBackfillJob.perform_async(
+        id,
+        created_at.to_date.to_s,
+        7.days.from_now.to_date.to_s
+      )
     end
 end

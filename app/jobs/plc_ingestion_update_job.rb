@@ -1,5 +1,5 @@
 class PlcIngestionUpdateJob < ApplicationJob
-  queue_as :default
+  queue_as :critical
 
   def perform(plc_id, previous_username: nil, password_changed: false)
     plc = Plc.find_by_id(plc_id)

@@ -2,9 +2,11 @@ class CreateSiteSunData < ActiveRecord::Migration[7.2]
   def change
     create_table :site_sun_data do |t|
       t.date :date, null: false
-      t.datetime :sunrise, null: false
-      t.datetime :sunset, null: false
-      t.datetime :solar_noon
+      t.time :sunrise, null: false
+      t.time :sunset, null: false
+      t.time :civil_twilight_begin
+      t.time :civil_twilight_end
+      t.integer :day_length_seconds
       t.references :site, null: false, foreign_key: { on_delete: :cascade }
 
       t.timestamps

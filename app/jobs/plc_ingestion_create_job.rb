@@ -1,5 +1,5 @@
 class PlcIngestionCreateJob < ApplicationJob
-  queue_as :default
+  queue_as :critical
 
   def perform(plc_id)
     plc = Plc.find_by_id(plc_id)

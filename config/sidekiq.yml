@@ -1,10 +1,21 @@
+:concurrency: 5
+
+:queues:
+  - [critical, 5]
+  - [default, 3]
+  - [low, 1]
+
 default_schedule: &default_schedule
   enabled: <%= ENV['RAILS_ENV'] == 'production' ? true : false %>
 
 scheduler:
   schedule:
-    # First Task
-    first_task:
-      <<: *default_schedule
-      cron: '0 * * * *'
-      class: FirstTaskWorker
+    site_sun_data_sync:
+      cron: '0 2 * * *'
+      class: SiteSunDataSyncJob
+      queue: default
+
+    hourly_aggregation:
+      cron: '5 * * * *'
+      class: HourlyAggregationJob
+      queue: low

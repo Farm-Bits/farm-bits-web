@@ -64,7 +64,7 @@ class Login::Users::RegistrationsController < Devise::RegistrationsController
   protected
     def sign_up_params
       params.require(:user).permit(:name, :email, :password, :password_confirmation,
-        :company_attributes => [:name, :site_attributes => [:country, :city, :latitude, :longitude, :altitude]])
+        :company_attributes => [:name, :site_attributes => [:country, :city, :latitude, :longitude]])
     end
 
   # If you have extra params to permit, append them to the sanitizer.

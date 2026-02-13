@@ -98,24 +98,6 @@
             </div>
           </div>
         </div>
-
-        <div class="form-field">
-          <label for="altitude" class="form-label">
-            Altitude (meters)
-          </label>
-          <div class="relative">
-            <CFormInput
-              id="altitude"
-              name="altitude"
-              placeholder="e.g., 150"
-              inputmode="numeric"
-              class="form-input"
-              v-model="altitudeModel" />
-            <div class="form-error" v-if="errors.altitude.$error">
-              {{ errors.altitude.$errors[0].$message }}
-            </div>
-          </div>
-        </div>
       </div> -->
 
       <!-- Coordinate Info -->
@@ -171,9 +153,6 @@
       <div class="form-error" v-if="errors.longitude.$error">
         {{ errors.longitude.$errors[0].$message }}
       </div>
-      <div class="form-error" v-if="errors.altitude.$error">
-        {{ errors.altitude.$errors[0].$message }}
-      </div>
     </div>
   </div>
 </template>
@@ -189,7 +168,6 @@
     city: string | null;
     latitude: string | number | null;
     longitude: string | number | null;
-    altitude: string | number | null;
   };
   const props = defineProps<{
     modelValue: Location;
@@ -257,36 +235,15 @@
     }
   });
 
-  const altitudeModel = computed({
-    get: () => props.modelValue.altitude,
-    set: (value: string | number | null) => {
-      let newValue: string | number | null = null;
-
-      if (value !== null)
-        newValue = typeof value === 'string' && value !== '' ? parseFloat(value) : value;
-
-      emit('update:modelValue', { ...props.modelValue, altitude: newValue });
-    }
-  });
-
-  async function getElevation(position: google.maps.LatLng | google.maps.LatLngLiteral | google.maps.LatLngAltitudeLiteral) {
-    const elevationService = new google.maps.ElevationService();
-    const elevation = await elevationService.getElevationForLocations({
-      locations: [position]
-    });
-    return elevation.results[0]?.elevation;
-  }
-
   function isValidCoordinate(value: string | number | null): value is number {
     return value != null && typeof value === 'number' && !isNaN(value);
   }
 
-  function updateCoordinates(latitude: number | null, longitude: number | null, altitude: number | null) {
+  function updateCoordinates(latitude: number | null, longitude: number | null) {
     emit('update:modelValue', {
       ...props.modelValue,
       latitude,
-      longitude,
-      altitude
+      longitude
     });
   }
 
@@ -328,14 +285,11 @@
 
       markerInstance.addListener('dragend', async () => {
         const newPosition = markerInstance.position;
-        if (newPosition) {
-          const elevation = await getElevation(newPosition);
+        if (newPosition)
           updateCoordinates(
             newPosition.lat as number,
-            newPosition.lng as number,
-            elevation
+            newPosition.lng as number
           );
-        }
       });
 
       marker.value = markerInstance;
@@ -463,11 +417,9 @@
             return;
           }
 
-          const elevation = await getElevation(position);
           updateCoordinates(
             position.lat as number,
-            position.lng as number,
-            elevation
+            position.lng as number
           );
 
           if (marker.value)
@@ -533,7 +485,7 @@
   }
 
   function clearCoordinates() {
-    updateCoordinates(null, null, null);
+    updateCoordinates(null, null);
 
     if (marker.value)
       marker.value.position = null;

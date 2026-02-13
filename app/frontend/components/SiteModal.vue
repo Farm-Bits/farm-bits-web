@@ -129,7 +129,7 @@
   import { reactive, ref, computed, watch } from 'vue';
   import axios from 'axios';
   import { useVuelidate } from '@vuelidate/core';
-  import { between, decimal, maxValue, minValue, required, requiredIf } from '@vuelidate/validators';
+  import { between, decimal, required, requiredIf } from '@vuelidate/validators';
   import LocationSelector from '@/components/LocationSelector.vue';
   import { useApiCall } from '@/composables/useApi';
   import type { SiteWithSegments } from '@/types/inertia';
@@ -168,7 +168,6 @@
       city: null,
       latitude: null,
       longitude: null,
-      altitude: null,
       time_zone: null,
       segments_attributes: []
     }
@@ -190,11 +189,6 @@
       longitude: {
         decimal,
         between: between(-180, 180)
-      },
-      altitude: {
-        decimal,
-        minValue: minValue(-431),
-        maxValue: maxValue(8849)
       },
       time_zone: { required: requiredIf(() => isEditMode.value) }
     }
@@ -291,7 +285,6 @@
           city: newSite.city,
           latitude: newSite.latitude,
           longitude: newSite.longitude,
-          altitude: newSite.altitude,
           time_zone: newSite.time_zone,
           segments_attributes: newSite.segments ? newSite.segments.map(s => ({
             id: s.id,
@@ -313,7 +306,6 @@
       city: null,
       latitude: null,
       longitude: null,
-      altitude: null,
       time_zone: null,
       segments_attributes: []
     };

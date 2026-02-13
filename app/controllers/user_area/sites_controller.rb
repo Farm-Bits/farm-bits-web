@@ -49,7 +49,7 @@ class UserArea::SitesController < UserArea::ApplicationController
 
   private
     def site_params
-      params.require(:site).permit(:name, :country, :city, :latitude, :longitude, :altitude, :time_zone,
+      params.require(:site).permit(:name, :country, :city, :latitude, :longitude, :time_zone,
         segments_attributes: [:id, :name, :_destroy]
       )
     end

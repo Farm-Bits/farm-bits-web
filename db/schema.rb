@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_01_20_101646) do
+ActiveRecord::Schema[7.2].define(version: 2026_02_12_150240) do
   create_table "action_mailbox_inbound_emails", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "status", default: 0, null: false
     t.string "message_id", null: false
@@ -150,6 +150,32 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_20_101646) do
     t.index ["serial_number"], name: "index_gateways_on_serial_number", unique: true
     t.index ["site_id", "active"], name: "index_gateways_on_site_id_and_active"
     t.index ["site_id"], name: "index_gateways_on_site_id"
+  end
+
+  create_table "hourly_aggregations", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.date "date", null: false
+    t.integer "hour", null: false
+    t.string "value_type", null: false
+    t.integer "reading_count", default: 0, null: false
+    t.decimal "start_value", precision: 20, scale: 6
+    t.decimal "end_value", precision: 20, scale: 6
+    t.decimal "delta", precision: 20, scale: 6
+    t.decimal "min_value", precision: 20, scale: 6
+    t.decimal "max_value", precision: 20, scale: 6
+    t.decimal "avg_value", precision: 20, scale: 6
+    t.decimal "sum_value", precision: 20, scale: 6
+    t.integer "time_on_seconds"
+    t.integer "time_off_seconds"
+    t.integer "transition_count"
+    t.datetime "first_reading_at"
+    t.datetime "last_reading_at"
+    t.bigint "measurement_point_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["date"], name: "index_hourly_aggregations_on_date"
+    t.index ["measurement_point_id", "date", "hour"], name: "idx_on_measurement_point_id_date_hour_55539a2582", unique: true
+    t.index ["measurement_point_id", "date"], name: "index_hourly_aggregations_on_measurement_point_id_and_date"
+    t.index ["measurement_point_id"], name: "index_hourly_aggregations_on_measurement_point_id"
   end
 
   create_table "interface_register_mappings", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -333,6 +359,17 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_20_101646) do
     t.index ["site_id"], name: "index_plcs_on_site_id"
   end
 
+  create_table "raw_values", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.decimal "value", precision: 20, scale: 6, null: false
+    t.decimal "scaled_value", precision: 20, scale: 6, null: false
+    t.datetime "sample_time", null: false
+    t.bigint "measurement_point_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["measurement_point_id", "sample_time"], name: "index_raw_values_on_measurement_point_id_and_sample_time"
+    t.index ["measurement_point_id"], name: "index_raw_values_on_measurement_point_id"
+    t.index ["sample_time"], name: "index_raw_values_on_sample_time"
+  end
+
   create_table "register_templates", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "label", null: false
@@ -385,9 +422,11 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_20_101646) do
 
   create_table "site_sun_data", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.date "date", null: false
-    t.datetime "sunrise", null: false
-    t.datetime "sunset", null: false
-    t.datetime "solar_noon"
+    t.time "sunrise", null: false
+    t.time "sunset", null: false
+    t.time "civil_twilight_begin"
+    t.time "civil_twilight_end"
+    t.integer "day_length_seconds"
     t.bigint "site_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -400,9 +439,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_20_101646) do
     t.string "name", null: false
     t.string "country", null: false
     t.string "city"
-    t.float "latitude"
-    t.float "longitude"
-    t.float "altitude"
+    t.decimal "latitude", precision: 10, scale: 7
+    t.decimal "longitude", precision: 10, scale: 7
+    t.decimal "geocoded_latitude", precision: 10, scale: 7
+    t.decimal "geocoded_longitude", precision: 10, scale: 7
     t.string "time_zone", null: false
     t.bigint "company_id", null: false
     t.datetime "created_at", null: false
@@ -447,6 +487,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_20_101646) do
   add_foreign_key "company_users", "users", on_delete: :cascade
   add_foreign_key "gateways", "models"
   add_foreign_key "gateways", "sites"
+  add_foreign_key "hourly_aggregations", "measurement_points", on_delete: :cascade
   add_foreign_key "interface_register_mappings", "interfaces", on_delete: :cascade
   add_foreign_key "interface_register_mappings", "register_templates", on_delete: :cascade
   add_foreign_key "interfaces", "plc_versions", on_delete: :cascade
@@ -465,6 +506,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_20_101646) do
   add_foreign_key "plcs", "models"
   add_foreign_key "plcs", "plc_versions"
   add_foreign_key "plcs", "sites"
+  add_foreign_key "raw_values", "measurement_points", on_delete: :cascade
   add_foreign_key "register_templates", "plc_versions", on_delete: :cascade
   add_foreign_key "segments", "sites", on_delete: :cascade
   add_foreign_key "site_sun_data", "sites", on_delete: :cascade
