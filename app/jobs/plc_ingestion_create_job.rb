@@ -1,4 +1,5 @@
 class PlcIngestionCreateJob
+  include Sidekiq::Job
   queue_as :critical
 
   def perform(plc_id)

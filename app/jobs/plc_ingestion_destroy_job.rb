@@ -1,4 +1,5 @@
 class PlcIngestionDestroyJob
+  include Sidekiq::Job
   queue_as :critical
 
   def perform(email)
