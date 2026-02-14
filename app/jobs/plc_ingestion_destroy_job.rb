@@ -1,4 +1,4 @@
-class PlcIngestionDestroyJob < ApplicationJob
+class PlcIngestionDestroyJob
   queue_as :critical
 
   def perform(email)

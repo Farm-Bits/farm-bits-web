@@ -1,4 +1,4 @@
-class PlcIngestionCreateJob < ApplicationJob
+class PlcIngestionCreateJob
   queue_as :critical
 
   def perform(plc_id)

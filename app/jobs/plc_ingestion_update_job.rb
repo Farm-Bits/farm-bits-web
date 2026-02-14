@@ -1,4 +1,4 @@
-class PlcIngestionUpdateJob < ApplicationJob
+class PlcIngestionUpdateJob
   queue_as :critical
 
   def perform(plc_id, previous_username: nil, password_changed: false)
