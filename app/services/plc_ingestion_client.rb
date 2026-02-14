@@ -15,7 +15,7 @@ class PlcIngestionClient
   end
 
   BASE_URL = Rails.application.credentials[:plc_ingestion][:base_url]
-  TOKEN = Rails.application.credentials[:plc_ingestion][:webhook_token]
+  TOKEN = Rails.application.credentials[:plc_ingestion][:ingestion_service_api_key]
 
   class << self
     def create_authorized_email(plc)

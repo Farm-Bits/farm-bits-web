@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_02_12_150240) do
+ActiveRecord::Schema[7.2].define(version: 2026_02_13_144442) do
   create_table "action_mailbox_inbound_emails", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "status", default: 0, null: false
     t.string "message_id", null: false
@@ -76,6 +76,43 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_12_150240) do
     t.index ["unlock_token"], name: "index_admin_users_on_unlock_token", unique: true
   end
 
+  create_table "archived_hourly_aggregations", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.date "date", null: false
+    t.integer "hour", null: false
+    t.string "value_type", null: false
+    t.integer "reading_count", default: 0, null: false
+    t.decimal "start_value", precision: 20, scale: 6
+    t.decimal "end_value", precision: 20, scale: 6
+    t.decimal "delta", precision: 20, scale: 6
+    t.decimal "min_value", precision: 20, scale: 6
+    t.decimal "max_value", precision: 20, scale: 6
+    t.decimal "avg_value", precision: 20, scale: 6
+    t.decimal "sum_value", precision: 20, scale: 6
+    t.integer "time_on_seconds"
+    t.integer "time_off_seconds"
+    t.integer "transition_count"
+    t.datetime "first_reading_at"
+    t.datetime "last_reading_at"
+    t.bigint "measurement_point_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["date"], name: "index_archived_hourly_aggregations_on_date"
+    t.index ["measurement_point_id", "date", "hour"], name: "idx_on_measurement_point_id_date_hour_11a5c53f3b", unique: true
+    t.index ["measurement_point_id", "date"], name: "idx_on_measurement_point_id_date_e98d2d2b4e"
+    t.index ["measurement_point_id"], name: "index_archived_hourly_aggregations_on_measurement_point_id"
+  end
+
+  create_table "archived_raw_values", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.decimal "value", precision: 20, scale: 6, null: false
+    t.decimal "scaled_value", precision: 20, scale: 6, null: false
+    t.datetime "sample_time", null: false
+    t.bigint "measurement_point_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["measurement_point_id", "sample_time"], name: "idx_on_measurement_point_id_sample_time_b3c8b16389"
+    t.index ["measurement_point_id"], name: "index_archived_raw_values_on_measurement_point_id"
+    t.index ["sample_time"], name: "index_archived_raw_values_on_sample_time"
+  end
+
   create_table "audits", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "auditable_id"
     t.string "auditable_type"
@@ -135,7 +172,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_12_150240) do
     t.string "iccid", null: false
     t.string "phone_number", null: false
     t.string "private_ip", null: false
-    t.text "username", null: false
+    t.string "username", null: false
     t.text "password", null: false
     t.datetime "last_seen_at"
     t.boolean "active", default: true, null: false
@@ -146,7 +183,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_12_150240) do
     t.index ["active"], name: "index_gateways_on_active"
     t.index ["iccid"], name: "index_gateways_on_iccid", unique: true
     t.index ["imei"], name: "index_gateways_on_imei", unique: true
+    t.index ["label"], name: "index_gateways_on_label", unique: true
     t.index ["model_id"], name: "index_gateways_on_model_id"
+    t.index ["phone_number"], name: "index_gateways_on_phone_number", unique: true
     t.index ["serial_number"], name: "index_gateways_on_serial_number", unique: true
     t.index ["site_id", "active"], name: "index_gateways_on_site_id_and_active"
     t.index ["site_id"], name: "index_gateways_on_site_id"
@@ -338,9 +377,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_12_150240) do
     t.string "private_ip"
     t.string "host"
     t.integer "port"
-    t.text "username", null: false
+    t.string "username", null: false
     t.text "password", null: false
-    t.text "web_username", null: false
+    t.string "web_username", null: false
     t.text "web_password", null: false
     t.datetime "last_seen_at"
     t.boolean "active", default: true, null: false
@@ -353,10 +392,12 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_12_150240) do
     t.index ["active"], name: "index_plcs_on_active"
     t.index ["gateway_id", "active"], name: "index_plcs_on_gateway_id_and_active"
     t.index ["gateway_id"], name: "index_plcs_on_gateway_id"
+    t.index ["label"], name: "index_plcs_on_label", unique: true
     t.index ["model_id"], name: "index_plcs_on_model_id"
     t.index ["plc_version_id"], name: "index_plcs_on_plc_version_id"
     t.index ["serial_number"], name: "index_plcs_on_serial_number", unique: true
     t.index ["site_id"], name: "index_plcs_on_site_id"
+    t.index ["username"], name: "index_plcs_on_username", unique: true
   end
 
   create_table "raw_values", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -481,6 +522,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_12_150240) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "archived_hourly_aggregations", "measurement_points", on_delete: :cascade
+  add_foreign_key "archived_raw_values", "measurement_points", on_delete: :cascade
   add_foreign_key "company_user_sites", "company_users", on_delete: :cascade
   add_foreign_key "company_user_sites", "sites", on_delete: :cascade
   add_foreign_key "company_users", "companies", on_delete: :cascade

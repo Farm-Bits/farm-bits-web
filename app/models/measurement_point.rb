@@ -7,6 +7,10 @@ class MeasurementPoint < ApplicationRecord
   belongs_to :segment, optional: true
   belongs_to :site, optional: true
 
+  has_many :raw_values, dependent: :delete_all
+
+  has_many :hourly_aggregations, dependent: :delete_all
+
   validates :name, presence: true
   validates :register_template_id, uniqueness: { scope: :plc_id }
   validate :register_template_matches_plc_version
@@ -159,6 +163,18 @@ class MeasurementPoint < ApplicationRecord
       .where.not(register_templates: { sync_field: [nil, ''] })
       .includes(:register_template)
       .distinct
+  end
+
+  def value_type
+    measurement_subtype&.value_type
+  end
+
+  def day_start_hour(date)
+    site&.site_sun_data.find_by(date: date)&.day_start_hour || 6
+  end
+
+  def day_end_hour(date)
+    site&.site_sun_data.find_by(date: date)&.day_end_hour || 22
   end
 
   private

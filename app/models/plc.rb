@@ -6,14 +6,12 @@ class Plc < ApplicationRecord
   belongs_to :gateway, optional: true
   belongs_to :site, optional: true
 
-  encrypts :username
   encrypts :password
-  encrypts :web_username
   encrypts :web_password
 
   has_many :measurement_points, dependent: :destroy
 
-  validates :label, presence: true
+  validates :label, presence: true, uniqueness: true
   validates :name, presence: true
   validates :serial_number, presence: true, uniqueness: true
   validates :slave,
@@ -32,7 +30,7 @@ class Plc < ApplicationRecord
     message: 'is already assigned to another PLC on this gateway',
     conditions: -> { where.not(gateway_id: nil) }
   }, if: -> { gateway_id.present? }
-  validates :username, presence: true
+  validates :username, presence: true, uniqueness: true
   validates :password, presence: true
   validates :web_username, presence: true
   validates :web_password, presence: true

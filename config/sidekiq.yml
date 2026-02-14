@@ -19,3 +19,8 @@ scheduler:
       cron: '5 * * * *'
       class: HourlyAggregationJob
       queue: low
+
+    archive:
+      cron: '0 3 * * *'
+      class: ArchiveJob
+      queue: low

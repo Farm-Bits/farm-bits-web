@@ -8,9 +8,9 @@ class CreatePlcs < ActiveRecord::Migration[7.0]
       t.string :private_ip
       t.string :host
       t.integer :port
-      t.text :username, null: false
+      t.string :username, null: false
       t.text :password, null: false
-      t.text :web_username, null: false
+      t.string :web_username, null: false
       t.text :web_password, null: false
       t.datetime :last_seen_at
       t.boolean :active, null: false, default: true
@@ -22,6 +22,8 @@ class CreatePlcs < ActiveRecord::Migration[7.0]
       t.timestamps
     end
 
+    add_index :plcs, :username, unique: true
+    add_index :plcs, :label, unique: true
     add_index :plcs, :serial_number, unique: true
     add_index :plcs, :active
     add_index :plcs, [:gateway_id, :active]

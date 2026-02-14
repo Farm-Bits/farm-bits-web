@@ -67,6 +67,12 @@ Rails.application.routes.draw do
     end
   end
 
+  namespace :api do
+    namespace :v1 do
+      resources :plc_data, only: [:create]
+    end
+  end
+
   match '/home',                        to: 'static_pages#home',               via: 'get'
   match '/privacy_policy',              to: 'static_pages#privacy_policy',     via: 'get'
 

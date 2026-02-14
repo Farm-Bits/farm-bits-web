@@ -4,13 +4,12 @@ class Gateway < ApplicationRecord
   belongs_to :model
   belongs_to :site, optional: true
 
-  encrypts :username
   encrypts :password
 
   has_many :plcs, dependent: :nullify
   accepts_nested_attributes_for :plcs, :allow_destroy => true
 
-  validates :label, presence: true
+  validates :label, presence: true, uniqueness: true
   validates :name, presence: true
   validates :imei, presence: true, uniqueness: true
   validates :serial_number, presence: true, uniqueness: true
