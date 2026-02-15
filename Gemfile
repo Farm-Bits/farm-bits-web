@@ -100,3 +100,6 @@ gem "blueprinter"
 
 # A pure-Ruby implementation of sd_notify(3) that can be used to communicate state changes of Ruby programs to systemd
 gem "sd_notify"
+
+# The Bugsnag exception reporter for Ruby gives you instant notification of exceptions thrown from your Rails, Sinatra, Rack or plain Ruby app
+gem "bugsnag", "~> 6.29"
