@@ -2,7 +2,7 @@ class PlcIngestionUpdateJob
   include Sidekiq::Job
   queue_as :critical
 
-  def perform(plc_id, previous_username: nil, password_changed: false)
+  def perform(plc_id, previous_username, password_changed)
     plc = Plc.find_by_id(plc_id)
     if !plc
       return

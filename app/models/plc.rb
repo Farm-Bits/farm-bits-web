@@ -117,8 +117,8 @@ class Plc < ApplicationRecord
         saved_change_to_active?
         PlcIngestionUpdateJob.perform_async(
           id,
-          previous_username: username_before_last_save,
-          password_changed: saved_change_to_password?
+          username_before_last_save,
+          saved_change_to_password?
         )
       end
     end
