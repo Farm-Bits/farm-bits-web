@@ -104,7 +104,7 @@ class Plc < ApplicationRecord
         return
       end
 
-      PlcIngestionCreateJob.perform_later(id)
+      PlcIngestionCreateJob.perform_async(id)
     end
 
     def update_plc_ingestion_service
@@ -115,7 +115,7 @@ class Plc < ApplicationRecord
       if saved_change_to_username? ||
         saved_change_to_password? ||
         saved_change_to_active?
-        PlcIngestionUpdateJob.perform_later(
+        PlcIngestionUpdateJob.perform_async(
           id,
           previous_username: username_before_last_save,
           password_changed: saved_change_to_password?
@@ -128,6 +128,6 @@ class Plc < ApplicationRecord
         return
       end
 
-      PlcIngestionDestroyJob.perform_later(username)
+      PlcIngestionDestroyJob.perform_async(username)
     end
 end

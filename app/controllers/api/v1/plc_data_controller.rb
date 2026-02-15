@@ -178,7 +178,7 @@ module Api
           end
 
           # TODO: Enqueue threshold check job for affected measurement points
-          # ThresholdCheckJob.perform_later(mp_updates.keys)
+          # ThresholdCheckJob.perform_async(mp_updates.keys)
         end
     end
   end
