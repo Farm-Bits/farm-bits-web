@@ -53,7 +53,7 @@ class PlcIngestionClient
           payload[:authorized_email][:password] = plc.password
         end
         response = HTTParty.put(
-          "#{BASE_URL}/api/v1/authorized_emails",
+          "#{BASE_URL}/api/v1/authorized_emails/#{CGI.escape(plc.username)}",
           headers: {
             'Authorization' => "Bearer #{TOKEN}",
             'Content-Type' => 'application/json'
