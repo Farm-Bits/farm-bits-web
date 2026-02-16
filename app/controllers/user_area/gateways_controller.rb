@@ -67,7 +67,7 @@ class UserArea::GatewaysController < UserArea::ApplicationController
           id: p.id,
           label: p.label,
           name: p.name,
-          slave: p.slave,
+          slave_id: p.slave_id,
           private_ip: p.private_ip,
           last_seen_at: p.last_seen_at,
           plc_version: {

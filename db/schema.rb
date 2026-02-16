@@ -373,7 +373,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_13_144442) do
     t.string "label", null: false
     t.string "name", null: false
     t.string "serial_number", null: false
-    t.integer "slave", null: false
+    t.integer "slave_id", null: false
     t.string "private_ip"
     t.string "host"
     t.integer "port"

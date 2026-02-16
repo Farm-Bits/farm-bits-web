@@ -42,7 +42,7 @@
                 </span>
                 <span class="metadata-separator">•</span>
                 <span class="metadata-item">
-                  <strong>Slave:</strong> {{ plc.slave }}
+                  <strong>Slave ID:</strong> {{ plc.slave_id }}
                 </span>
               </div>
             </div>
@@ -96,7 +96,7 @@
                   <strong>Version:</strong> {{ plc.plc_version.name }}
                 </CCardText>
                 <CCardText class="text-muted small">
-                  <strong>Slave:</strong> {{ plc.slave }}
+                  <strong>Slave ID:</strong> {{ plc.slave_id }}
                 </CCardText>
               </div>
               <CTooltip content="PLC with same IP already assigned">

@@ -114,7 +114,7 @@ export type Plc = {
   id: number;
   label: string;
   name: string;
-  slave: number;
+  slave_id: number;
   private_ip: string | null;
   last_seen_at: string | null;
   plc_version: PlcVersion;

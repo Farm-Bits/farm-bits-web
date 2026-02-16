@@ -14,7 +14,7 @@ class Plc < ApplicationRecord
   validates :label, presence: true, uniqueness: true
   validates :name, presence: true
   validates :serial_number, presence: true, uniqueness: true
-  validates :slave,
+  validates :slave_id,
     presence: true,
     numericality: {
       only_integer: true,

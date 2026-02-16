@@ -38,7 +38,7 @@
           </div>
           <div class="col-md-2">
             <div class="text-muted small">Slave ID</div>
-            <div class="fw-semibold">{{ plc.slave }}</div>
+            <div class="fw-semibold">{{ plc.slave_id }}</div>
           </div>
           <div class="col-md-2">
             <div class="text-muted small">IP Address</div>

@@ -1,7 +1,7 @@
 class PlcSerializer < Blueprinter::Base
   identifier :id
 
-  fields :label, :name, :slave, :private_ip, :last_seen_at
+  fields :label, :name, :slave_id, :private_ip, :last_seen_at
 
   association :plc_version, blueprint: PlcVersionSerializer
 

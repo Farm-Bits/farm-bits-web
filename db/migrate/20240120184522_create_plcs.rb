@@ -4,7 +4,7 @@ class CreatePlcs < ActiveRecord::Migration[7.0]
       t.string :label, null: false
       t.string :name, null: false
       t.string :serial_number, null: false
-      t.integer :slave, null: false
+      t.integer :slave_id, null: false
       t.string :private_ip
       t.string :host
       t.integer :port
