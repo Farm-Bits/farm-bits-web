@@ -2,15 +2,6 @@ module Api
   module V1
     class PlcDataController < Api::V1::BaseController
       # POST /api/v1/plc_data
-      # Receives measurement data forwarded from the PLC ingestion service.
-      #
-      # Expected payload:
-      #   {
-      #     from_email: "plc_username",
-      #     data: "2025-05-13 22:55:17.75,DOL5,1\n2025-05-13 22:55:17.96,DOL7,1",
-      #     timestamp: "2025-05-13T22:55:18Z",
-      #     subject: "..."
-      #   }
       def create
         plc = find_plc
         if !plc
@@ -42,12 +33,41 @@ module Api
           end
 
           Plc.includes(
+            :site,
             plc_version: :register_templates,
             measurement_points: :register_template
           ).find_by(username: email)
         end
 
-        def parse_data_points(raw_data)
+        def parse_data_points(data)
+          case data[:format]
+          when 'csv'
+            parse_csv_data_points(data[:data])
+          else
+            parse_raw_text_data_points(data)
+          end
+        end
+
+        def parse_csv_data_points(raw_data)
+          if raw_data.blank?
+            return []
+          end
+
+          raw_data.filter_map do |row|
+            if row.length != 3
+              next
+            end
+
+            sample_time, label, raw_value = row
+            {
+              sample_time: sample_time.strip,
+              label: label.strip,
+              raw_value: raw_value.strip
+            }
+          end
+        end
+
+        def parse_raw_text_data_points(raw_data)
           if raw_data.blank?
             return []
           end
@@ -63,39 +83,24 @@ module Api
               next
             end
 
-            timestamp_str, label, raw_value = parts
-            timestamp = parse_timestamp(timestamp_str.strip, label.strip)
-            if !timestamp
-              next
-            end
-
+            sample_time, label, raw_value = parts
             {
-              timestamp: timestamp,
+              sample_time: sample_time.strip,
               label: label.strip,
               raw_value: raw_value.strip
             }
           end
         end
 
-        def parse_timestamp(timestamp_str, label)
-          begin
-            # Data comes in local time of the site.
-            # We parse as-is and let the caller handle timezone if needed.
-            Time.parse(timestamp_str)
-          rescue ArgumentError, TypeError => e
-            Rails.logger.warn("[PlcData] Invalid timestamp '#{timestamp_str}' for label '#{label}': #{e.message}")
-            nil
-          end
-        end
-
         def process_data_points(plc, data_points)
-          # Build lookup caches from preloaded data
+          site_tz = plc.site&.time_zone_object || ActiveSupport::TimeZone['UTC']
+
           register_templates_by_label = plc.plc_version.register_templates.index_by(&:label)
           measurement_points_by_register_id = plc.measurement_points.index_by(&:register_template_id)
 
           results = { processed: 0, skipped: 0, errors: [] }
           raw_values_to_insert = []
-          mp_updates = {} # measurement_point_id => { value:, timestamp: } (keep latest)
+          mp_updates = {}
 
           data_points.each do |dp|
             register_template = register_templates_by_label[dp[:label]]
@@ -119,6 +124,8 @@ module Api
               next
             end
 
+            utc_sample_time = site_tz.parse(dp[:sample_time]).utc
+
             factor = measurement_point.effective_factor || 1
             offset = measurement_point.effective_offset || 0
             scaled_value = (numeric_value * factor) + offset
@@ -127,17 +134,16 @@ module Api
               measurement_point_id: measurement_point.id,
               value: numeric_value,
               scaled_value: scaled_value,
-              sample_time: dp[:timestamp],
+              sample_time: utc_sample_time,
               created_at: Time.current
             }
 
-            # Track latest value per measurement point for last_decoded_value update
             existing = mp_updates[measurement_point.id]
-            if existing.nil? || dp[:timestamp] > existing[:timestamp]
+            if existing.nil? || utc_sample_time > existing[:sample_time]
               mp_updates[measurement_point.id] = {
                 value: dp[:raw_value],
                 scaled_value: scaled_value,
-                timestamp: dp[:timestamp]
+                sample_time: utc_sample_time
               }
             end
 
@@ -163,15 +169,13 @@ module Api
           end
 
           ApplicationRecord.transaction do
-            # Bulk insert raw values
             RawValue.insert_all(raw_values_to_insert)
 
-            # Update last_decoded_value for each affected measurement point
             now = Time.current
             mp_updates.each do |mp_id, data|
               MeasurementPoint.where(id: mp_id).update_all(
                 last_decoded_value: data[:value],
-                last_decoded_value_at: data[:timestamp],
+                last_decoded_value_at: data[:sample_time],
                 updated_at: now
               )
             end
