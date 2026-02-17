@@ -99,8 +99,7 @@ module Api
           measurement_points_by_register_id = plc.measurement_points.index_by(&:register_template_id)
 
           results = { processed: 0, skipped: 0, errors: [] }
-          raw_values_to_insert = []
-          mp_updates = {}
+          readings = []
 
           data_points.each do |dp|
             register_template = register_templates_by_label[dp[:label]]
@@ -125,32 +124,19 @@ module Api
             end
 
             utc_sample_time = site_tz.parse(dp[:sample_time]).utc
+            scaled_value = measurement_point.scale_decoded_value(numeric_value)
 
-            factor = measurement_point.effective_factor || 1
-            offset = measurement_point.effective_offset || 0
-            scaled_value = (numeric_value * factor) + offset
-
-            raw_values_to_insert << {
+            readings << {
               measurement_point_id: measurement_point.id,
               value: numeric_value,
               scaled_value: scaled_value,
-              sample_time: utc_sample_time,
-              created_at: Time.current
+              sample_time: utc_sample_time
             }
-
-            existing = mp_updates[measurement_point.id]
-            if existing.nil? || utc_sample_time > existing[:sample_time]
-              mp_updates[measurement_point.id] = {
-                value: dp[:raw_value],
-                scaled_value: scaled_value,
-                sample_time: utc_sample_time
-              }
-            end
 
             results[:processed] += 1
           end
 
-          persist_data!(raw_values_to_insert, mp_updates)
+          BulkRecordingService.new(readings).call
 
           results
         end
@@ -161,28 +147,6 @@ module Api
           rescue ArgumentError, TypeError
             nil
           end
-        end
-
-        def persist_data!(raw_values_to_insert, mp_updates)
-          if raw_values_to_insert.empty?
-            return
-          end
-
-          ApplicationRecord.transaction do
-            RawValue.insert_all(raw_values_to_insert)
-
-            now = Time.current
-            mp_updates.each do |mp_id, data|
-              MeasurementPoint.where(id: mp_id).update_all(
-                last_decoded_value: data[:value],
-                last_decoded_value_at: data[:sample_time],
-                updated_at: now
-              )
-            end
-          end
-
-          # TODO: Enqueue threshold check job for affected measurement points
-          # ThresholdCheckJob.perform_async(mp_updates.keys)
         end
     end
   end

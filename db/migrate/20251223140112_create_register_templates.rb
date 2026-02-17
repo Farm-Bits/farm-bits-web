@@ -30,7 +30,7 @@ class CreateRegisterTemplates < ActiveRecord::Migration[7.2]
 
       t.string :bulk_read_group
       t.integer :bulk_read_address
-      t.string :bulk_read_offset
+      t.integer :bulk_read_offset
 
       t.boolean :read_only, null: false, default: true
 

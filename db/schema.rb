@@ -431,7 +431,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_13_144442) do
     t.json "visibility_conditions"
     t.string "bulk_read_group"
     t.integer "bulk_read_address"
-    t.string "bulk_read_offset"
+    t.integer "bulk_read_offset"
     t.boolean "read_only", default: true, null: false
     t.decimal "min_value", precision: 20, scale: 6
     t.decimal "max_value", precision: 20, scale: 6

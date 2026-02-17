@@ -82,7 +82,7 @@
   import { ref, computed, watch, reactive, toRef } from 'vue';
   import axios from 'axios';
   import { useVuelidate } from '@vuelidate/core';
-  import { required, decimal } from '@vuelidate/validators';
+  import { decimal, required, sameAs } from '@vuelidate/validators';
   import MeasurementTab from './tabs/MeasurementTab.vue';
   import DeviceConfigurationTab from './tabs/DeviceConfigurationTab.vue';
   import DisplayOptionsTab from './tabs/DisplayOptionsTab.vue';
@@ -168,7 +168,8 @@
     measurement_subtype_id: null as number | null,
     segment_id: null as number | null,
     factor_override: null as number | null,
-    offset_override: null as number | null
+    offset_override: null as number | null,
+    active: false
   });
 
   const displayFormData = reactive({
@@ -186,7 +187,6 @@
 
   const formData = computed(() => ({
     measurement_point: {
-      id: editRegisterMapping.value.measurement_point.id,
       ...measurementFormData,
       ...displayFormData,
       ...alertsFormData
@@ -236,7 +236,6 @@
 
   const rules = computed(() => ({
     measurement_point: {
-      id: { required },
       name: { required },
       description: {},
       unit_override: {},
@@ -254,6 +253,7 @@
       },
       factor_override: { decimal },
       offset_override: { decimal },
+      active: { required, sameAs: sameAs(true) || sameAs(false) },
       alarm_low: { decimal },
       alarm_high: { decimal },
       warning_low: { decimal },
@@ -278,7 +278,8 @@
       measurement_subtype_id: measurementPoint.measurement_subtype_id,
       segment_id: measurementPoint.segment_id,
       factor_override: measurementPoint.factor_override,
-      offset_override: measurementPoint.offset_override
+      offset_override: measurementPoint.offset_override,
+      active: measurementPoint.active
     });
 
     Object.assign(displayFormData, {
@@ -307,7 +308,7 @@
 
     const url = ROUTES.measurement_points_update.path.replace(
       ':id',
-      String(formData.value.measurement_point.id)
+      String(editRegisterMapping.value.measurement_point.id)
     );
 
     const { success, data } = await execute<{

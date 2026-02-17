@@ -7,7 +7,7 @@ module Api
         def authenticate_api_token!
           token = request.headers['Authorization']&.remove('Bearer ')
 
-          if !token.present? || !ActiveSupport::SecurityUtils.secure_compare(token, Rails.application.credentials[:plc_ingestion][:ingestion_client_api_key])
+          if !token.present? || !ActiveSupport::SecurityUtils.secure_compare(token, ENV['PLC_INGESTION_CLIENT_API_KEY'])
             render json: { error: 'Unauthorized' }, status: :unauthorized
           end
         end

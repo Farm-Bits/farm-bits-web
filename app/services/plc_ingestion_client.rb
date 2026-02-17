@@ -14,8 +14,8 @@ class PlcIngestionClient
   class ConnectionError < Error
   end
 
-  BASE_URL = Rails.application.credentials[:plc_ingestion][:base_url]
-  TOKEN = Rails.application.credentials[:plc_ingestion][:ingestion_service_api_key]
+  BASE_URL = ENV['PLC_INGESTION_BASE_URL']
+  TOKEN = ENV['PLC_INGESTION_SERVICE_API_KEY']
 
   class << self
     def create_authorized_email(plc)

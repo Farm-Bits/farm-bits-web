@@ -58,6 +58,20 @@
             Select the type of measurement this device provides.
           </div>
         </div>
+
+        <div class="mb-3">
+          <CFormLabel class="fw-semibold">Enable</CFormLabel>
+          <div class="form-switch">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              :checked="modelValue.active"
+              @change="(event) => updateField('active', (event?.target as HTMLInputElement).checked)" />
+          </div>
+          <div class="form-text">
+            Toggle whether this device is active and should be polled for data.
+          </div>
+        </div>
       </div>
 
       <div class="col-md-6">
@@ -98,7 +112,7 @@
             step="any"
             :placeholder="defaultOffset ? `Default: ${defaultOffset}` : 'Enter offset'" />
           <div class="form-text">
-            Value transformation: scaled = (raw × factor) + offset
+            Value transformation: scaled = (raw x factor) + offset
           </div>
         </div>
       </div>
@@ -120,6 +134,7 @@
     segment_id: Segment['id'] | null;
     factor_override: number | null;
     offset_override: number | null;
+    active: boolean;
   };
 
   const {

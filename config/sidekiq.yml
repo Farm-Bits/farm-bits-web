@@ -10,6 +10,11 @@ default_schedule: &default_schedule
 
 scheduler:
   schedule:
+    plc_polling:
+      cron: '*/5 * * * *'
+      class: PlcPollingJob
+      queue: default
+
     site_sun_data_sync:
       cron: '0 2 * * *'
       class: SiteSunDataSyncJob

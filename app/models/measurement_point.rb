@@ -24,6 +24,7 @@ class MeasurementPoint < ApplicationRecord
   validate :measurement_subtype_data_category_matches_register_template
 
   before_save :deactivate_conflicting_measurement_points
+  before_save :sync_data_collection_with_active_if_needed
   after_commit :sync_to_plc_registers, on: :update
 
   class WriteValidationError < StandardError;
@@ -76,35 +77,9 @@ class MeasurementPoint < ApplicationRecord
     RegisterGroupValidator.new(simulated_states).validate
   end
 
-  def write_value!(value, skip_validation: false)
-    if !skip_validation
-      errors = validate_write(value)
-
-      if errors.any?
-        raise WriteValidationError, errors.join('; ')
-      end
-    end
-
-    data = register_template.encode_value(value)
-
-    # TODO: Implement actual write to PLC
-    # plc.modbus_client.write_registers(
-    #   register_template.address,
-    #   data
-    # )
-
+  def update_last_decoded_value!(decoded_value, timestamp = Time.current)
     update_columns(
-      last_decoded_value: serialize_for_storage(value),
-      last_decoded_value_at: Time.current,
-      updated_at: Time.current
-    )
-  end
-
-  def update_last_decoded_value!(data, timestamp = Time.current)
-    decoded = register_template.decode_data(data)
-
-    update_columns(
-      last_decoded_value: serialize_for_storage(decoded),
+      last_decoded_value: serialize_for_storage(decoded_value),
       last_decoded_value_at: timestamp,
       updated_at: Time.current
     )
@@ -158,9 +133,9 @@ class MeasurementPoint < ApplicationRecord
     MeasurementPoint
       .joins(register_template: :interface_register_mappings)
       .where(plc_id: plc_id)
-      .where(register_templates: { category: 'measurement_point_configuration' })
+      .where(register_template: { category: 'measurement_point_configuration' })
       .where(interface_register_mappings: { interface_id: interface_ids })
-      .where.not(register_templates: { sync_field: [nil, ''] })
+      .where.not(register_template: { sync_field: [nil, ''] })
       .includes(:register_template)
       .distinct
   end
@@ -169,12 +144,20 @@ class MeasurementPoint < ApplicationRecord
     measurement_subtype&.value_type
   end
 
-  def day_start_hour(date)
-    site&.site_sun_data.find_by(date: date)&.day_start_hour || 6
-  end
+  def needs_polling?
+    if !active? || !data_collection_enabled?
+      return false
+    end
 
-  def day_end_hour(date)
-    site&.site_sun_data.find_by(date: date)&.day_end_hour || 22
+    if polling_interval_seconds.nil?
+      return true
+    end
+
+    if last_decoded_value_at.nil?
+      return true
+    end
+
+    Time.current - last_decoded_value_at >= polling_interval_seconds
   end
 
   private
@@ -256,9 +239,32 @@ class MeasurementPoint < ApplicationRecord
         )
     end
 
+    def sync_data_collection_with_active_if_needed
+      if !will_save_change_to_active?
+        return
+      end
+
+      old_active, new_active = active_change_to_be_saved
+      if !new_active
+        self.data_collection_enabled = false
+        self.polling_interval_seconds = nil
+        return
+      end
+
+      if !register_template.present? ||
+        !register_template.category.in?(MeasurementSubtype::DATA_CATEGORIES)
+        return
+      end
+
+      self.data_collection_enabled = true
+      self.polling_interval_seconds ||= 270
+    end
+
     def sync_to_plc_registers
       previous_changes.each_key do |field|
-        measurement_point = syncable_measurement_points.find_by(sync_field: field)
+        measurement_point = syncable_measurement_points.joins(:register_template).find_by(
+          register_template: { sync_field: field }
+        )
         if !measurement_point
           next
         end
