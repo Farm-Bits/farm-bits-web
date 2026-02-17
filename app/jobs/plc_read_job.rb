@@ -24,9 +24,8 @@ class PlcReadJob
 
     client = VpnManagerClient.new
     response = client.bulk_read_registers(
-      gateway: plc.gateway,
-      plc: plc,
-      measurement_points: measurement_points
+      plc,
+      measurement_points
     )
 
     sample_time = Time.current
@@ -35,8 +34,6 @@ class PlcReadJob
     end
 
     readings = []
-    any_success = false
-
     measurement_points.each do |mp|
       result = response[:results][mp.id]
 
@@ -46,36 +43,21 @@ class PlcReadJob
 
       if result[:status] == 'ok' && result[:values].present?
         decoded_value = mp.register_template.decode_data(result[:values])
-        scaled_value = mp.scale_decoded_value(decoded_value)
 
         readings << {
-          measurement_point_id: mp.id,
+          measurement_point: mp,
           value: decoded_value,
-          scaled_value: scaled_value,
           sample_time: sample_time
         }
-
-        any_success = true
       else
         Rails.logger.warn(
           "Failed to read MP #{mp.id} (#{mp.name}) on PLC #{plc.id}: #{result[:error]}"
         )
-
-        # Non-connection errors still mean the PLC is reachable
-        if result[:error].present? && !connection_error?(result[:error])
-          any_success = true
-        end
       end
     end
 
     # Bulk persist all readings at once
     BulkRecordingService.new(readings).call
-
-    if any_success
-      plc.touch_last_seen!(sample_time)
-      plc.gateway.touch_last_seen!(sample_time)
-    end
-
   rescue VpnManagerClient::ConnectionError => e
     Rails.logger.error("PLC #{plc_id} connection error: #{e.message}")
     raise
@@ -86,9 +68,4 @@ class PlcReadJob
     Rails.logger.error("PLC #{plc_id} polling error: #{e.class} - #{e.message}")
     Rails.logger.error(e.backtrace&.first(10)&.join("\n"))
   end
-
-  private
-    def connection_error?(error_message)
-      error_message.to_s.match?(/timeout|connection|refused|unreachable|offline/i)
-    end
 end

@@ -11,13 +11,28 @@ class VpnManagerClient
     @api_token = ENV['VPN_MANAGER_API_TOKEN']
   end
 
+  def read_register(measurement_point)
+    plc = measurement_point.plc
+    gateway = plc.gateway
+
+    post('/api/v1/modbus/read', {
+      gateway_label: gateway.label,
+      target_ip: plc.private_ip,
+      slave_id: plc.slave_id,
+      register_type: measurement_point.register_template.register_type,
+      address: measurement_point.register_template.address,
+      count: measurement_point.register_template.address_count
+    })
+  end
+
   # Reads registers for a single PLC through its gateway.
   #
   # Automatically groups measurement points by bulk_read_group when available,
   # sending a single Modbus read per group instead of one per register.
   #
   # For registers without a bulk_read_group, falls back to individual reads.
-  def bulk_read_registers(gateway:, plc:, measurement_points:)
+  def bulk_read_registers(plc, measurement_points)
+    gateway = plc.gateway
     reads = build_reads(measurement_points)
 
     response = post('/api/v1/modbus/bulk_read', {
@@ -30,8 +45,24 @@ class VpnManagerClient
     parse_bulk_response(response, measurement_points)
   end
 
+  def write_register(measurement_point, value)
+    plc = measurement_point.plc
+    gateway = plc.gateway
+
+    post('/api/v1/modbus/write', {
+      gateway_label: gateway.label,
+      target_ip: plc.private_ip,
+      slave_id: plc.slave_id,
+      register_type: measurement_point.register_template.register_type,
+      address: measurement_point.register_template.address,
+      values: measurement_point.register_template.encode_data(value)
+    })
+  end
+
   # Writes registers for a single PLC through its gateway
-  def bulk_write_registers(gateway:, plc:, writes:)
+  def bulk_write_registers(plc, writes)
+    gateway = plc.gateway
+
     response = post('/api/v1/modbus/bulk_write', {
       gateway_label: gateway.label,
       target_ip: plc.private_ip,

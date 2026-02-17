@@ -4,7 +4,6 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
   def update
     authorize @measurement_point, :update?
 
-
     ActiveRecord::Base.transaction do
       if !@measurement_point.update(measurement_point_params)
         raise ActiveRecord::Rollback
@@ -28,17 +27,16 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
   def write
     authorize @measurement_point, :write?
 
-    if @measurement_point.register_template.read_only?
-      render json: { error: 'This register is read-only' }, status: :unprocessable_entity
-      return
-    end
-
     begin
-      @measurement_point.write_value!(params[:value])
-      render json: MeasurementPointSerializer.render_as_json(@measurement_point), status: :ok
-    rescue MeasurementPoint::WriteValidationError => e
+      service = PlcWriteService.new(@measurement_point)
+      service.write!(params[:value])
+
+      render json: MeasurementPointSerializer.render_as_json(@measurement_point.reload), status: :ok
+    rescue PlcWriteService::ValidationError => e
       render json: { error: e.message }, status: :unprocessable_entity
-    rescue StandardError => e
+    rescue PlcWriteService::ConnectionError => e
+      render json: { error: e.message }, status: :service_unavailable
+    rescue PlcWriteService::WriteError => e
       Rails.logger.error "MeasurementPoint write error: #{e.message}"
       render json: { error: 'Failed to write value to PLC' }, status: :internal_server_error
     end
@@ -47,7 +45,7 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
   private
     def set_measurement_point
       @measurement_point = policy_scope(MeasurementPoint)
-        .includes(:measurement_subtype, :register_template, :segment, :plc)
+        .includes(:measurement_subtype, :register_template, :segment, plc: [:gateway])
         .find(params[:id])
     end
 
@@ -84,23 +82,25 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
 
     def process_configuration_updates!
       updates = configuration_updates_params
-      if configuration_updates_params.empty?
+      if updates.empty?
         return
       end
 
+      # Load allowed config points for this interface
       allowed_config_points = @measurement_point.configuration_measurement_points
+        .includes(:register_template, plc: [:gateway])
         .index_by(&:id)
 
-      configuration_updates_params.each do |update|
-        measurement_point_id = update[:measurement_point_id].to_i
-
-        if !allowed_config_points.key?(measurement_point_id)
-          @measurement_point.errors.add(:base, "Invalid configuration: #{measurement_point_id}")
+      # Validate all measurement point IDs are allowed
+      updates.each do |update|
+        if !allowed_config_points.key?(update[:measurement_point_id].to_i)
+          @measurement_point.errors.add(:base, "Invalid configuration: #{update[:measurement_point_id]}")
           raise ActiveRecord::Rollback
         end
       end
 
-      pending_values = configuration_updates_params.each_with_object({}) do |update, hash|
+      # Build pending values for group validation
+      pending_values = updates.each_with_object({}) do |update, hash|
         config_point = allowed_config_points[update[:measurement_point_id].to_i]
         hash[config_point.register_template_id] = update[:value]
       end
@@ -111,21 +111,26 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
         raise ActiveRecord::Rollback
       end
 
-      configuration_updates_params.each do |update|
-        config_point = allowed_config_points[update[:measurement_point_id].to_i]
-
-        if config_point.register_template.read_only?
-          @measurement_point.errors.add(:base, "Register '#{config_point.register_template.label}' is read-only")
-          raise ActiveRecord::Rollback
-        end
-
-        begin
-          config_point.write_value!(update[:value], skip_validation: true)
-        rescue MeasurementPoint::WriteValidationError => e
-          @measurement_point.errors.add(:base, e.message)
-          raise ActiveRecord::Rollback
-        end
+      # Build payload for the write service
+      config_points_with_values = updates.map do |update|
+        {
+          measurement_point: allowed_config_points[update[:measurement_point_id].to_i],
+          value: update[:value]
+        }
       end
+
+      service = PlcWriteService.new(@measurement_point)
+      service.bulk_write!(config_points_with_values)
+    rescue PlcWriteService::ValidationError => e
+      @measurement_point.errors.add(:base, e.message)
+      raise ActiveRecord::Rollback
+    rescue PlcWriteService::ConnectionError => e
+      @measurement_point.errors.add(:base, e.message)
+      raise ActiveRecord::Rollback
+    rescue PlcWriteService::WriteError => e
+      Rails.logger.error "Configuration write error: #{e.message}"
+      @measurement_point.errors.add(:base, e.message)
+      raise ActiveRecord::Rollback
     end
 
     def sibling_measurement_points

@@ -124,12 +124,9 @@ module Api
             end
 
             utc_sample_time = site_tz.parse(dp[:sample_time]).utc
-            scaled_value = measurement_point.scale_decoded_value(numeric_value)
-
             readings << {
-              measurement_point_id: measurement_point.id,
+              measurement_point: measurement_point,
               value: numeric_value,
-              scaled_value: scaled_value,
               sample_time: utc_sample_time
             }
 

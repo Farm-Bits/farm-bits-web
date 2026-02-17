@@ -25,7 +25,7 @@ class MeasurementPoint < ApplicationRecord
 
   before_save :deactivate_conflicting_measurement_points
   before_save :sync_data_collection_with_active_if_needed
-  after_commit :sync_to_plc_registers, on: :update
+  after_update :sync_to_plc_registers
 
   class WriteValidationError < StandardError;
   end
@@ -64,6 +64,14 @@ class MeasurementPoint < ApplicationRecord
 
   def scaled_last_decoded_value
     scale_decoded_value(last_decoded_value)
+  end
+
+  def reverse_scaled(value)
+    if !register_template.numeric_register?
+      return value
+    end
+
+    ((value.to_f - effective_offset) / effective_factor)
   end
 
   def validate_write(value)
@@ -158,6 +166,17 @@ class MeasurementPoint < ApplicationRecord
     end
 
     Time.current - last_decoded_value_at >= polling_interval_seconds
+  end
+
+  def serialize_for_storage(decoded_value)
+    case register_template.value_format
+    when 'boolean'
+      decoded_value ? '1' : '0'
+    when 'ascii_string', 'time_of_day', 'duration_seconds'
+      decoded_value.to_s
+    else
+      decoded_value.to_s
+    end
   end
 
   private
@@ -261,18 +280,31 @@ class MeasurementPoint < ApplicationRecord
     end
 
     def sync_to_plc_registers
-      previous_changes.each_key do |field|
-        measurement_point = syncable_measurement_points.joins(:register_template).find_by(
-          register_template: { sync_field: field }
-        )
-        if !measurement_point
-          next
-        end
-
-        new_value = read_attribute(field)
-        # plc_value = transform_value_for_plc(register, new_value)
-        # write_to_plc_register(register, plc_value)
+      if !plc.gateway_id
+        return
       end
+
+      writes = []
+
+      saved_changes.each_key do |field|
+        sync_points = configuration_measurement_points
+          .joins(:register_template)
+          .where(register_templates: { sync_field: field })
+
+        sync_points.each do |sync_point|
+          writes << {
+            measurement_point: sync_point,
+            value: transform_value_for_plc(field)
+          }
+        end
+      end
+
+      if writes.empty?
+        return
+      end
+
+      service = PlcWriteService.new(self)
+      service.bulk_write!(writes)
     end
 
     def fetch_group_points
@@ -314,17 +346,6 @@ class MeasurementPoint < ApplicationRecord
 
       def respond_to_missing?(method, include_private = false)
         measurement_point.respond_to?(method, include_private)
-      end
-    end
-
-    def serialize_for_storage(decoded_value)
-      case register_template.value_format
-      when 'boolean'
-        decoded_value ? '1' : '0'
-      when 'ascii_string', 'time_of_day', 'duration_seconds'
-        decoded_value.to_s
-      else
-        decoded_value.to_s
       end
     end
 end
