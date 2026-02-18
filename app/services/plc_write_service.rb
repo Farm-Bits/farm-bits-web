@@ -72,22 +72,9 @@ class PlcWriteService
       validate_writable!(entry[:measurement_point])
     end
 
-    writes = measurement_points_with_values.map do |entry|
-      measurement_point = entry[:measurement_point]
-      register_template = measurement_point.register_template
-      raw_value = measurement_point.reverse_scaled(entry[:value])
-
-      {
-        id: measurement_point.id,
-        register_type: register_template.register_type,
-        address: register_template.address,
-        values: register_template.encode_value(raw_value)
-      }
-    end
-
     begin
       client = VpnManagerClient.new
-      response = client.bulk_write_registers(@plc, writes)
+      response = client.bulk_write_registers(@plc, measurement_points_with_values)
     rescue VpnManagerClient::ConnectionError => e
       raise ConnectionError, 'PLC is not reachable. Please check the gateway connection.'
     rescue VpnManagerClient::Error => e

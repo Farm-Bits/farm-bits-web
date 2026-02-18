@@ -15,12 +15,14 @@ class VpnManagerClient
     plc = measurement_point.plc
     gateway = plc.gateway
 
+    address = measurement_point.register_template.address + MODBUS_ADDRESS_OFFSET
+
     post('/api/v1/modbus/read', {
       gateway_label: gateway.label,
       target_ip: plc.private_ip,
       slave_id: plc.slave_id,
       register_type: measurement_point.register_template.register_type,
-      address: measurement_point.register_template.address,
+      address: address,
       count: measurement_point.register_template.address_count
     })
   end
@@ -49,19 +51,35 @@ class VpnManagerClient
     plc = measurement_point.plc
     gateway = plc.gateway
 
+    address = measurement_point.register_template.address + MODBUS_ADDRESS_OFFSET
+
     post('/api/v1/modbus/write', {
       gateway_label: gateway.label,
       target_ip: plc.private_ip,
       slave_id: plc.slave_id,
       register_type: measurement_point.register_template.register_type,
-      address: measurement_point.register_template.address,
-      values: measurement_point.register_template.encode_data(value)
+      address: address,
+      values: measurement_point.register_template.encode_value(value)
     })
   end
 
   # Writes registers for a single PLC through its gateway
-  def bulk_write_registers(plc, writes)
+  def bulk_write_registers(plc, measurement_points_with_values)
     gateway = plc.gateway
+
+    writes = measurement_points_with_values.map do |entry|
+      measurement_point = entry[:measurement_point]
+      register_template = measurement_point.register_template
+      address = register_template.address + MODBUS_ADDRESS_OFFSET
+      raw_value = measurement_point.reverse_scaled(entry[:value])
+
+      {
+        id: measurement_point.id,
+        register_type: register_template.register_type,
+        address: address,
+        values: register_template.encode_value(raw_value)
+      }
+    end
 
     response = post('/api/v1/modbus/bulk_write', {
       gateway_label: gateway.label,
@@ -119,10 +137,11 @@ class VpnManagerClient
           rt.bulk_read_offset + rt.address_count
         end.max
 
+        address = group_data[:address] + MODBUS_ADDRESS_OFFSET
         reads << {
           id: "group:#{group_name}",
           register_type: group_data[:register_type],
-          address: group_data[:address],
+          address: address,
           count: max_end
         }
       end
@@ -130,10 +149,11 @@ class VpnManagerClient
       # One read per individual register (no bulk_read_group)
       individual.each do |mp|
         rt = mp.register_template
+        address = rt.address + MODBUS_ADDRESS_OFFSET
         reads << {
           id: mp.id.to_s,
           register_type: rt.register_type,
-          address: rt.address,
+          address: address,
           count: rt.address_count
         }
       end

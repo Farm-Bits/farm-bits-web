@@ -90,17 +90,21 @@
 
 <script setup lang="ts">
   import { computed, reactive, ref, toRef } from 'vue';
-  import { router } from '@inertiajs/vue3';
+  import axios from 'axios';
   import RegisterField from '@/components/RegisterField.vue';
   import { useRegisterVisibility } from '@/composables/useRegisterVisibility';
   import { useConfigurationValues } from '@/composables/useConfigurationValues';
+  import { useApiCall } from '@/composables/useApi';
   import { formatGroupName } from '@/utils/registerUtils';
+  import { ROUTES } from '@/types/permissions';
   import type { MeasurementPoint } from '@/types/measurementPoint';
   import type { PlcWithInterfaces, RegisterMapping } from '@/types/plc';
 
   const { plc } = defineProps<{
     plc: PlcWithInterfaces;
   }>();
+
+  const { execute } = useApiCall();
 
   const configurationMappings = computed(() => {
     return plc.register_mappings.filter(registerMapping => {
@@ -185,29 +189,40 @@
     validationErrors[measurementPointId] = null;
   }
 
-  function saveField(registerMapping: RegisterMapping) {
+  async function saveField(registerMapping: RegisterMapping) {
     const measurementPointId = registerMapping.measurement_point.id;
+
+    if (!hasChanges(measurementPointId) || hasValidationError(measurementPointId)) {
+      return;
+    }
+
     isSaving[measurementPointId] = true;
 
-    // router.post(
-    //   `/plcs/${plc.id}/configuration`,
-    //   {
-    //     configuration_updates: [{
-    //       measurement_point_id: measurementPointId,
-    //       value: editValues[measurementPointId]
-    //     }]
-    //   },
-    //   {
-    //     preserveScroll: true,
-    //     onSuccess: () => {
-    //       originalValues[measurementPointId] = editValues[measurementPointId];
-    //       cancelEditing(measurementPointId);
-    //     },
-    //     onFinish: () => {
-    //       isSaving[measurementPointId] = false;
-    //     }
-    //   }
-    // );
+    const url = ROUTES.measurement_points_write.path.replace(
+      ':id',
+      String(measurementPointId)
+    );
+
+    const { success, data } = await execute<MeasurementPoint>(
+      () => axios.post(url, { value: editValues[measurementPointId] }),
+      {
+        showSuccessToast: true,
+        successMessage: 'Value updated successfully',
+        showErrorToast: true,
+        errorTitle: 'Error'
+      }
+    );
+
+    if (success) {
+      originalValues[measurementPointId] = data.last_value;
+      const mapping = configurationMappings.value.find(m => m.measurement_point.id === measurementPointId);
+      if (mapping)
+        mapping.measurement_point.last_value = data.last_value;
+
+      cancelEditing(measurementPointId);
+    }
+
+    isSaving[measurementPointId] = false;
   }
 </script>
 
