@@ -14,7 +14,7 @@
 
     <CTooltip v-else :content="alarmTooltip">
       <template #toggler="{ on }">
-        <span v-on="on" :class="['value', alarmClass]">
+        <span v-on="alarmTooltip ? on : {}" :class="['value', alarmClass]">
           {{ displayValue }}
         </span>
       </template>
