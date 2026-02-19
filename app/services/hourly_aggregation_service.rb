@@ -177,6 +177,34 @@ class HourlyAggregationService
         (readings_by_mp[mp_id] ||= []) << [scaled_value, sample_time]
       end
 
+      # For status MPs, fetch the last reading BEFORE this hour to know
+      # the prior state for gap extrapolation and cross-hour transitions.
+      # Single query using a lateral join pattern via GROUP subquery.
+      status_mp_ids = readings_by_mp.keys.select do |mp_id|
+        mp_map[mp_id]&.measurement_subtype&.value_type == "status"
+      end
+
+      prior_states = {}
+      if status_mp_ids.any?
+        # For each status MP, get the last reading before this hour.
+        # Uses a correlated subquery to find the max sample_time per MP,
+        # which leverages the (measurement_point_id, sample_time) index
+        # efficiently without scanning all historical rows.
+        prior_rows = RawValue
+          .where(measurement_point_id: status_mp_ids)
+          .where(sample_time: ...hour_start)
+          .where(
+            "sample_time = (SELECT MAX(r2.sample_time) FROM raw_values r2 " \
+            "WHERE r2.measurement_point_id = raw_values.measurement_point_id " \
+            "AND r2.sample_time < ?)", hour_start
+          )
+          .pluck(:measurement_point_id, :scaled_value)
+
+        prior_rows.each do |mp_id, val|
+          prior_states[mp_id] = val.to_i  # 0 or 1
+        end
+      end
+
       # Build aggregation rows
       rows = []
       readings_by_mp.each do |mp_id, readings|
@@ -198,7 +226,7 @@ class HourlyAggregationService
         when "instantaneous"
           attrs.merge!(instantaneous_attributes(readings))
         when "status"
-          attrs.merge!(status_attributes(readings, hour_start, hour_end))
+          attrs.merge!(status_attributes(readings, hour_start, hour_end, prior_state))
         end
 
         rows << attrs
@@ -246,7 +274,7 @@ class HourlyAggregationService
       }
     end
 
-    def status_attributes(readings, hour_start, hour_end)
+    def status_attributes(readings, hour_start, hour_end, prior_state)
       time_on = 0.0
       time_off = 0.0
       transitions = 0
@@ -255,10 +283,19 @@ class HourlyAggregationService
       first_value, first_time = readings.first
       gap_before = first_time - hour_start
       if gap_before > 0
-        if first_value.to_i == 1
+        # Use prior_state if available (last reading from before this hour),
+        # otherwise fall back to assuming the first reading's value held.
+        state_before = prior_state.nil? ? first_value.to_i : prior_state
+
+        if state_before == 1
           time_on += gap_before
         else
           time_off += gap_before
+        end
+
+        # Detect cross-hour transition: prior state differs from first reading
+        if !prior_state.nil? && prior_state != first_value.to_i
+          transitions += 1
         end
       end
 
