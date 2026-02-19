@@ -188,6 +188,10 @@ class HourlyAggregationService
         value_type = mp.measurement_subtype.value_type
         attrs = base_attributes(mp, hour_start, value_type, readings)
 
+        # Initialize ALL type-specific keys to nil first to guarantee
+        # consistent key ordering across all rows regardless of value_type.
+        ALL_AGG_KEYS.each { |k| attrs[k] = nil }
+
         case value_type
         when "accumulative"
           attrs.merge!(accumulative_attributes(readings))
@@ -197,10 +201,6 @@ class HourlyAggregationService
           attrs.merge!(status_attributes(readings, hour_start, hour_end))
         end
 
-        # Normalize: ensure ALL type-specific keys are present (nil for
-        # columns that don't apply to this value_type) so every row in
-        # the batch has an identical column set for the bulk INSERT.
-        ALL_AGG_KEYS.each { |k| attrs[k] = attrs[k] }
         rows << attrs
       end
 
