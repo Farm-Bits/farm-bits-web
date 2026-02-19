@@ -3,7 +3,7 @@ class StaticPagesController < ApplicationController
     redirect_params = params.permit(:company_id)
 
     if current_user
-      return redirect_to user_dashboard_path(redirect_params)
+      return redirect_to user_root_path(redirect_params)
     elsif current_admin_user
       return redirect_to supervisor_root_path(redirect_params)
     end
