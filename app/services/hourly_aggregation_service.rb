@@ -1,6 +1,14 @@
 class HourlyAggregationService
   MP_BATCH_SIZE = 100
 
+  # All possible type-specific columns — every row must include all of them
+  # so the batch upsert generates a consistent column list.
+  ALL_AGG_KEYS = %i[
+    start_value end_value delta
+    min_value max_value avg_value sum_value
+    time_on_seconds time_off_seconds transition_count
+  ].freeze
+
   def self.call(**args)
     new(**args).call
   end
@@ -88,7 +96,9 @@ class HourlyAggregationService
     # Build { mp_id => [hour_start, ...] } for a batch.
     def build_hour_plan(mp_ids)
       start_hours = detect_start_hours(mp_ids)
-      return {} if start_hours.empty?
+      if start_hours.empty?
+        return {}
+      end
 
       plan = {}
       start_hours.each do |mp_id, start_hour|
@@ -187,6 +197,10 @@ class HourlyAggregationService
           attrs.merge!(status_attributes(readings, hour_start, hour_end))
         end
 
+        # Normalize: ensure ALL type-specific keys are present (nil for
+        # columns that don't apply to this value_type) so every row in
+        # the batch has an identical column set for the bulk INSERT.
+        ALL_AGG_KEYS.each { |k| attrs[k] = attrs[k] }
         rows << attrs
       end
 
