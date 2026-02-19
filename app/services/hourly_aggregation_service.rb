@@ -226,6 +226,7 @@ class HourlyAggregationService
         when "instantaneous"
           attrs.merge!(instantaneous_attributes(readings))
         when "status"
+          prior_state = prior_states[mp_id]
           attrs.merge!(status_attributes(readings, hour_start, hour_end, prior_state))
         end
 
