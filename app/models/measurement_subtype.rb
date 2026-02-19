@@ -7,42 +7,7 @@ class MeasurementSubtype < ApplicationRecord
 
   DATA_CATEGORIES = %w[status analog counter].freeze
   VALUE_TYPES = %w[accumulative instantaneous status].freeze
-  CHART_TYPES = %w[line spline areaspline bar state].freeze
-  DEFAULT_AGGREGATION_CONFIGS = {
-    accumulative: {
-      fields: ['value'],
-      hourly: { value: 'SUM(value)' },
-      daily: { value: 'SUM(value)' }
-    },
-    instantaneous: {
-      fields: %w[min_value max_value avg_value],
-      hourly: {
-        min_value: 'MIN(min_value)',
-        max_value: 'MAX(max_value)',
-        avg_value: 'AVG(avg_value)'
-      },
-      daily: {
-        min_value: 'MIN(min_value)',
-        max_value: 'MAX(max_value)',
-        avg_value: 'AVG(avg_value)'
-      }
-    },
-    status: {
-      fields: %w[state_value state_changed duration_in_state],
-      hourly: {
-        transition_count: 'COUNT(*) FILTER (WHERE state_changed)',
-        duration_state_0: 'SUM(duration_in_state) FILTER (WHERE state_value = 0)',
-        duration_state_1: 'SUM(duration_in_state) FILTER (WHERE state_value = 1)',
-        last_state: 'LAST_VALUE(state_value)'
-      },
-      daily: {
-        transition_count: 'COUNT(*) FILTER (WHERE state_changed)',
-        duration_state_0: 'SUM(duration_in_state) FILTER (WHERE state_value = 0)',
-        duration_state_1: 'SUM(duration_in_state) FILTER (WHERE state_value = 1)',
-        last_state: 'LAST_VALUE(state_value)'
-      }
-    }
-  }.freeze
+  CHART_TYPES = %w[line area bar state rangeBar].freeze
 
   validates :name, presence: true, uniqueness: { scope: :measurement_type_id }
   validates :data_category, presence: true, inclusion: { in: DATA_CATEGORIES }
@@ -53,22 +18,6 @@ class MeasurementSubtype < ApplicationRecord
 
   def full_name
     "#{measurement_type.name} > #{name}"
-  end
-
-  def reading_fields
-    case value_type
-    when 'accumulative'
-      [:value]
-    when 'instantaneous'
-      [:min_value, :max_value, :avg_value]
-    when 'status'
-      [:state_value, :state_changed, :duration_in_state]
-    end
-  end
-
-  def aggregation_sql(period = :hourly)
-    config = aggregation_config.presence || DEFAULT_AGGREGATION_CONFIGS[value_type.to_sym]
-    config[period.to_s] || config[:hourly]
   end
 
   def effective_chart_type

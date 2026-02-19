@@ -13,10 +13,22 @@ export function isDataCategory(category: unknown): category is DataCategory {
   return DATA_CATEGORIES.includes(category as DataCategory);
 }
 
-const CHART_TYPES = ['line', 'spline', 'areaspline', 'bar', 'state'] as const;
+export const CHART_TYPES = [
+  'line', // Accumulative, Instantaneous
+  'area', // Accumulative, Instantaneous
+  'bar', // Accumulative, Instantaneous
+  'state', // Status
+  'rangeBar' // Status
+] as const;
 export type ChartType = typeof CHART_TYPES[number];
 export function isChartType(chartType: unknown): chartType is ChartType {
   return CHART_TYPES.includes(chartType as ChartType);
+}
+
+const VALUE_TYPES = ['accumulative', 'instantaneous', 'status'] as const;
+export type ValueType = typeof VALUE_TYPES[number];
+export function isValueType(valueType: unknown): valueType is ValueType {
+  return VALUE_TYPES.includes(valueType as ValueType);
 }
 
 export type MeasurementSubtype = {
@@ -24,12 +36,14 @@ export type MeasurementSubtype = {
   name: string;
   full_name: string;
   data_category: DataCategory;
-  value_type: 'accumulative' | 'instantaneous' | 'status';
+  value_type: ValueType;
   default_unit: string;
   default_chart_type: ChartType;
   default_color: string | null;
   measurement_type: MeasurementType;
 };
+
+export type AlarmState = 'normal' | 'warning_low' | 'warning_high' | 'alarm_low' | 'alarm_high';
 
 export type MeasurementPoint = {
   id: number;
@@ -46,6 +60,7 @@ export type MeasurementPoint = {
   alarm_high: number | null;
   warning_low: number | null;
   warning_high: number | null;
+  alarm_state: AlarmState | null;
   last_value: number | string | null;
   last_value_at: string | null;
   position: number;

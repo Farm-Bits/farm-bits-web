@@ -30,11 +30,12 @@
             @update:model-value="updateField('chart_type_override', $event || null)"
             :invalid="v$.chart_type_override.$error">
             <option value="">-- Use Default ({{ defaultChartType }}) --</option>
-            <option value="line">Line</option>
-            <option value="spline">Spline</option>
-            <option value="areaspline">Area Spline</option>
-            <option value="bar">Bar</option>
-            <option value="state">State</option>
+            <option
+              v-for="type in CHART_TYPES"
+              :key="type"
+              :value="type">
+              {{ type.charAt(0).toUpperCase() + type.slice(1) }}
+            </option>
           </CFormSelect>
           <CFormFeedback v-if="v$.chart_type_override.$error" invalid>
             {{ v$.chart_type_override.$errors[0].$message }}
@@ -83,7 +84,7 @@
 <script lang="ts" setup>
   import { computed } from 'vue';
   import type { NestedValidations } from '@vuelidate/core';
-  import type { MeasurementSubtype, ChartType } from '@/types/measurementPoint';
+  import { CHART_TYPES, type ChartType, type MeasurementSubtype } from '@/types/measurementPoint';
 
   type DisplayFormData = {
     unit_override: string | null;

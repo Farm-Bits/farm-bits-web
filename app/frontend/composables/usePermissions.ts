@@ -49,6 +49,15 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
     measurement_points: {
       update: true,
       write: true
+    },
+    live: {
+      show: true,
+      poll: true
+    },
+    analytics: {
+      show: true,
+      hourly: true,
+      raw: true
     }
   },
   site_admin: {
@@ -97,6 +106,15 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
     measurement_points: {
       update: true,
       write: true
+    },
+    live: {
+      show: true,
+      poll: true
+    },
+    analytics: {
+      show: true,
+      hourly: true,
+      raw: true
     }
   },
   manager: {
@@ -145,6 +163,15 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
     measurement_points: {
       update: false,
       write: true
+    },
+    live: {
+      show: true,
+      poll: true
+    },
+    analytics: {
+      show: true,
+      hourly: true,
+      raw: true
     }
   },
   viewer: {
@@ -193,6 +220,15 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
     measurement_points: {
       update: false,
       write: false
+    },
+    live: {
+      show: true,
+      poll: true
+    },
+    analytics: {
+      show: true,
+      hourly: true,
+      raw: true
     }
   }
 };

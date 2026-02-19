@@ -13,16 +13,25 @@
     <CIcon name="cilMenu" size="lg" @click="store.toggleSidebar" class="sidebar-toggler" />
 
     <CSidebarNav>
+      <CNavItem v-if="permissions?.live.show">
+        <Link :href="ROUTES.live_show.path" class="nav-link">
+          <CIcon customClassName="nav-icon" name="cilRss" />
+          Live Data
+        </Link>
+      </CNavItem>
+
+      <CNavItem v-if="permissions?.analytics.show">
+        <Link :href="ROUTES.analytics_show.path" class="nav-link">
+          <CIcon customClassName="nav-icon" name="cilBarChart" />
+          Analytics
+        </Link>
+      </CNavItem>
+
       <CNavItem v-if="permissions?.gateways.index">
         <Link :href="ROUTES.gateways_index.path" class="nav-link">
           <CIcon customClassName="nav-icon" name="cilSpeedometer" />
           Devices
         </Link>
-      </CNavItem>
-
-      <CNavItem v-if="true" href="#/dashboard">
-        <CIcon customClassName="nav-icon" name="cilBarChart" />
-        Analytics
       </CNavItem>
 
       <CNavItem v-if="true" href="#/dashboard">

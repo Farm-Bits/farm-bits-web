@@ -25,6 +25,7 @@
 <script lang="ts" setup>
   import { computed } from 'vue';
   import { getDisplayValue } from '@/utils/valueConverters.ts';
+  import type { AlarmState } from '@/types/measurementPoint';
   import type { ValueFormat } from '@/types/plc';
 
   const {
@@ -35,7 +36,8 @@
     alarmLow,
     alarmHigh,
     warningLow,
-    warningHigh
+    warningHigh,
+    alarmState
   } = defineProps<{
     rawValue: string | number | null;
     valueFormat: ValueFormat;
@@ -45,6 +47,7 @@
     alarmHigh?: number | null;
     warningLow?: number | null;
     warningHigh?: number | null;
+    alarmState?: AlarmState | null;
   }>();
 
   const displayValue = computed(() => {
@@ -72,22 +75,7 @@
   });
 
   const alarmClass = computed(() => {
-    if (numericalValue.value === null)
-      return '';
-
-    if (alarmLow !== null && alarmLow !== undefined && numericalValue.value < alarmLow)
-      return 'alarm-low';
-
-    if (alarmHigh !== null && alarmHigh !== undefined && numericalValue.value > alarmHigh)
-      return 'alarm-high';
-
-    if (warningLow !== null && warningLow !== undefined && numericalValue.value < warningLow)
-      return 'warning-low';
-
-    if (warningHigh !== null && warningHigh !== undefined && numericalValue.value > warningHigh)
-      return 'warning-high';
-
-    return 'normal';
+    return alarmState;
   });
 
   const alarmTooltip = computed(() => {
@@ -133,25 +121,25 @@
     color: var(--cui-body-color);
   }
 
-  .alarm-low,
-  .alarm-high {
+  .alarm_low,
+  .alarm_high {
     color: #dc3545;
     font-weight: 700;
   }
 
-  .warning-low,
-  .warning-high {
+  .warning_low,
+  .warning_high {
     color: #fd7e14;
     font-weight: 700;
   }
 
-  .status-badge.alarm-low,
-  .status-badge.alarm-high {
+  .status-badge.alarm_low,
+  .status-badge.alarm_high {
     border: 2px solid #dc3545;
   }
 
-  .status-badge.warning-low,
-  .status-badge.warning-high {
+  .status-badge.warning_low,
+  .status-badge.warning_high {
     border: 2px solid #fd7e14;
   }
 </style>

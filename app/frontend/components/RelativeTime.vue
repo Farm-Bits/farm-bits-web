@@ -8,14 +8,14 @@
   import { computed } from 'vue';
 
   const props = defineProps<{
-    dateTime: string | null;
+    datetime: string | null;
   }>();
 
   const relativeTime = computed(() => {
-    if (!props.dateTime)
+    if (!props.datetime)
       return '';
 
-    const date = new Date(props.dateTime);
+    const date = new Date(props.datetime);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffSec = Math.floor(diffMs / 1000);
@@ -25,10 +25,13 @@
 
     if (diffSec < 60)
       return 'Just now';
+
     if (diffMin < 60)
       return `${diffMin}m ago`;
+
     if (diffHour < 24)
       return `${diffHour}h ago`;
+
     if (diffDay < 7)
       return `${diffDay}d ago`;
 

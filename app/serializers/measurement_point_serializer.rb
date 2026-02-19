@@ -4,10 +4,14 @@ class MeasurementPointSerializer < Blueprinter::Base
   fields :name,
     :description,
     :unit_override,
+    :effective_unit,
     :chart_type_override,
+    :effective_chart_type,
     :color_override,
+    :effective_color,
     :data_collection_enabled,
     :polling_interval_seconds,
+    :alarm_state,
     :position,
     :active,
     :measurement_subtype_id,
@@ -38,23 +42,24 @@ class MeasurementPointSerializer < Blueprinter::Base
     mp.warning_high&.to_f
   end
 
-  field :effective_unit do |mp|
-    mp.effective_unit
-  end
-
-  field :effective_chart_type do |mp|
-    mp.effective_chart_type
-  end
-
-  field :effective_color do |mp|
-    mp.effective_color
-  end
-
   field :last_value do |mp|
     mp.scaled_last_decoded_value
   end
 
   field :last_value_at do |mp|
     mp.last_decoded_value_at
+  end
+
+  view :with_details do
+    field :plc_name do |mp|
+      mp.plc&.name
+    end
+
+    field :register_name do |mp|
+      mp.register_template&.name
+    end
+
+    association :measurement_subtype, blueprint: MeasurementSubtypeSerializer
+    association :segment, blueprint: SegmentSerializer
   end
 end

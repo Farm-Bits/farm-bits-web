@@ -1,0 +1,249 @@
+<template>
+  <CContainer fluid class="px-4 py-4">
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <h2 class="mb-1">Live Data</h2>
+        <p class="text-body-secondary mb-0">
+          Real-time overview of active measurement points for {{ currentSite?.name }}
+        </p>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <span v-if="polling.lastPollAt.value" class="small text-body-secondary">
+          Updated <RelativeTime :datetime="polling.lastPollAt.value.toISOString()" />
+        </span>
+        <CButton
+          size="sm"
+          :color="polling.isPaused.value ? 'warning' : 'light'"
+          @click="togglePolling">
+          {{ polling.isPaused.value ? 'Resume' : 'Pause' }}
+        </CButton>
+      </div>
+    </div>
+
+    <!-- Filter bar -->
+    <CCard class="mb-4 shadow-sm">
+      <CCardBody class="py-3">
+        <div class="row g-3 align-items-end">
+          <div class="col-auto">
+            <SegmentFilter
+              v-model="selectedSegmentId"
+              :segments="segments" />
+          </div>
+          <div class="col-auto">
+            <GroupByToggle v-model="groupBy" />
+          </div>
+        </div>
+      </CCardBody>
+    </CCard>
+
+    <!-- Empty state -->
+    <div v-if="filteredMeasurementPoints.length === 0" class="text-center py-5">
+      <CIcon name="cil-speedometer" size="3xl" class="text-body-secondary mb-3" />
+      <h5 class="text-body-secondary">No active measurement points</h5>
+      <p class="text-body-secondary">
+        There are no active measurement points collecting data for this site.
+      </p>
+    </div>
+
+    <!-- Grouped measurement points -->
+    <template v-else>
+      <CCard
+        v-for="group in groups"
+        :key="group.key"
+        class="mb-4 shadow-sm">
+        <CCardHeader
+          class="group-header"
+          role="button"
+          @click="handleGroupClick(group)">
+          <div class="d-flex align-items-center justify-content-between">
+            <h6 class="mb-0">
+              {{ group.label }}
+              <CBadge color="light" class="ms-2 text-body-secondary">
+                {{ group.measurementPoints.length }}
+              </CBadge>
+            </h6>
+            <small class="text-body-secondary">Click to view analytics</small>
+          </div>
+        </CCardHeader>
+        <CCardBody>
+          <div class="row g-3">
+            <div
+              v-for="mp in group.measurementPoints"
+              :key="mp.id"
+              class="col-sm-6 col-md-4 col-lg-3">
+              <MeasurementPointCard
+                :measurement-point="mp"
+                @click="handleMpClick" />
+            </div>
+          </div>
+        </CCardBody>
+      </CCard>
+    </template>
+
+    <!-- Analytics Modal -->
+    <MeasurementPointAnalyticsModal
+      :visible="modalVisible"
+      :measurement-points="modalMeasurementPoints"
+      :site-id="currentSite?.id"
+      @close="modalVisible = false" />
+  </CContainer>
+</template>
+
+<script lang="ts" setup>
+  import { ref, computed } from 'vue';
+  import axios from 'axios';
+  import useAuth from '@/composables/useAuth';
+  import { useApiCall } from '@/composables/useApi';
+  import { useLivePolling } from '@/composables/useLivePolling';
+  import SegmentFilter from '@/components/SegmentFilter.vue';
+  import GroupByToggle, { type GroupBy } from '@/components/GroupByToggle.vue';
+  import MeasurementPointAnalyticsModal from '@/components/MeasurementPointAnalyticsModal.vue';
+  import RelativeTime from '@/components/RelativeTime.vue';
+  import MeasurementPointCard from './components/MeasurementPointCard.vue';
+  import { ROUTES } from '@/types/permissions';
+  import type { Segment } from '@/types/location';
+  import type { MeasurementSubtype } from '@/types/measurementPoint';
+  import type {
+    LiveMeasurementPoint,
+    MeasurementPointGroup,
+    PollResponse,
+  } from '@/types/analytics';
+
+  const { currentSite, pageProps } = useAuth<{
+    segments: Segment[];
+    measurement_points: LiveMeasurementPoint[];
+    measurement_subtypes: MeasurementSubtype[];
+  }>();
+  const { segments } = pageProps.value;
+
+  const { execute } = useApiCall();
+
+  // Reactive copy of measurement points for live updates
+  const measurementPoints = ref<LiveMeasurementPoint[]>([...pageProps.value.measurement_points]);
+
+  // Filters
+  const selectedSegmentId = ref<number | null>(null);
+  const groupBy = ref<GroupBy>('segment');
+
+  // Modal state
+  const modalVisible = ref(false);
+  const modalMeasurementPoints = ref<LiveMeasurementPoint[]>([]);
+
+  // Filtered measurement points
+  const filteredMeasurementPoints = computed(() => {
+    if (selectedSegmentId.value === null)
+      return measurementPoints.value;
+
+    return measurementPoints.value.filter(
+      (mp) => mp.segment_id === selectedSegmentId.value
+    );
+  });
+
+  // Grouped measurement points
+  const groups = computed<MeasurementPointGroup[]>(() => {
+    const mps = filteredMeasurementPoints.value;
+
+    if (groupBy.value === 'segment')
+      return groupBySegment(mps);
+
+    return groupByMeasurementType(mps);
+  });
+
+  function groupBySegment(mps: LiveMeasurementPoint[]) {
+    const map = new Map<string, LiveMeasurementPoint[]>();
+
+    for (const mp of mps) {
+      const key = mp.segment_id ? String(mp.segment_id) : 'unassigned';
+      if (!map.has(key))
+        map.set(key, []);
+      map.get(key)!.push(mp);
+    }
+
+    return Array.from(map.entries()).map(([key, groupMps]) => {
+      const segment = segments.find((s) => String(s.id) === key);
+      return {
+        key,
+        label: segment?.name ?? 'Unassigned',
+        measurementPoints: groupMps,
+      };
+    });
+  }
+
+  function groupByMeasurementType(mps: LiveMeasurementPoint[]) {
+    const map = new Map<string, LiveMeasurementPoint[]>();
+
+    for (const mp of mps) {
+      const typeName = mp.measurement_subtype?.measurement_type?.name ?? 'Unknown';
+      if (!map.has(typeName))
+        map.set(typeName, []);
+      map.get(typeName)!.push(mp);
+    }
+
+    return Array.from(map.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, groupMps]) => ({
+        key,
+        label: key,
+        measurementPoints: groupMps,
+      }));
+  }
+
+  // Polling
+  async function fetchPollData() {
+    const { success, data } = await execute<PollResponse>(
+      () => axios.get(ROUTES.live_poll.path)
+    );
+
+    if (success) {
+      const updates = data.measurement_points;
+      for (const update of updates) {
+        const mp = measurementPoints.value.find((m) => m.id === update.id);
+        if (mp) {
+          mp.last_value = update.last_value;
+          mp.last_value_at = update.last_value_at;
+          mp.alarm_state = update.alarm_state;
+        }
+      }
+    }
+  }
+
+  const polling = useLivePolling(
+    fetchPollData,
+    {
+      intervalMs: 30000,
+      immediate: false,
+    }
+  );
+
+  polling.start();
+
+  function togglePolling(): void {
+    if (polling.isPaused.value)
+      polling.resume();
+    else
+      polling.pause();
+  }
+
+  // Click handlers
+  function handleMpClick(mp: LiveMeasurementPoint): void {
+    modalMeasurementPoints.value = [mp];
+    modalVisible.value = true;
+  }
+
+  function handleGroupClick(group: MeasurementPointGroup): void {
+    modalMeasurementPoints.value = group.measurementPoints;
+    modalVisible.value = true;
+  }
+</script>
+
+<style scoped>
+  .group-header {
+    cursor: pointer;
+    transition: background-color 0.15s;
+  }
+
+  .group-header:hover {
+    background-color: #f9fafb;
+  }
+</style>

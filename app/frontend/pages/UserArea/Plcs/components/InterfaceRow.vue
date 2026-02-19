@@ -43,7 +43,7 @@
         :registerMapping="activeRegisterMapping"
         :isEditing="false" />
       <RelativeTime
-        :dateTime="activeRegisterMapping.measurement_point.last_value_at" />
+        :datetime="activeRegisterMapping.measurement_point.last_value_at" />
     </CTableDataCell>
     <CTableDataCell>
       <span v-if="activeRegisterMapping.measurement_point.effective_unit" class="text-muted">

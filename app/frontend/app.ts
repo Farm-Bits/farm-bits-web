@@ -126,6 +126,7 @@ import {
   cilPuzzle,
   cilReload,
   cilRouter,
+  cilRss,
   cilRunning,
   cilSettings,
   cilSpeedometer,
@@ -143,6 +144,7 @@ import {
 import '@coreui/coreui/dist/css/coreui.min.css';
 import ErrorMessages from './components/ErrorMessages.vue';
 import VueSelect from 'vue3-select-component';
+import VueApexCharts from 'vue3-apexcharts';
 
 // Configuration
 import { resolvePage } from './pages';
@@ -163,6 +165,7 @@ export default function () {
 
       app.use(plugin);
       app.use(pinia);
+      app.use(VueApexCharts);
 
       // Inertia
       app.component('Head', Head);
@@ -202,6 +205,7 @@ export default function () {
         cilPuzzle,
         cilReload,
         cilRouter,
+        cilRss,
         cilRunning,
         cilSettings,
         cilSpeedometer,

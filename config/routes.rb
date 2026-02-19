@@ -33,7 +33,7 @@ Rails.application.routes.draw do
 
   authenticate :user do
     namespace :user_area, path: 'user', as: :user do
-      root 'dashboard#show'
+      root 'live#show'
 
       get 'my_account' => 'my_account#show'
       put 'my_account' => 'my_account#update'
@@ -62,6 +62,13 @@ Rails.application.routes.draw do
           post :write
         end
       end
+
+      get 'live' => 'live#show'
+      get 'live/poll' => 'live#poll'
+
+      get 'analytics' => 'analytics#show'
+      get 'analytics/hourly' => 'analytics#hourly'
+      get 'analytics/raw' => 'analytics#raw'
 
       get 'dashboard', to: 'dashboard#show'
     end

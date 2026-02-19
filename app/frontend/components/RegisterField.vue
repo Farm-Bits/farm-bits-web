@@ -9,7 +9,8 @@
       :alarmLow="registerMapping.measurement_point.alarm_low"
       :alarmHigh="registerMapping.measurement_point.alarm_high"
       :warningLow="registerMapping.measurement_point.warning_low"
-      :warningHigh="registerMapping.measurement_point.warning_high" />
+      :warningHigh="registerMapping.measurement_point.warning_high"
+      :alarmState="registerMapping.measurement_point.alarm_state" />
 
     <ValueEdit
       v-else

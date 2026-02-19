@@ -1,5 +1,5 @@
 // Auto-generated file - Do not edit manually
-// Generated at: 2026-01-25 07:50:32 UTC
+// Generated at: 2026-02-19 11:18:31 UTC
 
 import type { Method } from '@inertiajs/core';
 
@@ -34,7 +34,7 @@ export const ROLES: Record<Role, { name: string; description: string; level: num
 } as const;
 
 // Valid controller keys
-export type ControllerKey = 'dashboard' | 'my_account' | 'company_setup' | 'company_users' | 'invitations' | 'sites' | 'gateways' | 'plcs' | 'measurement_points';
+export type ControllerKey = 'dashboard' | 'my_account' | 'company_setup' | 'company_users' | 'invitations' | 'sites' | 'gateways' | 'plcs' | 'measurement_points' | 'live' | 'analytics';
 
 // Route permissions mapping
 export type RoutePermissions = {
@@ -83,6 +83,15 @@ export type RoutePermissions = {
   measurement_points: {
     write: boolean;
     update: boolean;
+  };
+  live: {
+    show: boolean;
+    poll: boolean;
+  };
+  analytics: {
+    show: boolean;
+    hourly: boolean;
+    raw: boolean;
   };
 };
 
@@ -268,5 +277,35 @@ export const ROUTES: Record<string, RouteInfo> = {
     action: 'update',
     path: '/user/measurement_points/:id',
     verb: 'patch'
+  },
+  live_show: {
+    controller: 'live',
+    action: 'show',
+    path: '/user/live',
+    verb: 'get'
+  },
+  live_poll: {
+    controller: 'live',
+    action: 'poll',
+    path: '/user/live/poll',
+    verb: 'get'
+  },
+  analytics_show: {
+    controller: 'analytics',
+    action: 'show',
+    path: '/user/analytics',
+    verb: 'get'
+  },
+  analytics_hourly: {
+    controller: 'analytics',
+    action: 'hourly',
+    path: '/user/analytics/hourly',
+    verb: 'get'
+  },
+  analytics_raw: {
+    controller: 'analytics',
+    action: 'raw',
+    path: '/user/analytics/raw',
+    verb: 'get'
   }
 };
