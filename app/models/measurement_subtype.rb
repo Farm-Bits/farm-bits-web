@@ -7,7 +7,12 @@ class MeasurementSubtype < ApplicationRecord
 
   DATA_CATEGORIES = %w[status analog counter].freeze
   VALUE_TYPES = %w[accumulative instantaneous status].freeze
-  CHART_TYPES = %w[line area bar state rangeBar].freeze
+  CHART_TYPES_BY_VALUE_TYPE = {
+    'instantaneous' => %w[line area bar],
+    'accumulative'  => %w[line area bar],
+    'status'        => %w[step rangeBar]
+  }.freeze
+  CHART_TYPES = CHART_TYPES_BY_VALUE_TYPE.values.flatten.uniq.freeze
 
   validates :name, presence: true, uniqueness: { scope: :measurement_type_id }
   validates :data_category, presence: true, inclusion: { in: DATA_CATEGORIES }
@@ -20,15 +25,7 @@ class MeasurementSubtype < ApplicationRecord
     "#{measurement_type.name} > #{name}"
   end
 
-  def effective_chart_type
-    if default_chart_type.present?
-      return default_chart_type
-    end
-
-    case value_type
-    when 'accumulative' then 'bar'
-    when 'instantaneous' then 'line'
-    when 'status' then 'state'
-    end
+  def allowed_chart_types
+    CHART_TYPES_BY_VALUE_TYPE[value_type] || []
   end
 end

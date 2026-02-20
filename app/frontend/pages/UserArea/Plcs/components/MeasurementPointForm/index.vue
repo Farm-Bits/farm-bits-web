@@ -93,7 +93,7 @@
   import { useRegisterValidation } from '@/composables/useRegisterValidation';
   import { ROUTES } from '@/types/permissions';
   import type { Segment } from '@/types/location';
-  import { isDataCategory, isChartType, type MeasurementPoint, type MeasurementSubtype, type ChartType } from '@/types/measurementPoint';
+  import { isDataCategory, isChartType, isValidChartTypeForValueType, type MeasurementPoint, type MeasurementSubtype, type ChartType } from '@/types/measurementPoint';
   import { isConfigurationCategory, type InterfaceWithMeasurementPoints } from '@/types/plc';
 
   const {
@@ -243,6 +243,15 @@
         isChartType: {
           $validator: (value: string | null) => !value || isChartType(value),
           $message: 'Please select a valid chart type'
+        },
+        isCompatibleWithValueType: {
+          $validator: (value: string | null) => {
+            if (!value || !isChartType(value)) return true;
+            const vt = selectedMeasurementSubtype.value?.value_type;
+            if (!vt) return true;
+            return isValidChartTypeForValueType(value, vt);
+          },
+          $message: 'This chart type is not compatible with the selected measurement type'
         }
       },
       color_override: {
@@ -363,6 +372,15 @@
         loadMeasurementPoint(originalRegisterMapping.value);
         initConfigValues();
         return;
+      }
+
+      // Clear chart type override if incompatible with the new value type
+      if (
+        displayFormData.chart_type_override &&
+        isChartType(displayFormData.chart_type_override) &&
+        !isValidChartTypeForValueType(displayFormData.chart_type_override, newMeasurementSubtype.value_type)
+      ) {
+        displayFormData.chart_type_override = null;
       }
 
       const newActiveMapping = measurementRegisterMappings.value.find(

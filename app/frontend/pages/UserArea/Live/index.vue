@@ -124,7 +124,7 @@
 
   // Filters
   const selectedSegmentId = ref<number | null>(null);
-  const groupBy = ref<GroupBy>('segment');
+  const groupBy = ref<GroupBy>('measurement_subtype');
 
   // Modal state
   const modalVisible = ref(false);

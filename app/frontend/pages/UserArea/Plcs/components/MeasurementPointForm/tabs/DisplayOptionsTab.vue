@@ -29,12 +29,12 @@
             :model-value="modelValue.chart_type_override || ''"
             @update:model-value="updateField('chart_type_override', $event || null)"
             :invalid="v$.chart_type_override.$error">
-            <option value="">-- Use Default ({{ defaultChartType }}) --</option>
+            <option value="">-- Use Default ({{ chartTypeLabel(defaultChartType) }}) --</option>
             <option
-              v-for="type in CHART_TYPES"
+              v-for="type in allowedChartTypes"
               :key="type"
               :value="type">
-              {{ type.charAt(0).toUpperCase() + type.slice(1) }}
+              {{ chartTypeLabel(type) }}
             </option>
           </CFormSelect>
           <CFormFeedback v-if="v$.chart_type_override.$error" invalid>
@@ -84,7 +84,11 @@
 <script lang="ts" setup>
   import { computed } from 'vue';
   import type { NestedValidations } from '@vuelidate/core';
-  import { CHART_TYPES, type ChartType, type MeasurementSubtype } from '@/types/measurementPoint';
+  import {
+    CHART_TYPES_BY_VALUE_TYPE,
+    type ChartType,
+    type MeasurementSubtype,
+  } from '@/types/measurementPoint';
 
   type DisplayFormData = {
     unit_override: string | null;
@@ -111,6 +115,25 @@
   const defaultUnit = computed(() => selectedMeasurementSubtype?.default_unit || null);
   const defaultChartType = computed(() => selectedMeasurementSubtype?.default_chart_type || 'line');
   const defaultColor = computed(() => selectedMeasurementSubtype?.default_color || null);
+
+  const allowedChartTypes = computed<readonly ChartType[]>(() => {
+    if (!selectedMeasurementSubtype)
+      return [];
+
+    return CHART_TYPES_BY_VALUE_TYPE[selectedMeasurementSubtype.value_type];
+  });
+
+  const CHART_TYPE_LABELS: Record<ChartType, string> = {
+    line: 'Line',
+    area: 'Area',
+    bar: 'Bar',
+    step: 'Step (Digital Signal)',
+    rangeBar: 'Range Bar (Timeline)',
+  };
+
+  function chartTypeLabel(type: ChartType): string {
+    return CHART_TYPE_LABELS[type] ?? type;
+  }
 
   function updateField(field: keyof DisplayFormData, value: unknown) {
     emit('update:modelValue', { ...modelValue, [field]: value });

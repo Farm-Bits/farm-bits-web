@@ -2,15 +2,18 @@
   <CModal
     :visible="visible"
     size="xl"
+    scrollable
     @close="emit('close')">
     <CModalHeader>
       <h5 class="modal-title">{{ modalTitle }}</h5>
     </CModalHeader>
+
     <CModalBody>
-      <div class="d-flex align-items-center gap-3 mb-3">
+      <!-- Date range + aggregation filter -->
+      <div class="d-flex align-items-end gap-3 mb-4">
         <DateRangeFilter v-model="dateRange" />
-        <div v-if="isSingleDay" class="d-flex align-items-center gap-2">
-          <CFormLabel class="mb-0 small text-body-secondary">Level</CFormLabel>
+        <div v-if="isSingleDay">
+          <CFormLabel class="mb-1 small text-body-secondary">Aggregation</CFormLabel>
           <CFormSelect
             v-model="aggregationLevel"
             size="sm"
@@ -21,57 +24,41 @@
         </div>
       </div>
 
-      <div v-if="loading" class="text-center py-5">
+      <!-- Loading -->
+      <div v-if="analytics.loading.value" class="text-center py-5">
         <CSpinner color="primary" />
-        <p class="mt-2 text-body-secondary">Loading data...</p>
+        <p class="mt-2 text-body-secondary">Loading analytics data...</p>
       </div>
 
-      <div v-else-if="error" class="py-4">
-        <CAlert color="danger">{{ error }}</CAlert>
+      <!-- Error -->
+      <CAlert v-else-if="analytics.error.value" color="danger" class="mb-3">
+        {{ analytics.error.value }}
+      </CAlert>
+
+      <!-- No data -->
+      <div v-else-if="!hasAnyData" class="text-center py-5 text-body-secondary">
+        <CIcon name="cil-chart-line" size="xl" class="mb-2" />
+        <p class="mb-0">No data available for the selected period</p>
       </div>
 
+      <!-- Chart + Summary -->
       <template v-else>
-        <div v-for="group in chartGroups" :key="group.valueType" class="mb-4">
-          <h6 v-if="chartGroups.length > 1" class="text-body-secondary mb-2">
-            {{ valueTypeLabel(group.valueType) }}
-          </h6>
+        <CCard class="mb-4 shadow-sm">
+          <CCardBody>
+            <ComboTimeSeriesChart :entries="chartEntries" />
+          </CCardBody>
+        </CCard>
 
-          <template v-if="group.valueType === 'status'">
-            <div v-for="mp in group.measurementPoints" :key="mp.id" class="mb-3">
-              <p class="small fw-medium mb-1">{{ mp.name }}</p>
-              <StatusTimeline
-                :hourly-data="aggregationLevel === 'hourly' ? (aggregations[mp.id] ?? []) : []"
-                :raw-data="aggregationLevel === 'raw' ? (rawValues[mp.id] ?? []) : []" />
-            </div>
-          </template>
-          <template v-else>
-            <div v-for="mp in group.measurementPoints" :key="mp.id" class="mb-3">
-              <TimeSeriesChart
-                :hourly-data="aggregationLevel === 'hourly' ? (aggregations[mp.id] ?? []) : []"
-                :raw-data="aggregationLevel === 'raw' ? (rawValues[mp.id] ?? []) : []"
-                :value-type="group.valueType"
-                :chart-type="mp.effective_chart_type ?? 'line'"
-                :color="mp.effective_color ?? '#059669'"
-                :unit="mp.effective_unit ?? ''"
-                :title="mp.name"
-                :thresholds="{
-                  alarm_low: mp.alarm_low,
-                  alarm_high: mp.alarm_high,
-                  warning_low: mp.warning_low,
-                  warning_high: mp.warning_high,
-                }" />
-            </div>
-          </template>
-
-          <CCard class="shadow-sm">
-            <CCardBody>
-              <SummaryTable
-                :measurement-points="group.measurementPoints"
-                :summary-data="summary"
-                :value-type="group.valueType" />
-            </CCardBody>
-          </CCard>
-        </div>
+        <CCard class="shadow-sm">
+          <CCardHeader>
+            <h6 class="mb-0">Summary</h6>
+          </CCardHeader>
+          <CCardBody>
+            <SummaryTable
+              :measurement-points="measurementPoints"
+              :summary-data="analytics.summary.value" />
+          </CCardBody>
+        </CCard>
       </template>
     </CModalBody>
   </CModal>
@@ -79,44 +66,34 @@
 
 <script lang="ts" setup>
   import { ref, computed, watch } from 'vue';
-  import DateRangeFilter, { type DateRange } from './DateRangeFilter.vue';
-  import TimeSeriesChart from './TimeSeriesChart.vue';
-  import StatusTimeline from './StatusTimeline.vue';
-  import SummaryTable from './SummaryTable.vue';
   import { useAnalyticsData } from '@/composables/useAnalyticsData';
-  import type { AggregationLevel, LiveMeasurementPoint } from '@/types/analytics';
-  import type { ValueType } from '@/types/measurementPoint';
+  import DateRangeFilter, { type DateRange } from '@/components/DateRangeFilter.vue';
+  import ComboTimeSeriesChart, { type ChartEntry } from '@/components/ComboTimeSeriesChart.vue';
+  import SummaryTable from '@/components/SummaryTable.vue';
+  import type { LiveMeasurementPoint, AggregationLevel } from '@/types/analytics';
 
-  const {
-    visible,
-    measurementPoints,
-    initialDateRange,
-  } = defineProps<{
+  const { visible, measurementPoints } = defineProps<{
     visible: boolean;
     measurementPoints: LiveMeasurementPoint[];
-    initialDateRange?: DateRange;
   }>();
 
   const emit = defineEmits<{
     (e: 'close'): void;
   }>();
 
+  // ── Filters ──
+
   const today = new Date().toISOString().slice(0, 10);
-  const dateRange = ref<DateRange>(initialDateRange ?? { start: today, end: today });
+  const dateRange = ref<DateRange>({ start: today, end: today });
   const aggregationLevel = ref<AggregationLevel>('hourly');
 
-  const {
-    aggregations,
-    rawValues,
-    summary,
-    loading,
-    error,
-    fetchHourly,
-    fetchRaw,
-    clear
-  } = useAnalyticsData();
-
   const isSingleDay = computed(() => dateRange.value.start === dateRange.value.end);
+
+  // ── Analytics data (own instance, independent from the Analytics page) ──
+
+  const analytics = useAnalyticsData();
+
+  // ── Modal title ──
 
   const modalTitle = computed(() => {
     if (measurementPoints.length === 1)
@@ -125,65 +102,71 @@
     return `Analytics — ${measurementPoints.length} measurement points`;
   });
 
-  const chartGroups = computed<{
-    valueType: ValueType;
-    measurementPoints: LiveMeasurementPoint[];
-  }[]>(() => {
-    const grouped = new Map<ValueType, LiveMeasurementPoint[]>();
-    for (const mp of measurementPoints) {
-      if (!mp.measurement_subtype)
-        continue;
+  // ── Chart entries ──
 
-      const vt = mp.measurement_subtype.value_type;
-      if (!grouped.has(vt))
-        grouped.set(vt, []);
+  const chartEntries = computed<ChartEntry[]>(() =>
+    measurementPoints.map((mp) => ({
+      mp,
+      hourlyData: aggregationLevel.value === 'hourly'
+        ? (analytics.aggregations.value[mp.id] ?? [])
+        : [],
+      rawData: aggregationLevel.value === 'raw'
+        ? (analytics.rawValues.value[mp.id] ?? [])
+        : [],
+    }))
+  );
 
-      grouped.get(vt)!.push(mp);
-    }
-    return Array.from(grouped.entries()).map(([valueType, mps]) => ({
-      valueType,
-      measurementPoints: mps,
-    }));
-  });
+  const hasAnyData = computed(() =>
+    chartEntries.value.some((e) => e.hourlyData.length > 0 || e.rawData.length > 0)
+  );
 
-  function valueTypeLabel(vt: ValueType) {
-    const labels: Record<ValueType, string> = {
-      instantaneous: 'Instantaneous',
-      accumulative: 'Accumulative',
-      status: 'Status',
-    };
-    return labels[vt] ?? vt;
-  }
+  // ── Data fetching ──
 
   async function loadData() {
     const mpIds = measurementPoints.map((mp) => mp.id);
-    if (mpIds.length === 0)
+    if (mpIds.length === 0) {
+      analytics.clear();
       return;
-
-    clear();
+    }
 
     if (aggregationLevel.value === 'raw' && isSingleDay.value) {
       const startTime = `${dateRange.value.start}T00:00:00`;
       const endTime = `${dateRange.value.end}T23:59:59`;
-      await fetchRaw(mpIds, startTime, endTime);
-    } else
-      await fetchHourly(mpIds, dateRange.value);
+      await analytics.fetchRaw(mpIds, startTime, endTime);
+    } else {
+      await analytics.fetchHourly(mpIds, dateRange.value);
+    }
   }
 
-  // Reload when filters change
-  watch([dateRange, aggregationLevel], () => {
-    if (!isSingleDay.value && aggregationLevel.value === 'raw') {
+  // Auto-correct aggregation when switching away from single day
+  watch(isSingleDay, (single) => {
+    if (!single && aggregationLevel.value === 'raw')
       aggregationLevel.value = 'hourly';
-      return;
-    }
-    loadData();
   });
 
-  // Load on open
+  // Reload when filters change (only when modal is visible)
+  watch(
+    [() => visible, dateRange, aggregationLevel],
+    ([isVisible]) => {
+      if (isVisible)
+        loadData();
+    },
+  );
+
+  // Reload when measurement points change (new modal opened with different MPs)
+  watch(
+    () => measurementPoints,
+    () => {
+      if (visible)
+        loadData();
+    },
+  );
+
+  // Initial load when modal first opens
   watch(
     () => visible,
-    (val) => {
-      if (val)
+    (isVisible) => {
+      if (isVisible)
         loadData();
     },
     { immediate: true }

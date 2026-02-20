@@ -11,18 +11,18 @@
       :color="booleanColor"
       class="value-display__badge"
       shape="rounded-pill">
-      {{ booleanLabel }}
+      {{ displayValue }}
     </CBadge>
 
     <!-- Enum: label from enum_values map -->
     <template v-else-if="valueFormat === 'enum'">
-      <span class="value-display__text">{{ enumLabel }}</span>
+      <span class="value-display__text">{{ displayValue }}</span>
       <span v-if="unit" class="value-display__unit">{{ unit }}</span>
     </template>
 
     <!-- Numeric / time_of_day / duration_seconds / ascii_string -->
     <template v-else>
-      <span class="value-display__number">{{ formattedValue }}</span>
+      <span class="value-display__number">{{ displayValue }}</span>
       <span v-if="displayUnit" class="value-display__unit">{{ displayUnit }}</span>
     </template>
   </span>
@@ -30,6 +30,7 @@
 
 <script lang="ts" setup>
   import { computed } from 'vue';
+  import { getDisplayValue } from '@/utils/valueConverters.ts';
   import type { AlarmState } from '@/types/measurementPoint';
   import type { ValueFormat } from '@/types/plc';
 
@@ -42,10 +43,7 @@
     placeholder?: string;
     /** Size variant: compact for tables/lists, default for cards, large for hero displays */
     size?: 'compact' | 'default' | 'large';
-    /** Show the unit inline (default true) */
     showUnit?: boolean;
-    /** Custom boolean labels [falsy, truthy] */
-    booleanLabels?: [string, string];
   }>(), {
     valueFormat: 'numeric',
     unit: null,
@@ -53,8 +51,7 @@
     alarmState: null,
     placeholder: '—',
     size: 'default',
-    showUnit: true,
-    booleanLabels: () => ['Off', 'On'],
+    showUnit: true
   });
 
   // ── Computed: alarm/warning CSS class on root ──
@@ -84,41 +81,12 @@
     return booleanNumeric.value ? 'success' : 'secondary';
   });
 
-  const booleanLabel = computed(() => {
-    // If enum_values are provided, use those as labels
-    if (props.enumValues) {
-      const key = String(booleanNumeric.value);
-      return props.enumValues[key] ?? props.booleanLabels[booleanNumeric.value ? 1 : 0];
-    }
-    return props.booleanLabels[booleanNumeric.value ? 1 : 0];
-  });
-
-  // ── Enum ──
-  const enumLabel = computed(() => {
-    if (!props.enumValues)
-      return String(props.value);
-
-    const key = String(props.value);
-    return props.enumValues[key] ?? `Unknown (${key})`;
-  });
-
-  // ── Numeric + special formats ──
-  const formattedValue = computed(() => {
-    const val = props.value;
-    if (val === null || val === undefined)
-      return '';
-
-    switch (props.valueFormat) {
-      case 'time_of_day':
-        return formatTimeOfDay(val);
-      case 'duration_seconds':
-        return formatDuration(val);
-      case 'ascii_string':
-        return String(val);
-      case 'numeric':
-      default:
-        return formatNumeric(val);
-    }
+  const displayValue = computed(() => {
+    return getDisplayValue(props.value, props.valueFormat, {
+      unit: props.unit,
+      enumValues: props.enumValues,
+      showUnit: false
+    });
   });
 
   const displayUnit = computed(() => {
@@ -131,50 +99,6 @@
 
     return props.unit;
   });
-
-  // ── Formatters ──
-  function formatNumeric(val: string | number): string {
-    const num = typeof val === 'number' ? val : parseFloat(String(val));
-    if (isNaN(num))
-      return String(val);
-
-    // Determine appropriate decimal places based on magnitude
-    if (Number.isInteger(num))
-      return num.toLocaleString();
-
-    if (Math.abs(num) >= 100)
-      return Number(num.toFixed(1)).toLocaleString();
-
-    if (Math.abs(num) >= 1)
-      return Number(num.toFixed(2)).toLocaleString();
-
-    return Number(num.toPrecision(3)).toLocaleString();
-  }
-
-  function formatTimeOfDay(val: string | number): string {
-    const minutes = typeof val === 'number' ? val : parseInt(String(val), 10);
-    if (isNaN(minutes) || minutes < 0 || minutes > 1439)
-      return String(val);
-
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-  }
-
-  function formatDuration(val: string | number): string {
-    const totalSeconds = typeof val === 'number' ? val : parseInt(String(val), 10);
-    if (isNaN(totalSeconds) || totalSeconds < 0)
-      return String(val);
-
-    const h = Math.floor(totalSeconds / 3600);
-    const m = Math.floor((totalSeconds % 3600) / 60);
-    const s = totalSeconds % 60;
-
-    if (h > 0)
-      return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-
-    return `${m}:${s.toString().padStart(2, '0')}`;
-  }
 </script>
 
 <style scoped>

@@ -13,16 +13,20 @@ export function isDataCategory(category: unknown): category is DataCategory {
   return DATA_CATEGORIES.includes(category as DataCategory);
 }
 
+export const CHART_TYPES_BY_VALUE_TYPE = {
+  instantaneous: ['line', 'area', 'bar'],
+  accumulative:  ['line', 'area', 'bar'],
+  status:        ['step', 'rangeBar'],
+} as const;
 export const CHART_TYPES = [
-  'line', // Accumulative, Instantaneous
-  'area', // Accumulative, Instantaneous
-  'bar', // Accumulative, Instantaneous
-  'state', // Status
-  'rangeBar' // Status
+  ...new Set(Object.values(CHART_TYPES_BY_VALUE_TYPE).flat())
 ] as const;
-export type ChartType = typeof CHART_TYPES[number];
+export type ChartType = typeof CHART_TYPES_BY_VALUE_TYPE[ValueType][number];
 export function isChartType(chartType: unknown): chartType is ChartType {
-  return CHART_TYPES.includes(chartType as ChartType);
+  return CHART_TYPES.includes(chartType as any);
+}
+export function isValidChartTypeForValueType(chartType: ChartType, valueType: ValueType): boolean {
+  return (CHART_TYPES_BY_VALUE_TYPE[valueType] as readonly string[]).includes(chartType);
 }
 
 const VALUE_TYPES = ['accumulative', 'instantaneous', 'status'] as const;

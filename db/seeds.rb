@@ -66,17 +66,17 @@ ActiveRecord::Base.transaction do
     {
       name: 'Switch',
       measurement_subtypes_attributes: [
-        { name: 'Irrigation',  data_category: 'status', value_type: 'status', default_unit: 'Closed/Open', default_chart_type: 'line', default_color: '#398439', position: 1 },
-        { name: 'Fertigation', data_category: 'status', value_type: 'status', default_unit: 'Closed/Open', default_chart_type: 'line', default_color: '', position: 2 },
-        { name: 'Curtain',     data_category: 'status', value_type: 'status', default_unit: 'Closed/Open', default_chart_type: 'line', default_color: '', position: 3 },
-        { name: 'Fan',         data_category: 'status', value_type: 'status', default_unit: 'Off/On',      default_chart_type: 'line', default_color: '#5C6267', position: 4 },
-        { name: 'Heater',      data_category: 'status', value_type: 'status', default_unit: 'Off/On',      default_chart_type: 'line', default_color: '#FF8C00', position: 5 },
-        { name: 'Window',      data_category: 'status', value_type: 'status', default_unit: 'Closed/Open', default_chart_type: 'line', default_color: '#39A0CA', position: 6 },
-        { name: 'Light',       data_category: 'status', value_type: 'status', default_unit: 'Off/On',      default_chart_type: 'line', default_color: '#F0E68C', position: 7 },
-        { name: 'Humidifier',  data_category: 'status', value_type: 'status', default_unit: 'Off/On',      default_chart_type: 'line', default_color: '#39AFCA', position: 8 },
-        { name: 'Pump',        data_category: 'status', value_type: 'status', default_unit: 'Off/On',      default_chart_type: 'line', default_color: '#50C878', position: 9 },
-        { name: 'Valve',       data_category: 'status', value_type: 'status', default_unit: 'Closed/Open', default_chart_type: 'line', default_color: '#398439', position: 10 },
-        { name: 'Door',        data_category: 'status', value_type: 'status', default_unit: 'Closed/Open', default_chart_type: 'line', default_color: '#0D6EFD', position: 11 }
+        { name: 'Irrigation',  data_category: 'status', value_type: 'status', default_unit: 'Closed/Open', default_chart_type: 'step', default_color: '#398439', position: 1 },
+        { name: 'Fertigation', data_category: 'status', value_type: 'status', default_unit: 'Closed/Open', default_chart_type: 'step', default_color: '', position: 2 },
+        { name: 'Curtain',     data_category: 'status', value_type: 'status', default_unit: 'Closed/Open', default_chart_type: 'step', default_color: '', position: 3 },
+        { name: 'Fan',         data_category: 'status', value_type: 'status', default_unit: 'Off/On',      default_chart_type: 'step', default_color: '#5C6267', position: 4 },
+        { name: 'Heater',      data_category: 'status', value_type: 'status', default_unit: 'Off/On',      default_chart_type: 'step', default_color: '#FF8C00', position: 5 },
+        { name: 'Window',      data_category: 'status', value_type: 'status', default_unit: 'Closed/Open', default_chart_type: 'step', default_color: '#39A0CA', position: 6 },
+        { name: 'Light',       data_category: 'status', value_type: 'status', default_unit: 'Off/On',      default_chart_type: 'step', default_color: '#F0E68C', position: 7 },
+        { name: 'Humidifier',  data_category: 'status', value_type: 'status', default_unit: 'Off/On',      default_chart_type: 'step', default_color: '#39AFCA', position: 8 },
+        { name: 'Pump',        data_category: 'status', value_type: 'status', default_unit: 'Off/On',      default_chart_type: 'step', default_color: '#50C878', position: 9 },
+        { name: 'Valve',       data_category: 'status', value_type: 'status', default_unit: 'Closed/Open', default_chart_type: 'step', default_color: '#398439', position: 10 },
+        { name: 'Door',        data_category: 'status', value_type: 'status', default_unit: 'Closed/Open', default_chart_type: 'step', default_color: '#0D6EFD', position: 11 }
       ]
     }
   ])

@@ -15,6 +15,7 @@ class MeasurementPoint < ApplicationRecord
   validates :register_template_id, uniqueness: { scope: :plc_id }
   validate :register_template_matches_plc_version
   validates :chart_type_override, inclusion: { in: MeasurementSubtype::CHART_TYPES }, allow_blank: true
+  validate :chart_type_override_compatible_with_value_type
   validates :color_override, format: { with: /\A#[0-9A-Fa-f]{6}\z/, message: 'must be a valid hex color' }, allow_blank: true
   validates :polling_interval_seconds,
     presence: true,
@@ -188,6 +189,23 @@ class MeasurementPoint < ApplicationRecord
       if register_template.plc_version_id != plc.plc_version_id
         errors.add(:register_template, "must belong to the PLC's version")
       end
+    end
+
+    def chart_type_override_compatible_with_value_type
+      if chart_type_override.blank? || measurement_subtype.blank?
+        return
+      end
+
+      allowed = measurement_subtype.allowed_chart_types
+      if allowed.include?(chart_type_override)
+        return
+      end
+
+      errors.add(
+        :chart_type_override,
+        "#{chart_type_override} is not compatible with #{measurement_subtype.value_type} measurement type. " \
+        "Allowed: #{allowed.join(', ')}"
+      )
     end
 
     def measurement_subtype_present_if_active_interface

@@ -28,7 +28,8 @@ export const valueConverters = {
    */
   numeric: {
     toDisplay(value: RawValue, unit: string | null): FormattedValue {
-      if (value === null) return '—';
+      if (value === null)
+        return '—';
 
       const numberValue = typeof value === 'number' ? value : parseFloat(String(value));
       const formatted = Number.isInteger(numberValue)
@@ -39,12 +40,16 @@ export const valueConverters = {
     },
 
     toEdit(value: RawValue): string {
-      if (value === null) return '';
+      if (value === null)
+        return '';
+
       return String(value);
     },
 
     fromEdit(editValue: string): RawValue {
-      if (editValue === '') return null;
+      if (editValue === '')
+        return null;
+
       const numberValue = parseFloat(editValue);
       return isNaN(numberValue) ? null : numberValue;
     }
@@ -60,16 +65,19 @@ export const valueConverters = {
       const optionsArray = options.split('/');
       const index = typeof value === 'number' ? value : Number(value);
 
-      if (isNaN(index) || index < 0 || index >= optionsArray.length) {
+      if (isNaN(index) || index < 0 || index >= optionsArray.length)
         return `Server Configuration Error (${index})`;
-      }
 
       return optionsArray[index];
     },
 
     toEdit(value: RawValue): boolean {
-      if (typeof value === 'boolean') return value;
-      if (value === 'true' || value === '1' || value === 1) return true;
+      if (typeof value === 'boolean')
+        return value;
+
+      if (value === 'true' || value === '1' || value === 1)
+        return true;
+
       return false;
     },
 
@@ -83,13 +91,17 @@ export const valueConverters = {
    */
   enum: {
     toDisplay(value: RawValue, enumValues: Record<string, string> | null): FormattedValue {
-      if (value === null) return '—';
+      if (value === null)
+        return '—';
+
       const key = String(value);
       return enumValues?.[key] ?? `Server Configuration Error (${key})`;
     },
 
     toEdit(value: RawValue): string {
-      if (value === null) return '';
+      if (value === null)
+        return '';
+
       return String(value);
     },
 
@@ -120,15 +132,16 @@ export const valueConverters = {
    */
   timeOfDay: {
     toDisplay(value: RawValue): FormattedValue {
-      if (value === null) return '—';
+      if (value === null)
+        return '—';
 
       // If already formatted as HH:MM
-      if (typeof value === 'string' && value.includes(':')) {
+      if (typeof value === 'string' && value.includes(':'))
         return value;
-      }
 
       const totalMinutes = typeof value === 'number' ? value : parseInt(String(value), 10);
-      if (isNaN(totalMinutes)) return '—';
+      if (isNaN(totalMinutes))
+        return '—';
 
       const hours = Math.floor(totalMinutes / 60);
       const minutes = totalMinutes % 60;
@@ -136,15 +149,16 @@ export const valueConverters = {
     },
 
     toEdit(value: RawValue): string {
-      if (value === null) return '';
+      if (value === null)
+        return '';
 
       // If already formatted as HH:MM
-      if (typeof value === 'string' && value.includes(':')) {
+      if (typeof value === 'string' && value.includes(':'))
         return value;
-      }
 
       const totalMinutes = typeof value === 'number' ? value : parseInt(String(value), 10);
-      if (isNaN(totalMinutes)) return '';
+      if (isNaN(totalMinutes))
+        return '';
 
       const hours = Math.floor(totalMinutes / 60);
       const minutes = totalMinutes % 60;
@@ -152,7 +166,8 @@ export const valueConverters = {
     },
 
     fromEdit(editValue: string): RawValue {
-      if (!editValue) return null;
+      if (!editValue)
+        return null;
 
       const [hours, minutes] = editValue.split(':').map(Number);
       return hours * 60 + minutes;
@@ -167,43 +182,40 @@ export const valueConverters = {
       if (value === null) return '—';
 
       // If already formatted
-      if (typeof value === 'string' && value.includes(':')) {
+      if (typeof value === 'string' && value.includes(':'))
         return value;
-      }
 
       const totalSeconds = typeof value === 'number' ? value : parseInt(String(value), 10);
-      if (isNaN(totalSeconds)) return '—';
+      if (isNaN(totalSeconds))
+        return '—';
 
       const hours = Math.floor(totalSeconds / 3600);
       const minutes = Math.floor((totalSeconds % 3600) / 60);
       const seconds = totalSeconds % 60;
 
-      if (hours > 0) {
+      if (hours > 0)
         return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-      }
+
       return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     },
 
     toEdit(value: RawValue): DurationParts {
-      if (value === null) {
+      if (value === null)
         return { hours: 0, minutes: 0, seconds: 0 };
-      }
 
       // If it's a string like "HH:MM:SS" or "MM:SS"
       if (typeof value === 'string' && value.includes(':')) {
         const parts = value.split(':').map(Number);
-        if (parts.length === 3) {
+        if (parts.length === 3)
           return { hours: parts[0], minutes: parts[1], seconds: parts[2] };
-        } else if (parts.length === 2) {
+        else if (parts.length === 2)
           return { hours: 0, minutes: parts[0], seconds: parts[1] };
-        }
       }
 
       // If it's total seconds
       const totalSeconds = typeof value === 'number' ? value : parseInt(String(value), 10);
-      if (isNaN(totalSeconds)) {
+      if (isNaN(totalSeconds))
         return { hours: 0, minutes: 0, seconds: 0 };
-      }
 
       return {
         hours: Math.floor(totalSeconds / 3600),
@@ -227,11 +239,12 @@ export function getDisplayValue(
   metadata?: {
     unit?: string | null;
     enumValues?: Record<string, string> | null;
+    showUnit?: boolean;
   }
 ): FormattedValue {
   switch (valueFormat) {
     case 'numeric':
-      return valueConverters.numeric.toDisplay(value, metadata?.unit ?? null);
+      return valueConverters.numeric.toDisplay(value, metadata?.showUnit && metadata?.unit ? metadata.unit : null);
     case 'boolean':
       return valueConverters.boolean.toDisplay(value, metadata?.unit ?? null);
     case 'enum':

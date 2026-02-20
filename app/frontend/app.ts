@@ -144,11 +144,38 @@ import {
 import '@coreui/coreui/dist/css/coreui.min.css';
 import ErrorMessages from './components/ErrorMessages.vue';
 import VueSelect from 'vue3-select-component';
-import VueApexCharts from 'vue3-apexcharts';
+import { use } from 'echarts/core';
+import { CanvasRenderer } from 'echarts/renderers';
+import {
+  LineChart,
+  BarChart,
+  CustomChart,
+} from 'echarts/charts';
+import {
+  GridComponent,
+  TooltipComponent,
+  LegendComponent,
+  DataZoomComponent,
+  ToolboxComponent,
+  MarkLineComponent,
+} from 'echarts/components';
 
 // Configuration
 import { resolvePage } from './pages';
 import './styles/application.css';
+
+use([
+  CanvasRenderer,
+  LineChart,
+  BarChart,
+  CustomChart,
+  GridComponent,
+  TooltipComponent,
+  LegendComponent,
+  DataZoomComponent,
+  ToolboxComponent,
+  MarkLineComponent,
+]);
 
 export default function () {
   createInertiaApp({
@@ -165,7 +192,6 @@ export default function () {
 
       app.use(plugin);
       app.use(pinia);
-      app.use(VueApexCharts);
 
       // Inertia
       app.component('Head', Head);

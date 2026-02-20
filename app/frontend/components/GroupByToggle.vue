@@ -5,23 +5,23 @@
       <button
         type="button"
         class="btn"
-        :class="modelValue === 'segment' ? 'btn-primary' : 'btn-outline-secondary'"
-        @click="emit('update:modelValue', 'segment')">
-        Segment
+        :class="modelValue === 'measurement_subtype' ? 'btn-primary' : 'btn-outline-secondary'"
+        @click="emit('update:modelValue', 'measurement_subtype')">
+        Measurement Type
       </button>
       <button
         type="button"
         class="btn"
-        :class="modelValue === 'measurement_subtype' ? 'btn-primary' : 'btn-outline-secondary'"
-        @click="emit('update:modelValue', 'measurement_subtype')">
-        Measurement Type
+        :class="modelValue === 'segment' ? 'btn-primary' : 'btn-outline-secondary'"
+        @click="emit('update:modelValue', 'segment')">
+        Segment
       </button>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-  export type GroupBy = 'segment' | 'measurement_subtype';
+  export type GroupBy = 'measurement_subtype' | 'segment';
 
   const { modelValue } = defineProps<{
     modelValue: GroupBy;

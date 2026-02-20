@@ -4,12 +4,14 @@
       v-if="!isEditing"
       :value="registerMapping.measurement_point.last_value"
       :valueFormat="registerMapping.register_template.value_format"
+      :unit="registerMapping.measurement_point.effective_unit"
       :enumValues="registerMapping.register_template.enum_values"
       :alarmLow="registerMapping.measurement_point.alarm_low"
       :alarmHigh="registerMapping.measurement_point.alarm_high"
       :warningLow="registerMapping.measurement_point.warning_low"
       :warningHigh="registerMapping.measurement_point.warning_high"
-      :alarmState="registerMapping.measurement_point.alarm_state" />
+      :alarmState="registerMapping.measurement_point.alarm_state"
+      :showUnit="false" />
 
     <ValueEdit
       v-else
