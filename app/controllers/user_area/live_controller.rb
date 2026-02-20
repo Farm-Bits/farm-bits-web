@@ -26,7 +26,7 @@ class UserArea::LiveController < UserArea::ApplicationController
     data = measurement_points.map do |mp|
       {
         id: mp.id,
-        last_value: mp.last_decoded_value,
+        last_value: mp.scaled_last_decoded_value,
         last_value_at: mp.last_decoded_value_at,
         alarm_state: mp.alarm_state
       }
