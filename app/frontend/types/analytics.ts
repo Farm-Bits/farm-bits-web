@@ -1,11 +1,14 @@
 import { type Segment } from './location';
 import { type MeasurementPoint, type MeasurementSubtype, type ValueType } from './measurementPoint';
+import type { RegisterTemplate } from './plc';
 
 export type LiveMeasurementPoint = MeasurementPoint & {
   measurement_subtype: MeasurementSubtype | null;
   segment: Segment;
   plc_name: string;
   register_name: string;
+  value_format: RegisterTemplate['value_format'];
+  enum_values: RegisterTemplate['enum_values'];
 };
 
 export type RawValue = {

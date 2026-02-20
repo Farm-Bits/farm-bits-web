@@ -59,6 +59,14 @@ class MeasurementPointSerializer < Blueprinter::Base
       mp.register_template&.name
     end
 
+    field :value_format do |mp|
+      mp.register_template&.value_format
+    end
+
+    field :enum_values do |mp|
+      mp.register_template&.enum_values
+    end
+
     association :measurement_subtype, blueprint: MeasurementSubtypeSerializer
     association :segment, blueprint: SegmentSerializer
   end

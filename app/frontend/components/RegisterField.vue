@@ -2,9 +2,8 @@
   <div class="register-field">
     <ValueDisplay
       v-if="!isEditing"
-      :rawValue="registerMapping.measurement_point.last_value"
+      :value="registerMapping.measurement_point.last_value"
       :valueFormat="registerMapping.register_template.value_format"
-      :unit="registerMapping.measurement_point.effective_unit"
       :enumValues="registerMapping.register_template.enum_values"
       :alarmLow="registerMapping.measurement_point.alarm_low"
       :alarmHigh="registerMapping.measurement_point.alarm_high"

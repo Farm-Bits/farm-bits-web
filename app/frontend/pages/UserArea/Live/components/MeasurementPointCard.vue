@@ -3,15 +3,13 @@
     class="mp-card"
     :class="{ 'mp-card--alarm': isAlarm, 'mp-card--warning': isWarning }"
     role="button"
-    @click="emit('click', measurementPoint)"
-  >
+    @click="emit('click', measurementPoint)">
     <div class="d-flex align-items-start justify-content-between">
       <div class="d-flex align-items-center gap-2 mb-1">
         <span
           class="status-dot"
           :class="statusDotClass"
-          :title="statusTooltip"
-        />
+          :title="statusTooltip" />
         <span class="mp-card__name">{{ measurementPoint.name }}</span>
       </div>
       <CBadge v-if="alarmBadge" :color="alarmBadge.color" size="sm">
@@ -20,13 +18,14 @@
     </div>
 
     <div class="mp-card__value">
-      <template v-if="measurementPoint.last_value !== null">
-        <span class="mp-card__number">{{ formattedValue }}</span>
-        <span v-if="measurementPoint.effective_unit" class="mp-card__unit">
-          {{ measurementPoint.effective_unit }}
-        </span>
-      </template>
-      <span v-else class="text-body-secondary">No data</span>
+      <ValueDisplay
+        :value="measurementPoint.last_value"
+        :value-format="measurementPoint.value_format"
+        :unit="measurementPoint.effective_unit"
+        :enum-values="measurementPoint.enum_values"
+        :alarm-state="measurementPoint.alarm_state"
+        placeholder="No data"
+        size="default" />
     </div>
 
     <div class="mp-card__meta d-flex align-items-center gap-2">
@@ -43,6 +42,7 @@
 <script lang="ts" setup>
   import { computed } from 'vue';
   import RelativeTime from '@/components/RelativeTime.vue';
+  import ValueDisplay from '@/components/ValueDisplay.vue';
   import { type LiveMeasurementPoint } from '@/types/analytics';
 
   const { measurementPoint } = defineProps<{
@@ -59,17 +59,6 @@
 
   const isWarning = computed(() => {
     return measurementPoint.alarm_state === 'warning_low' || measurementPoint.alarm_state === 'warning_high';
-  });
-
-  const formattedValue = computed(() => {
-    const val = measurementPoint.last_value;
-    if (val === null)
-      return '';
-
-    if (typeof val === 'number')
-      return Number(val.toFixed(2)).toLocaleString();
-
-    return String(val);
   });
 
   const statusDotClass = computed(() => {
@@ -149,19 +138,6 @@
 
   .mp-card__value {
     margin: 0.25rem 0;
-  }
-
-  .mp-card__number {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #111827;
-    line-height: 1.2;
-  }
-
-  .mp-card__unit {
-    font-size: 0.875rem;
-    color: #6b7280;
-    margin-left: 0.25rem;
   }
 
   .status-dot {
