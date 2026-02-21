@@ -117,7 +117,7 @@ module Api
             end
 
             value_normalized = measurement_point.register_template.normalize_string_value(dp[:raw_value])
-            if !value_normalized
+            if value_normalized.nil?
               results[:skipped] += 1
               results[:errors] << { label: dp[:label], error: "Invalid value: #{dp[:raw_value]} for #{register_template.value_format}" }
               next
