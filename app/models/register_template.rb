@@ -119,6 +119,21 @@ class RegisterTemplate < ApplicationRecord
     value_format == 'numeric'
   end
 
+  def normalize_string_value(value_str)
+    case value_format
+    when 'boolean'
+      ActiveModel::Type::Boolean.new.cast(value_str)
+    when 'numeric'
+      begin
+        Float(value_str)
+      rescue ArgumentError, TypeError
+        nil
+      end
+    else
+      value_str
+    end
+  end
+
   def decode_data(data)
     case value_format
     when 'numeric'

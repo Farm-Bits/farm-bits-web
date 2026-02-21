@@ -116,17 +116,17 @@ module Api
               next
             end
 
-            numeric_value = parse_numeric_value(dp[:raw_value])
-            if !numeric_value
+            value_normalized = measurement_point.register_template.normalize_string_value(dp[:raw_value])
+            if !value_normalized
               results[:skipped] += 1
-              results[:errors] << { label: dp[:label], error: "Invalid numeric value: #{dp[:raw_value]}" }
+              results[:errors] << { label: dp[:label], error: "Invalid value: #{dp[:raw_value]} for #{register_template.value_format}" }
               next
             end
 
             utc_sample_time = site_tz.parse(dp[:sample_time]).utc
             readings << {
               measurement_point: measurement_point,
-              value: numeric_value,
+              value: value_normalized,
               sample_time: utc_sample_time
             }
 
@@ -136,14 +136,6 @@ module Api
           BulkRecordingService.new(readings).call
 
           results
-        end
-
-        def parse_numeric_value(value_str)
-          begin
-            Float(value_str)
-          rescue ArgumentError, TypeError
-            nil
-          end
         end
     end
   end

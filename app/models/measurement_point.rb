@@ -172,10 +172,7 @@ class MeasurementPoint < ApplicationRecord
   def serialize_for_storage(decoded_value)
     case register_template.value_format
     when 'boolean'
-      normalized = decoded_value.to_s.to_f
-      normalized.zero? ? '0' : '1'
-    when 'ascii_string', 'time_of_day', 'duration_seconds'
-      decoded_value.to_s
+      decoded_value ? '1' : '0'
     else
       decoded_value.to_s
     end
