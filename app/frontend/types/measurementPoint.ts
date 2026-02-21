@@ -44,6 +44,7 @@ export type MeasurementSubtype = {
   default_unit: string;
   default_chart_type: ChartType;
   default_color: string | null;
+  position: number;
   measurement_type: MeasurementType;
 };
 

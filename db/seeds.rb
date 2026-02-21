@@ -65,6 +65,7 @@ ActiveRecord::Base.transaction do
     },
     {
       name: 'Switch',
+      position: 6,
       measurement_subtypes_attributes: [
         { name: 'Irrigation',  data_category: 'status', value_type: 'status', default_unit: 'Closed/Open', default_chart_type: 'step', default_color: '#398439', position: 1 },
         { name: 'Fertigation', data_category: 'status', value_type: 'status', default_unit: 'Closed/Open', default_chart_type: 'step', default_color: '', position: 2 },

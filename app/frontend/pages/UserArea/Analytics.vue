@@ -157,21 +157,36 @@
     }
     return Array.from(map.entries()).map(([key, groupMps]) => {
       const segment = segments.find((s) => String(s.id) === key);
-      return { key, label: segment?.name ?? 'Unassigned', measurementPoints: groupMps };
+      return {
+        key,
+        label: segment?.name ?? 'Unassigned',
+        // position: segment?.position ?? Infinity,
+        measurementPoints: groupMps
+      };
     });
+    // .sort((a, b) => a.position - b.position);
   }
 
   function groupByMeasurementTypeFn(mps: LiveMeasurementPoint[]): MeasurementPointGroup[] {
-    const map = new Map<string, LiveMeasurementPoint[]>();
+    const map = new Map<string, { mps: LiveMeasurementPoint[]; position: number }>();
     for (const mp of mps) {
-      const typeName = mp.measurement_subtype?.measurement_type?.name ?? 'Unknown';
+      const type = mp.measurement_subtype?.measurement_type;
+      const typeName = type?.name ?? 'Unknown';
       if (!map.has(typeName))
-        map.set(typeName, []);
-      map.get(typeName)!.push(mp);
+        map.set(typeName, { mps: [], position: type?.position ?? Infinity });
+      map.get(typeName)!.mps.push(mp);
     }
     return Array.from(map.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([key, groupMps]) => ({ key, label: key, measurementPoints: groupMps }));
+      .sort(([, a], [, b]) => a.position - b.position)
+      .map(([key, { mps: groupMps }]) => ({
+        key,
+        label: key,
+        measurementPoints: groupMps.sort((a, b) => {
+          const posA = a.measurement_subtype?.position ?? Infinity;
+          const posB = b.measurement_subtype?.position ?? Infinity;
+          return posA - posB;
+        }),
+      }));
   }
 
   // Build chart entries for the combo chart

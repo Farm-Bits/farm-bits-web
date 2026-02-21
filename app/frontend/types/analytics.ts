@@ -1,4 +1,3 @@
-import { type Segment } from './location';
 import { type MeasurementPoint, type MeasurementSubtype, type ValueType } from './measurementPoint';
 import type { RegisterTemplate } from './plc';
 
