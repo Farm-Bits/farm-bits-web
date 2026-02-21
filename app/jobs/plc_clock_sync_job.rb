@@ -14,7 +14,7 @@ class PlcClockSyncJob
   REQUIRED_ROLES = (TIME_COMPONENT_MAP.keys + ['upload_trigger']).freeze
 
   def perform
-    eligible_version_ids = RegisterTemplate.where(group_name: 'set_system_clock', group_role: REQUIRED_ROLES, active: true)
+    eligible_version_ids = RegisterTemplate.where(group_name: 'set_system_clock', group_role: REQUIRED_ROLES)
       .group(:plc_version_id)
       .having('COUNT(DISTINCT group_role) = ?', REQUIRED_ROLES.size)
       .pluck(:plc_version_id)
