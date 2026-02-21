@@ -18,6 +18,17 @@ module Api
         results = process_data_points(plc, data_points)
 
         status = results[:errors].any? ? :multi_status : :ok
+        if status == :multi_status
+          Bugsnag.notify('PLC data processing completed with errors') do |report|
+            report.severity = 'warning'
+            report.add_metadata(:plc_data_processing, {
+              data: params[:data],
+              processed: results[:processed],
+              skipped: results[:skipped],
+              errors: results[:errors]
+            })
+          end
+        end
         render json: {
           processed: results[:processed],
           skipped: results[:skipped],

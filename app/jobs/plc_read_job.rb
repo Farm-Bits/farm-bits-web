@@ -57,7 +57,6 @@ class PlcReadJob
       end
     end
 
-    # Bulk persist all readings at once
     BulkRecordingService.new(readings).call
   rescue VpnManagerClient::ConnectionError => e
     Rails.logger.error("PLC #{plc_id} connection error: #{e.message}")
@@ -68,5 +67,9 @@ class PlcReadJob
   rescue => e
     Rails.logger.error("PLC #{plc_id} polling error: #{e.class} - #{e.message}")
     Rails.logger.error(e.backtrace&.first(10)&.join("\n"))
+    Bugsnag.notify(e) do |report|
+      report.severity = 'warning'
+      report.add_metadata(:plc, { plc_id: plc_id })
+    end
   end
 end

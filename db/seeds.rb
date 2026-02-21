@@ -660,6 +660,28 @@ ActiveRecord::Base.transaction do
     end
   end
 
+  CLOCK_REGISTER_ROLES = {
+    'sysClockSet_seconds'  => 'seconds',
+    'sysClockSet_minutes'  => 'minutes',
+    'sysClockSet_hours'    => 'hours',
+    'sysClockSet_dayweek'  => 'day_of_week',
+    'sysClockSet_daymonth' => 'day_of_month',
+    'sysClockSet_month'    => 'month',
+    'sysClockSet_year'     => 'year',
+    'sysClockSet_upload'   => 'upload_trigger'
+  }.freeze
+
+  def setup_system_clock_group(plc_version)
+    CLOCK_REGISTER_ROLES.each do |name, role|
+      clock_register = plc_version.register_templates.find_by(name: name)
+      clock_register&.update!(
+        group_name: 'set_system_clock',
+        group_role: role
+      )
+    end
+  end
+
   setup_analog_input_configuration(free_advance_first_version)
   setup_digital_input_configuration(free_advance_first_version)
+  setup_system_clock_group(free_advance_first_version)
 end

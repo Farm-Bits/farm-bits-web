@@ -13,6 +13,13 @@ class HourlyAggregationJob
         "[HourlyAggregationJob] Completed with #{result[:errors].size} error(s). " \
         "Processed: #{result[:processed]}. Errors: #{result[:errors].inspect}"
       )
+      Bugsnag.notify("HourlyAggregationJob completed with errors") do |report|
+        report.severity = 'warning'
+        report.add_metadata(:hourly_aggregation, {
+          processed: result[:processed],
+          errors: result[:errors]
+        })
+      end
     end
   end
 end

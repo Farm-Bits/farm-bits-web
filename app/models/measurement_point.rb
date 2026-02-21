@@ -86,14 +86,6 @@ class MeasurementPoint < ApplicationRecord
     RegisterGroupValidator.new(simulated_states).validate
   end
 
-  def update_last_decoded_value!(decoded_value, timestamp = Time.current)
-    update_columns(
-      last_decoded_value: serialize_for_storage(decoded_value),
-      last_decoded_value_at: timestamp,
-      updated_at: Time.current
-    )
-  end
-
   def alarm_state
     if scaled_last_decoded_value.nil? || !register_template.numeric_register?
       return :none
