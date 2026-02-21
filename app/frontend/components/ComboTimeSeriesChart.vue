@@ -610,13 +610,7 @@
       },
       yAxis,
       series,
-      dataZoom: [
-        {
-          type: 'inside',
-          xAxisIndex: 0,
-          filterMode: 'none'
-        }
-      ],
+      dataZoom: [],
       toolbox: {
         feature: {
           dataZoom: { yAxisIndex: false },
