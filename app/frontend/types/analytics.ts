@@ -4,7 +4,6 @@ import type { RegisterTemplate } from './plc';
 
 export type LiveMeasurementPoint = MeasurementPoint & {
   measurement_subtype: MeasurementSubtype | null;
-  segment: Segment;
   plc_name: string;
   register_name: string;
   value_format: RegisterTemplate['value_format'];

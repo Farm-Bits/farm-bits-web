@@ -29,6 +29,7 @@
           :iface="iface"
           :segments="segments"
           :measurementSubtypes="measurementSubtypes"
+          @viewHistory="openHistoryModal"
           @edit="openEditModal"
           @update="handleMeasurementPointSubmit" />
       </CTableBody>
@@ -53,6 +54,12 @@
           @cancel="closeEditModal" />
       </CModalBody>
     </CModal>
+
+    <!-- Analytics Modal -->
+    <MeasurementPointAnalyticsModal
+      :visible="showHistoryModal"
+      :measurement-points="historyMeasurementPoints"
+      @close="closeHistoryModal" />
   </div>
 </template>
 
@@ -60,20 +67,26 @@
   import { ref, computed } from 'vue';
   import InterfaceRow from './InterfaceRow.vue';
   import MeasurementPointForm from './MeasurementPointForm/index.vue';
+  import MeasurementPointAnalyticsModal from '@/components/MeasurementPointAnalyticsModal.vue';
   import type { Segment } from '@/types/location';
   import type { MeasurementPoint, MeasurementSubtype } from '@/types/measurementPoint';
   import type {
     CommunicationType,
-    InterfaceWithMeasurementPoints
+    InterfaceWithMeasurementPoints,
+    Plc,
+    RegisterMapping
   } from '@/types/plc';
   import { COMMUNICATION_TYPE_TABS } from '../types';
+  import type { LiveMeasurementPoint } from '@/types/analytics';
 
   const {
+    plcName,
     interfaces,
     communicationType,
     segments,
     measurementSubtypes
   } = defineProps<{
+    plcName: string;
     interfaces: InterfaceWithMeasurementPoints[];
     communicationType: CommunicationType;
     segments: Segment[];
@@ -91,6 +104,9 @@
   const showEditModal = ref(false);
   const selectedInterface = ref<InterfaceWithMeasurementPoints | null>(null);
 
+  const showHistoryModal = ref(false);
+  const historyMeasurementPoints = ref<LiveMeasurementPoint[]>([]);
+
   const communicationTypeLabel = computed(() => {
     const tab = COMMUNICATION_TYPE_TABS.find((t) => t.key === communicationType);
     return tab ? tab.label : 'Unknown';
@@ -104,6 +120,26 @@
   function closeEditModal() {
     showEditModal.value = false;
     selectedInterface.value = null;
+  }
+
+  function openHistoryModal(registerMapping: RegisterMapping) {
+    const measurementSubtype = measurementSubtypes.find(
+      (subtype) => subtype.id === registerMapping.measurement_point.measurement_subtype_id
+    );
+    historyMeasurementPoints.value = [{
+      ...registerMapping.measurement_point,
+      measurement_subtype: measurementSubtype ?? null,
+      plc_name: plcName,
+      register_name: registerMapping.register_template.name,
+      value_format: registerMapping.register_template.value_format,
+      enum_values: registerMapping.register_template.enum_values
+    }];
+    showHistoryModal.value = true;
+  }
+
+  function closeHistoryModal() {
+    showHistoryModal.value = false;
+    historyMeasurementPoints.value = [];
   }
 
   function handleMeasurementPointSubmit(

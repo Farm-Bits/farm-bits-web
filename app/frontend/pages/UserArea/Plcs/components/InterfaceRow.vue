@@ -73,7 +73,7 @@
             <CIcon icon="cilOptions" />
           </CDropdownToggle>
           <CDropdownMenu>
-            <CDropdownItem @click="viewHistory(activeRegisterMapping.measurement_point)">
+            <CDropdownItem @click="viewHistory(activeRegisterMapping)">
               <CIcon icon="cilHistory" class="me-2" />
               View History
             </CDropdownItem>
@@ -122,7 +122,7 @@
   import { ROUTES } from '@/types/permissions';
   import type { Segment } from '@/types/location';
   import { isDataCategory, type DataCategory, type MeasurementPoint, type MeasurementSubtype } from '@/types/measurementPoint';
-  import type { InterfaceWithMeasurementPoints } from '@/types/plc';
+  import type { InterfaceWithMeasurementPoints, RegisterMapping } from '@/types/plc';
 
   const {
     iface,
@@ -135,6 +135,7 @@
   }>();
 
   const emit = defineEmits<{
+    (e: 'viewHistory', registerMapping: RegisterMapping): void;
     (e: 'edit', iface: InterfaceWithMeasurementPoints): void;
     (
       e: 'update',
@@ -205,8 +206,8 @@
     return categories[category] || category;
   }
 
-  function viewHistory(measurementPoint: MeasurementPoint) {
-    console.log('View history for:', measurementPoint.id);
+  function viewHistory(registerMapping: RegisterMapping) {
+    emit('viewHistory', registerMapping);
   }
 
   async function toggleActive(measurementPoint: MeasurementPoint) {

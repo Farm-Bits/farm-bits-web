@@ -117,13 +117,11 @@
 
 <script lang="ts" setup>
   import { computed } from 'vue';
-  import type {
-    AnalyticsSummary,
-    LiveMeasurementPoint,
-  } from '@/types/analytics';
+  import type { MeasurementPoint } from '@/types/measurementPoint';
+  import type { AnalyticsSummary } from '@/types/analytics';
 
   const { measurementPoints, summaryData } = defineProps<{
-    measurementPoints: LiveMeasurementPoint[];
+    measurementPoints: MeasurementPoint[];
     summaryData: Record<number, AnalyticsSummary>;
   }>();
 

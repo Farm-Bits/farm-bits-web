@@ -133,9 +133,8 @@
       const startTime = `${dateRange.value.start}T00:00:00`;
       const endTime = `${dateRange.value.end}T23:59:59`;
       await analytics.fetchRaw(mpIds, startTime, endTime);
-    } else {
+    } else
       await analytics.fetchHourly(mpIds, dateRange.value);
-    }
   }
 
   // Auto-correct aggregation when switching away from single day

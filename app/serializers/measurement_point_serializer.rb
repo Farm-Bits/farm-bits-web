@@ -68,6 +68,5 @@ class MeasurementPointSerializer < Blueprinter::Base
     end
 
     association :measurement_subtype, blueprint: MeasurementSubtypeSerializer
-    association :segment, blueprint: SegmentSerializer
   end
 end

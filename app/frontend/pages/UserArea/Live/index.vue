@@ -85,7 +85,6 @@
     <MeasurementPointAnalyticsModal
       :visible="modalVisible"
       :measurement-points="modalMeasurementPoints"
-      :site-id="currentSite?.id"
       @close="modalVisible = false" />
   </CContainer>
 </template>
