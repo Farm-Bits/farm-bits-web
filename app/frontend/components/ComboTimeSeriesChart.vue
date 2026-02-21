@@ -34,8 +34,6 @@
     height?: number;
   }>();
 
-  // ── Partition entries ──
-
   const numericEntries = computed(() =>
     entries.filter((e) => {
       const vt = e.mp.measurement_subtype?.value_type;
@@ -47,34 +45,58 @@
     entries.filter((e) => e.mp.measurement_subtype?.value_type === 'status')
   );
 
-  const stepEntries = computed(() =>
+  function isRawEntry(entry: ChartEntry) {
+    return entry.rawData.length > 0;
+  }
+
+  function isHourlyEntry(entry: ChartEntry) {
+    return entry.hourlyData.length > 0 && entry.rawData.length === 0;
+  }
+
+  // ── Status sub-partitions ──
+  // Raw status entries keep their original chart type (step or rangeBar).
+  // Hourly status entries are ALWAYS rendered as percentage bars regardless of chart_type,
+  // because binary step/rangeBar loses proportional on-time information at hourly aggregation.
+
+  const rawStepEntries = computed(() =>
     statusEntries.value.filter((e) => {
+      if (!isRawEntry(e))
+        return false;
+
       const ct = e.mp.effective_chart_type as ChartType | null;
       return !ct || ct === 'step';
     })
   );
 
-  const rangeBarEntries = computed(() =>
+  const rawRangeBarEntries = computed(() =>
     statusEntries.value.filter((e) => {
+      if (!isRawEntry(e))
+        return false;
+
       const ct = e.mp.effective_chart_type as ChartType | null;
       return ct === 'rangeBar';
     })
+  );
+
+  const hourlyStatusEntries = computed(() =>
+    statusEntries.value.filter((e) => isHourlyEntry(e))
   );
 
   const hasData = computed(() =>
     entries.some((e) => e.hourlyData.length > 0 || e.rawData.length > 0)
   );
 
-  // Each status MP gets a band of height 1 with 0.5 gap between them
+  // Each raw status MP gets a band of height 1 with 0.5 gap between them
   const STATUS_BAND_HEIGHT = 1;
   const STATUS_GAP = 0.5;
 
   const chartHeight = computed(() => {
-    const statusExtra = statusEntries.value.length * 50;
-    return height + statusExtra;
+    const rawStatusCount = statusEntries.value.filter((e) => isRawEntry(e)).length;
+    const statusExtra = rawStatusCount * 50;
+    // Hourly status bars share the percentage axis, so they need less extra height
+    const hourlyExtra = hourlyStatusEntries.value.length > 0 ? 30 : 0;
+    return height + statusExtra + hourlyExtra;
   });
-
-  // ── Colors ──
 
   const PALETTE = [
     '#059669', '#2563eb', '#d97706', '#dc2626', '#7c3aed',
@@ -95,16 +117,32 @@
     return colorMap.value.get(entry.mp.id) ?? PALETTE[0];
   }
 
-  // ── Helpers ──
+  function statusLabel(entry: ChartEntry, rawValue: number) {
+    return getDisplayValue(
+      rawValue,
+      entry.mp.value_format,
+      {
+        unit: entry.mp.effective_unit,
+        enumValues: entry.mp.enum_values
+      }
+    );
+  }
 
-  function hourToTimestamp(date: string, hour: number): number {
+  function statusOnLabel(entry: ChartEntry) {
+    return statusLabel(entry, 1);
+  }
+
+  function statusOffLabel(entry: ChartEntry) {
+    return statusLabel(entry, 0);
+  }
+
+  function hourToTimestamp(date: string, hour: number) {
     return new Date(`${date}T${String(hour).padStart(2, '0')}:00:00`).getTime();
   }
 
-  // ── Status offset: each status MP gets a y-band ──
-
-  function statusOffset(entry: ChartEntry): number {
-    const idx = statusEntries.value.findIndex((e) => e.mp.id === entry.mp.id);
+  function rawStatusOffset(entry: ChartEntry) {
+    const rawStatuses = statusEntries.value.filter((e) => isRawEntry(e));
+    const idx = rawStatuses.findIndex((e) => e.mp.id === entry.mp.id);
     return idx * (STATUS_BAND_HEIGHT + STATUS_GAP);
   }
 
@@ -132,10 +170,28 @@
     }));
   });
 
-  const statusYAxisIndex = computed(() => unitGroups.value.length);
+  // Y-axis indices layout:
+  // [0..N-1] = numeric unit groups
+  // [N]      = raw status band axis (step/rangeBar) — only if raw status entries exist
+  // [N+1]    = hourly status percentage axis (0-100%) — only if hourly status entries exist
 
-  const statusYRange = computed(() => {
-    const count = statusEntries.value.length;
+  const hasRawStatus = computed(() =>
+    rawStepEntries.value.length > 0 || rawRangeBarEntries.value.length > 0
+  );
+
+  const hasHourlyStatus = computed(() =>
+    hourlyStatusEntries.value.length > 0
+  );
+
+  const rawStatusYAxisIndex = computed(() => unitGroups.value.length);
+
+  const hourlyStatusYAxisIndex = computed(() =>
+    unitGroups.value.length + (hasRawStatus.value ? 1 : 0)
+  );
+
+  const rawStatusYRange = computed(() => {
+    const rawStatuses = statusEntries.value.filter((e) => isRawEntry(e));
+    const count = rawStatuses.length;
     if (count === 0)
       return { min: 0, max: 1 };
 
@@ -216,22 +272,17 @@
       }
     }
 
-    // ── Step status series ──
-    // areaStyle.origin = yOffset fills ONLY between the offset baseline and the line
-    for (const entry of stepEntries.value) {
-      const yOff = statusOffset(entry);
-      const isRaw = entry.rawData.length > 0;
+    // ── Raw Step status series ──
+    for (const entry of rawStepEntries.value) {
+      const yOff = rawStatusOffset(entry);
       const color = entryColor(entry);
-
-      const data = isRaw
-        ? buildRawStepData(entry.rawData, yOff)
-        : buildHourlyStepData(entry.hourlyData, yOff);
+      const data = buildRawStepData(entry.rawData, yOff);
 
       series.push({
         name: entry.mp.name,
         type: 'line',
         step: 'start',
-        yAxisIndex: statusYAxisIndex.value,
+        yAxisIndex: rawStatusYAxisIndex.value,
         data,
         itemStyle: { color },
         lineStyle: { width: 2, color },
@@ -244,20 +295,16 @@
       });
     }
 
-    // ── RangeBar status series ──
-    for (const entry of rangeBarEntries.value) {
-      const yOff = statusOffset(entry);
-      const isRaw = entry.rawData.length > 0;
+    // ── Raw RangeBar status series ──
+    for (const entry of rawRangeBarEntries.value) {
+      const yOff = rawStatusOffset(entry);
       const color = entryColor(entry);
-
-      const data = isRaw
-        ? buildRawRangeBarData(entry.rawData, yOff)
-        : buildHourlyRangeBarData(entry.hourlyData, yOff);
+      const data = buildRawRangeBarData(entry.rawData, yOff);
 
       series.push({
         name: entry.mp.name,
         type: 'custom',
-        yAxisIndex: statusYAxisIndex.value,
+        yAxisIndex: rawStatusYAxisIndex.value,
         data,
         renderItem: (_params: any, api: any) => {
           const xStartVal = api.value(0);
@@ -294,11 +341,7 @@
             const [startTs, endTs, , isOn] = params.data;
             const startStr = new Date(startTs).toLocaleString();
             const endStr = new Date(endTs).toLocaleString();
-            const state = isOn ? 'ON' : 'OFF';
-            // console.log('RangeBar tooltip params:', params);
-            // const state = getDisplayValue(isOn, params.mp.effective_value_format, {
-            //   enumValues: params.mp.enum_values
-            // });
+            const state = statusLabel(entry, isOn ? 1 : 0);
             const durationMs = endTs - startTs;
             const durationMin = Math.round(durationMs / 60000);
             const durationStr = durationMin >= 60
@@ -309,6 +352,51 @@
               ${state} for ${durationStr}<br/>
               <span style="color:#999">${startStr} → ${endStr}</span>
             `;
+          }
+        }
+      });
+    }
+
+    // ── Hourly status: percentage bar series ──
+    // Instead of binary ON/OFF (which loses granularity at hourly aggregation),
+    // show the actual on-time percentage as a bar for each hour.
+    for (const entry of hourlyStatusEntries.value) {
+      const color = entryColor(entry);
+      const onLbl = statusOnLabel(entry);
+      const offLbl = statusOffLabel(entry);
+
+      const data = entry.hourlyData.map((h) => {
+        const onPct = computeOnPercentage(h);
+        return [hourToTimestamp(h.date, h.hour), onPct];
+      });
+
+      series.push({
+        name: entry.mp.name,
+        type: 'bar',
+        yAxisIndex: hourlyStatusYAxisIndex.value,
+        data,
+        itemStyle: {
+          color: (params: any) => {
+            const pct = params.data[1] as number;
+            // Visual intensity scales with on-time percentage
+            if (pct === 0)
+              return '#e5e7eb';
+
+            if (pct < 25)
+              return adjustOpacity(color, 0.35);
+
+            if (pct < 50)
+              return adjustOpacity(color, 0.55);
+
+            if (pct < 75)
+              return adjustOpacity(color, 0.75);
+            return color;
+          }
+        },
+        barMaxWidth: 30,
+        tooltip: {
+          valueFormatter: (pct: number) => {
+            return `${onLbl}: ${Math.round(pct)}% · ${offLbl}: ${Math.round(100 - pct)}%`;
           }
         }
       });
@@ -342,13 +430,14 @@
       });
     }
 
-    // Status y-axis: shows MP name labels at each band's midpoint
-    if (statusEntries.value.length > 0) {
+    // Raw status y-axis: shows MP name labels at each band's midpoint
+    if (hasRawStatus.value) {
+      const rawStatuses = statusEntries.value.filter((e) => isRawEntry(e));
       const tickValues: number[] = [];
       const labelMap = new Map<number, string>();
 
-      for (const entry of statusEntries.value) {
-        const yOff = statusOffset(entry);
+      for (const entry of rawStatuses) {
+        const yOff = rawStatusOffset(entry);
         const mid = yOff + STATUS_BAND_HEIGHT / 2;
         tickValues.push(mid);
         labelMap.set(mid, entry.mp.name);
@@ -358,8 +447,8 @@
         type: 'value',
         position: 'right',
         offset: hasMultipleUnitAxes ? 60 : 0,
-        min: statusYRange.value.min,
-        max: statusYRange.value.max,
+        min: rawStatusYRange.value.min,
+        max: rawStatusYRange.value.max,
         splitLine: { show: false },
         axisLine: { show: false },
         axisTick: { show: false },
@@ -367,7 +456,6 @@
           fontSize: 11,
           customValues: tickValues,
           formatter: (val: number) => {
-            // Find the closest label
             for (const [tickVal, label] of labelMap) {
               if (Math.abs(val - tickVal) < 0.01)
                 return label;
@@ -378,16 +466,42 @@
       });
     }
 
+    // Hourly status percentage y-axis (0–100%)
+    if (hasHourlyStatus.value) {
+      const rightOffset = hasMultipleUnitAxes
+        ? (hasRawStatus.value ? 120 : 60)
+        : (hasRawStatus.value ? 60 : 0);
+
+      yAxis.push({
+        type: 'value',
+        name: 'Status %',
+        position: 'right',
+        offset: rightOffset,
+        min: 0,
+        max: 100,
+        splitLine: { show: false },
+        axisLabel: {
+          formatter: '{value}%',
+          fontSize: 11
+        },
+        nameTextStyle: { fontSize: 11 },
+        axisLine: { show: true },
+        axisTick: { show: true }
+      });
+    }
+
     if (yAxis.length === 0)
       yAxis.push({ type: 'value' });
 
-    // ── Baseline mark lines for status bands ──
-    // Dashed lines at ON and OFF levels help visually distinguish the two states
+    // ── Baseline mark lines for raw status bands ──
     const statusMarkLines: any[] = [];
-    for (const entry of statusEntries.value) {
-      const yOff = statusOffset(entry);
+    const rawStatuses = statusEntries.value.filter((e) => isRawEntry(e));
+    for (const entry of rawStatuses) {
+      const yOff = rawStatusOffset(entry);
       const color = entryColor(entry);
-      // TO DO
+      const onLbl = statusOnLabel(entry);
+      const offLbl = statusOffLabel(entry);
+
       statusMarkLines.push(
         {
           yAxis: yOff,
@@ -395,7 +509,7 @@
           label: {
             show: true,
             position: 'insideStartTop',
-            formatter: 'OFF',
+            formatter: offLbl,
             fontSize: 9,
             color: '#9ca3af'
           }
@@ -406,7 +520,7 @@
           label: {
             show: true,
             position: 'insideStartTop',
-            formatter: 'ON',
+            formatter: onLbl,
             fontSize: 9,
             color: '#6b7280'
           }
@@ -414,10 +528,10 @@
       );
     }
 
-    // Attach markLines to the first status series
+    // Attach markLines to the first raw status series
     if (statusMarkLines.length > 0) {
       const firstStatusIdx = series.findIndex(
-        (s: any) => s.yAxisIndex === statusYAxisIndex.value
+        (s: any) => s.yAxisIndex === rawStatusYAxisIndex.value
       );
       if (firstStatusIdx >= 0) {
         series[firstStatusIdx].markLine = {
@@ -432,9 +546,7 @@
       animation: true,
       grid: {
         left: 60,
-        right: statusEntries.value.length > 0
-          ? (hasMultipleUnitAxes ? 160 : 100)
-          : (hasMultipleUnitAxes ? 80 : 20),
+        right: computeGridRight(hasMultipleUnitAxes),
         top: 50,
         bottom: 50,
         containLabel: false
@@ -454,26 +566,34 @@
           let html = `<strong>${time}</strong>`;
 
           for (const p of normalParams) {
-            const stepEntry = stepEntries.value.find((e) => e.mp.name === p.seriesName);
-
+            // Raw step status entry
+            const stepEntry = rawStepEntries.value.find((e) => e.mp.name === p.seriesName);
             if (stepEntry) {
-              const yOff = statusOffset(stepEntry);
+              const yOff = rawStatusOffset(stepEntry);
               const rawLevel = (p.data[1] as number) - yOff;
-              const state = rawLevel >= 0.5 ? 'ON' : 'OFF';
-              // console.log('RangeBar tooltip params:', p);
-              // const state = getDisplayValue(rawLevel >= 0.5 ? 1 : 0, p.mp.effective_value_format, {
-              //   enumValues: p.mp.enum_values
-              // });
+              const state = statusLabel(stepEntry, rawLevel >= 0.5 ? 1 : 0);
               html += `<br/>${p.marker} ${p.seriesName}: <strong>${state}</strong>`;
-            } else {
-              const val = p.data[1];
-              if (val !== null && val !== undefined) {
-                const unit = findUnitForEntry(p.seriesName);
-                const formatted = unit
-                  ? `${Number(Number(val).toFixed(2))} ${unit}`
-                  : String(Number(Number(val).toFixed(2)));
-                html += `<br/>${p.marker} ${p.seriesName}: <strong>${formatted}</strong>`;
-              }
+              continue;
+            }
+
+            // Hourly status percentage entry
+            const hourlyEntry = hourlyStatusEntries.value.find((e) => e.mp.name === p.seriesName);
+            if (hourlyEntry) {
+              const pct = p.data[1] as number;
+              const onLbl = statusOnLabel(hourlyEntry);
+              const offLbl = statusOffLabel(hourlyEntry);
+              html += `<br/>${p.marker} ${p.seriesName}: <strong>${onLbl} ${Math.round(pct)}%</strong> · ${offLbl} ${Math.round(100 - pct)}%`;
+              continue;
+            }
+
+            // Numeric entry
+            const val = p.data[1];
+            if (val !== null && val !== undefined) {
+              const unit = findUnitForEntry(p.seriesName);
+              const formatted = unit
+                ? `${Number(Number(val).toFixed(2))} ${unit}`
+                : String(Number(Number(val).toFixed(2)));
+              html += `<br/>${p.marker} ${p.seriesName}: <strong>${formatted}</strong>`;
             }
           }
           return html;
@@ -507,7 +627,50 @@
     };
   });
 
-  // ── Step data builders ──
+  // ── Helper: compute right grid margin ──
+
+  function computeGridRight(hasMultipleUnitAxes: boolean): number {
+    const axes = [
+      hasMultipleUnitAxes,
+      hasRawStatus.value,
+      hasHourlyStatus.value,
+    ].filter(Boolean).length;
+
+    if (axes === 0)
+      return 20;
+
+    if (axes === 1)
+      return 100;
+
+    if (axes === 2)
+      return 160;
+
+    return 220;
+  }
+
+  // ── Helper: compute on-time percentage from hourly aggregation ──
+
+  function computeOnPercentage(h: HourlyAggregation): number {
+    if (h.time_on_seconds === null || h.time_off_seconds === null)
+      return 0;
+
+    const total = h.time_on_seconds + h.time_off_seconds;
+    if (total === 0)
+      return 0;
+
+    return Math.round((h.time_on_seconds / total) * 100);
+  }
+
+  // ── Helper: create rgba from hex + opacity ──
+
+  function adjustOpacity(hexColor: string, opacity: number): string {
+    const r = parseInt(hexColor.slice(1, 3), 16);
+    const g = parseInt(hexColor.slice(3, 5), 16);
+    const b = parseInt(hexColor.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+
+  // ── Raw Step data builder ──
 
   function buildRawStepData(rawData: RawValue[], yOffset: number): number[][] {
     if (rawData.length === 0)
@@ -519,24 +682,7 @@
     ]);
   }
 
-  function buildHourlyStepData(hourlyData: HourlyAggregation[], yOffset: number): number[][] {
-    if (hourlyData.length === 0)
-      return [];
-
-    return hourlyData.map((h) => {
-      const onRatio =
-        h.time_on_seconds !== null && h.time_off_seconds !== null
-          ? h.time_on_seconds / (h.time_on_seconds + h.time_off_seconds)
-          : 0;
-      return [
-        hourToTimestamp(h.date, h.hour),
-        (onRatio >= 0.5 ? STATUS_BAND_HEIGHT : 0) + yOffset
-      ];
-    });
-  }
-
-  // ── RangeBar data builders ──
-  // Consecutive same-state points are merged into single rectangles
+  // ── Raw RangeBar data builder ──
 
   function buildRawRangeBarData(rawData: RawValue[], yOffset: number): number[][] {
     if (rawData.length === 0)
@@ -557,7 +703,6 @@
       }
     }
 
-    // Close the last segment
     const lastTs = new Date(rawData[rawData.length - 1].sample_time).getTime();
     if (lastTs > segStart)
       segments.push([segStart, lastTs, yOffset, segOn]);
@@ -565,26 +710,11 @@
     return segments;
   }
 
-  function buildHourlyRangeBarData(hourlyData: HourlyAggregation[], yOffset: number): number[][] {
-    if (hourlyData.length === 0)
-      return [];
-
-    return hourlyData.map((h) => {
-      const start = hourToTimestamp(h.date, h.hour);
-      const end = start + 3600000;
-      const onRatio =
-        h.time_on_seconds !== null && h.time_off_seconds !== null
-          ? h.time_on_seconds / (h.time_on_seconds + h.time_off_seconds)
-          : 0;
-      return [start, end, yOffset, onRatio >= 0.5 ? 1 : 0];
-    });
-  }
-
   function findUnitForEntry(seriesName: string): string {
     for (const group of unitGroups.value) {
       for (const entry of group.entries) {
         if (entry.mp.name === seriesName)
-        return group.unit;
+          return group.unit;
       }
     }
     return '';
