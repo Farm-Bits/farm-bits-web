@@ -25,9 +25,19 @@ scheduler:
       class: SiteSunDataSyncJob
       queue: default
 
+    weather_station_api_fetch:
+      cron: "*/10 * * * *"
+      class: WeatherStationApiFetchJob
+      queue: default
+
     hourly_aggregation:
       cron: '5 * * * *'
       class: HourlyAggregationJob
+      queue: low
+
+    weather_station_api_hourly_aggregation:
+      cron: "5 * * * *"
+      class: WeatherStationApiHourlyAggregationJob
       queue: low
 
     archive:

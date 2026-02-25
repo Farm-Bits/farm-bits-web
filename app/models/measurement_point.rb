@@ -300,9 +300,10 @@ class MeasurementPoint < ApplicationRecord
           .where(register_templates: { sync_field: field })
 
         sync_points.each do |sync_point|
+          raw_value = read_attribute(field)
           writes << {
             measurement_point: sync_point,
-            value: transform_value_for_plc(field)
+            value: raw_value
           }
         end
       end
@@ -311,8 +312,9 @@ class MeasurementPoint < ApplicationRecord
         return
       end
 
+      context = PlcWriteContext.system_action('system_sync')
       service = PlcWriteService.new(self)
-      service.bulk_write!(writes)
+      service.bulk_write!(writes, context: context)
     end
 
     def fetch_group_points

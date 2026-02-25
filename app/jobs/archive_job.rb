@@ -5,11 +5,13 @@ class ArchiveJob
 
   RAW_RETENTION_DAYS = 90
   HOURLY_RETENTION_MONTHS = 36
+  PLC_WRITE_LOG_RETENTION_DAYS = 90
   BATCH_SIZE = 10_000
 
   def perform
     archive_raw_values
     archive_hourly_aggregations
+    archive_plc_write_log
   end
 
   private
@@ -36,6 +38,21 @@ class ArchiveJob
           source: 'hourly_aggregations',
           target: 'archived_hourly_aggregations',
           condition: "date < '#{cutoff}'",
+        )
+        if moved < BATCH_SIZE
+          break
+        end
+      end
+    end
+
+    def archive_plc_write_log
+      cutoff = PLC_WRITE_LOG_RETENTION_DAYS.days.ago
+
+      loop do
+        moved = archive_batch(
+          source: 'plc_write_logs',
+          target: 'archived_plc_write_logs',
+          condition: "created_at < '#{cutoff}'",
         )
         if moved < BATCH_SIZE
           break

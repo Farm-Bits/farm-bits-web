@@ -53,6 +53,20 @@ class VpnManagerClient
 
     address = measurement_point.register_template.address + MODBUS_ADDRESS_OFFSET
 
+    if !write_enabled?
+      return {
+        status: 'ok',
+        gateway_label: gateway.label,
+        target_ip: plc.private_ip,
+        slave_id: plc.slave_id.to_i,
+        timestamp: Time.current.iso8601,
+        result: {
+          id: nil,
+          status: 'ok'
+        }
+      }
+    end
+
     post('/api/v1/modbus/write', {
       gateway_label: gateway.label,
       target_ip: plc.private_ip,
@@ -71,13 +85,29 @@ class VpnManagerClient
       measurement_point = entry[:measurement_point]
       register_template = measurement_point.register_template
       address = register_template.address + MODBUS_ADDRESS_OFFSET
-      raw_value = measurement_point.reverse_scaled(entry[:value])
 
       {
         id: measurement_point.id,
         register_type: register_template.register_type,
         address: address,
-        values: register_template.encode_value(raw_value)
+        values: register_template.encode_value(entry[:value])
+      }
+    end
+
+    if !write_enabled?
+      return {
+        success: true,
+        sample_time: Time.current.iso8601,
+        error: nil,
+        error_type: nil,
+        results: measurement_points_with_values.each_with_object({}) do |entry, hash|
+          mp_id = entry[:measurement_point].id
+          hash[mp_id] = {
+            status: 'ok',
+            values: register_template.encode_value(entry[:value]),
+            error: nil
+          }
+        end
       }
     end
 
@@ -92,7 +122,6 @@ class VpnManagerClient
   end
 
   private
-
     # Build the reads array, merging registers that share a bulk_read_group
     # into a single read request.
     #
@@ -278,5 +307,9 @@ class VpnManagerClient
           raise Error, parsed.presence
         end
       end
+    end
+
+    def write_enabled?
+      Rails.env.production? || ENV['ENABLE_WRITE_VPN_MANAGER'] == 'true'
     end
 end

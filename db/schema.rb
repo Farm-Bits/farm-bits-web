@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_02_13_144442) do
+ActiveRecord::Schema[7.2].define(version: 2026_02_25_154941) do
   create_table "action_mailbox_inbound_emails", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "status", default: 0, null: false
     t.string "message_id", null: false
@@ -100,6 +100,29 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_13_144442) do
     t.index ["measurement_point_id", "date", "hour"], name: "idx_on_measurement_point_id_date_hour_11a5c53f3b", unique: true
     t.index ["measurement_point_id", "date"], name: "idx_on_measurement_point_id_date_e98d2d2b4e"
     t.index ["measurement_point_id"], name: "index_archived_hourly_aggregations_on_measurement_point_id"
+  end
+
+  create_table "archived_plc_write_logs", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "source", null: false
+    t.string "old_value"
+    t.string "new_value"
+    t.string "batch_id", null: false
+    t.bigint "measurement_point_id", null: false
+    t.bigint "plc_id", null: false
+    t.bigint "site_id", null: false
+    t.bigint "user_id"
+    t.bigint "register_template_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["batch_id"], name: "index_archived_plc_write_logs_on_batch_id"
+    t.index ["created_at"], name: "index_archived_plc_write_logs_on_created_at"
+    t.index ["measurement_point_id", "created_at"], name: "idx_on_measurement_point_id_created_at_4aacf7b684"
+    t.index ["measurement_point_id"], name: "index_archived_plc_write_logs_on_measurement_point_id"
+    t.index ["plc_id", "created_at"], name: "index_archived_plc_write_logs_on_plc_id_and_created_at"
+    t.index ["plc_id"], name: "index_archived_plc_write_logs_on_plc_id"
+    t.index ["register_template_id"], name: "index_archived_plc_write_logs_on_register_template_id"
+    t.index ["site_id"], name: "index_archived_plc_write_logs_on_site_id"
+    t.index ["source"], name: "index_archived_plc_write_logs_on_source"
+    t.index ["user_id"], name: "index_archived_plc_write_logs_on_user_id"
   end
 
   create_table "archived_raw_values", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -369,6 +392,29 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_13_144442) do
     t.index ["model_id"], name: "index_plc_versions_on_model_id"
   end
 
+  create_table "plc_write_logs", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "source", null: false
+    t.string "old_value"
+    t.string "new_value"
+    t.string "batch_id", null: false
+    t.bigint "measurement_point_id", null: false
+    t.bigint "plc_id", null: false
+    t.bigint "site_id", null: false
+    t.bigint "user_id"
+    t.bigint "register_template_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["batch_id"], name: "index_plc_write_logs_on_batch_id"
+    t.index ["created_at"], name: "index_plc_write_logs_on_created_at"
+    t.index ["measurement_point_id", "created_at"], name: "index_plc_write_logs_on_measurement_point_id_and_created_at"
+    t.index ["measurement_point_id"], name: "index_plc_write_logs_on_measurement_point_id"
+    t.index ["plc_id", "created_at"], name: "index_plc_write_logs_on_plc_id_and_created_at"
+    t.index ["plc_id"], name: "index_plc_write_logs_on_plc_id"
+    t.index ["register_template_id"], name: "index_plc_write_logs_on_register_template_id"
+    t.index ["site_id"], name: "index_plc_write_logs_on_site_id"
+    t.index ["source"], name: "index_plc_write_logs_on_source"
+    t.index ["user_id"], name: "index_plc_write_logs_on_user_id"
+  end
+
   create_table "plcs", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "label", null: false
     t.string "name", null: false
@@ -520,9 +566,85 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_13_144442) do
     t.index ["unlock_token"], name: "index_users_on_unlock_token", unique: true
   end
 
+  create_table "weather_station_api_hourly_aggregations", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "weather_station_api_location_id", null: false
+    t.bigint "weather_station_api_metric_id", null: false
+    t.date "date", null: false
+    t.integer "hour", null: false
+    t.decimal "min_value", precision: 15, scale: 4
+    t.decimal "max_value", precision: 15, scale: 4
+    t.decimal "avg_value", precision: 15, scale: 4
+    t.decimal "sum_value", precision: 15, scale: 4
+    t.integer "sample_count", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["hour"], name: "index_weather_station_api_hourly_aggregations_on_hour"
+    t.index ["weather_station_api_location_id", "weather_station_api_metric_id", "hour"], name: "idx_on_weather_station_api_location_id_weather_stat_9d0f33cc33", unique: true
+    t.index ["weather_station_api_location_id"], name: "idx_on_weather_station_api_location_id_e0db279935"
+    t.index ["weather_station_api_metric_id"], name: "idx_on_weather_station_api_metric_id_eec1d9eb85"
+  end
+
+  create_table "weather_station_api_location_sites", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "weather_station_api_location_id", null: false
+    t.bigint "site_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["site_id"], name: "index_weather_station_api_location_sites_on_site_id"
+    t.index ["weather_station_api_location_id", "site_id"], name: "idx_on_weather_station_api_location_id_site_id_183cb7419b", unique: true
+    t.index ["weather_station_api_location_id"], name: "idx_on_weather_station_api_location_id_a21d9bce5a"
+  end
+
+  create_table "weather_station_api_locations", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "name", null: false
+    t.decimal "latitude", precision: 10, scale: 7, null: false
+    t.decimal "longitude", precision: 10, scale: 7, null: false
+    t.string "provider", null: false
+    t.json "provider_config"
+    t.string "time_zone", null: false
+    t.boolean "active", default: true, null: false
+    t.datetime "last_fetched_at"
+    t.integer "fetch_interval_minutes", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["latitude", "longitude"], name: "index_weather_station_api_locations_on_latitude_and_longitude"
+    t.index ["provider"], name: "index_weather_station_api_locations_on_provider"
+  end
+
+  create_table "weather_station_api_metrics", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "label", null: false
+    t.string "unit", null: false
+    t.decimal "factor", precision: 15, scale: 6, default: "1.0", null: false
+    t.decimal "offset", precision: 15, scale: 6, default: "0.0", null: false
+    t.string "aggregation", null: false
+    t.bigint "measurement_subtype_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["key"], name: "index_weather_station_api_metrics_on_key", unique: true
+    t.index ["measurement_subtype_id"], name: "index_weather_station_api_metrics_on_measurement_subtype_id"
+  end
+
+  create_table "weather_station_api_raw_values", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "weather_station_api_location_id", null: false
+    t.bigint "weather_station_api_metric_id", null: false
+    t.decimal "value", precision: 15, scale: 4, null: false
+    t.decimal "scaled_value", precision: 15, scale: 4, null: false
+    t.datetime "sample_time", null: false
+    t.datetime "created_at", null: false
+    t.index ["sample_time"], name: "index_weather_station_api_raw_values_on_sample_time"
+    t.index ["weather_station_api_location_id", "weather_station_api_metric_id", "sample_time"], name: "idx_on_weather_station_api_location_id_weather_stat_4e4f832263", unique: true
+    t.index ["weather_station_api_location_id"], name: "idx_on_weather_station_api_location_id_1061f2324a"
+    t.index ["weather_station_api_metric_id"], name: "idx_on_weather_station_api_metric_id_5188e0edb2"
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "archived_hourly_aggregations", "measurement_points", on_delete: :cascade
+  add_foreign_key "archived_plc_write_logs", "measurement_points", on_delete: :cascade
+  add_foreign_key "archived_plc_write_logs", "plcs", on_delete: :cascade
+  add_foreign_key "archived_plc_write_logs", "register_templates", on_delete: :cascade
+  add_foreign_key "archived_plc_write_logs", "sites", on_delete: :cascade
+  add_foreign_key "archived_plc_write_logs", "users", on_delete: :nullify
   add_foreign_key "archived_raw_values", "measurement_points", on_delete: :cascade
   add_foreign_key "company_user_sites", "company_users", on_delete: :cascade
   add_foreign_key "company_user_sites", "sites", on_delete: :cascade
@@ -545,6 +667,11 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_13_144442) do
   add_foreign_key "measurement_subtypes", "measurement_types", on_delete: :cascade
   add_foreign_key "models", "manufacturers", on_delete: :cascade
   add_foreign_key "plc_versions", "models", on_delete: :cascade
+  add_foreign_key "plc_write_logs", "measurement_points", on_delete: :cascade
+  add_foreign_key "plc_write_logs", "plcs", on_delete: :cascade
+  add_foreign_key "plc_write_logs", "register_templates", on_delete: :cascade
+  add_foreign_key "plc_write_logs", "sites", on_delete: :cascade
+  add_foreign_key "plc_write_logs", "users", on_delete: :nullify
   add_foreign_key "plcs", "gateways"
   add_foreign_key "plcs", "models"
   add_foreign_key "plcs", "plc_versions"
@@ -554,4 +681,11 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_13_144442) do
   add_foreign_key "segments", "sites", on_delete: :cascade
   add_foreign_key "site_sun_data", "sites", on_delete: :cascade
   add_foreign_key "sites", "companies", on_delete: :cascade
+  add_foreign_key "weather_station_api_hourly_aggregations", "weather_station_api_locations", on_delete: :cascade
+  add_foreign_key "weather_station_api_hourly_aggregations", "weather_station_api_metrics", on_delete: :cascade
+  add_foreign_key "weather_station_api_location_sites", "sites", on_delete: :cascade
+  add_foreign_key "weather_station_api_location_sites", "weather_station_api_locations", on_delete: :cascade
+  add_foreign_key "weather_station_api_metrics", "measurement_subtypes", on_delete: :cascade
+  add_foreign_key "weather_station_api_raw_values", "weather_station_api_locations", on_delete: :cascade
+  add_foreign_key "weather_station_api_raw_values", "weather_station_api_metrics", on_delete: :cascade
 end

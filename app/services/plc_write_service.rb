@@ -6,16 +6,24 @@
 # - Reverse factor/offset transformation (display value → raw register value)
 # - Encoding values to Modbus register format
 # - Updating last_decoded_value after successful writes
+# - Logging every write to PlcWriteLog for full traceability
 # - Touching PLC/gateway last_seen_at timestamps
 #
 # Usage:
-#   # Single write
+#   # Single write (user action)
+#   context = PlcWriteContext.user_action(current_user)
 #   service = PlcWriteService.new(measurement_point)
-#   result = service.write!(value)
+#   result = service.write!(value, context: context)
 #
-#   # Bulk write
+#   # Bulk write (user action)
+#   context = PlcWriteContext.user_action(current_user)
 #   service = PlcWriteService.new(measurement_point)
-#   result = service.bulk_write!(config_points_with_values)
+#   result = service.bulk_write!(measurement_points_with_values, context: context)
+#
+#   # System action (background job)
+#   context = PlcWriteContext.system_action('sun_data_sync')
+#   service = PlcWriteService.new(measurement_point)
+#   result = service.write!(value, context: context)
 #
 class PlcWriteService
   class WriteError < StandardError; end
@@ -32,16 +40,20 @@ class PlcWriteService
   # Write a single value to a measurement point's register.
   #
   # @param value [String, Numeric, Boolean] the display/user-facing value
+  # @param context [PlcWriteContext] traceability context (who, why, batch)
   # @return [Hash] { success: true, measurement_point: MeasurementPoint }
   # @raise [ValidationError] if value is out of bounds or register is read-only
   # @raise [ConnectionError] if PLC/gateway is unreachable
   # @raise [WriteError] if PLC rejects the write
-  def write!(value)
+  def write!(value, context: nil)
+    context ||= PlcWriteContext.system_action('user')
+
     validate_gateway!
-    validate_writable!(@measurement_point)
-    validate_bounds!(@measurement_point, value)
 
     raw_value = @measurement_point.reverse_scaled(value)
+
+    validate_writable!(@measurement_point)
+    validate_bounds!(@measurement_point, raw_value)
 
     begin
       client = VpnManagerClient.new
@@ -52,7 +64,9 @@ class PlcWriteService
       raise WriteError, "Failed to write to PLC: #{e.message}"
     end
 
-    store_written_value(@measurement_point, value)
+    old_value = @measurement_point.last_decoded_value
+    store_written_value(@measurement_point, raw_value)
+    log_write(@measurement_point, old_value, raw_value, context)
     touch_devices!
 
     { success: true, measurement_point: @measurement_point }
@@ -61,15 +75,29 @@ class PlcWriteService
   # Write multiple configuration values in a single bulk Modbus operation.
   #
   # @param measurement_points_with_values [Array<Hash>] array of { measurement_point: MeasurementPoint, value: Object }
+  # @param context [PlcWriteContext] traceability context (who, why, batch)
   # @return [Hash] { success: true, results: Hash<Integer, Hash> }
   # @raise [ValidationError] if any register is read-only
   # @raise [ConnectionError] if PLC/gateway is unreachable
   # @raise [WriteError] if any individual write fails
-  def bulk_write!(measurement_points_with_values)
+  def bulk_write!(measurement_points_with_values, context: nil)
+    context ||= PlcWriteContext.system_action('user')
+
     validate_gateway!
 
     measurement_points_with_values.each do |entry|
+      raw_value = entry[:measurement_point].reverse_scaled(entry[:value])
+
       validate_writable!(entry[:measurement_point])
+      validate_bounds!(entry[:measurement_point], raw_value)
+
+      entry[:value] = raw_value
+    end
+
+    # Capture old values before any writes
+    old_values = {}
+    measurement_points_with_values.each do |entry|
+      old_values[entry[:measurement_point].id] = entry[:measurement_point].last_decoded_value
     end
 
     begin
@@ -85,7 +113,7 @@ class PlcWriteService
       raise WriteError, response[:error] || 'Bulk write to PLC failed'
     end
 
-    # Verify each result and store written values
+    # Verify each result, store written values, and log
     measurement_points_with_values.each do |entry|
       measurement_point = entry[:measurement_point]
       result = response[:results][measurement_point.id]
@@ -96,6 +124,7 @@ class PlcWriteService
       end
 
       store_written_value(measurement_point, entry[:value])
+      log_write(measurement_point, old_values[measurement_point.id], entry[:value], context)
     end
 
     touch_devices!
@@ -116,28 +145,50 @@ class PlcWriteService
       end
     end
 
-    def validate_bounds!(measurement_point, value)
+    def validate_bounds!(measurement_point, raw_value)
       rt = measurement_point.register_template
 
       if !rt.numeric_register?
         return
       end
 
-      raw_value = measurement_point.reverse_scaled(value)
-
       if !rt.value_in_bounds?(raw_value.to_f)
         raise ValidationError, "Value out of range (#{rt.min_value}..#{rt.max_value})"
       end
     end
 
-    def store_written_value(measurement_point, value)
-      serialized = measurement_point.serialize_for_storage(value)
+    def store_written_value(measurement_point, raw_value)
+      serialized = measurement_point.serialize_for_storage(raw_value)
 
       measurement_point.update_columns(
         last_decoded_value: serialized,
         last_decoded_value_at: Time.current,
         updated_at: Time.current
       )
+    end
+
+    def log_write(measurement_point, old_value, new_value, context)
+      begin
+        serialized_new = measurement_point.serialize_for_storage(new_value)
+
+        PlcWriteLog.create!(
+          plc: @plc,
+          site: measurement_point.site,
+          user: context.user,
+          measurement_point: measurement_point,
+          register_template: measurement_point.register_template,
+          source: context.source,
+          old_value: old_value,
+          new_value: serialized_new,
+          batch_id: context.batch_id,
+          created_at: Time.current
+        )
+      rescue => e
+        # Log creation should never break the write operation
+        Rails.logger.error(
+          "Failed to create PlcWriteLog for MeasurementPoint #{measurement_point.id}: #{e.message}"
+        )
+      end
     end
 
     def touch_devices!

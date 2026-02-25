@@ -19,6 +19,10 @@ class PlcIngestionClient
 
   class << self
     def create_authorized_email(plc)
+      if !ingestion_enabled?
+        return
+      end
+
       payload = {
         authorized_email: {
           email: plc.username,
@@ -39,6 +43,10 @@ class PlcIngestionClient
     end
 
     def update_authorized_email(plc, previous_username, password_changed)
+      if !ingestion_enabled?
+        return
+      end
+
       if previous_username.present? && previous_username != plc.username
         delete_authorized_email(previous_username)
         create_authorized_email(plc)
@@ -65,6 +73,10 @@ class PlcIngestionClient
     end
 
     def delete_authorized_email(email)
+      if !ingestion_enabled?
+        return
+      end
+
       response = HTTParty.delete(
         "#{BASE_URL}/api/v1/authorized_emails/#{CGI.escape(email)}",
         headers: {
@@ -81,6 +93,10 @@ class PlcIngestionClient
     end
 
     private
+      def ingestion_enabled?
+        Rails.env.production? || ENV['ENABLE_PLC_INGESTION'] == 'true'
+      end
+
       def handle_response(response)
         case response.code
         when 200, 201

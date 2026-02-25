@@ -222,7 +222,7 @@
 
   polling.start();
 
-  function togglePolling(): void {
+  function togglePolling() {
     if (polling.isPaused.value)
       polling.resume();
     else
@@ -230,12 +230,12 @@
   }
 
   // Click handlers
-  function handleMpClick(mp: LiveMeasurementPoint): void {
+  function handleMpClick(mp: LiveMeasurementPoint) {
     modalMeasurementPoints.value = [mp];
     modalVisible.value = true;
   }
 
-  function handleGroupClick(group: MeasurementPointGroup): void {
+  function handleGroupClick(group: MeasurementPointGroup) {
     modalMeasurementPoints.value = group.measurementPoints;
     modalVisible.value = true;
   }

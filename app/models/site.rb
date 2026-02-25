@@ -9,6 +9,9 @@ class Site < ApplicationRecord
 
   has_many :site_sun_data, dependent: :delete_all
 
+  has_many :weather_station_api_location_sites, dependent: :destroy
+  has_many :weather_station_api_locations, through: :weather_station_api_location_sites
+
   has_many :gateways
 
   has_many :plcs

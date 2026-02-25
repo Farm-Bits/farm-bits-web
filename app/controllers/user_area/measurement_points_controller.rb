@@ -28,8 +28,9 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
     authorize @measurement_point, :write?
 
     begin
+      context = PlcWriteContext.user_action(current_user)
       service = PlcWriteService.new(@measurement_point)
-      service.write!(params[:value])
+      service.write!(params[:value], context: context)
 
       render json: MeasurementPointSerializer.render_as_json(@measurement_point.reload), status: :ok
     rescue PlcWriteService::ValidationError => e
@@ -119,8 +120,9 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
         }
       end
 
+      context = PlcWriteContext.user_action(current_user)
       service = PlcWriteService.new(@measurement_point)
-      service.bulk_write!(config_points_with_values)
+      service.bulk_write!(config_points_with_values, context: context)
     rescue PlcWriteService::ValidationError => e
       @measurement_point.errors.add(:base, e.message)
       raise ActiveRecord::Rollback

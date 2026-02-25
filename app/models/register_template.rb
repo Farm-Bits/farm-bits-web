@@ -3,10 +3,10 @@ class RegisterTemplate < ApplicationRecord
 
   belongs_to :plc_version
 
-  has_many :interface_register_mappings, dependent: :restrict_with_error
+  has_many :interface_register_mappings, dependent: :destroy
   accepts_nested_attributes_for :interface_register_mappings, allow_destroy: true
 
-  has_many :measurement_points, dependent: :restrict_with_error
+  has_many :measurement_points, dependent: :destroy
 
   CATEGORIES = (Interface::CATEGORIES + %w[configuration diagnostic]).freeze
   REGISTER_TYPES = %w[holding input coil discrete].freeze
@@ -62,35 +62,6 @@ class RegisterTemplate < ApplicationRecord
     "#{address}#{address_count > 1 ? "-#{address + address_count - 1}" : ''}"
   end
 
-  def transform_value(raw_value)
-    if raw_value.nil?
-      return nil
-    end
-
-    (raw_value.to_f * factor) + offset
-  end
-
-  def read_function_code
-    case register_type
-    when 'holding' then 3
-    when 'input' then 4
-    when 'coil' then 1
-    when 'discrete' then 2
-    end
-  end
-
-  def write_function_code
-    if read_only?
-      return nil
-    end
-
-    case register_type
-    when 'holding' then 6
-    when 'coil' then 5
-    else nil
-    end
-  end
-
   def value_in_bounds?(value)
     if min_value.nil? && max_value.nil?
       return true
@@ -105,14 +76,6 @@ class RegisterTemplate < ApplicationRecord
     end
 
     value >= min_value && value <= max_value
-  end
-
-  def string_register?
-    value_format == 'ascii_string'
-  end
-
-  def enum_register?
-    value_format == 'enum' && enum_values.present?
   end
 
   def numeric_register?
@@ -170,14 +133,6 @@ class RegisterTemplate < ApplicationRecord
     else
       [value.to_i]
     end
-  end
-
-  def enum_options
-    if !enum_values.present?
-      return []
-    end
-
-    enum_values.map { |k, v| { value: k.to_i, label: v } }
   end
 
   private
