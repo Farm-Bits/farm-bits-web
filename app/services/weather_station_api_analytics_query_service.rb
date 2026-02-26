@@ -58,9 +58,6 @@ class WeatherStationApiAnalyticsQueryService
     raw_values = WeatherStationApiRawValue
       .joins("INNER JOIN (#{latest_times.to_sql}) AS lt ON weather_station_api_raw_values.weather_station_api_metric_id = lt.weather_station_api_metric_id AND weather_station_api_raw_values.sample_time = lt.max_sample_time")
       .where(weather_station_api_location_id: weather_station_api_location_id)
-
-    grouped = raw_values.group_by(&:weather_station_api_metric_id)
-
-    { raw_values: grouped }
+      .includes(:weather_station_api_metric)
   end
 end

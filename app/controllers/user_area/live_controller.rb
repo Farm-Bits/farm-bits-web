@@ -54,22 +54,16 @@ class UserArea::LiveController < UserArea::ApplicationController
       end
 
       latest = WeatherStationApiAnalyticsQueryService.latest(weather_station_api_location.id)
-      metrics = WeatherStationApiMetric.where(id: latest.keys).includes(:measurement_subtype).index_by(&:id)
-
-      readings = latest.map do |metric_id, reading|
-        metric = metrics[metric_id]
-        if metric.nil?
-          next
-        end
-
+      readings = latest.map do |reading|
+        metric = reading.weather_station_api_metric
         {
           key: metric.key,
           label: metric.label,
-          value: reading[:scaled_value]&.to_f,
+          value: reading.scaled_value&.to_f,
           unit: metric.effective_unit,
-          sample_time: reading[:sample_time]
+          sample_time: reading.sample_time
         }
-      end.compact
+      end
 
       readings
     end
