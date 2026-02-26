@@ -65,10 +65,13 @@ Rails.application.routes.draw do
 
       get 'live' => 'live#show'
       get 'live/poll' => 'live#poll'
+      get 'live/poll_weather' => 'live#poll_weather'
 
       get 'analytics' => 'analytics#show'
       get 'analytics/hourly' => 'analytics#hourly'
       get 'analytics/raw' => 'analytics#raw'
+      get 'analytics/weather_hourly' => 'analytics#weather_hourly'
+      get 'analytics/weather_raw' => 'analytics#weather_raw'
 
       get 'dashboard', to: 'dashboard#show'
     end

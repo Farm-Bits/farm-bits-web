@@ -38,6 +38,11 @@
         </template>
       </div>
 
+      <!-- Center: Weather & Sun data (only for regular users with a site) -->
+      <div v-if="isSignedIn && !isAdminUser" class="d-none d-lg-flex align-items-center">
+        <WeatherNavBar />
+      </div>
+
       <!-- Right side navigation -->
       <CHeaderNav class="d-none d-md-flex ms-auto align-items-center">
         <!-- Not logged in: Sign In/Sign Up buttons -->
@@ -68,15 +73,13 @@
 
 <script lang="ts" setup>
   import { router } from '@inertiajs/vue3';
+  import WeatherNavBar from './components/WeatherNavBar.vue';
   import AccountDropdown from './components/AccountDropdown.vue';
   import AdminAccountDropdown from './components/AdminAccountDropdown.vue';
   import useAuth from '@/composables/useAuth';
-  import usePermissions from '@/composables/usePermissions';
   import type { Site } from '@/types/location';
-  import { ROUTES } from '@/types/permissions';
 
   const { isAdminUser, isSignedIn, paths, features, currentSite, accessibleSites } = useAuth();
-  const { permissions } = usePermissions();
 
   function onSelectSite(siteId: Site['id']) {
     router.visit(window.location.pathname, { data: { site_id: siteId } });

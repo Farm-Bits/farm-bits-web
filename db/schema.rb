@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_02_25_154941) do
+ActiveRecord::Schema[7.2].define(version: 2026_02_26_191453) do
   create_table "action_mailbox_inbound_emails", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "status", default: 0, null: false
     t.string "message_id", null: false
@@ -531,11 +531,13 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_25_154941) do
     t.decimal "geocoded_latitude", precision: 10, scale: 7
     t.decimal "geocoded_longitude", precision: 10, scale: 7
     t.string "time_zone", null: false
+    t.bigint "weather_station_api_location_id"
     t.bigint "company_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["company_id", "name"], name: "index_sites_on_company_id_and_name", unique: true
     t.index ["company_id"], name: "index_sites_on_company_id"
+    t.index ["weather_station_api_location_id"], name: "index_sites_on_weather_station_api_location_id"
   end
 
   create_table "users", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -582,16 +584,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_25_154941) do
     t.index ["weather_station_api_location_id", "weather_station_api_metric_id", "hour"], name: "idx_on_weather_station_api_location_id_weather_stat_9d0f33cc33", unique: true
     t.index ["weather_station_api_location_id"], name: "idx_on_weather_station_api_location_id_e0db279935"
     t.index ["weather_station_api_metric_id"], name: "idx_on_weather_station_api_metric_id_eec1d9eb85"
-  end
-
-  create_table "weather_station_api_location_sites", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
-    t.bigint "weather_station_api_location_id", null: false
-    t.bigint "site_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["site_id"], name: "index_weather_station_api_location_sites_on_site_id"
-    t.index ["weather_station_api_location_id", "site_id"], name: "idx_on_weather_station_api_location_id_site_id_183cb7419b", unique: true
-    t.index ["weather_station_api_location_id"], name: "idx_on_weather_station_api_location_id_a21d9bce5a"
   end
 
   create_table "weather_station_api_locations", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -681,10 +673,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_25_154941) do
   add_foreign_key "segments", "sites", on_delete: :cascade
   add_foreign_key "site_sun_data", "sites", on_delete: :cascade
   add_foreign_key "sites", "companies", on_delete: :cascade
+  add_foreign_key "sites", "weather_station_api_locations", on_delete: :nullify
   add_foreign_key "weather_station_api_hourly_aggregations", "weather_station_api_locations", on_delete: :cascade
   add_foreign_key "weather_station_api_hourly_aggregations", "weather_station_api_metrics", on_delete: :cascade
-  add_foreign_key "weather_station_api_location_sites", "sites", on_delete: :cascade
-  add_foreign_key "weather_station_api_location_sites", "weather_station_api_locations", on_delete: :cascade
   add_foreign_key "weather_station_api_metrics", "measurement_subtypes", on_delete: :cascade
   add_foreign_key "weather_station_api_raw_values", "weather_station_api_locations", on_delete: :cascade
   add_foreign_key "weather_station_api_raw_values", "weather_station_api_metrics", on_delete: :cascade

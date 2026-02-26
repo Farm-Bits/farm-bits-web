@@ -77,4 +77,3 @@ export type MeasurementPoint = {
   register_template_id: RegisterTemplate['id'];
   segment_id: Segment['id'] | null;
 };
-

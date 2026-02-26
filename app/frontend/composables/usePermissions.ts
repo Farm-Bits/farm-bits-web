@@ -4,8 +4,10 @@ import type { Role, RoutePermissions } from '../types/permissions';
 
 const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
   admin: {
-    dashboard: {
-      show: true
+    live: {
+      show: true,
+      poll: true,
+      poll_weather: true
     },
     my_account: {
       show: true,
@@ -50,19 +52,22 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: true,
       write: true
     },
-    live: {
-      show: true,
-      poll: true
-    },
     analytics: {
       show: true,
       hourly: true,
-      raw: true
+      raw: true,
+      weather_hourly: true,
+      weather_raw: true
+    },
+    dashboard: {
+      show: true
     }
   },
   site_admin: {
-    dashboard: {
-      show: true
+    live: {
+      show: true,
+      poll: true,
+      poll_weather: true
     },
     my_account: {
       show: true,
@@ -107,19 +112,22 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: true,
       write: true
     },
-    live: {
-      show: true,
-      poll: true
-    },
     analytics: {
       show: true,
       hourly: true,
-      raw: true
+      raw: true,
+      weather_hourly: true,
+      weather_raw: true
+    },
+    dashboard: {
+      show: true
     }
   },
   manager: {
-    dashboard: {
-      show: true
+    live: {
+      show: true,
+      poll: true,
+      poll_weather: true
     },
     my_account: {
       show: true,
@@ -164,19 +172,22 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: false,
       write: true
     },
-    live: {
-      show: true,
-      poll: true
-    },
     analytics: {
       show: true,
       hourly: true,
-      raw: true
+      raw: true,
+      weather_hourly: true,
+      weather_raw: true
+    },
+    dashboard: {
+      show: true
     }
   },
   viewer: {
-    dashboard: {
-      show: true
+    live: {
+      show: true,
+      poll: true,
+      poll_weather: true
     },
     my_account: {
       show: true,
@@ -221,14 +232,15 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: false,
       write: false
     },
-    live: {
-      show: true,
-      poll: true
-    },
     analytics: {
       show: true,
       hourly: true,
-      raw: true
+      raw: true,
+      weather_hourly: true,
+      weather_raw: true
+    },
+    dashboard: {
+      show: true
     }
   }
 };

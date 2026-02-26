@@ -11,7 +11,6 @@ export type LiveMeasurementPoint = MeasurementPoint & {
 
 export type RawValue = {
   id: number;
-  value: number;
   scaled_value: number;
   sample_time: string;
   measurement_point_id: MeasurementPoint['id'];
@@ -74,15 +73,6 @@ type StatusSummary = {
 };
 
 export type AnalyticsSummary = InstantaneousSummary | AccumulativeSummary | StatusSummary;
-
-export type PollResponse = {
-  measurement_points: {
-    id: MeasurementPoint['id'];
-    last_value: number | string | null;
-    last_value_at: string | null;
-    alarm_state: MeasurementPoint['alarm_state'];
-  }[];
-};
 
 export type MeasurementPointGroup = {
   key: string;

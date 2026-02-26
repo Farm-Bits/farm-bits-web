@@ -12,12 +12,6 @@
         <span v-if="polling.lastPollAt.value" class="small text-body-secondary">
           Updated <RelativeTime :datetime="polling.lastPollAt.value.toISOString()" />
         </span>
-        <CButton
-          size="sm"
-          :color="polling.isPaused.value ? 'warning' : 'light'"
-          @click="togglePolling">
-          {{ polling.isPaused.value ? 'Resume' : 'Pause' }}
-        </CButton>
       </div>
     </div>
 
@@ -102,12 +96,20 @@
   import MeasurementPointCard from './components/MeasurementPointCard.vue';
   import { ROUTES } from '@/types/permissions';
   import type { Segment } from '@/types/location';
-  import type { MeasurementSubtype } from '@/types/measurementPoint';
+  import type { MeasurementPoint, MeasurementSubtype } from '@/types/measurementPoint';
   import type {
     LiveMeasurementPoint,
-    MeasurementPointGroup,
-    PollResponse,
+    MeasurementPointGroup
   } from '@/types/analytics';
+
+  type PollResponse = {
+    measurement_points: {
+      id: MeasurementPoint['id'];
+      last_value: number | string | null;
+      last_value_at: string | null;
+      alarm_state: MeasurementPoint['alarm_state'];
+    }[];
+  };
 
   const { currentSite, pageProps } = useAuth<{
     segments: Segment[];
@@ -216,18 +218,11 @@
     fetchPollData,
     {
       intervalMs: 30000,
-      immediate: false,
+      immediate: false
     }
   );
 
   polling.start();
-
-  function togglePolling() {
-    if (polling.isPaused.value)
-      polling.resume();
-    else
-      polling.pause();
-  }
 
   // Click handlers
   function handleMpClick(mp: LiveMeasurementPoint) {

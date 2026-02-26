@@ -67,7 +67,7 @@
           </CBadge>
         </h5>
 
-        <!-- Single combo chart for all measurement points in the group -->
+        <!-- Single combo chart for all measurement points in the group, with weather overlay -->
         <CCard class="mb-4 shadow-sm">
           <CCardBody>
             <ComboTimeSeriesChart :entries="chartEntries(group.measurementPoints)" />
@@ -91,29 +91,33 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, computed, watch } from 'vue';
+  import { computed, ref, watch } from 'vue';
   import useAuth from '@/composables/useAuth';
   import { useAnalyticsData } from '@/composables/useAnalyticsData';
+  import { useWeatherAnalyticsData } from '@/composables/useWeatherAnalyticsData';
   import SegmentFilter from '@/components/SegmentFilter.vue';
   import DateRangeFilter, { type DateRange } from '@/components/DateRangeFilter.vue';
   import GroupByToggle, { type GroupBy } from '@/components/GroupByToggle.vue';
-  import ComboTimeSeriesChart, { type ChartEntry } from '@/components/ComboTimeSeriesChart.vue';
+  import ComboTimeSeriesChart, { type ChartEntry, type ChartMeasurementPoint } from '@/components/ComboTimeSeriesChart.vue';
   import SummaryTable from '@/components/SummaryTable.vue';
   import type { Segment } from '@/types/location';
   import type { MeasurementSubtype } from '@/types/measurementPoint';
   import type {
     LiveMeasurementPoint,
-    MeasurementPointGroup,
+    // MeasurementPointGroup,
     AggregationLevel,
   } from '@/types/analytics';
+  import type { WeatherStationApiMetric } from '@/types/weather';
 
   const { currentSite, pageProps } = useAuth<{
     segments: Segment[];
     measurement_points: LiveMeasurementPoint[];
     measurement_subtypes: MeasurementSubtype[];
+    weather_station_api_metrics: WeatherStationApiMetric[];
   }>();
   const { segments } = pageProps.value;
   const allMeasurementPoints = pageProps.value.measurement_points;
+  const weatherStationApiMetrics = pageProps.value.weather_station_api_metrics;
 
   // Filters
   const selectedSegmentId = ref<Segment['id'] | null>(null);
@@ -126,6 +130,7 @@
 
   // Analytics data
   const analytics = useAnalyticsData();
+  const weatherAnalytics = useWeatherAnalyticsData();
 
   // Filtered measurement points
   const filteredMeasurementPoints = computed<LiveMeasurementPoint[]>(() => {
@@ -138,13 +143,54 @@
   });
 
   // Grouped
+  type MeasurementPointGroup = {
+    key: string;
+    label: string;
+    measurementPoints: ChartMeasurementPoint[];
+  };
+
   const groups = computed<MeasurementPointGroup[]>(() => {
     const mps = filteredMeasurementPoints.value;
 
-    if (groupBy.value === 'segment')
-      return groupBySegmentFn(mps);
+    let groupsResult: MeasurementPointGroup[] = [];
+    switch (groupBy.value) {
+      case 'measurement_subtype':
+        groupsResult = groupByMeasurementTypeFn(mps);
+        break;
+      case 'segment':
+        groupsResult = groupBySegmentFn(mps);
+        break;
+      default:
+        break;
+    }
 
-    return groupByMeasurementTypeFn(mps);
+    const weatherMeasurementTypeGrouped = Object.groupBy(
+      weatherStationApiMetrics,
+      (metric) => metric.measurement_subtype.measurement_type.name
+    );
+    Object.entries(weatherMeasurementTypeGrouped).forEach(([weatherMeasurementTypeName, metrics]) => {
+      const existingGroup = groupsResult.find((group) => group.key === weatherMeasurementTypeName);
+      if (!existingGroup && metrics) {
+        const pseudoWeatherMps: MeasurementPointGroup = {
+          key: weatherMeasurementTypeName,
+          label: weatherMeasurementTypeName,
+          measurementPoints: metrics.map((metric) => ({
+            id: -metric.id, // Negative ID to avoid conflicts
+            name: `🌤️ ${metric.label}`,
+            effective_unit: metric.effective_unit,
+            effective_chart_type: metric.measurement_subtype.default_chart_type,
+            effective_color: metric.measurement_subtype.default_color,
+            value_format: 'numeric',
+            measurement_subtype: {
+              value_type: metric.measurement_subtype.value_type,
+            }
+          }))
+        };
+        groupsResult.unshift(pseudoWeatherMps);
+      }
+    });
+
+    return groupsResult;
   });
 
   function groupBySegmentFn(mps: LiveMeasurementPoint[]): MeasurementPointGroup[] {
@@ -160,11 +206,9 @@
       return {
         key,
         label: segment?.name ?? 'Unassigned',
-        // position: segment?.position ?? Infinity,
         measurementPoints: groupMps
       };
     });
-    // .sort((a, b) => a.position - b.position);
   }
 
   function groupByMeasurementTypeFn(mps: LiveMeasurementPoint[]): MeasurementPointGroup[] {
@@ -189,17 +233,50 @@
       }));
   }
 
-  // Build chart entries for the combo chart
-  function chartEntries(mps: LiveMeasurementPoint[]): ChartEntry[] {
-    return mps.map((mp) => ({
-      mp,
-      hourlyData: aggregationLevel.value === 'hourly'
-        ? (analytics.aggregations.value[mp.id] ?? [])
-        : [],
-      rawData: aggregationLevel.value === 'raw'
-        ? (analytics.rawValues.value[mp.id] ?? [])
-        : [],
-    }));
+  // Build chart entries for the combo chart — include weather overlay series
+  function chartEntries(mps: ChartMeasurementPoint[]): ChartEntry[] {
+    const mpEntries: ChartEntry[] = mps.map((mp) => {
+      if (mp.id < 0) {
+        const weatherStationApiMetricId = -mp.id;
+        const hourlyData = weatherAnalytics.aggregations.value[weatherStationApiMetricId] ?? [];
+        const rawData = weatherAnalytics.rawValues.value[weatherStationApiMetricId] ?? [];
+
+        const mappedHourly = hourlyData.map((h, idx) => ({
+          id: -(weatherStationApiMetricId * 10000 + idx),
+          date: h.date,
+          hour: h.hour,
+          delta: null,
+          avg_value: h.value ?? h.avg_value,
+          time_on_seconds: null,
+          time_off_seconds: null
+        }));
+
+        // Map weather raw values to RawValue shape
+        const mappedRaw = rawData.map((r, idx) => ({
+          id: -(weatherStationApiMetricId * 10000 + idx),
+          scaled_value: r.scaled_value,
+          sample_time: r.sample_time
+        }));
+
+        return {
+          mp,
+          hourlyData: aggregationLevel.value === 'hourly' ? mappedHourly : [],
+          rawData: aggregationLevel.value === 'raw' ? mappedRaw : [],
+        } as ChartEntry;
+      }
+
+      return {
+        mp,
+        hourlyData: aggregationLevel.value === 'hourly'
+          ? (analytics.aggregations.value[mp.id] ?? [])
+          : [],
+        rawData: aggregationLevel.value === 'raw'
+          ? (analytics.rawValues.value[mp.id] ?? [])
+          : [],
+      }
+    });
+
+    return mpEntries;
   }
 
   // Data fetching
@@ -216,6 +293,23 @@
       await analytics.fetchRaw(mpIds, startTime, endTime);
     } else
       await analytics.fetchHourly(mpIds, dateRange.value);
+
+    // Fetch weather data in parallel if metrics are selected
+    await loadWeatherData();
+  }
+
+  async function loadWeatherData() {
+    if (weatherStationApiMetrics.length === 0) {
+      weatherAnalytics.clear();
+      return;
+    }
+
+    if (aggregationLevel.value === 'raw' && isSingleDay.value) {
+      const startTime = `${dateRange.value.start}T00:00:00`;
+      const endTime = `${dateRange.value.end}T23:59:59`;
+      await weatherAnalytics.fetchRaw(startTime, endTime);
+    } else
+      await weatherAnalytics.fetchHourly(dateRange.value);
   }
 
   // Auto-correct aggregation level

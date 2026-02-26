@@ -9,19 +9,23 @@ import type {
 } from '@/types/analytics';
 import type { MeasurementPoint } from '@/types/measurementPoint';
 
+type Aggregations = Record<MeasurementPoint['id'], HourlyAggregation[]>;
+type RawValues = Record<MeasurementPoint['id'], RawValue[]>;
+type Summary = Record<MeasurementPoint['id'], AnalyticsSummary>;
+
 type HourlyResponse = {
-  aggregations: Record<MeasurementPoint['id'], HourlyAggregation[]>;
-  summary: Record<MeasurementPoint['id'], AnalyticsSummary>;
+  aggregations: Aggregations;
+  summary: Summary;
 };
 
-type RawResponse = {
-  raw_values: Record<MeasurementPoint['id'], RawValue[]>;
+type RawValueResponse = {
+  raw_values: RawValues;
 };
 
 export function useAnalyticsData() {
-  const aggregations = ref<Record<MeasurementPoint['id'], HourlyAggregation[]>>({});
-  const rawValues = ref<Record<MeasurementPoint['id'], RawValue[]>>({});
-  const summary = ref<Record<MeasurementPoint['id'], AnalyticsSummary>>({});
+  const aggregations = ref<Aggregations>({});
+  const rawValues = ref<RawValues>({});
+  const summary = ref<Summary>({});
   const loading = ref(false);
   const error = ref<string | null>(null);
 
@@ -31,8 +35,11 @@ export function useAnalyticsData() {
     mpIds: MeasurementPoint['id'][],
     dateRange: { start: string; end: string }
   ) {
-    if (mpIds.length === 0)
+    if (mpIds.length === 0) {
+      aggregations.value = {};
+      summary.value = {};
       return;
+    }
 
     error.value = null;
     loading.value = true;
@@ -67,13 +74,15 @@ export function useAnalyticsData() {
     startTime: string,
     endTime: string
   ): Promise<void> {
-    if (mpIds.length === 0)
+    if (mpIds.length === 0) {
+      rawValues.value = {};
       return;
+    }
 
     error.value = null;
     loading.value = true;
 
-    const { success, error: apiError, data } = await execute<RawResponse>(
+    const { success, error: apiError, data } = await execute<RawValueResponse>(
       () => axios.get(
         ROUTES.analytics_raw.path,
         {

@@ -10,11 +10,13 @@ class UserArea::AnalyticsController < UserArea::ApplicationController
       .where(id: measurement_points.select(:measurement_subtype_id).distinct)
       .order('measurement_types.position, measurement_subtypes.position')
       .includes(:measurement_type)
+    weather_station_api_metrics = WeatherStationApiMetric.where(key: current_site.weather_station_api_metric_keys)
 
     render inertia: 'UserArea/Analytics', props: {
       segments: SegmentSerializer.render_as_hash(segments),
       measurement_points: MeasurementPointSerializer.render_as_hash(measurement_points, view: :with_details),
-      measurement_subtypes: MeasurementSubtypeSerializer.render_as_hash(measurement_subtypes)
+      measurement_subtypes: MeasurementSubtypeSerializer.render_as_hash(measurement_subtypes),
+      weather_station_api_metrics: WeatherStationApiMetricSerializer.render_as_hash(weather_station_api_metrics)
     }
   end
 
@@ -64,6 +66,64 @@ class UserArea::AnalyticsController < UserArea::ApplicationController
     render json: { raw_values: raw_json }
   end
 
+  def weather_hourly
+    authorize :analytics, :hourly?
+
+    start_date = Date.parse(params[:start_date])
+    end_date = Date.parse(params[:end_date])
+
+    if end_date < start_date
+      render json: { error: 'end_date must be after start_date' }, status: :unprocessable_entity
+      return
+    end
+
+    if !current_site_has_weather_location?
+      render json: { error: 'No weather station api location linked to the current site' }, status: :forbidden
+      return
+    end
+
+    result = WeatherStationApiAnalyticsQueryService.hourly(
+      current_site.weather_station_api_location_id,
+      start_date,
+      end_date
+    )
+
+    aggregations_json = result[:aggregations].transform_values do |records|
+      WeatherHourlyAggregationSerializer.render_as_hash(records)
+    end
+
+    render json: { aggregations: aggregations_json }
+  end
+
+  def weather_raw
+    authorize :analytics, :raw?
+
+    start_time = Time.zone.parse(params[:start_time])
+    end_time = Time.zone.parse(params[:end_time])
+
+    if (end_time - start_time) > 24.hours
+      render json: { error: 'Raw data range limited to 24 hours' }, status: :unprocessable_entity
+      return
+    end
+
+    if !current_site_has_weather_location?
+      render json: { error: 'No weather station api location linked to the current site' }, status: :forbidden
+      return
+    end
+
+    result = WeatherStationApiAnalyticsQueryService.raw(
+      current_site.weather_station_api_location_id,
+      start_time,
+      end_time
+    )
+
+    raw_json = result[:raw_values].transform_values do |records|
+      WeatherRawValueSerializer.render_as_hash(records)
+    end
+
+    render json: { raw_values: raw_json }
+  end
+
   private
     def validated_measurement_point_ids
       requested_ids = Array(params[:measurement_point_ids]).map(&:to_i)
@@ -75,5 +135,10 @@ class UserArea::AnalyticsController < UserArea::ApplicationController
       end
 
       eligible_ids
+    end
+
+    def current_site_has_weather_location?
+      weather_station_api_location = current_site.weather_station_api_location
+      !weather_station_api_location.nil? && weather_station_api_location.active?
     end
 end

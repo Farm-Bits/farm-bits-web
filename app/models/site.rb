@@ -2,15 +2,13 @@ class Site < ApplicationRecord
   audited
 
   belongs_to :company
+  belongs_to :weather_station_api_location, optional: true
 
   has_many :company_user_sites, dependent: :destroy
   accepts_nested_attributes_for :company_user_sites
   has_many :company_users, through: :company_user_sites
 
   has_many :site_sun_data, dependent: :delete_all
-
-  has_many :weather_station_api_location_sites, dependent: :destroy
-  has_many :weather_station_api_locations, through: :weather_station_api_location_sites
 
   has_many :gateways
 
@@ -45,6 +43,14 @@ class Site < ApplicationRecord
 
   def time_zone_object
     ActiveSupport::TimeZone[time_zone]
+  end
+
+  def weather_station_api_metric_keys
+    if !weather_station_api_location || !weather_station_api_location.active?
+      return []
+    end
+
+    weather_station_api_location.weather_station_api_metric_keys
   end
 
   private

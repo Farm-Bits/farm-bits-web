@@ -117,12 +117,18 @@
 
 <script lang="ts" setup>
   import { computed } from 'vue';
-  import type { MeasurementPoint } from '@/types/measurementPoint';
   import type { AnalyticsSummary } from '@/types/analytics';
 
+  type SummaryTableMeasurementPoint = {
+    id: number;
+    name: string;
+    effective_unit: string | null;
+    effective_color: string | null;
+  };
+
   const { measurementPoints, summaryData } = defineProps<{
-    measurementPoints: MeasurementPoint[];
-    summaryData: Record<number, AnalyticsSummary>;
+    measurementPoints: SummaryTableMeasurementPoint[];
+    summaryData: Record<SummaryTableMeasurementPoint['id'], AnalyticsSummary>;
   }>();
 
   // ── Row type (summary is the AnalyticsSummary union, narrowed by filtering) ──

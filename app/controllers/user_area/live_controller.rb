@@ -34,4 +34,43 @@ class UserArea::LiveController < UserArea::ApplicationController
 
     render json: { measurement_points: data }
   end
+
+  def poll_weather
+    authorize :live, :poll?
+
+    site_sun_data = SiteSunData.find_by(site: current_site, date: Date.current)
+
+    render json: {
+      weather_data: weather_data,
+      sun_data: site_sun_data ? SiteSunDataSerializer.render_as_hash(site_sun_data) : nil
+    }
+  end
+
+  private
+    def weather_data
+      weather_station_api_location = current_site.weather_station_api_location
+      if weather_station_api_location.nil? || !weather_station_api_location.active?
+        return nil
+      end
+
+      latest = WeatherStationApiAnalyticsQueryService.latest(weather_station_api_location.id)
+      metrics = WeatherStationApiMetric.where(id: latest.keys).includes(:measurement_subtype).index_by(&:id)
+
+      readings = latest.map do |metric_id, reading|
+        metric = metrics[metric_id]
+        if metric.nil?
+          next
+        end
+
+        {
+          key: metric.key,
+          label: metric.label,
+          value: reading[:scaled_value]&.to_f,
+          unit: metric.effective_unit,
+          sample_time: reading[:sample_time]
+        }
+      end.compact
+
+      readings
+    end
 end

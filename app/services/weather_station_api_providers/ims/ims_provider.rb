@@ -76,7 +76,7 @@ module WeatherStationApiProviders
           data = response.is_a?(Hash) ? response.fetch('data', []) : response
 
           if !data.is_a?(Array)
-            Rails.logger.warn("[WeatherProviders::Ims] Unexpected data format for location #{@weather_station_api_location.id}: #{data.class}")
+            Rails.logger.warn("[WeatherProviders::Ims] Unexpected data format for location #{@weather_station_api_location.id}: #{data.class} - #{data.inspect}")
             return readings
           end
 

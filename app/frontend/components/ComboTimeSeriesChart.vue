@@ -17,13 +17,49 @@
   import VChart from 'vue-echarts';
   import type { EChartsOption } from 'echarts';
   import { getDisplayValue } from '@/utils/valueConverters.ts';
-  import type { HourlyAggregation, RawValue, LiveMeasurementPoint } from '@/types/analytics';
-  import type { ChartType } from '@/types/measurementPoint';
+  // import type { HourlyAggregation, RawValue, LiveMeasurementPoint } from '@/types/analytics';
+  import type { ChartType, ValueType } from '@/types/measurementPoint';
+  import type { RegisterTemplate } from '@/types/plc';
+
+  // export type ChartEntry = {
+  //   mp: LiveMeasurementPoint;
+  //   hourlyData: HourlyAggregation[];
+  //   rawData: RawValue[];
+  // };
+  export type ChartMeasurementPoint = {
+    id: number;
+    name: string;
+    effective_unit: string | null;
+    effective_chart_type: ChartType | null;
+    effective_color: string | null;
+    value_format: RegisterTemplate['value_format'];
+    enum_values?: RegisterTemplate['enum_values'];
+    measurement_subtype: {
+      value_type: ValueType;
+    } | null;
+  };
+
+  type ChartHourlyAggregation = {
+    date: string;
+    hour: number;
+    // Accumulative
+    delta: number | null;
+    // Instantaneous
+    avg_value: number | null;
+    // Status
+    time_on_seconds: number | null;
+    time_off_seconds: number | null;
+  };
+
+  type ChartRawValue = {
+    scaled_value: number;
+    sample_time: string;
+  };
 
   export type ChartEntry = {
-    mp: LiveMeasurementPoint;
-    hourlyData: HourlyAggregation[];
-    rawData: RawValue[];
+    mp: ChartMeasurementPoint;
+    hourlyData: ChartHourlyAggregation[];
+    rawData: ChartRawValue[];
   };
 
   const {
@@ -644,7 +680,7 @@
 
   // ── Helper: compute on-time percentage from hourly aggregation ──
 
-  function computeOnPercentage(h: HourlyAggregation): number {
+  function computeOnPercentage(h: ChartHourlyAggregation): number {
     if (h.time_on_seconds === null || h.time_off_seconds === null)
       return 0;
 
@@ -666,7 +702,7 @@
 
   // ── Raw Step data builder ──
 
-  function buildRawStepData(rawData: RawValue[], yOffset: number): number[][] {
+  function buildRawStepData(rawData: ChartRawValue[], yOffset: number): number[][] {
     if (rawData.length === 0)
       return [];
 
@@ -678,7 +714,7 @@
 
   // ── Raw RangeBar data builder ──
 
-  function buildRawRangeBarData(rawData: RawValue[], yOffset: number): number[][] {
+  function buildRawRangeBarData(rawData: ChartRawValue[], yOffset: number): number[][] {
     if (rawData.length === 0)
       return [];
 

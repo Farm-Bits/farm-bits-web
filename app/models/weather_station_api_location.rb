@@ -1,9 +1,6 @@
 class WeatherStationApiLocation < ApplicationRecord
  audited
 
-  has_many :weather_station_api_location_sites, dependent: :destroy
-  has_many :sites, through: :weather_station_api_location_sites
-
   has_many :weather_station_api_raw_values, dependent: :destroy
 
   has_many :weather_station_api_hourly_aggregations, dependent: :destroy
@@ -43,5 +40,14 @@ class WeatherStationApiLocation < ApplicationRecord
     else
       raise "Unknown weather provider: #{provider}"
     end
+  end
+
+  def weather_station_api_metric_keys
+    if !active?
+      return []
+    end
+
+    channel_map = provider_adapter.class::CHANNEL_MAP
+    provider_config['active_channels'].map { |channel_name| channel_map[channel_name] }.compact
   end
 end

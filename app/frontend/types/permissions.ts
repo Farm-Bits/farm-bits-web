@@ -1,5 +1,5 @@
 // Auto-generated file - Do not edit manually
-// Generated at: 2026-02-19 11:18:31 UTC
+// Generated at: 2026-02-26 18:34:03 UTC
 
 import type { Method } from '@inertiajs/core';
 
@@ -34,12 +34,14 @@ export const ROLES: Record<Role, { name: string; description: string; level: num
 } as const;
 
 // Valid controller keys
-export type ControllerKey = 'dashboard' | 'my_account' | 'company_setup' | 'company_users' | 'invitations' | 'sites' | 'gateways' | 'plcs' | 'measurement_points' | 'live' | 'analytics';
+export type ControllerKey = 'live' | 'my_account' | 'company_setup' | 'company_users' | 'invitations' | 'sites' | 'gateways' | 'plcs' | 'measurement_points' | 'analytics' | 'dashboard';
 
 // Route permissions mapping
 export type RoutePermissions = {
-  dashboard: {
+  live: {
     show: boolean;
+    poll: boolean;
+    poll_weather: boolean;
   };
   my_account: {
     show: boolean;
@@ -84,14 +86,15 @@ export type RoutePermissions = {
     write: boolean;
     update: boolean;
   };
-  live: {
-    show: boolean;
-    poll: boolean;
-  };
   analytics: {
     show: boolean;
     hourly: boolean;
     raw: boolean;
+    weather_hourly: boolean;
+    weather_raw: boolean;
+  };
+  dashboard: {
+    show: boolean;
   };
 };
 
@@ -110,8 +113,8 @@ export type RouteInfo = {
 };
 
 export const ROUTES: Record<string, RouteInfo> = {
-  dashboard_show: {
-    controller: 'dashboard',
+  live_show: {
+    controller: 'live',
     action: 'show',
     path: '/user',
     verb: 'get'
@@ -278,16 +281,16 @@ export const ROUTES: Record<string, RouteInfo> = {
     path: '/user/measurement_points/:id',
     verb: 'patch'
   },
-  live_show: {
-    controller: 'live',
-    action: 'show',
-    path: '/user/live',
-    verb: 'get'
-  },
   live_poll: {
     controller: 'live',
     action: 'poll',
     path: '/user/live/poll',
+    verb: 'get'
+  },
+  live_poll_weather: {
+    controller: 'live',
+    action: 'poll_weather',
+    path: '/user/live/poll_weather',
     verb: 'get'
   },
   analytics_show: {
@@ -306,6 +309,24 @@ export const ROUTES: Record<string, RouteInfo> = {
     controller: 'analytics',
     action: 'raw',
     path: '/user/analytics/raw',
+    verb: 'get'
+  },
+  analytics_weather_hourly: {
+    controller: 'analytics',
+    action: 'weather_hourly',
+    path: '/user/analytics/weather_hourly',
+    verb: 'get'
+  },
+  analytics_weather_raw: {
+    controller: 'analytics',
+    action: 'weather_raw',
+    path: '/user/analytics/weather_raw',
+    verb: 'get'
+  },
+  dashboard_show: {
+    controller: 'dashboard',
+    action: 'show',
+    path: '/user/dashboard',
     verb: 'get'
   }
 };
