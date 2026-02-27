@@ -68,7 +68,8 @@ module WeatherStationApiProviders
                 'Authorization' => "ApiToken #{@api_token}",
                 'Accept' => 'application/json'
               },
-              timeout: 30
+              open_timeout: 10,
+              read_timeout: 30
             )
           )
 
@@ -76,6 +77,12 @@ module WeatherStationApiProviders
         end
 
         def handle_response(response)
+          content_type = response.headers['content-type']&.downcase || ''
+
+          if !content_type.include?('application/json')
+            raise Error, "IMS API returned non-JSON response (#{content_type.truncate(50)}), likely maintenance page"
+          end
+
           case response.code
           when 200
             response
