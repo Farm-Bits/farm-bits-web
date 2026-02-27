@@ -97,10 +97,13 @@
   import { ROUTES } from '@/types/permissions';
   import type { Segment } from '@/types/location';
   import type { MeasurementPoint, MeasurementSubtype } from '@/types/measurementPoint';
-  import type {
-    LiveMeasurementPoint,
-    MeasurementPointGroup
-  } from '@/types/analytics';
+  import type { LiveMeasurementPoint } from '@/types/analytics';
+
+  type MeasurementPointGroup = {
+    key: string;
+    label: string;
+    measurementPoints: LiveMeasurementPoint[];
+  };
 
   type PollResponse = {
     measurement_points: {

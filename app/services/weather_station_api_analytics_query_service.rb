@@ -13,11 +13,12 @@ class WeatherStationApiAnalyticsQueryService
       .where(weather_station_api_location_id: weather_station_api_location_id)
       .where(date: start_date..end_date)
       .order(:hour)
-      .includes(:weather_station_api_metric)
 
     grouped = aggregations.group_by(&:weather_station_api_metric_id)
 
-    { aggregations: grouped }
+    summary = grouped.transform_values { |records| build_summary(records) }
+
+    { aggregations: grouped, summary: summary }
   end
 
   # Returns raw values for a short time window (max 24 hours).
@@ -60,4 +61,47 @@ class WeatherStationApiAnalyticsQueryService
       .where(weather_station_api_location_id: weather_station_api_location_id)
       .includes(:weather_station_api_metric)
   end
+
+  def self.build_summary(records)
+    if records.empty?
+      return {}
+    end
+
+    value_type = records.first.weather_station_api_metric.measurement_subtype.value_type
+
+    base = {
+      weather_station_api_metric_id: records.first.weather_station_api_metric_id,
+      value_type: value_type,
+      sample_count: records.sum(&:sample_count)
+    }
+
+    case value_type
+    when 'instantaneous'
+      base.merge(
+        min_value: records.filter_map(&:min_value).min.to_f,
+        max_value: records.filter_map(&:max_value).max.to_f,
+        avg_value: compute_weighted_avg(records)
+      )
+    when 'accumulative'
+      sorted = records.sort_by { |r| [r.date, r.hour] }
+      base.merge(
+        sum_value: sorted.last.sum_value.to_f - sorted.first.sum_value.to_f
+      )
+    else
+      base
+    end
+  end
+
+  def self.compute_weighted_avg(records)
+    valid = records.select { |r| r.avg_value.present? && r.sample_count > 0 }
+    if valid.empty?
+      return nil
+    end
+
+    total_readings = valid.sum(&:sample_count)
+    weighted_sum = valid.sum { |r| r.avg_value.to_f * r.sample_count }
+    (weighted_sum / total_readings).round(4)
+  end
+
+  private_class_method :build_summary, :compute_weighted_avg
 end

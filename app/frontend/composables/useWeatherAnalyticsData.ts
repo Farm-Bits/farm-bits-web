@@ -4,15 +4,18 @@ import { useApiCall } from '@/composables/useApi';
 import { ROUTES } from '@/types/permissions';
 import type {
   WeatherStationApiHourlyAggregation,
+  WeatherStationApiMetric,
   WeatherStationApiRawValue,
-  WeatherStationApiMetric
+  WeatherStationApiSummary
 } from '@/types/weather';
 
 type Aggregations = Record<WeatherStationApiMetric['id'], WeatherStationApiHourlyAggregation[]>;
 type RawValues = Record<WeatherStationApiMetric['id'], WeatherStationApiRawValue[]>;
+type Summary = Record<WeatherStationApiMetric['id'], WeatherStationApiSummary>;
 
 type HourlyResponse = {
   aggregations: Aggregations;
+  summary: Summary;
 };
 
 type RawValueResponse = {
@@ -22,6 +25,7 @@ type RawValueResponse = {
 export function useWeatherAnalyticsData() {
   const aggregations = ref<Aggregations>({});
   const rawValues = ref<RawValues>({});
+  const summary = ref<Summary>({});
   const loading = ref(false);
   const error = ref<string | null>(null);
 
@@ -44,8 +48,10 @@ export function useWeatherAnalyticsData() {
       { errorTitle: 'Load Weather Analytics Error', showErrorToast: true }
     );
 
-    if (success)
+    if (success) {
       aggregations.value = data.aggregations;
+      summary.value = data.summary;
+    }
 
     if (apiError)
       error.value = apiError.error;
@@ -54,6 +60,9 @@ export function useWeatherAnalyticsData() {
   }
 
   async function fetchRaw(startTime: string, endTime: string) {
+    error.value = null;
+    loading.value = true;
+
     const { success, error: apiError, data } = await execute<RawValueResponse>(
       () => axios.get(
         ROUTES.analytics_weather_raw.path,
@@ -79,12 +88,14 @@ export function useWeatherAnalyticsData() {
   function clear() {
     aggregations.value = {};
     rawValues.value = {};
+    summary.value = {};
     error.value = null;
   }
 
   return {
     aggregations,
     rawValues,
+    summary,
     loading,
     error,
     fetchHourly,

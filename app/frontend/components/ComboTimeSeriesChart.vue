@@ -17,49 +17,41 @@
   import VChart from 'vue-echarts';
   import type { EChartsOption } from 'echarts';
   import { getDisplayValue } from '@/utils/valueConverters.ts';
-  // import type { HourlyAggregation, RawValue, LiveMeasurementPoint } from '@/types/analytics';
   import type { ChartType, ValueType } from '@/types/measurementPoint';
   import type { RegisterTemplate } from '@/types/plc';
 
-  // export type ChartEntry = {
-  //   mp: LiveMeasurementPoint;
-  //   hourlyData: HourlyAggregation[];
-  //   rawData: RawValue[];
-  // };
-  export type ChartMeasurementPoint = {
+  export type SerieDefinition = {
     id: number;
     name: string;
-    effective_unit: string | null;
-    effective_chart_type: ChartType | null;
-    effective_color: string | null;
+    unit: string | null;
+    chart_type: ChartType | null;
+    color: string | null;
     value_format: RegisterTemplate['value_format'];
     enum_values?: RegisterTemplate['enum_values'];
-    measurement_subtype: {
-      value_type: ValueType;
-    } | null;
+    value_type: ValueType;
   };
 
-  type ChartHourlyAggregation = {
+  type HourlyValue = {
     date: string;
     hour: number;
     // Accumulative
-    delta: number | null;
+    delta?: number | null;
     // Instantaneous
-    avg_value: number | null;
+    avg_value?: number | null;
     // Status
-    time_on_seconds: number | null;
-    time_off_seconds: number | null;
+    time_on_seconds?: number | null;
+    time_off_seconds?: number | null;
   };
 
-  type ChartRawValue = {
-    scaled_value: number;
+  type RawValue = {
+    value: number;
     sample_time: string;
   };
 
   export type ChartEntry = {
-    mp: ChartMeasurementPoint;
-    hourlyData: ChartHourlyAggregation[];
-    rawData: ChartRawValue[];
+    serieDefinition: SerieDefinition;
+    hourlyData: HourlyValue[];
+    rawData: RawValue[];
   };
 
   const {
@@ -72,13 +64,13 @@
 
   const numericEntries = computed(() =>
     entries.filter((e) => {
-      const vt = e.mp.measurement_subtype?.value_type;
+      const vt = e.serieDefinition.value_type;
       return vt === 'instantaneous' || vt === 'accumulative';
     })
   );
 
   const statusEntries = computed(() =>
-    entries.filter((e) => e.mp.measurement_subtype?.value_type === 'status')
+    entries.filter((e) => e.serieDefinition.value_type === 'status')
   );
 
   function isRawEntry(entry: ChartEntry) {
@@ -99,8 +91,7 @@
       if (!isRawEntry(e))
         return false;
 
-      const ct = e.mp.effective_chart_type as ChartType | null;
-      return !ct || ct === 'step';
+      return e.serieDefinition.chart_type === 'step';
     })
   );
 
@@ -109,8 +100,7 @@
       if (!isRawEntry(e))
         return false;
 
-      const ct = e.mp.effective_chart_type as ChartType | null;
-      return ct === 'rangeBar';
+      return e.serieDefinition.chart_type === 'rangeBar';
     })
   );
 
@@ -143,23 +133,23 @@
     const map = new Map<number, string>();
     let idx = 0;
     for (const entry of [...numericEntries.value, ...statusEntries.value]) {
-      map.set(entry.mp.id, entry.mp.effective_color ?? PALETTE[idx % PALETTE.length]);
+      map.set(entry.serieDefinition.id, entry.serieDefinition.color ?? PALETTE[idx % PALETTE.length]);
       idx++;
     }
     return map;
   });
 
-  function entryColor(entry: ChartEntry): string {
-    return colorMap.value.get(entry.mp.id) ?? PALETTE[0];
+  function entryColor(entry: ChartEntry) {
+    return colorMap.value.get(entry.serieDefinition.id) ?? PALETTE[0];
   }
 
   function statusLabel(entry: ChartEntry, rawValue: number) {
     return getDisplayValue(
       rawValue,
-      entry.mp.value_format,
+      entry.serieDefinition.value_format,
       {
-        unit: entry.mp.effective_unit,
-        enumValues: entry.mp.enum_values
+        unit: entry.serieDefinition.unit,
+        enumValues: entry.serieDefinition.enum_values
       }
     );
   }
@@ -178,7 +168,7 @@
 
   function rawStatusOffset(entry: ChartEntry) {
     const rawStatuses = statusEntries.value.filter((e) => isRawEntry(e));
-    const idx = rawStatuses.findIndex((e) => e.mp.id === entry.mp.id);
+    const idx = rawStatuses.findIndex((e) => e.serieDefinition.id === entry.serieDefinition.id);
     return idx * (STATUS_BAND_HEIGHT + STATUS_GAP);
   }
 
@@ -193,7 +183,7 @@
   const unitGroups = computed<UnitGroup[]>(() => {
     const map = new Map<string, ChartEntry[]>();
     for (const entry of numericEntries.value) {
-      const unit = entry.mp.effective_unit ?? '';
+      const unit = entry.serieDefinition.unit ?? '';
       if (!map.has(unit))
         map.set(unit, []);
       map.get(unit)!.push(entry);
@@ -242,8 +232,8 @@
     step?: string | false;
     areaStyle?: Record<string, any>;
   } {
-    const chartType = entry.mp.effective_chart_type as ChartType | null;
-    const vt = entry.mp.measurement_subtype?.value_type;
+    const chartType = entry.serieDefinition.chart_type as ChartType | null;
+    const vt = entry.serieDefinition.value_type;
     const isRaw = entry.rawData.length > 0;
 
     if (chartType === 'area')
@@ -275,12 +265,12 @@
       for (const entry of group.entries) {
         const isRaw = entry.rawData.length > 0;
         const config = resolveSeriesConfig(entry);
-        const vt = entry.mp.measurement_subtype?.value_type;
+        const vt = entry.serieDefinition.value_type;
 
         const data = isRaw
           ? entry.rawData.map((rv) => [
               new Date(rv.sample_time).getTime(),
-              rv.scaled_value
+              rv.value
             ])
           : vt === 'accumulative'
             ? entry.hourlyData.map((h) => [
@@ -293,7 +283,7 @@
               ]);
 
         series.push({
-          name: entry.mp.name,
+          name: entry.serieDefinition.name,
           type: config.type,
           step: config.step || false,
           areaStyle: config.areaStyle,
@@ -315,7 +305,7 @@
       const data = buildRawStepData(entry.rawData, yOff);
 
       series.push({
-        name: entry.mp.name,
+        name: entry.serieDefinition.name,
         type: 'line',
         step: 'start',
         yAxisIndex: rawStatusYAxisIndex.value,
@@ -338,7 +328,7 @@
       const data = buildRawRangeBarData(entry.rawData, yOff);
 
       series.push({
-        name: entry.mp.name,
+        name: entry.serieDefinition.name,
         type: 'custom',
         yAxisIndex: rawStatusYAxisIndex.value,
         data,
@@ -407,7 +397,7 @@
       });
 
       series.push({
-        name: entry.mp.name,
+        name: entry.serieDefinition.name,
         type: 'bar',
         yAxisIndex: hourlyStatusYAxisIndex.value,
         data,
@@ -476,7 +466,7 @@
         const yOff = rawStatusOffset(entry);
         const mid = yOff + STATUS_BAND_HEIGHT / 2;
         tickValues.push(mid);
-        labelMap.set(mid, entry.mp.name);
+        labelMap.set(mid, entry.serieDefinition.name);
       }
 
       yAxis.push({
@@ -603,7 +593,7 @@
 
           for (const p of normalParams) {
             // Raw step status entry
-            const stepEntry = rawStepEntries.value.find((e) => e.mp.name === p.seriesName);
+            const stepEntry = rawStepEntries.value.find((e) => e.serieDefinition.name === p.seriesName);
             if (stepEntry) {
               const yOff = rawStatusOffset(stepEntry);
               const rawLevel = (p.data[1] as number) - yOff;
@@ -613,7 +603,7 @@
             }
 
             // Hourly status percentage entry
-            const hourlyEntry = hourlyStatusEntries.value.find((e) => e.mp.name === p.seriesName);
+            const hourlyEntry = hourlyStatusEntries.value.find((e) => e.serieDefinition.name === p.seriesName);
             if (hourlyEntry) {
               const pct = p.data[1] as number;
               const onLbl = statusOnLabel(hourlyEntry);
@@ -659,7 +649,7 @@
 
   // ── Helper: compute right grid margin ──
 
-  function computeGridRight(hasMultipleUnitAxes: boolean): number {
+  function computeGridRight(hasMultipleUnitAxes: boolean) {
     const axes = [
       hasMultipleUnitAxes,
       hasRawStatus.value,
@@ -680,8 +670,8 @@
 
   // ── Helper: compute on-time percentage from hourly aggregation ──
 
-  function computeOnPercentage(h: ChartHourlyAggregation): number {
-    if (h.time_on_seconds === null || h.time_off_seconds === null)
+  function computeOnPercentage(h: HourlyValue) {
+    if (h.time_on_seconds === undefined || h.time_on_seconds === null || h.time_off_seconds === undefined || h.time_off_seconds === null)
       return 0;
 
     const total = h.time_on_seconds + h.time_off_seconds;
@@ -693,7 +683,7 @@
 
   // ── Helper: create rgba from hex + opacity ──
 
-  function adjustOpacity(hexColor: string, opacity: number): string {
+  function adjustOpacity(hexColor: string, opacity: number) {
     const r = parseInt(hexColor.slice(1, 3), 16);
     const g = parseInt(hexColor.slice(3, 5), 16);
     const b = parseInt(hexColor.slice(5, 7), 16);
@@ -702,29 +692,29 @@
 
   // ── Raw Step data builder ──
 
-  function buildRawStepData(rawData: ChartRawValue[], yOffset: number): number[][] {
+  function buildRawStepData(rawData: RawValue[], yOffset: number) {
     if (rawData.length === 0)
       return [];
 
     return rawData.map((rv) => [
       new Date(rv.sample_time).getTime(),
-      (rv.scaled_value > 0 ? STATUS_BAND_HEIGHT : 0) + yOffset
+      (rv.value > 0 ? STATUS_BAND_HEIGHT : 0) + yOffset
     ]);
   }
 
   // ── Raw RangeBar data builder ──
 
-  function buildRawRangeBarData(rawData: ChartRawValue[], yOffset: number): number[][] {
+  function buildRawRangeBarData(rawData: RawValue[], yOffset: number) {
     if (rawData.length === 0)
       return [];
 
     const segments: number[][] = [];
     let segStart = new Date(rawData[0].sample_time).getTime();
-    let segOn = rawData[0].scaled_value > 0 ? 1 : 0;
+    let segOn = rawData[0].value > 0 ? 1 : 0;
 
     for (let i = 1; i < rawData.length; i++) {
       const ts = new Date(rawData[i].sample_time).getTime();
-      const isOn = rawData[i].scaled_value > 0 ? 1 : 0;
+      const isOn = rawData[i].value > 0 ? 1 : 0;
 
       if (isOn !== segOn) {
         segments.push([segStart, ts, yOffset, segOn]);
@@ -740,10 +730,10 @@
     return segments;
   }
 
-  function findUnitForEntry(seriesName: string): string {
+  function findUnitForEntry(seriesName: string) {
     for (const group of unitGroups.value) {
       for (const entry of group.entries) {
-        if (entry.mp.name === seriesName)
+        if (entry.serieDefinition.name === seriesName)
           return group.unit;
       }
     }

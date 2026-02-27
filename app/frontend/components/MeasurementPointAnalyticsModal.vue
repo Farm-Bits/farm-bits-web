@@ -54,9 +54,7 @@
             <h6 class="mb-0">Summary</h6>
           </CCardHeader>
           <CCardBody>
-            <SummaryTable
-              :measurement-points="measurementPoints"
-              :summary-data="analytics.summary.value" />
+            <SummaryTable :rows="summaryData" />
           </CCardBody>
         </CCard>
       </template>
@@ -69,7 +67,8 @@
   import { useAnalyticsData } from '@/composables/useAnalyticsData';
   import DateRangeFilter, { type DateRange } from '@/components/DateRangeFilter.vue';
   import ComboTimeSeriesChart, { type ChartEntry } from '@/components/ComboTimeSeriesChart.vue';
-  import SummaryTable from '@/components/SummaryTable.vue';
+  import SummaryTable, { type RowDefinition } from '@/components/SummaryTable.vue';
+  import { mapMeasurementPointToSerieDefinition } from '@/utils/valueFormaters';
   import type { LiveMeasurementPoint, AggregationLevel } from '@/types/analytics';
 
   const { visible, measurementPoints } = defineProps<{
@@ -89,6 +88,17 @@
 
   const isSingleDay = computed(() => dateRange.value.start === dateRange.value.end);
 
+  const summaryData = computed<RowDefinition[]>(() => {
+    return measurementPoints.map((mp) => {
+      const serieDefinition = mapMeasurementPointToSerieDefinition(mp);
+      const summary = analytics.summary.value[serieDefinition.id];
+      return {
+        ...serieDefinition,
+        summary
+      };
+    });
+  });
+
   // ── Analytics data (own instance, independent from the Analytics page) ──
 
   const analytics = useAnalyticsData();
@@ -106,7 +116,7 @@
 
   const chartEntries = computed<ChartEntry[]>(() =>
     measurementPoints.map((mp) => ({
-      mp,
+      serieDefinition: mapMeasurementPointToSerieDefinition(mp),
       hourlyData: aggregationLevel.value === 'hourly'
         ? (analytics.aggregations.value[mp.id] ?? [])
         : [],

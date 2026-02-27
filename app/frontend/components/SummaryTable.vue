@@ -18,7 +18,7 @@
             </CTableRow>
           </CTableHead>
           <CTableBody>
-            <CTableRow v-for="row in instantaneousRows" :key="row.measurementPointId">
+            <CTableRow v-for="row in instantaneousRows" :key="row.id">
               <CTableDataCell>
                 <span
                   v-if="row.color"
@@ -26,9 +26,9 @@
                   :style="{ backgroundColor: row.color }" />
                 {{ row.name }}
               </CTableDataCell>
-              <CTableDataCell class="text-end">{{ formatNum((row.summary as any).min_value) }}</CTableDataCell>
-              <CTableDataCell class="text-end">{{ formatNum((row.summary as any).max_value) }}</CTableDataCell>
-              <CTableDataCell class="text-end">{{ formatNum((row.summary as any).avg_value) }}</CTableDataCell>
+              <CTableDataCell class="text-end">{{ formatNum(row.summary.min_value) }}</CTableDataCell>
+              <CTableDataCell class="text-end">{{ formatNum(row.summary.max_value) }}</CTableDataCell>
+              <CTableDataCell class="text-end">{{ formatNum(row.summary.avg_value) }}</CTableDataCell>
               <CTableDataCell>{{ row.unit }}</CTableDataCell>
             </CTableRow>
           </CTableBody>
@@ -52,7 +52,7 @@
             </CTableRow>
           </CTableHead>
           <CTableBody>
-            <CTableRow v-for="row in accumulativeRows" :key="row.measurementPointId">
+            <CTableRow v-for="row in accumulativeRows" :key="row.id">
               <CTableDataCell>
                 <span
                   v-if="row.color"
@@ -60,9 +60,9 @@
                   :style="{ backgroundColor: row.color }" />
                 {{ row.name }}
               </CTableDataCell>
-              <CTableDataCell class="text-end">{{ formatNum((row.summary as any).start_value) }}</CTableDataCell>
-              <CTableDataCell class="text-end">{{ formatNum((row.summary as any).end_value) }}</CTableDataCell>
-              <CTableDataCell class="text-end fw-semibold">{{ formatNum((row.summary as any).total_delta) }}</CTableDataCell>
+              <CTableDataCell class="text-end">{{ formatNum(row.summary.start_value) }}</CTableDataCell>
+              <CTableDataCell class="text-end">{{ formatNum(row.summary.end_value) }}</CTableDataCell>
+              <CTableDataCell class="text-end fw-semibold">{{ formatNum(row.summary.total_delta) }}</CTableDataCell>
               <CTableDataCell>{{ row.unit }}</CTableDataCell>
             </CTableRow>
           </CTableBody>
@@ -86,7 +86,7 @@
             </CTableRow>
           </CTableHead>
           <CTableBody>
-            <CTableRow v-for="row in statusRows" :key="row.measurementPointId">
+            <CTableRow v-for="row in statusRows" :key="row.id">
               <CTableDataCell>
                 <span
                   v-if="row.color"
@@ -94,15 +94,15 @@
                   :style="{ backgroundColor: row.color }" />
                 {{ row.name }}
               </CTableDataCell>
-              <CTableDataCell class="text-end">{{ formatDuration((row.summary as any).total_time_on_seconds) }}</CTableDataCell>
-              <CTableDataCell class="text-end">{{ formatDuration((row.summary as any).total_time_off_seconds) }}</CTableDataCell>
+              <CTableDataCell class="text-end">{{ formatDuration(row.summary.total_time_on_seconds) }}</CTableDataCell>
+              <CTableDataCell class="text-end">{{ formatDuration(row.summary.total_time_off_seconds) }}</CTableDataCell>
               <CTableDataCell class="text-end">
-                <template v-if="(row.summary as any).on_percentage !== null">
-                  {{ (row.summary as any).on_percentage }}%
+                <template v-if="row.summary.on_percentage !== undefined && row.summary.on_percentage !== null">
+                  {{ row.summary.on_percentage }}%
                 </template>
                 <template v-else>—</template>
               </CTableDataCell>
-              <CTableDataCell class="text-end">{{ (row.summary as any).total_transitions ?? '—' }}</CTableDataCell>
+              <CTableDataCell class="text-end">{{ row.summary.total_transitions ?? '—' }}</CTableDataCell>
             </CTableRow>
           </CTableBody>
         </CTable>
@@ -117,45 +117,43 @@
 
 <script lang="ts" setup>
   import { computed } from 'vue';
-  import type { AnalyticsSummary } from '@/types/analytics';
+  import type { ValueType } from '@/types/measurementPoint';
 
-  type SummaryTableMeasurementPoint = {
+  type DataSummary = {
+    // Accumulative
+    start_value?: number | null;
+    end_value?: number | null;
+    total_delta?: number | null;
+
+    // Instantaneous
+    min_value?: number | null;
+    max_value?: number | null;
+    avg_value?: number | null;
+
+    // Status
+    total_time_on_seconds?: number | null;
+    total_time_off_seconds?: number | null;
+    on_percentage?: number | null;
+    total_transitions?: number | null;
+  };
+
+  export type RowDefinition = {
     id: number;
     name: string;
-    effective_unit: string | null;
-    effective_color: string | null;
-  };
-
-  const { measurementPoints, summaryData } = defineProps<{
-    measurementPoints: SummaryTableMeasurementPoint[];
-    summaryData: Record<SummaryTableMeasurementPoint['id'], AnalyticsSummary>;
-  }>();
-
-  // ── Row type (summary is the AnalyticsSummary union, narrowed by filtering) ──
-
-  type SummaryRow = {
-    measurementPointId: number;
-    name: string;
-    unit: string;
+    value_type: ValueType;
+    unit: string | null;
     color: string | null;
-    summary: AnalyticsSummary;
+    summary: DataSummary;
   };
+
+  const { rows } = defineProps<{
+    rows: RowDefinition[];
+  }>();
 
   // ── Build rows per value type ──
 
-  function buildRows(valueType: string): SummaryRow[] {
-    return measurementPoints
-      .filter((mp) => {
-        const s = summaryData[mp.id];
-        return s && s.value_type === valueType;
-      })
-      .map((mp) => ({
-        measurementPointId: mp.id,
-        name: mp.name,
-        unit: mp.effective_unit ?? '',
-        color: mp.effective_color ?? null,
-        summary: summaryData[mp.id],
-      }));
+  function buildRows(valueType: ValueType) {
+    return rows.filter((row) => row.value_type === valueType);
   }
 
   const instantaneousRows = computed(() => buildRows('instantaneous'));
@@ -185,7 +183,9 @@
   // ── Formatters ──
 
   function formatNum(val: number | null | undefined) {
-    if (val === null || val === undefined) return '—';
+    if (val === null || val === undefined)
+      return '—';
+
     return Number(val.toFixed(2)).toLocaleString();
   }
 

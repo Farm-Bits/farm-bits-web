@@ -3,7 +3,7 @@ class WeatherRawValueSerializer < Blueprinter::Base
 
   fields :sample_time
 
-  field :scaled_value do |rv|
-    rv.scaled_value.to_f
+  field :value do |rv|
+    rv.scaled_value&.to_f
   end
 end

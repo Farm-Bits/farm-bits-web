@@ -38,10 +38,7 @@ class UserArea::AnalyticsController < UserArea::ApplicationController
       HourlyAggregationSerializer.render_as_hash(records)
     end
 
-    render json: {
-      aggregations: aggregations_json,
-      summary: result[:summary]
-    }
+    render json: { aggregations: aggregations_json, summary: result[:summary] }
   end
 
   def raw
@@ -92,7 +89,7 @@ class UserArea::AnalyticsController < UserArea::ApplicationController
       WeatherHourlyAggregationSerializer.render_as_hash(records)
     end
 
-    render json: { aggregations: aggregations_json }
+    render json: { aggregations: aggregations_json, summary: result[:summary] }
   end
 
   def weather_raw

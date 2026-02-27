@@ -11,7 +11,7 @@ export type LiveMeasurementPoint = MeasurementPoint & {
 
 export type RawValue = {
   id: number;
-  scaled_value: number;
+  value: number;
   sample_time: string;
   measurement_point_id: MeasurementPoint['id'];
 };
@@ -73,11 +73,5 @@ type StatusSummary = {
 };
 
 export type AnalyticsSummary = InstantaneousSummary | AccumulativeSummary | StatusSummary;
-
-export type MeasurementPointGroup = {
-  key: string;
-  label: string;
-  measurementPoints: LiveMeasurementPoint[];
-};
 
 export type AggregationLevel = 'hourly' | 'raw';
