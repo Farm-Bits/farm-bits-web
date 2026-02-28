@@ -9,7 +9,7 @@ class WeatherStationApiFetchJob
     weather_station_api_locations = WeatherStationApiLocation.needs_fetch
 
     weather_station_api_locations.find_each.with_index do |weather_station_api_location, index|
-      WeatherStationApiLocationFetchJob.perform_in(index * 2, weather_station_api_location.id)
+      WeatherStationApiLocationFetchJob.perform_in(index * 4, weather_station_api_location.id)
     end
   end
 end
