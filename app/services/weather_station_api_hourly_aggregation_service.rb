@@ -36,28 +36,29 @@ class WeatherStationApiHourlyAggregationService
       scope
     end
 
-    # ── Phase 1: Gap detection ──────────────────────────────────────────
+    # ── Phase 1: Detect the earliest hour we need to aggregate from ────
 
-    # For a batch of locations, determine each one's start_hour.
-    # Returns { location_id => start_hour_time }
-    def detect_start_hours(location_ids)
+    # For each location, find where to start:
+    # - If aggregations exist: re-aggregate from the latest aggregated hour
+    # - If no aggregations: start from the earliest raw value
+    # Returns { location_id => start_time (UTC) }
+    def detect_start_times(location_ids)
       # 1) Latest aggregation per location — single query
       latest_aggs = WeatherStationApiHourlyAggregation
         .where(weather_station_api_location_id: location_ids)
         .group(:weather_station_api_location_id)
         .pluck(
           :weather_station_api_location_id,
-          Arel.sql("MAX(CONCAT(date, ' ', LPAD(hour, 2, '0')))")
+          Arel.sql("MAX(CONCAT(`date`, ' ', LPAD(`hour`, 2, '0')))")
         ).to_h
-      # => { location_id => "2026-02-17 14", ... }
 
-      start_hours = {}
+      start_times = {}
       location_ids_without_aggs = []
       location_ids.each do |loc_id|
         if latest_aggs[loc_id]
           date_str, hour_str = latest_aggs[loc_id].split(" ")
           parsed = Date.parse(date_str)
-          start_hours[loc_id] = Time.utc(parsed.year, parsed.month, parsed.day, hour_str.to_i)
+          start_times[loc_id] = Time.utc(parsed.year, parsed.month, parsed.day, hour_str.to_i)
         else
           location_ids_without_aggs << loc_id
         end
@@ -71,70 +72,45 @@ class WeatherStationApiHourlyAggregationService
           .minimum(:sample_time)
 
         earliest_samples.each do |loc_id, sample_time|
-          start_hours[loc_id] = sample_time.utc.beginning_of_hour
+          start_times[loc_id] = sample_time.utc.beginning_of_hour
         end
       end
 
-      start_hours
-    end
-
-    # Build { location_id => [hour_start, ...] } for a batch.
-    def build_hour_plan(location_ids)
-      start_hours = detect_start_hours(location_ids)
-      if start_hours.empty?
-        return {}
-      end
-
-      plan = {}
-      start_hours.each do |loc_id, start_hour|
-        hours = []
-        h = start_hour
-        while h <= @current_hour
-          hours << h
-          h += 1.hour
-        end
-
-        if hours.any?
-          plan[loc_id] = hours
-        end
-      end
-
-      plan
+      start_times
     end
 
     # ── Phase 2: Process a batch ────────────────────────────────────────
 
+    # Groups locations by their start time and aggregates each group
+    # in a single SQL query across all hours at once.
     def process_batch(locations)
       processed = 0
       errors = []
 
       location_ids = locations.map(&:id)
-      plan = build_hour_plan(location_ids)
+      start_times = detect_start_times(location_ids)
 
-      if plan.empty?
+      if start_times.empty?
         return { processed: 0, errors: [] }
       end
 
-      # Collect all unique hours across this batch, sorted chronologically
-      all_hours = plan.values.flatten.uniq.sort
+      # Group locations by start_time so those needing the same range
+      # can be aggregated together in a single query.
+      locations_by_start = start_times
+        .group_by { |_, time| time }
+        .transform_values { |pairs| pairs.map(&:first) }
 
-      # Process one hour at a time across all locations that need it
-      all_hours.each do |hour_start|
-        loc_ids_for_hour = plan.filter_map { |loc_id, hours| loc_id if hours.include?(hour_start) }
-
-        if loc_ids_for_hour.empty?
-          next
-        end
-
+      locations_by_start.each do |since_time, loc_ids|
         begin
-          count = aggregate_hour_batch(loc_ids_for_hour, hour_start)
+          count = aggregate_since(loc_ids, since_time)
           processed += count
         rescue => e
-          loc_ids_for_hour.each do |loc_id|
-            errors << { weather_station_api_location_id: loc_id, hour: hour_start, error: e.message }
+          loc_ids.each do |loc_id|
+            errors << { weather_station_api_location_id: loc_id, error: e.message }
           end
           Rails.logger.error(
-            "[WeatherStationApiHourlyAggregation] Batch failed for hour #{hour_start}: #{e.message}"
+            "[WeatherStationApiHourlyAggregation] Batch failed since #{since_time} " \
+            "for #{loc_ids.size} locations: #{e.message}"
           )
         end
       end
@@ -144,35 +120,42 @@ class WeatherStationApiHourlyAggregationService
 
     # ── Phase 3: Aggregate + upsert ────────────────────────────────────
 
-    # Fetch raw values for multiple locations in a single hour, compute
-    # aggregations per (location, metric), and batch-upsert all results.
-    def aggregate_hour_batch(location_ids, hour_start)
-      hour_end = hour_start + 1.hour
+    # Single SQL query: aggregate all raw values for the given locations
+    # from since_time to current_hour, grouped by (location, metric, date, hour).
+    # This replaces the hour-by-hour iteration with one database pass.
+    def aggregate_since(location_ids, since_time)
+      end_time = @current_hour + 1.hour
 
-      # Single query: all readings for all locations in this hour
-      # Aggregate directly in SQL — no need to load individual rows into Ruby
       raw_groups = WeatherStationApiRawValue
         .where(weather_station_api_location_id: location_ids)
-        .where(sample_time: hour_start...hour_end)
-        .group(:weather_station_api_location_id, :weather_station_api_metric_id)
+        .where(sample_time: since_time...end_time)
+        .group(
+          :weather_station_api_location_id,
+          :weather_station_api_metric_id,
+          Arel.sql("DATE(sample_time)"),
+          Arel.sql("HOUR(sample_time)")
+        )
         .pluck(
           :weather_station_api_location_id,
           :weather_station_api_metric_id,
+          Arel.sql("DATE(sample_time)"),
+          Arel.sql("HOUR(sample_time)"),
           Arel.sql("AVG(scaled_value)"),
           Arel.sql("SUM(scaled_value)"),
           Arel.sql("COUNT(*)")
         )
+
       if raw_groups.empty?
         return 0
       end
 
       now = Time.current
-      rows = raw_groups.map do |loc_id, metric_id, avg_val, sum_val, count|
+      rows = raw_groups.map do |loc_id, metric_id, date, hour, avg_val, sum_val, count|
         {
           weather_station_api_location_id: loc_id,
           weather_station_api_metric_id: metric_id,
-          date: hour_start.to_date,
-          hour: hour_start.hour,
+          date: date,
+          hour: hour,
           avg_value: avg_val,
           sum_value: sum_val,
           sample_count: count,
@@ -181,7 +164,10 @@ class WeatherStationApiHourlyAggregationService
         }
       end
 
-      batch_upsert(rows)
+      # Upsert in chunks to avoid exceeding MySQL max_allowed_packet
+      rows.each_slice(500) do |chunk|
+        batch_upsert(chunk)
+      end
 
       rows.size
     end
@@ -196,10 +182,8 @@ class WeatherStationApiHourlyAggregationService
       columns = rows.first.keys
       col_names = columns.map { |c| "`#{c}`" }.join(", ")
 
-      # Build value tuples with proper sanitization
       value_sets = rows.map do |row|
-        values = row.values
-        placeholders = values.map { "?" }
+        placeholders = row.values.map { "?" }
         "(#{placeholders.join(', ')})"
       end
 
