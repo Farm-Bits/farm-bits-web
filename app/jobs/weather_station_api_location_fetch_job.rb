@@ -3,6 +3,8 @@ class WeatherStationApiLocationFetchJob
   sidekiq_options queue: 'default', retry: 3
 
   def perform(weather_station_api_location_id)
+    slot_time = Time.current.beginning_of_minute
+
     weather_station_api_location = WeatherStationApiLocation.find_by(id: weather_station_api_location_id)
 
     if weather_station_api_location.nil?
@@ -18,7 +20,7 @@ class WeatherStationApiLocationFetchJob
     adapter = weather_station_api_location.provider_adapter
     readings = adapter.fetch_latest
 
-    WeatherStationApiRecordingService.record(weather_station_api_location, readings)
+    WeatherStationApiRecordingService.record(weather_station_api_location, readings, slot_time: slot_time)
   rescue WeatherStationApiProviders::Ims::ImsWeatherClient::RateLimitError => e
     Rails.logger.warn("[WeatherStationApiLocationFetchJob] Rate limited for Weather Station API Location #{weather_station_api_location_id}: #{e.message}")
     raise

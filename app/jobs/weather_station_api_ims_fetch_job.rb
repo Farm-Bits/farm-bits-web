@@ -3,7 +3,9 @@ class WeatherStationApiImsFetchJob
   sidekiq_options queue: 'default', retry: 3
 
   def perform
-    locations = WeatherStationApiLocation.needs_fetch.where(provider: 'ims')
+    slot_time = Time.current.beginning_of_minute
+
+    locations = WeatherStationApiLocation.needs_fetch.needs_fetch(slot_time).where(provider: 'ims')
     locations_by_region = locations.group_by { |loc| loc.provider_config['region_id'].to_i }
 
     locations_by_region.each do |region_id, region_locations|
@@ -18,7 +20,7 @@ class WeatherStationApiImsFetchJob
           next
         end
 
-        WeatherStationApiRecordingService.record(location, readings)
+        WeatherStationApiRecordingService.record(location, readings, slot_time: slot_time)
       end
     rescue WeatherStationApiProviders::Ims::ImsWeatherClient::Error => e
       Rails.logger.warn("[WeatherStationImsFetchJob] Region #{region_id} failed: #{e.message}")

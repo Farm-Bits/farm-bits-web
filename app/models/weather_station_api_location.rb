@@ -12,10 +12,11 @@ class WeatherStationApiLocation < ApplicationRecord
   validates :time_zone, presence: true, inclusion: { in: TZInfo::Timezone.all.map(&:identifier) }
   validates :fetch_interval_minutes, presence: true, numericality: { greater_than: 0 }
 
-  scope :needs_fetch, -> {
+  scope :needs_fetch, ->(reference_time) {
     where(active: true)
     .where(
-      "last_fetched_at IS NULL OR last_fetched_at < DATE_SUB(NOW(), INTERVAL fetch_interval_minutes MINUTE)"
+      'last_fetched_at IS NULL OR last_fetched_at <= DATE_SUB(?, INTERVAL fetch_interval_minutes MINUTE)',
+      reference_time
     )
   }
 
