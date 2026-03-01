@@ -5,7 +5,7 @@ class WeatherStationApiImsFetchJob
   def perform
     slot_time = Time.current.beginning_of_minute
 
-    locations = WeatherStationApiLocation.needs_fetch.needs_fetch(slot_time).where(provider: 'ims')
+    locations = WeatherStationApiLocation.needs_fetch(slot_time).where(provider: 'ims')
     locations_by_region = locations.group_by { |loc| loc.provider_config['region_id'].to_i }
 
     locations_by_region.each do |region_id, region_locations|
