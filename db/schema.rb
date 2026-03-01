@@ -580,8 +580,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_26_191453) do
     t.integer "sample_count", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["hour"], name: "index_weather_station_api_hourly_aggregations_on_hour"
-    t.index ["weather_station_api_location_id", "weather_station_api_metric_id", "hour"], name: "idx_on_weather_station_api_location_id_weather_stat_9d0f33cc33", unique: true
+    t.index ["date"], name: "index_weather_station_api_hourly_aggregations_on_date"
+    t.index ["weather_station_api_location_id", "weather_station_api_metric_id", "date", "hour"], name: "idx_on_weather_station_api_location_id_weather_stat_7b2491d8b7", unique: true
     t.index ["weather_station_api_location_id"], name: "idx_on_weather_station_api_location_id_e0db279935"
     t.index ["weather_station_api_metric_id"], name: "idx_on_weather_station_api_metric_id_eec1d9eb85"
   end

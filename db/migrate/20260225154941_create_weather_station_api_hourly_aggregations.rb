@@ -14,7 +14,7 @@ class CreateWeatherStationApiHourlyAggregations < ActiveRecord::Migration[7.2]
       t.timestamps
     end
 
-    add_index :weather_station_api_hourly_aggregations, [:weather_station_api_location_id, :weather_station_api_metric_id, :hour], unique: true
-    add_index :weather_station_api_hourly_aggregations, :hour
+    add_index :weather_station_api_hourly_aggregations, [:weather_station_api_location_id, :weather_station_api_metric_id, :date, :hour], unique: true
+    add_index :weather_station_api_hourly_aggregations, :date
   end
 end
