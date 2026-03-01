@@ -108,7 +108,10 @@ class HourlyAggregationService
           hours << h
           h += 1.hour
         end
-        plan[mp_id] = hours if hours.any?
+
+        if hours.any?
+          plan[mp_id] = hours
+        end
       end
 
       plan
@@ -166,7 +169,6 @@ class HourlyAggregationService
         .where(sample_time: hour_start...hour_end)
         .order(:measurement_point_id, :sample_time)
         .pluck(:measurement_point_id, :scaled_value, :sample_time)
-
       if raw_rows.empty?
         return 0
       end
