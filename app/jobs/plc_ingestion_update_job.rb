@@ -1,6 +1,6 @@
 class PlcIngestionUpdateJob
   include Sidekiq::Job
-  queue_as :critical
+  sidekiq_options queue: 'critical'
 
   def perform(plc_id, previous_username, password_changed)
     plc = Plc.find_by_id(plc_id)

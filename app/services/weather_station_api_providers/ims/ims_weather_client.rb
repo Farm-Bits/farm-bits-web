@@ -17,35 +17,37 @@ module WeatherStationApiProviders
         end
       end
 
-      # Fetch all stations metadata
-      # Returns array of station hashes with: stationId, name, location, monitors
       def stations
         response = get('/stations')
         response.parsed_response
       end
 
-      # Fetch single station metadata
       def station(station_id)
         response = get("/stations/#{station_id}")
         response.parsed_response
       end
 
-      # Fetch latest data for a station (all channels)
+      def regions
+        response = get('/regions')
+        response.parsed_response
+      end
+
+      def region(region_id)
+        response = get("/regions/#{region_id}")
+        response.parsed_response
+      end
+
       def latest_data(station_id)
         response = get("/stations/#{station_id}/data/latest")
         response.parsed_response
       end
 
-      # Fetch data for a specific date (all channels)
-      # date: Date object
       def daily_data(station_id, date)
         formatted = date.strftime('%Y/%m/%d')
         response = get("/stations/#{station_id}/data/daily/#{formatted}")
         response.parsed_response
       end
 
-      # Fetch data for a date range (all channels)
-      # from_date, to_date: Date objects
       def range_data(station_id, from_date, to_date)
         formatted_from = from_date.strftime('%Y/%m/%d')
         formatted_to = to_date.strftime('%Y/%m/%d')
@@ -53,9 +55,26 @@ module WeatherStationApiProviders
         response.parsed_response
       end
 
-      # Fetch data for current day (all channels)
       def today_data(station_id)
         response = get("/stations/#{station_id}/data/daily")
+        response.parsed_response
+      end
+
+      def region_latest_data(region_id)
+        response = get("/regions/#{region_id}/data/latest")
+        response.parsed_response
+      end
+
+      def region_daily_data(region_id, date)
+        formatted = date.strftime('%Y/%m/%d')
+        response = get("/regions/#{region_id}/data/daily/#{formatted}")
+        response.parsed_response
+      end
+
+      def region_range_data(region_id, from_date, to_date)
+        formatted_from = from_date.strftime('%Y/%m/%d')
+        formatted_to = to_date.strftime('%Y/%m/%d')
+        response = get("/regions/#{region_id}/data", query: { from: formatted_from, to: formatted_to })
         response.parsed_response
       end
 
@@ -80,7 +99,7 @@ module WeatherStationApiProviders
           content_type = response.headers['content-type']&.downcase || ''
 
           if !content_type.include?('application/json')
-            raise Error, "IMS API returned non-JSON response (#{content_type.truncate(50)}), likely maintenance page"
+            raise Error, "IMS API returned non-JSON response (#{content_type.truncate(50)}): HTTP #{response.code} - #{response.body&.truncate(200)}"
           end
 
           case response.code
@@ -91,7 +110,7 @@ module WeatherStationApiProviders
           when 404
             raise NotFoundError, "IMS API resource not found (HTTP #{response.code})"
           when 429
-            raise RateLimitError, "IMS API rate limit exceeded"
+            raise RateLimitError, "IMS API rate limit exceeded (HTTP #{response.code})"
           else
             raise Error, "IMS API error: HTTP #{response.code} - #{response.body&.truncate(200)}"
           end

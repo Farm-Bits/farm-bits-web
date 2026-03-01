@@ -1,7 +1,6 @@
 class WeatherStationApiLocationFetchJob
   include Sidekiq::Job
-  queue_as :low
-  sidekiq_options retry: 3
+  sidekiq_options queue: 'default', retry: 3
 
   def perform(weather_station_api_location_id)
     weather_station_api_location = WeatherStationApiLocation.find_by(id: weather_station_api_location_id)
@@ -22,7 +21,6 @@ class WeatherStationApiLocationFetchJob
     WeatherStationApiRecordingService.record(weather_station_api_location, readings)
   rescue WeatherStationApiProviders::Ims::ImsWeatherClient::RateLimitError => e
     Rails.logger.warn("[WeatherStationApiLocationFetchJob] Rate limited for Weather Station API Location #{weather_station_api_location_id}: #{e.message}")
-    # Re-raise to trigger Sidekiq retry with backoff
     raise
   rescue WeatherStationApiProviders::Ims::ImsWeatherClient::Error => e
     Rails.logger.error("[WeatherStationApiLocationFetchJob] API error for Weather Station API Location #{weather_station_api_location_id}: #{e.message}")

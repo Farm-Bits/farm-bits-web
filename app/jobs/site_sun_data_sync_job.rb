@@ -1,6 +1,6 @@
 class SiteSunDataSyncJob
   include Sidekiq::Job
-  queue_as :low
+  sidekiq_options queue: 'default'
 
   def perform(site_id = nil)
     if site_id

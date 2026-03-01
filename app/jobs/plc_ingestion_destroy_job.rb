@@ -1,6 +1,6 @@
 class PlcIngestionDestroyJob
   include Sidekiq::Job
-  queue_as :critical
+  sidekiq_options queue: 'critical'
 
   def perform(email)
     PlcIngestionClient.delete_authorized_email(email)

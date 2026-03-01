@@ -1,7 +1,6 @@
 class WeatherStationApiHourlyAggregationJob
   include Sidekiq::Job
-  queue_as :low
-  sidekiq_options retry: 3
+  sidekiq_options queue: 'low', retry: 3
 
   # Aggregates the previous hour's raw values into hourly aggregations.
   # Run this at ~5 minutes past each hour to ensure all readings are in.

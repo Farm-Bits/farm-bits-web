@@ -1,7 +1,6 @@
-
 class ArchiveJob
   include Sidekiq::Job
-  queue_as :low
+  sidekiq_options queue: 'low', retry: false
 
   RAW_RETENTION_DAYS = 90
   HOURLY_RETENTION_MONTHS = 36

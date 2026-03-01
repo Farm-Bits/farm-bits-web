@@ -1,6 +1,6 @@
 class PlcClockSyncJob
   include Sidekiq::Job
-  queue_as :critical
+  sidekiq_options queue: 'critical'
 
   TIME_COMPONENT_MAP = {
     'seconds'      => ->(time) { time.sec },

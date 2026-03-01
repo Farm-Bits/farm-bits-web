@@ -1,6 +1,6 @@
 class PlcClockWriteJob
   include Sidekiq::Job
-  queue_as :critical
+  sidekiq_options queue: 'critical'
 
   def perform(plc_id)
     plc = Plc.includes(:gateway, site: :company).find_by(id: plc_id)

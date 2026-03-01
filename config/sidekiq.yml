@@ -25,9 +25,9 @@ scheduler:
       class: SiteSunDataSyncJob
       queue: default
 
-    weather_station_api_fetch:
+    weather_station_api_ims_fetch:
       cron: "*/10 * * * *"
-      class: WeatherStationApiFetchJob
+      class: WeatherStationApiImsFetchJob
       queue: default
 
     hourly_aggregation:

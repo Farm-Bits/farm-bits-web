@@ -1,7 +1,6 @@
 class PlcReadJob
   include Sidekiq::Job
-  queue_as :default
-  sidekiq_options retry: 3
+  sidekiq_options queue: 'default', retry: 3
 
   def perform(plc_id)
     plc = Plc.includes(

@@ -1,6 +1,6 @@
 class WeatherStationApiBackfillJob
   include Sidekiq::Job
-  queue_as :low
+  sidekiq_options queue: 'low'
 
   # Backfill historical weather data for a location.
   # IMS API supports fetching by date range.

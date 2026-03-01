@@ -1,7 +1,6 @@
 class PlcPollingJob
   include Sidekiq::Job
-  queue_as :default
-  sidekiq_options retry: 3
+  sidekiq_options queue: 'default'
 
   def perform
     plcs = Plc.joins(:gateway, :measurement_points, site: :company)

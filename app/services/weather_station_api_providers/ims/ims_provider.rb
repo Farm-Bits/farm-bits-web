@@ -28,10 +28,9 @@ module WeatherStationApiProviders
       def initialize(weather_station_api_location)
         @weather_station_api_location = weather_station_api_location
         @client = ImsWeatherClient.new
-        @metrics_cache = nil
       end
 
-      # Fetch latest readings and return normalized data
+      # Fetch latest readings for a single station
       # Returns: Array of { metric_key:, value:, sample_time: (UTC) }
       def fetch_latest
         station_id = @weather_station_api_location.provider_config['station_id']
@@ -44,8 +43,7 @@ module WeatherStationApiProviders
         parse_station_data(response)
       end
 
-      # Fetch a full day of readings
-      # Returns: Array of { metric_key:, value:, sample_time: (UTC) }
+      # Fetch a full day of readings for a single station
       def fetch_daily(date)
         station_id = @weather_station_api_location.provider_config['station_id']
 
@@ -57,7 +55,7 @@ module WeatherStationApiProviders
         parse_station_data(response)
       end
 
-      # Fetch date range
+      # Fetch date range for a single station
       def fetch_range(from_date, to_date)
         station_id = @weather_station_api_location.provider_config['station_id']
 
@@ -69,14 +67,80 @@ module WeatherStationApiProviders
         parse_station_data(response)
       end
 
+      # Fetch latest data for an entire region (all stations)
+      # Returns: Hash of { station_id => [{ metric_key:, value:, sample_time: }] }
+      def self.fetch_region_latest(region_id)
+        client = ImsWeatherClient.new
+        response = client.region_latest_data(region_id)
+        parse_region_data(response)
+      end
+
+      # Fetch daily data for an entire region
+      def self.fetch_region_daily(region_id, date)
+        client = ImsWeatherClient.new
+        response = client.region_daily_data(region_id, date)
+        parse_region_data(response)
+      end
+
+      # Fetch date range for an entire region
+      def self.fetch_region_range(region_id, from_date, to_date)
+        client = ImsWeatherClient.new
+        response = client.region_range_data(region_id, from_date, to_date)
+        parse_region_data(response)
+      end
+
       private
         def parse_station_data(response)
+          self.class.parse_observations(response)
+        end
+
+        # Parse region response: returns { station_id => [readings] }
+        # Region response is an array of station objects, each with stationId and data
+        def self.parse_region_data(response)
+          result = {}
+
+          stations_data = if response.is_a?(Array)
+            response
+          elsif response.is_a?(Hash)
+            response.fetch('data', response.fetch('stations', []))
+          else
+            Rails.logger.warn("[WeatherStationApiProviders::Ims] Unexpected region response format: #{response.class}")
+            return result
+          end
+
+          stations_data.each do |station_data|
+            station_id = station_data['stationId']
+
+            if station_id.nil?
+              next
+            end
+
+            observations = station_data['data'] || station_data['Data'] || []
+            readings = parse_observations(observations)
+
+            if readings.any?
+              result[station_id.to_i] = readings
+            end
+          end
+
+          result
+        end
+
+        # Parse an array of observation records into normalized readings
+        def self.parse_observations(response)
           readings = []
 
-          data = response.is_a?(Hash) ? response.fetch('data', []) : response
+          data = if response.is_a?(Hash)
+            response.fetch('data', [])
+          elsif response.is_a?(Array)
+            response
+          else
+            Rails.logger.warn("[WeatherStationApiProviders::Ims] Unexpected data format: #{response.class}")
+            return readings
+          end
 
           if !data.is_a?(Array)
-            Rails.logger.warn("[WeatherProviders::Ims] Unexpected data format for location #{@weather_station_api_location.id}: #{data.class} - #{data.inspect}")
+            Rails.logger.warn("[WeatherStationApiProviders::Ims] Expected array, got: #{data.class}")
             return readings
           end
 
@@ -84,14 +148,13 @@ module WeatherStationApiProviders
             sample_time = parse_ims_datetime(observation['datetime'])
 
             if sample_time.nil?
-              Rails.logger.warn("[WeatherProviders::Ims] Could not parse datetime for location #{@weather_station_api_location.id}: #{observation['datetime']}")
+              Rails.logger.warn("[WeatherStationApiProviders::Ims] Could not parse datetime: #{observation['datetime']}")
               next
             end
 
             channels = observation['channels'] || []
 
             channels.each do |channel|
-              # Skip invalid readings
               if !channel['valid']
                 next
               end
@@ -103,7 +166,6 @@ module WeatherStationApiProviders
               channel_name = channel['name']
               metric_key = CHANNEL_MAP[channel_name]
 
-              # Skip channels we don't track
               if metric_key.nil?
                 next
               end
@@ -125,21 +187,17 @@ module WeatherStationApiProviders
           readings
         end
 
-        # IMS API docs state: "The observation date is always in Israel winter time (UTC + 2),
+        # IMS API docs: "The observation date is always in Israel winter time (UTC + 2),
         # and not as mentioned in the output datetime +03:00"
-        # So we parse the time portion and apply fixed UTC+2 offset, then convert to UTC.
-        def parse_ims_datetime(datetime_str)
+        def self.parse_ims_datetime(datetime_str)
           if datetime_str.blank?
             return nil
           end
 
-          # The API returns datetimes like "2024-01-15T14:30:00+02:00" or "2024-01-15T14:30:00+03:00"
-          # Per docs, the actual offset is always UTC+2 regardless of what's shown.
-          # Strip any existing offset and apply the fixed one.
           base_time = datetime_str.sub(/[+-]\d{2}:\d{2}$/, '')
           Time.parse("#{base_time}#{IMS_FIXED_UTC_OFFSET}").utc
         rescue ArgumentError => e
-          Rails.logger.warn("[WeatherProviders::Ims] DateTime parse error for location #{@weather_station_api_location.id}: #{e.message} for '#{datetime_str}'")
+          Rails.logger.warn("[WeatherStationApiProviders::Ims] DateTime parse error: #{e.message} for '#{datetime_str}'")
           nil
         end
     end

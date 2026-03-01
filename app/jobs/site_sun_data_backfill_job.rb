@@ -1,6 +1,6 @@
 class SiteSunDataBackfillJob
   include Sidekiq::Job
-  queue_as :low
+  sidekiq_options queue: 'low'
 
   def perform(site_id, from_date, to_date)
     site = Site.find(site_id)

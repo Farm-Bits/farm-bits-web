@@ -1,7 +1,6 @@
 class HourlyAggregationJob
   include Sidekiq::Job
-  queue_as :low
-  sidekiq_options retry: 3
+  sidekiq_options queue: 'low', retry: 3
 
   def perform(measurement_point_ids = nil)
     result = HourlyAggregationService.call(
