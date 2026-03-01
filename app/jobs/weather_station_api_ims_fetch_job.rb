@@ -3,14 +3,8 @@ class WeatherStationApiImsFetchJob
   sidekiq_options queue: 'default', retry: 3
 
   def perform
-    locations = WeatherStationApiLocation
-      .where(active: true, provider: 'ims')
-      .where(
-        "last_fetched_at IS NULL OR last_fetched_at < DATE_SUB(NOW(), INTERVAL fetch_interval_minutes MINUTE)"
-      )
-
+    locations = WeatherStationApiLocation.needs_fetch.where(provider: 'ims')
     locations_by_region = locations.group_by { |loc| loc.provider_config['region_id'].to_i }
-    locations_by_region.delete(0) # Remove locations without a region_id
 
     locations_by_region.each do |region_id, region_locations|
       locations_by_station_id = region_locations.index_by { |loc| loc.provider_config['station_id'].to_i }
