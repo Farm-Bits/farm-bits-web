@@ -91,7 +91,7 @@ module WeatherStationApiProviders
 
       private
         def parse_station_data(response)
-          self.class.parse_observations(response)
+          self.class.parse_observations(response['data'])
         end
 
         # Parse region response: returns { station_id => [readings] }
@@ -99,27 +99,14 @@ module WeatherStationApiProviders
         def self.parse_region_data(response)
           result = {}
 
-          stations_data = if response.is_a?(Array)
-            response
-          elsif response.is_a?(Hash)
-            response.fetch('data', response.fetch('stations', []))
-          else
-            Rails.logger.warn("[WeatherStationApiProviders::Ims] Unexpected region response format: #{response.class}")
-            return result
-          end
-
-          stations_data.each do |station_data|
+          response.each do |station_data|
             station_id = station_data['stationId']
 
-            if station_id.nil?
-              next
-            end
-
-            observations = station_data['data'] || station_data['Data'] || []
-            readings = parse_observations(observations)
+            observation = station_data['regionData']
+            readings = parse_observations([observation])
 
             if readings.any?
-              result[station_id.to_i] = readings
+              result[station_id] = readings
             end
           end
 
@@ -127,31 +114,10 @@ module WeatherStationApiProviders
         end
 
         # Parse an array of observation records into normalized readings
-        def self.parse_observations(response)
+        def self.parse_observations(observations)
           readings = []
-
-          data = if response.is_a?(Hash)
-            response.fetch('data', [])
-          elsif response.is_a?(Array)
-            response
-          else
-            Rails.logger.warn("[WeatherStationApiProviders::Ims] Unexpected data format: #{response.class}")
-            return readings
-          end
-
-          if !data.is_a?(Array)
-            Rails.logger.warn("[WeatherStationApiProviders::Ims] Expected array, got: #{data.class}")
-            return readings
-          end
-
-          data.each do |observation|
+          observations.each do |observation|
             sample_time = parse_ims_datetime(observation['datetime'])
-
-            if sample_time.nil?
-              Rails.logger.warn("[WeatherStationApiProviders::Ims] Could not parse datetime: #{observation['datetime']}")
-              next
-            end
-
             channels = observation['channels'] || []
 
             channels.each do |channel|
@@ -165,13 +131,11 @@ module WeatherStationApiProviders
 
               channel_name = channel['name']
               metric_key = CHANNEL_MAP[channel_name]
-
               if metric_key.nil?
                 next
               end
 
               value = channel['value']
-
               if value.nil?
                 next
               end
