@@ -140,6 +140,8 @@ class WeatherStationApiHourlyAggregationService
           :weather_station_api_metric_id,
           Arel.sql("DATE(sample_time)"),
           Arel.sql("HOUR(sample_time)"),
+          Arel.sql("MIN(scaled_value)"),
+          Arel.sql("MAX(scaled_value)"),
           Arel.sql("AVG(scaled_value)"),
           Arel.sql("SUM(scaled_value)"),
           Arel.sql("COUNT(*)")
@@ -150,12 +152,14 @@ class WeatherStationApiHourlyAggregationService
       end
 
       now = Time.current
-      rows = raw_groups.map do |loc_id, metric_id, date, hour, avg_val, sum_val, count|
+      rows = raw_groups.map do |loc_id, metric_id, date, hour, min_val, max_val, avg_val, sum_val, count|
         {
           weather_station_api_location_id: loc_id,
           weather_station_api_metric_id: metric_id,
           date: date,
           hour: hour,
+          min_value: min_val,
+          max_value: max_val,
           avg_value: avg_val,
           sum_value: sum_val,
           sample_count: count,

@@ -33,6 +33,11 @@
           <div class="col-auto">
             <GroupByToggle v-model="groupBy" />
           </div>
+          <div v-if="hasWeatherStationApiMetrics" class="col-auto">
+            <WeatherOverlayToggle
+              v-model="selectedWeatherStationApiMetricIds"
+              :weatherStationApiMetrics="weatherStationApiMetrics" />
+          </div>
         </div>
       </CCardBody>
     </CCard>
@@ -99,6 +104,7 @@
   import SegmentFilter from '@/components/SegmentFilter.vue';
   import DateRangeFilter, { type DateRange } from '@/components/DateRangeFilter.vue';
   import GroupByToggle, { type GroupBy } from '@/components/GroupByToggle.vue';
+  import WeatherOverlayToggle from './components/WeatherOverlayToggle.vue';
   import ComboTimeSeriesChart, { type ChartEntry, type SerieDefinition } from '@/components/ComboTimeSeriesChart.vue';
   import SummaryTable, { type RowDefinition } from '@/components/SummaryTable.vue';
   import { mapMeasurementPointToSerieDefinition } from '@/utils/valueFormaters';
@@ -123,8 +129,10 @@
   const dateRange = ref<DateRange>({ start: today, end: today });
   const aggregationLevel = ref<AggregationLevel>('hourly');
   const groupBy = ref<GroupBy>('measurement_subtype');
+  const selectedWeatherStationApiMetricIds = ref<WeatherStationApiMetric['id'][]>([]);
 
   const isSingleDay = computed(() => dateRange.value.start === dateRange.value.end);
+  const hasWeatherStationApiMetrics = computed(() => weatherStationApiMetrics.length > 0);
 
   // Analytics data
   const analytics = useAnalyticsData();
@@ -162,28 +170,20 @@
         break;
     }
 
-    const weatherMeasurementTypeGrouped = Object.groupBy(
-      weatherStationApiMetrics,
-      (metric) => metric.measurement_subtype.measurement_type.name
-    );
-    Object.entries(weatherMeasurementTypeGrouped).forEach(([weatherMeasurementTypeName, metrics]) => {
-      const existingGroup = groupsResult.find((group) => group.key === weatherMeasurementTypeName);
-      if (!existingGroup && metrics) {
-        const newGroup: MeasurementPointGroup = {
-          key: weatherMeasurementTypeName,
-          label: weatherMeasurementTypeName,
-          serieDefinitions: metrics.map((metric) => ({
-            id: -metric.id, // Negative ID to avoid conflicts
-            name: `🌤️ ${metric.label}`,
-            unit: metric.unit,
-            chart_type: metric.measurement_subtype.default_chart_type,
-            color: metric.measurement_subtype.default_color,
-            value_format: 'numeric',
-            value_type: metric.measurement_subtype.value_type
-          }))
-        };
-        groupsResult.unshift(newGroup);
-      }
+    const weatherOverlaySerieDefinitions: SerieDefinition[] = weatherStationApiMetrics
+      .filter((metric) => selectedWeatherStationApiMetricIds.value.includes(metric.id))
+      .map((metric) => ({
+        id: -metric.id, // Negative ID to avoid conflicts with measurement points
+        name: `🌤️ ${metric.label}`,
+        unit: metric.unit,
+        chart_type: metric.measurement_subtype.default_chart_type,
+        color: metric.measurement_subtype.default_color,
+        value_format: 'numeric',
+        value_type: metric.measurement_subtype.value_type
+      }));
+
+    groupsResult.forEach((group) => {
+      group.serieDefinitions.push(...weatherOverlaySerieDefinitions);
     });
 
     return groupsResult;

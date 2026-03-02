@@ -12,7 +12,7 @@ class UserArea::AnalyticsController < UserArea::ApplicationController
       .includes(:measurement_type)
     weather_station_api_metrics = WeatherStationApiMetric.where(key: current_site.weather_station_api_metric_keys)
 
-    render inertia: 'UserArea/Analytics', props: {
+    render inertia: 'UserArea/Analytics/index', props: {
       segments: SegmentSerializer.render_as_hash(segments),
       measurement_points: MeasurementPointSerializer.render_as_hash(measurement_points, view: :with_details),
       measurement_subtypes: MeasurementSubtypeSerializer.render_as_hash(measurement_subtypes),
