@@ -18,8 +18,7 @@ export type RawValue = {
 
 export type HourlyAggregation = {
   id: number;
-  date: string;
-  hour: number;
+  hour_timestamp: string;
   value_type: ValueType;
   reading_count: number;
   first_reading_at: string;

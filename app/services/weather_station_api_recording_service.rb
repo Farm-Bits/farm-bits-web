@@ -30,8 +30,7 @@ class WeatherStationApiRecordingService
         weather_station_api_metric_id: metric.id,
         value: raw_value,
         scaled_value: scaled_value,
-        sample_time: reading[:sample_time],
-        created_at: now
+        sample_time: reading[:sample_time]
       }
     end
 

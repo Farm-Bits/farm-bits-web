@@ -99,7 +99,7 @@
   function metricIcon(key: string) {
     const icons: Record<string, string> = {
       temperature: '🌡️',
-      relative_humidity: '💧',
+      humidity: '💧',
       wind_speed: '💨',
       precipitation: '🌧️',
       global_radiation: '☀️',

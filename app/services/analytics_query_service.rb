@@ -1,5 +1,4 @@
 class AnalyticsQueryService
-  # Returns the base scope for eligible measurement points
   def self.eligible_scope(site)
     MeasurementPoint.joins(plc: { gateway: { site: :company } })
       .where(active: true, data_collection_enabled: true)
@@ -10,33 +9,30 @@ class AnalyticsQueryService
       .where.not(measurement_subtype_id: nil)
   end
 
-  # Fetch hourly aggregations for given measurement points and date range
-  # @param measurement_point_ids [Array<Integer>]
-  # @param start_date [Date]
-  # @param end_date [Date]
-  # @return [Hash] { aggregations: { mp_id => [...] }, summary: { mp_id => {...} } }
-  def self.hourly(measurement_point_ids, start_date, end_date)
+  def self.hourly(measurement_point_ids, start_date, end_date, time_zone)
+    tz = ActiveSupport::TimeZone[time_zone]
+    utc_start = tz.local(start_date.year, start_date.month, start_date.day).utc
+    utc_end = tz.local(end_date.year, end_date.month, end_date.day, 23, 59, 59).utc
+
     aggregations = HourlyAggregation
       .where(measurement_point_id: measurement_point_ids)
-      .where(date: start_date..end_date)
-      .order(:date, :hour)
+      .where(hour_timestamp: utc_start..utc_end)
+      .order(:hour_timestamp)
 
     grouped = aggregations.group_by(&:measurement_point_id)
-
     summary = grouped.transform_values { |records| build_summary(records) }
 
     { aggregations: grouped, summary: summary }
   end
 
-  # Fetch raw values for given measurement points and time range
-  # @param measurement_point_ids [Array<Integer>]
-  # @param start_time [Time]
-  # @param end_time [Time]
-  # @return [Hash] { raw_values: { mp_id => [...] } }
-  def self.raw(measurement_point_ids, start_time, end_time)
+  def self.raw(measurement_point_ids, start_time, end_time, time_zone)
+    tz = ActiveSupport::TimeZone[time_zone]
+    utc_start = tz.local(start_time.year, start_time.month, start_time.day, start_time.hour).utc
+    utc_end = tz.local(end_time.year, end_time.month, end_time.day, end_time.hour, 59, 59).utc
+
     values = RawValue
       .where(measurement_point_id: measurement_point_ids)
-      .where(sample_time: start_time..end_time)
+      .where(sample_time: utc_start..utc_end)
       .order(:sample_time)
 
     grouped = values.group_by(&:measurement_point_id)
@@ -44,14 +40,12 @@ class AnalyticsQueryService
     { raw_values: grouped }
   end
 
-  # Build summary statistics from hourly aggregation records
   def self.build_summary(records)
     if records.empty?
       return {}
     end
 
     value_type = records.first.value_type
-
     base = {
       measurement_point_id: records.first.measurement_point_id,
       value_type: value_type,
@@ -66,7 +60,7 @@ class AnalyticsQueryService
         avg_value: compute_weighted_avg(records)
       )
     when 'accumulative'
-      sorted = records.sort_by { |r| [r.date, r.hour] }
+      sorted = records.sort_by(&:hour_timestamp)
       base.merge(
         start_value: sorted.first.start_value.to_f,
         end_value: sorted.last.end_value.to_f,
@@ -87,7 +81,6 @@ class AnalyticsQueryService
     end
   end
 
-  # Compute reading-count-weighted average across hourly records
   def self.compute_weighted_avg(records)
     valid = records.select { |r| r.avg_value.present? && r.reading_count > 0 }
     if valid.empty?

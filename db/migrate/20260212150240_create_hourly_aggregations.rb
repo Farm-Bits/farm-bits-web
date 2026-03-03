@@ -1,8 +1,7 @@
 class CreateHourlyAggregations < ActiveRecord::Migration[7.2]
   def change
     create_table :hourly_aggregations do |t|
-      t.date :date, null: false
-      t.integer :hour, null: false
+      t.datetime :hour_timestamp, null: false
       t.string :value_type, null: false
 
       # Shared
@@ -31,8 +30,7 @@ class CreateHourlyAggregations < ActiveRecord::Migration[7.2]
       t.timestamps
     end
 
-    add_index :hourly_aggregations, [:measurement_point_id, :date, :hour], unique: true
-    add_index :hourly_aggregations, [:measurement_point_id, :date]
-    add_index :hourly_aggregations, :date
+    add_index :hourly_aggregations, [:measurement_point_id, :hour_timestamp], unique: true
+    add_index :hourly_aggregations, :hour_timestamp
   end
 end

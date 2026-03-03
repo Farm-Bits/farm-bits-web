@@ -32,7 +32,7 @@ class UserArea::AnalyticsController < UserArea::ApplicationController
       return
     end
 
-    result = AnalyticsQueryService.hourly(mp_ids, start_date, end_date)
+    result = AnalyticsQueryService.hourly(mp_ids, start_date, end_date, current_site.time_zone)
 
     aggregations_json = result[:aggregations].transform_values do |records|
       HourlyAggregationSerializer.render_as_hash(records)
@@ -54,7 +54,7 @@ class UserArea::AnalyticsController < UserArea::ApplicationController
       return
     end
 
-    result = AnalyticsQueryService.raw(mp_ids, start_time, end_time)
+    result = AnalyticsQueryService.raw(mp_ids, start_time, end_time, current_site.time_zone)
 
     raw_json = result[:raw_values].transform_values do |records|
       RawValueSerializer.render_as_hash(records)
@@ -82,7 +82,8 @@ class UserArea::AnalyticsController < UserArea::ApplicationController
     result = WeatherStationApiAnalyticsQueryService.hourly(
       current_site.weather_station_api_location_id,
       start_date,
-      end_date
+      end_date,
+      current_site.time_zone
     )
 
     aggregations_json = result[:aggregations].transform_values do |records|
@@ -111,7 +112,8 @@ class UserArea::AnalyticsController < UserArea::ApplicationController
     result = WeatherStationApiAnalyticsQueryService.raw(
       current_site.weather_station_api_location_id,
       start_time,
-      end_time
+      end_time,
+      current_site.time_zone
     )
 
     raw_json = result[:raw_values].transform_values do |records|

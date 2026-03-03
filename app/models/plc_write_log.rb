@@ -22,6 +22,8 @@ class PlcWriteLog < ApplicationRecord
   validates :batch_id, presence: true
   validates :created_at, presence: true
 
+  before_create { self.created_at = Time.current }
+
   # Returns logs for all measurement points belonging to a specific interface
   # on a given PLC. Useful for building the activity log for a DO.
   scope :for_interface, ->(plc_id, interface_id) {

@@ -180,8 +180,7 @@ class PlcWriteService
           source: context.source,
           old_value: old_value,
           new_value: serialized_new,
-          batch_id: context.batch_id,
-          created_at: Time.current
+          batch_id: context.batch_id
         )
       rescue => e
         # Log creation should never break the write operation

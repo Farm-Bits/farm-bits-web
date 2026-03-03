@@ -17,8 +17,7 @@ export type WeatherStationApiRawValue = {
 
 export type WeatherStationApiHourlyAggregation = {
   id: number;
-  date: string;
-  hour: number;
+  hour_timestamp: string;
   value: number | null;
   min_value: number | null;
   max_value: number | null;
@@ -32,6 +31,7 @@ export type WeatherStationApiMetric = {
   key: string;
   label: string;
   unit: string;
+  // aggregation: ValueType;
   measurement_subtype_id: MeasurementSubtype['id'];
   measurement_subtype: MeasurementSubtype;
 };

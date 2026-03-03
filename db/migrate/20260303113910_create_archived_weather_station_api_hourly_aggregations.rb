@@ -1,6 +1,6 @@
-class CreateWeatherStationApiHourlyAggregations < ActiveRecord::Migration[7.2]
+class CreateArchivedWeatherStationApiHourlyAggregations < ActiveRecord::Migration[7.2]
   def change
-    create_table :weather_station_api_hourly_aggregations do |t|
+    create_table :archived_weather_station_api_hourly_aggregations do |t|
       t.references :weather_station_api_location, null: false, foreign_key: { on_delete: :cascade }
       t.references :weather_station_api_metric, null: false, foreign_key: { on_delete: :cascade }
       t.datetime :hour_timestamp, null: false
@@ -13,7 +13,7 @@ class CreateWeatherStationApiHourlyAggregations < ActiveRecord::Migration[7.2]
       t.timestamps
     end
 
-    add_index :weather_station_api_hourly_aggregations, [:weather_station_api_location_id, :weather_station_api_metric_id, :hour_timestamp], unique: true
-    add_index :weather_station_api_hourly_aggregations, :hour_timestamp
+    add_index :archived_weather_station_api_hourly_aggregations, [:weather_station_api_location_id, :weather_station_api_metric_id, :hour_timestamp], unique: true
+    add_index :archived_weather_station_api_hourly_aggregations, :hour_timestamp
   end
 end

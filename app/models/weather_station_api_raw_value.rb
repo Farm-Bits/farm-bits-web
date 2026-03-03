@@ -7,4 +7,6 @@ class WeatherStationApiRawValue < ApplicationRecord
   validates :value, presence: true, numericality: true
   validates :scaled_value, presence: true, numericality: true
   validates :sample_time, presence: true
+
+  before_create { self.created_at = Time.current }
 end

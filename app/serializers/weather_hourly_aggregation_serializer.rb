@@ -1,7 +1,11 @@
 class WeatherHourlyAggregationSerializer < Blueprinter::Base
   identifier :id
 
-  fields :date, :hour, :sample_count
+  fields :sample_count
+
+  field :hour_timestamp do |ha|
+    ha.hour_timestamp.utc.iso8601
+  end
 
   field :min_value do |ha|
     ha.min_value&.to_f

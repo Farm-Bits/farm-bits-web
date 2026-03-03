@@ -1,18 +1,14 @@
 class WeatherStationApiAnalyticsQueryService
-  # Queries weather data in the same pattern as AnalyticsQueryService,
-  # so the frontend can merge weather series alongside PLC measurement series.
+  def self.hourly(weather_station_api_location_id, start_date, end_date, time_zone)
+    tz = ActiveSupport::TimeZone[time_zone]
+    utc_start = tz.local(start_date.year, start_date.month, start_date.day).utc
+    utc_end = tz.local(end_date.year, end_date.month, end_date.day, 23, 59, 59).utc
 
-  # Returns hourly aggregations at a weather location.
-  #
-  # @param weather_station_api_location_id [Integer]
-  # @param start_date [Date]
-  # @param end_date [Date]
-  # @return [Hash] { weather_station_api_metric_id => [{ date:, hour:, min_value:, max_value:, avg_value:, sum_value:, sample_count: }] }
-  def self.hourly(weather_station_api_location_id, start_date, end_date)
     aggregations = WeatherStationApiHourlyAggregation
       .where(weather_station_api_location_id: weather_station_api_location_id)
-      .where(date: start_date..end_date)
-      .order(:hour)
+      .where(hour_timestamp: utc_start..utc_end)
+      .order(:hour_timestamp)
+      .includes(weather_station_api_metric: :measurement_subtype)
 
     grouped = aggregations.group_by(&:weather_station_api_metric_id)
 
@@ -21,21 +17,18 @@ class WeatherStationApiAnalyticsQueryService
     { aggregations: grouped, summary: summary }
   end
 
-  # Returns raw values for a short time window (max 24 hours).
-  #
-  # @param weather_station_api_location_id [Integer]
-  # @param start_time [Time]
-  # @param end_time [Time]
-  # @return [Hash] { weather_station_api_metric_id => [{ sample_time:, value:, scaled_value: }] }
-  def self.raw(weather_station_api_location_id, start_time, end_time)
-    # Enforce 24-hour limit
+  def self.raw(weather_station_api_location_id, start_time, end_time, time_zone)
     if end_time - start_time > 24.hours
       end_time = start_time + 24.hours
     end
 
+    tz = ActiveSupport::TimeZone[time_zone]
+    utc_start = tz.local(start_time.year, start_time.month, start_time.day, start_time.hour).utc
+    utc_end = tz.local(end_time.year, end_time.month, end_time.day, end_time.hour, 59, 59).utc
+
     raw_values = WeatherStationApiRawValue
       .where(weather_station_api_location_id: weather_station_api_location_id)
-      .where(sample_time: start_time..end_time)
+      .where(sample_time: utc_start..utc_end)
       .order(:sample_time)
 
     grouped = raw_values.group_by(&:weather_station_api_metric_id)
@@ -43,20 +36,13 @@ class WeatherStationApiAnalyticsQueryService
     { raw_values: grouped }
   end
 
-  # Returns the latest reading per metric for a weather location.
-  # Useful for live data display.
-  #
-  # @param weather_station_api_location_id [Integer]
-  # @return [Hash] { weather_station_api_metric_id => { value:, scaled_value:, sample_time: } }
   def self.latest(weather_station_api_location_id)
-    # Subquery for max sample_time per metric
     latest_times = WeatherStationApiRawValue
       .where(weather_station_api_location_id: weather_station_api_location_id)
       .group(:weather_station_api_metric_id)
       .select(:weather_station_api_metric_id, "MAX(sample_time) AS max_sample_time")
 
-    # Join back to get full records
-    raw_values = WeatherStationApiRawValue
+    WeatherStationApiRawValue
       .joins("INNER JOIN (#{latest_times.to_sql}) AS lt ON weather_station_api_raw_values.weather_station_api_metric_id = lt.weather_station_api_metric_id AND weather_station_api_raw_values.sample_time = lt.max_sample_time")
       .where(weather_station_api_location_id: weather_station_api_location_id)
       .includes(:weather_station_api_metric)
@@ -68,7 +54,6 @@ class WeatherStationApiAnalyticsQueryService
     end
 
     value_type = records.first.weather_station_api_metric.measurement_subtype.value_type
-
     base = {
       weather_station_api_metric_id: records.first.weather_station_api_metric_id,
       value_type: value_type,
@@ -83,7 +68,7 @@ class WeatherStationApiAnalyticsQueryService
         avg_value: compute_weighted_avg(records)
       )
     when 'accumulative'
-      sorted = records.sort_by { |r| [r.date, r.hour] }
+      sorted = records.sort_by(&:hour_timestamp)
       base.merge(
         sum_value: sorted.last.sum_value.to_f - sorted.first.sum_value.to_f
       )

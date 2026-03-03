@@ -32,8 +32,7 @@
   };
 
   type HourlyValue = {
-    date: string;
-    hour: number;
+    hour_timestamp: string;
     // Accumulative
     delta?: number | null;
     // Instantaneous
@@ -162,8 +161,8 @@
     return statusLabel(entry, 0);
   }
 
-  function hourToTimestamp(date: string, hour: number) {
-    return new Date(`${date}T${String(hour).padStart(2, '0')}:00:00`).getTime();
+  function hourTimestampToTime(hourTimestamp: string) {
+    return new Date(hourTimestamp).getTime();
   }
 
   function rawStatusOffset(entry: ChartEntry) {
@@ -274,11 +273,11 @@
             ])
           : vt === 'accumulative'
             ? entry.hourlyData.map((h) => [
-                hourToTimestamp(h.date, h.hour),
+                hourTimestampToTime(h.hour_timestamp),
                 h.delta ?? 0
               ])
             : entry.hourlyData.map((h) => [
-                hourToTimestamp(h.date, h.hour),
+                hourTimestampToTime(h.hour_timestamp),
                 h.avg_value
               ]);
 
@@ -393,7 +392,7 @@
 
       const data = entry.hourlyData.map((h) => {
         const onPct = computeOnPercentage(h);
-        return [hourToTimestamp(h.date, h.hour), onPct];
+        return [hourTimestampToTime(h.hour_timestamp), onPct];
       });
 
       series.push({

@@ -11,6 +11,8 @@ class ArchiveJob
     archive_raw_values
     archive_hourly_aggregations
     archive_plc_write_log
+    archive_weather_station_api_raw_values
+    archive_weather_station_api_hourly_aggregations
   end
 
   private
@@ -52,6 +54,36 @@ class ArchiveJob
           source: 'plc_write_logs',
           target: 'archived_plc_write_logs',
           condition: "created_at < '#{cutoff}'",
+        )
+        if moved < BATCH_SIZE
+          break
+        end
+      end
+    end
+
+    def archive_weather_station_api_raw_values
+      cutoff = RAW_RETENTION_DAYS.days.ago
+
+      loop do
+        moved = archive_batch(
+          source: 'weather_station_api_raw_values',
+          target: 'archived_weather_station_api_raw_values',
+          condition: "sample_time < '#{cutoff.to_fs(:db)}'",
+        )
+        if moved < BATCH_SIZE
+          break
+        end
+      end
+    end
+
+    def archive_weather_station_api_hourly_aggregations
+      cutoff = HOURLY_RETENTION_MONTHS.months.ago.to_date
+
+      loop do
+        moved = archive_batch(
+          source: 'weather_station_api_hourly_aggregations',
+          target: 'archived_weather_station_api_hourly_aggregations',
+          condition: "date < '#{cutoff}'",
         )
         if moved < BATCH_SIZE
           break
