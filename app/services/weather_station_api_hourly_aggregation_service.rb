@@ -74,7 +74,6 @@ class WeatherStationApiHourlyAggregationService
 
       location_ids = locations.map(&:id)
       start_times = detect_start_times(location_ids)
-
       if start_times.empty?
         return { processed: 0, errors: [] }
       end

@@ -46,21 +46,19 @@ class HourlyAggregationService
       scope
     end
 
-    # ── Phase 1: Batch gap detection ──────────────────────────────────────
+    # ── Phase 1: Detect start times ───────────────────────────────────────
 
-    def detect_start_hours(mp_ids)
+    def detect_start_times(mp_ids)
       latest_aggs = HourlyAggregation
         .where(measurement_point_id: mp_ids)
         .group(:measurement_point_id)
         .maximum(:hour_timestamp)
-      # => { mp_id => 2026-02-17 14:00:00 UTC, ... }
 
-      start_hours = {}
+      start_times = {}
       mp_ids_without_aggs = []
-
       mp_ids.each do |mp_id|
         if latest_aggs[mp_id]
-          start_hours[mp_id] = latest_aggs[mp_id].utc
+          start_times[mp_id] = latest_aggs[mp_id].utc
         else
           mp_ids_without_aggs << mp_id
         end
@@ -73,34 +71,11 @@ class HourlyAggregationService
           .minimum(:sample_time)
 
         earliest_samples.each do |mp_id, sample_time|
-          start_hours[mp_id] = sample_time.utc.beginning_of_hour
+          start_times[mp_id] = sample_time.utc.beginning_of_hour
         end
       end
 
-      start_hours
-    end
-
-    def build_hour_plan(mp_ids)
-      start_hours = detect_start_hours(mp_ids)
-      if start_hours.empty?
-        return {}
-      end
-
-      plan = {}
-      start_hours.each do |mp_id, start_hour|
-        hours = []
-        h = start_hour
-        while h <= @current_hour
-          hours << h
-          h += 1.hour
-        end
-
-        if hours.any?
-          plan[mp_id] = hours
-        end
-      end
-
-      plan
+      start_times
     end
 
     # ── Phase 2: Process a batch ──────────────────────────────────────────
@@ -112,27 +87,26 @@ class HourlyAggregationService
       mp_map = mps.index_by(&:id)
       mp_ids = mps.map(&:id)
 
-      plan = build_hour_plan(mp_ids)
-      if plan.empty?
+      start_times = detect_start_times(mp_ids)
+      if start_times.empty?
         return { processed: 0, errors: [] }
       end
 
-      all_hours = plan.values.flatten.uniq.sort
-      all_hours.each do |hour_start|
-        mp_ids_for_hour = plan.filter_map { |mp_id, hours| mp_id if hours.include?(hour_start) }
-        if mp_ids_for_hour.empty?
-          next
-        end
+      mps_by_start = start_times
+        .group_by { |_, time| time }
+        .transform_values { |pairs| pairs.map(&:first) }
 
+      mps_by_start.each do |since_time, group_mp_ids|
         begin
-          count = aggregate_hour_batch(mp_ids_for_hour, mp_map, hour_start)
+          count = aggregate_since(group_mp_ids, mp_map, since_time)
           processed += count
         rescue => e
-          mp_ids_for_hour.each do |mp_id|
+          group_mp_ids.each do |mp_id|
             errors << { measurement_point_id: mp_id, error: e.message }
           end
           Rails.logger.error(
-            "[HourlyAggregation] Batch failed for hour #{hour_start}: #{e.message}"
+            "[HourlyAggregation] Batch failed since #{since_time} " \
+            "for #{group_mp_ids.size} measurement points: #{e.message}"
           )
         end
       end
@@ -140,56 +114,50 @@ class HourlyAggregationService
       { processed: processed, errors: errors }
     end
 
-    # ── Phase 3: Batch aggregate + upsert ─────────────────────────────────
+    # ── Phase 3: Aggregate since a start time ─────────────────────────────
 
-    def aggregate_hour_batch(mp_ids, mp_map, hour_start)
-      hour_end = hour_start + 1.hour
+    def aggregate_since(mp_ids, mp_map, since_time)
+      end_time = @current_hour + 1.hour
 
       raw_rows = RawValue
         .where(measurement_point_id: mp_ids)
-        .where(sample_time: hour_start...hour_end)
+        .where(sample_time: since_time...end_time)
         .order(:measurement_point_id, :sample_time)
         .pluck(:measurement_point_id, :scaled_value, :sample_time)
       if raw_rows.empty?
         return 0
       end
 
-      readings_by_mp = {}
+      # Group by (mp_id, hour)
+      readings_by_mp_hour = {}
       raw_rows.each do |mp_id, scaled_value, sample_time|
-        (readings_by_mp[mp_id] ||= []) << [scaled_value, sample_time]
+        hour = sample_time.utc.beginning_of_hour
+        key = [mp_id, hour]
+        (readings_by_mp_hour[key] ||= []) << [scaled_value, sample_time]
       end
 
-      status_mp_ids = readings_by_mp.keys.select do |mp_id|
+      # Identify status MPs and fetch their prior states for the earliest hour
+      status_mp_ids = mp_ids.select do |mp_id|
         mp_map[mp_id]&.measurement_subtype&.value_type == "status"
       end
 
-      prior_states = {}
-      if status_mp_ids.any?
-        prior_rows = RawValue
-          .where(measurement_point_id: status_mp_ids)
-          .where(sample_time: ...hour_start)
-          .where(
-            "sample_time = (SELECT MAX(r2.sample_time) FROM raw_values r2 " \
-            "WHERE r2.measurement_point_id = raw_values.measurement_point_id " \
-            "AND r2.sample_time < ?)", hour_start
-          )
-          .pluck(:measurement_point_id, :scaled_value)
+      prior_states = fetch_prior_states(status_mp_ids, since_time)
 
-        prior_rows.each do |mp_id, val|
-          prior_states[mp_id] = val.to_i
-        end
-      end
+      # Process hours in chronological order, carrying forward status state
+      sorted_keys = readings_by_mp_hour.keys.sort_by { |mp_id, hour| [hour, mp_id] }
 
       rows = []
-      readings_by_mp.each do |mp_id, readings|
+      sorted_keys.each do |mp_id, hour|
         mp = mp_map[mp_id]
         if !mp
           next
         end
 
+        readings = readings_by_mp_hour[[mp_id, hour]]
         value_type = mp.measurement_subtype.value_type
-        attrs = base_attributes(mp, hour_start, value_type, readings)
+        hour_end = hour + 1.hour
 
+        attrs = base_attributes(mp, hour, value_type, readings)
         ALL_AGG_KEYS.each { |k| attrs[k] = nil }
 
         case value_type
@@ -199,15 +167,45 @@ class HourlyAggregationService
           attrs.merge!(instantaneous_attributes(readings))
         when "status"
           prior_state = prior_states[mp_id]
-          attrs.merge!(status_attributes(readings, hour_start, hour_end, prior_state))
+          attrs.merge!(status_attributes(readings, hour, hour_end, prior_state))
+          # Carry forward: last value of this hour becomes prior state for next hour
+          prior_states[mp_id] = readings.last[0].to_i
         end
 
         rows << attrs
       end
 
-      batch_upsert(rows) if rows.any?
+      rows.each_slice(500) do |chunk|
+        batch_upsert(chunk)
+      end
 
       rows.size
+    end
+
+    # ── Prior state lookup (one query for all status MPs) ─────────────────
+
+    def fetch_prior_states(status_mp_ids, since_time)
+      prior_states = {}
+
+      if status_mp_ids.empty?
+        return prior_states
+      end
+
+      prior_rows = RawValue
+        .where(measurement_point_id: status_mp_ids)
+        .where(sample_time: ...since_time)
+        .where(
+          "sample_time = (SELECT MAX(r2.sample_time) FROM raw_values r2 " \
+          "WHERE r2.measurement_point_id = raw_values.measurement_point_id " \
+          "AND r2.sample_time < ?)", since_time
+        )
+        .pluck(:measurement_point_id, :scaled_value)
+
+      prior_rows.each do |mp_id, val|
+        prior_states[mp_id] = val.to_i
+      end
+
+      prior_states
     end
 
     # ── Aggregation logic ─────────────────────────────────────────────────
