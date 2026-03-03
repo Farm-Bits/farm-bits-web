@@ -34,7 +34,8 @@ class BulkRecordingService
           measurement_point_id: measurement_point.id,
           value: r[:value],
           scaled_value: scaled_value,
-          sample_time: r[:sample_time]
+          sample_time: r[:sample_time],
+          created_at: now
         }
       end
       RawValue.insert_all(raw_value_rows)
