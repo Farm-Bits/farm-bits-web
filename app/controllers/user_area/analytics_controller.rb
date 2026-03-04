@@ -3,8 +3,8 @@ class UserArea::AnalyticsController < UserArea::ApplicationController
     authorize :analytics, :show?
 
     measurement_points = AnalyticsQueryService.eligible_scope(current_site)
-      .includes(:register_template, :measurement_subtype, :segment, :plc)
-    segments = current_site.segments.order(:name)
+      .includes(:register_template, :measurement_subtype, :segment)
+      .eager_load(:plc)
     measurement_subtypes = MeasurementSubtype
       .joins(:measurement_type)
       .where(id: measurement_points.select(:measurement_subtype_id).distinct)
@@ -13,7 +13,6 @@ class UserArea::AnalyticsController < UserArea::ApplicationController
     weather_station_api_metrics = WeatherStationApiMetric.where(key: current_site.weather_station_api_metric_keys)
 
     render inertia: 'UserArea/Analytics/index', props: {
-      segments: SegmentSerializer.render_as_hash(segments),
       measurement_points: MeasurementPointSerializer.render_as_hash(measurement_points, view: :with_details),
       measurement_subtypes: MeasurementSubtypeSerializer.render_as_hash(measurement_subtypes),
       weather_station_api_metrics: WeatherStationApiMetricSerializer.render_as_hash(weather_station_api_metrics)

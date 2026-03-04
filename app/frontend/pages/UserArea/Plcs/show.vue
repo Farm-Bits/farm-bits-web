@@ -106,12 +106,13 @@
   import type { MeasurementPoint, MeasurementSubtype } from '@/types/measurementPoint';
   import { COMMUNICATION_TYPE_TABS } from './types';
 
-  const { pageProps } = useAuth<{
+  const { currentSite, pageProps } = useAuth<{
     plc: PlcWithInterfaces;
     segments: Segment[];
     measurementSubtypes: MeasurementSubtype[];
   }>();
-  const { plc, segments, measurementSubtypes } = pageProps.value;
+  const segments = currentSite.value?.segments || [];
+  const { plc, measurementSubtypes } = pageProps.value;
 
   const activeTab = ref<CommunicationType>('digital_input');
 

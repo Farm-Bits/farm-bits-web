@@ -114,12 +114,11 @@
   import type { WeatherStationApiMetric } from '@/types/weather';
 
   const { currentSite, pageProps } = useAuth<{
-    segments: Segment[];
     measurement_points: LiveMeasurementPoint[];
     measurement_subtypes: MeasurementSubtype[];
     weather_station_api_metrics: WeatherStationApiMetric[];
   }>();
-  const { segments } = pageProps.value;
+  const segments = currentSite.value?.segments || [];
   const allMeasurementPoints = pageProps.value.measurement_points;
   const weatherStationApiMetrics = pageProps.value.weather_station_api_metrics;
 

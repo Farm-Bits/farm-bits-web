@@ -3,8 +3,8 @@ class UserArea::LiveController < UserArea::ApplicationController
     authorize :live, :show?
 
     measurement_points = AnalyticsQueryService.eligible_scope(current_site)
-      .includes(:register_template, :segment, :plc, measurement_subtype: [:measurement_type])
-    segments = current_site.segments.order(:name)
+      .includes(:register_template, :segment, measurement_subtype: [:measurement_type])
+      .eager_load(:plc)
     measurement_subtypes = MeasurementSubtype
       .joins(:measurement_type)
       .where(id: measurement_points.select(:measurement_subtype_id).distinct)
@@ -12,7 +12,6 @@ class UserArea::LiveController < UserArea::ApplicationController
       .includes(:measurement_type)
 
     render inertia: 'UserArea/Live/index', props: {
-      segments: SegmentSerializer.render_as_hash(segments),
       measurement_points: MeasurementPointSerializer.render_as_hash(measurement_points, view: :with_details_live),
       measurement_subtypes: MeasurementSubtypeSerializer.render_as_hash(measurement_subtypes)
     }

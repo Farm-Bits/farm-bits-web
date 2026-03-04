@@ -4,17 +4,8 @@ class UserArea::PlcsController < UserArea::ApplicationController
   def show
     authorize @plc, :show?
 
-    segments_for_site = []
-    if @plc.site_id
-      segments_for_site = policy_scope(Segment)
-        .select(:id, :name)
-        .where(site_id: @plc.site_id)
-        .order(:name)
-        .map { |s| { id: s.id, name: s.name } }
-    end
     data = {
       plc: PlcSerializer.render_as_json(@plc, view: :with_interfaces),
-      segments: segments_for_site,
       measurementSubtypes: MeasurementSubtypeSerializer.render_as_json(measurement_subtypes)
     }
 

@@ -95,7 +95,6 @@
   import RelativeTime from '@/components/RelativeTime.vue';
   import MeasurementPointCard from './components/MeasurementPointCard.vue';
   import { ROUTES } from '@/types/permissions';
-  import type { Segment } from '@/types/location';
   import type { MeasurementPoint, MeasurementSubtype } from '@/types/measurementPoint';
   import type { LiveMeasurementPoint } from '@/types/analytics';
 
@@ -115,11 +114,10 @@
   };
 
   const { currentSite, pageProps } = useAuth<{
-    segments: Segment[];
     measurement_points: LiveMeasurementPoint[];
     measurement_subtypes: MeasurementSubtype[];
   }>();
-  const { segments } = pageProps.value;
+  const segments = currentSite.value?.segments || [];
 
   const { execute } = useApiCall();
 
