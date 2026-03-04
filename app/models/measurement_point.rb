@@ -75,6 +75,10 @@ class MeasurementPoint < ApplicationRecord
     ((value.to_f - effective_offset) / effective_factor)
   end
 
+  def live_display_value
+    @live_display_value ||= compute_live_display_value
+  end
+
   def validate_write(value)
     if !register_template.group_name.present?
       return []
@@ -315,6 +319,34 @@ class MeasurementPoint < ApplicationRecord
       context = PlcWriteContext.system_action('system_sync')
       service = PlcWriteService.new(self)
       service.bulk_write!(writes, context: context)
+    end
+
+    def compute_live_display_value
+      unit = effective_unit.to_s
+
+      if register_template.category != 'counter'
+        return { value: scaled_last_decoded_value, unit: unit }
+      end
+
+      recent = raw_values.order(sample_time: :desc).limit(2).to_a
+      v1, v2 = recent
+
+      if v1.nil?
+        return { value: nil, unit: unit }
+      end
+
+      if v2.nil? || (elapsed = (v1.sample_time - v2.sample_time).to_f) == 0
+        return { value: v1.scaled_value, unit: unit }
+      end
+
+      delta = v1.scaled_value - v2.scaled_value
+
+      if delta < 0
+        return { value: v1.scaled_value, unit: unit }
+      end
+
+      rate_unit = unit.present? ? "#{unit}/s" : '/s'
+      { value: delta / elapsed, unit: rate_unit }
     end
 
     def fetch_group_points

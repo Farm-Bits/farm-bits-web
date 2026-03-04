@@ -20,10 +20,10 @@
     <div class="mp-card__value">
       <ValueDisplay
         :value="measurementPoint.last_value"
-        :value-format="measurementPoint.value_format"
+        :valueFormat="measurementPoint.value_format"
         :unit="measurementPoint.effective_unit"
-        :enum-values="measurementPoint.enum_values"
-        :alarm-state="measurementPoint.alarm_state"
+        :enumValues="measurementPoint.enum_values"
+        :alarmState="measurementPoint.alarm_state"
         placeholder="No data"
         size="default" />
     </div>
