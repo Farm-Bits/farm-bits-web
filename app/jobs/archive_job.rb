@@ -38,7 +38,7 @@ class ArchiveJob
         moved = archive_batch(
           source: 'hourly_aggregations',
           target: 'archived_hourly_aggregations',
-          condition: "date < '#{cutoff}'",
+          condition: "hour_timestamp < '#{cutoff}'",
         )
         if moved < BATCH_SIZE
           break
@@ -83,7 +83,7 @@ class ArchiveJob
         moved = archive_batch(
           source: 'weather_station_api_hourly_aggregations',
           target: 'archived_weather_station_api_hourly_aggregations',
-          condition: "date < '#{cutoff}'",
+          condition: "hour_timestamp < '#{cutoff}'",
         )
         if moved < BATCH_SIZE
           break
