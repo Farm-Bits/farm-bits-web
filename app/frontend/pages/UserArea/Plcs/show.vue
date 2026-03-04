@@ -108,7 +108,6 @@
 
   const { currentSite, pageProps } = useAuth<{
     plc: PlcWithInterfaces;
-    segments: Segment[];
     measurementSubtypes: MeasurementSubtype[];
   }>();
   const segments = currentSite.value?.segments || [];
