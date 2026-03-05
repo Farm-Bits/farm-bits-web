@@ -104,8 +104,8 @@ class ArchiveJob
 
       ActiveRecord::Base.transaction do
         ActiveRecord::Base.connection.execute(<<-SQL)
-          INSERT INTO #{target} (#{columns}, archived_at)
-          SELECT #{columns}, NOW()
+          INSERT INTO #{target} (#{columns})
+          SELECT #{columns}
           FROM #{source}
           WHERE #{condition}
           LIMIT #{BATCH_SIZE}
