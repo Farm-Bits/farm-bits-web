@@ -1,7 +1,7 @@
 class InterfaceSerializer < Blueprinter::Base
   identifier :id
 
-  fields :name, :communication_type, :description, :position
+  fields :name, :communication_type, :description, :io_number
 
   field :data_categories do |i|
     i.data_categories

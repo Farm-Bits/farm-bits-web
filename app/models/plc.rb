@@ -45,6 +45,17 @@ class Plc < ApplicationRecord
   after_commit :update_plc_ingestion_service, on: :update
   after_commit :remove_plc_ingestion_service, on: :destroy
 
+  scope :operational, -> {
+    joins(:gateway, site: :company)
+      .where(active: true)
+      .where(gateways: { active: true })
+      .where(sites: { companies: { active: true } })
+  }
+
+  def operational?
+    active? && gateway&.active? && site&.company&.active?
+  end
+
   def touch_last_seen!(timestamp = Time.current)
     update_column(:last_seen_at, timestamp)
   end

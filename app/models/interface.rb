@@ -11,6 +11,7 @@ class Interface < ApplicationRecord
 
   validates :name, presence: true, uniqueness: { scope: :plc_version_id }
   validates :communication_type, presence: true, inclusion: { in: COMMUNICATION_TYPES }
+  validates :io_number, presence: true, numericality: { only_integer: true, greater_than: 0 }
 
   def analog?
     communication_type.start_with?('analog_')

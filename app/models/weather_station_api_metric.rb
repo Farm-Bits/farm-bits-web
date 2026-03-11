@@ -12,7 +12,6 @@ class WeatherStationApiMetric < ApplicationRecord
   validates :unit, presence: true
   validates :factor, presence: true, numericality: true
   validates :offset, presence: true, numericality: true
-  validates :aggregation, presence: true, inclusion: { in: %w[avg sum min max] }
 
   def effective_unit
     unit.presence || measurement_subtype&.default_unit

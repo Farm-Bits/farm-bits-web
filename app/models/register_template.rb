@@ -224,8 +224,19 @@ class RegisterTemplate < ApplicationRecord
         errors.add(:validation_rules, "required_when must have 'group_role'")
       end
 
-      if !rule_config.key?('equals')
-        errors.add(:validation_rules, "required_when must have 'equals'")
+      if !rule_config.key?('equals') && !rule_config.key?('not_equals')
+        errors.add(:validation_rules, "required_when must have 'equals' or 'not_equals'")
+      end
+    end
+
+    def validate_required_when_any_format(rule_config)
+      if !rule_config.is_a?(Array)
+        errors.add(:validation_rules, "required_when_any must be an array")
+        return
+      end
+
+      rule_config.each do |condition|
+        validate_required_when_format(condition)
       end
     end
 
@@ -269,6 +280,8 @@ class RegisterTemplate < ApplicationRecord
         case rule_type
         when 'required_when'
           validate_required_when_format(rule_config)
+        when 'required_when_any'
+          validate_required_when_any_format(rule_config)
         when 'one_of_required'
           validate_one_of_required_format(rule_config)
         when 'less_than', 'greater_than'

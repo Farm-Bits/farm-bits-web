@@ -3,10 +3,7 @@ class PlcPollingJob
   sidekiq_options queue: 'default'
 
   def perform
-    plcs = Plc.joins(:gateway, :measurement_points, site: :company)
-      .where(active: true)
-      .where(sites: { companies: { active: true } })
-      .where(gateways: { active: true })
+    plcs = Plc.operational
       .where(measurement_points: { active: true, data_collection_enabled: true })
       .distinct
 

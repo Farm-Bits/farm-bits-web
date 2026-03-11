@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_03_03_113910) do
+ActiveRecord::Schema[7.2].define(version: 2026_03_08_214709) do
   create_table "action_mailbox_inbound_emails", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "status", default: 0, null: false
     t.string "message_id", null: false
@@ -282,13 +282,13 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_03_113910) do
     t.string "name", null: false
     t.string "communication_type", null: false
     t.text "description"
-    t.integer "position", default: 0, null: false
+    t.integer "io_number", null: false
     t.bigint "plc_version_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["plc_version_id", "communication_type"], name: "index_interfaces_on_plc_version_id_and_communication_type"
+    t.index ["plc_version_id", "io_number"], name: "index_interfaces_on_plc_version_id_and_io_number"
     t.index ["plc_version_id", "name"], name: "index_interfaces_on_plc_version_id_and_name", unique: true
-    t.index ["plc_version_id", "position"], name: "index_interfaces_on_plc_version_id_and_position"
     t.index ["plc_version_id"], name: "index_interfaces_on_plc_version_id"
   end
 
@@ -406,12 +406,14 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_03_113910) do
   create_table "plc_versions", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "version_code", null: false
+    t.string "behavior_profile"
     t.text "description"
     t.boolean "is_latest", default: false, null: false
     t.boolean "is_supported", default: true, null: false
     t.bigint "model_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["behavior_profile"], name: "index_plc_versions_on_behavior_profile"
     t.index ["is_supported"], name: "index_plc_versions_on_is_supported"
     t.index ["model_id", "is_latest"], name: "index_plc_versions_on_model_id_and_is_latest"
     t.index ["model_id", "name"], name: "index_plc_versions_on_model_id_and_name", unique: true
@@ -633,7 +635,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_03_113910) do
     t.string "unit", null: false
     t.decimal "factor", precision: 15, scale: 6, default: "1.0", null: false
     t.decimal "offset", precision: 15, scale: 6, default: "0.0", null: false
-    t.string "aggregation", null: false
     t.bigint "measurement_subtype_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

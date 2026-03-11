@@ -3,13 +3,8 @@ class PlcReadJob
   sidekiq_options queue: 'default', retry: 3
 
   def perform(plc_id)
-    plc = Plc.includes(
-      :gateway,
-      site: :company,
-      measurement_points: :register_template
-    ).find_by(id: plc_id)
-
-    if !plc || !plc.active? || !plc.gateway || !plc.gateway.active? || !plc.site || !plc.site.company.active?
+    plc = Plc.includes(:gateway, :plc_version, site: :company).find_by(id: plc_id)
+    if !plc&.operational?
       return
     end
 
@@ -17,7 +12,6 @@ class PlcReadJob
       .where(active: true, data_collection_enabled: true)
       .includes(:register_template)
       .select { |mp| mp.needs_polling? }
-
     if measurement_points.empty?
       return
     end

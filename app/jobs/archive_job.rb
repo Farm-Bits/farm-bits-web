@@ -32,13 +32,13 @@ class ArchiveJob
     end
 
     def archive_hourly_aggregations
-      cutoff = HOURLY_RETENTION_MONTHS.months.ago.to_date
+      cutoff = HOURLY_RETENTION_MONTHS.months.ago
 
       loop do
         moved = archive_batch(
           source: 'hourly_aggregations',
           target: 'archived_hourly_aggregations',
-          condition: "hour_timestamp < '#{cutoff}'",
+          condition: "hour_timestamp < '#{cutoff.to_fs(:db)}'",
         )
         if moved < BATCH_SIZE
           break
@@ -53,7 +53,7 @@ class ArchiveJob
         moved = archive_batch(
           source: 'plc_write_logs',
           target: 'archived_plc_write_logs',
-          condition: "created_at < '#{cutoff}'",
+          condition: "created_at < '#{cutoff.to_fs(:db)}'",
         )
         if moved < BATCH_SIZE
           break
@@ -77,13 +77,13 @@ class ArchiveJob
     end
 
     def archive_weather_station_api_hourly_aggregations
-      cutoff = HOURLY_RETENTION_MONTHS.months.ago.to_date
+      cutoff = HOURLY_RETENTION_MONTHS.months.ago
 
       loop do
         moved = archive_batch(
           source: 'weather_station_api_hourly_aggregations',
           target: 'archived_weather_station_api_hourly_aggregations',
-          condition: "hour_timestamp < '#{cutoff}'",
+          condition: "hour_timestamp < '#{cutoff.to_fs(:db)}'",
         )
         if moved < BATCH_SIZE
           break
@@ -97,7 +97,6 @@ class ArchiveJob
       count = ActiveRecord::Base.connection.select_value(
         "SELECT COUNT(*) FROM #{source} WHERE #{condition} LIMIT #{BATCH_SIZE}"
       ).to_i
-
       if count == 0
         return 0
       end

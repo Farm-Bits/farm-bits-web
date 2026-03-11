@@ -10,9 +10,9 @@ default_schedule: &default_schedule
 
 scheduler:
   schedule:
-    plc_clock_sync:
+    plc_sync:
       cron: '0 3 * * *'
-      class: PlcClockSyncJob
+      class: PlcSyncJob
       queue: critical
 
     plc_polling:

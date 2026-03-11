@@ -31,7 +31,6 @@ export type WeatherStationApiMetric = {
   key: string;
   label: string;
   unit: string;
-  // aggregation: ValueType;
   measurement_subtype_id: MeasurementSubtype['id'];
   measurement_subtype: MeasurementSubtype;
 };

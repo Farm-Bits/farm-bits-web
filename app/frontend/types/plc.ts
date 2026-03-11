@@ -36,12 +36,20 @@ type VisibilityConditions = Record<string, string | string[]>;
 /**
  * Validation rules for cross-field validation within a group.
  */
-type ValidationRules = {
+export type ValidationRules = {
   /** Field is required when another field has a specific value */
   required_when?: {
     group_role: string;
-    equals: string | number;
+    equals?: string | number;
+    not_equals?: string | number;
   };
+
+  /** Field is required when any of the specified conditions are met */
+  required_when_any?: {
+    group_role: string;
+    equals?: string | number;
+    not_equals?: string | number;
+  }[];
 
   /** At least one of these roles must have a value */
   one_of_required?: string[];
@@ -88,7 +96,7 @@ export type Interface = {
   name: string;
   communication_type: CommunicationType;
   description: string | null;
-  position: number;
+  io_number: number;
   data_categories: DataCategory[];
 };
 

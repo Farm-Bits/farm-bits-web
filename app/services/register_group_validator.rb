@@ -4,7 +4,7 @@
 #
 # This validator handles:
 # - Conditional visibility based on controller register values
-# - Cross-validation rules (less_than, greater_than, required_when)
+# - Cross-validation rules (less_than, greater_than, required_when, required_when_any)
 # - Group-based organization of related settings
 #
 # Usage:
@@ -93,6 +93,7 @@ class RegisterGroupValidator
     return if rules.blank?
 
     validate_required_when(point, points_by_role, rules["required_when"]) if rules["required_when"]
+    validate_required_when_any(point, points_by_role, rules["required_when_any"]) if rules["required_when_any"]
     validate_one_of_required(point, points_by_role, rules["one_of_required"]) if rules["one_of_required"]
     validate_less_than(point, points_by_role, rules["less_than"]) if rules["less_than"]
     validate_greater_than(point, points_by_role, rules["greater_than"]) if rules["greater_than"]
@@ -101,19 +102,28 @@ class RegisterGroupValidator
   # Validate: required_when - field is required when controller has specific value
   def validate_required_when(point, points_by_role, rule)
     controller_role = rule["group_role"]
-    expected_value = rule["equals"]
+    expected_value = rule["equals"] || rule["not_equals"]
+    comparison_type = rule.key?("equals") ? :equals : :not_equals
+
     controller = points_by_role[controller_role]
 
     return unless controller
 
     controller_value = normalize_value(get_value(controller))
-    return unless controller_value == normalize_value(expected_value)
+    return unless (comparison_type == :equals && controller_value == normalize_value(expected_value)) || (comparison_type == :not_equals && controller_value != normalize_value(expected_value))
 
     point_value = get_value(point)
     return unless point_value.blank?
 
     message = rule["message"] || "#{point.register_template.label} is required when #{controller.register_template.label} is #{expected_value}"
     @errors << message
+  end
+
+  # Validate: required_when_any - field is required when any of the specified controllers have specific values
+  def validate_required_when_any(point, points_by_role, rules)
+    is_required = rules.any? do |rule|
+      validate_required_when(point, points_by_role, rule)
+    end
   end
 
   # Validate: one_of_required - at least one of the specified roles must have a value
