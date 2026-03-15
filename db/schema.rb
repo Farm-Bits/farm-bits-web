@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_03_08_214709) do
+ActiveRecord::Schema[7.2].define(version: 2026_03_13_131300) do
   create_table "action_mailbox_inbound_emails", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "status", default: 0, null: false
     t.string "message_id", null: false
@@ -498,7 +498,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_08_214709) do
     t.decimal "factor", precision: 15, scale: 10, default: "1.0", null: false
     t.decimal "offset", precision: 15, scale: 6, default: "0.0", null: false
     t.string "category", null: false
-    t.string "sync_field"
     t.string "group_name"
     t.string "group_role"
     t.json "validation_rules"
@@ -507,6 +506,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_08_214709) do
     t.integer "bulk_read_address"
     t.integer "bulk_read_offset"
     t.boolean "read_only", default: true, null: false
+    t.string "user_visibility", null: false
     t.decimal "min_value", precision: 20, scale: 6
     t.decimal "max_value", precision: 20, scale: 6
     t.string "default_value"
