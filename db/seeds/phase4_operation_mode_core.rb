@@ -37,7 +37,7 @@ ActiveRecord::Base.transaction do
     { group_role: 'duty_phase',         data_type: 'uint16',  value_format: 'enum',             addr_count: 1, enum_values: { '0' => 'inactive', '1' => 'on_phase', '2' => 'off_phase' } },
     { group_role: 'on_elapsed',         data_type: 'uint32',  value_format: 'duration_seconds', addr_count: 2 },
     { group_role: 'off_elapsed',        data_type: 'uint32',  value_format: 'duration_seconds', addr_count: 2 },
-    { group_role: 'error_flags',        data_type: 'uint16',  value_format: 'numeric',          addr_count: 1 },
+    { group_role: 'error_flags',        data_type: 'uint16',  value_format: 'bitmask',          addr_count: 1, enum_values: { '0' => 'Max ON exceeded', '1' => 'Min OFF active', '2' => 'Sensor error', '3' => 'Blackout active' } },
     { group_role: 'sensor_result',      data_type: 'boolean', value_format: 'boolean',          addr_count: 1 },
     { group_role: 'next_change_time',   data_type: 'uint32',  value_format: 'duration_seconds', addr_count: 2 },
     { group_role: 'next_change_target', data_type: 'uint16',  value_format: 'enum',             addr_count: 1, enum_values: { '0' => 'off', '1' => 'on' } },
@@ -55,7 +55,8 @@ ActiveRecord::Base.transaction do
     { group_role: 'min_on',          data_type: 'uint32',  value_format: 'duration_seconds', addr_count: 2, description: '0 = no limit. Emergency stop ignores this.' },
     { group_role: 'blackout_start',  data_type: 'uint16',  value_format: 'numeric',          addr_count: 1, min_value: 0, max_value: 1439, description: 'Local minutes since midnight.' },
     { group_role: 'blackout_end',    data_type: 'uint16',  value_format: 'numeric',          addr_count: 1, min_value: 0, max_value: 1439, description: 'Local minutes since midnight. If start > end, wraps past midnight.' },
-    { group_role: 'blackout_days',   data_type: 'uint16',  value_format: 'numeric',          addr_count: 1, min_value: 0, max_value: 127, description: 'Bitmask. bit0=Sun..bit6=Sat. 0 = blackout disabled.' },
+    { group_role: 'blackout_days',   data_type: 'uint16',  value_format: 'bitmask',          addr_count: 1, min_value: 0, max_value: 127, description: 'Bitmask. bit0=Sun..bit6=Sat. 0 = blackout disabled.', enum_values: {
+      '0' => 'Sun', '1' => 'Mon', '2' => 'Tue', '3' => 'Wed', '4' => 'Thu', '5' => 'Fri', '6' => 'Sat' } },
     { group_role: 'emergency',       data_type: 'boolean', value_format: 'boolean',          addr_count: 1, description: 'Write 1 to engage, 0 to release. Overrides everything including min_on.' }
   ].freeze
 
@@ -87,11 +88,12 @@ ActiveRecord::Base.transaction do
       value_format: reg[:value_format],
       factor: 1.0,
       offset: 0.0,
-      category: 'operation_mode_configuration',
+      category: !is_status ? 'operation_mode_configuration' : 'operation_mode_status',
       group_name: group_name,
       group_role: reg[:group_role],
       validation_rules: reg[:validation_rules],
       read_only: read_only,
+      user_visibility: 'visible',
       min_value: reg[:min_value],
       max_value: reg[:max_value],
       default_value: 0,

@@ -101,7 +101,7 @@ ActiveRecord::Base.transaction do
   rows.each_with_index do |row, index|
     data = row
 
-    # Address,Name,Type,Value,Um,Default,Min,Max,Description,Count,Register Type,Read Only,Category,Read Group,Read Address,Read Offset,Interfaces,Sync Field
+    # Address,Name,Type,Value,Um,Default,Min,Max,Description,Count,Register Type,Read Only,Category,Read Group,Read Address,Read Offset,Interfaces
     address = data[0].to_i
     name = data[1]
     type = data[2]
@@ -118,7 +118,6 @@ ActiveRecord::Base.transaction do
     bulk_read_address = data[14]
     bulk_read_offset = data[15]
     interface_names = data[16] ? data[16].split(',').map(&:strip) : []
-    sync_field = data[17]
 
     value_format = 'numeric'
     if name.include?('Time') || name.start_with?('ManualStart')
@@ -323,11 +322,11 @@ ActiveRecord::Base.transaction do
       factor: 1,
       offset: 0,
       category: category,
-      sync_field: sync_field,
       bulk_read_group: bulk_read_group,
       bulk_read_address: bulk_read_address,
       bulk_read_offset: bulk_read_offset,
       read_only: read_only,
+      user_visibility: interface_register_mappings_attributes.any? ? 'visible' : 'hidden',
       min_value: min_value,
       max_value: max_value,
       default_value: default_value,

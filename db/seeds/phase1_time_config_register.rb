@@ -27,6 +27,7 @@ ActiveRecord::Base.transaction do
     group_name: 'time_config',
     group_role: 'utc_offset',
     read_only: false,
+    user_visibility: 'hidden',
     min_value: -720,
     max_value: 840,
     default_value: 0,

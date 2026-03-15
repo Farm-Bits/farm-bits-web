@@ -28,6 +28,14 @@ ActiveRecord::Base.transaction do
 
   SCHEDULE_SLOT_REGISTERS = [
     {
+      group_role: 'enabled',
+      data_type: 'boolean',
+      value_format: 'boolean',
+      addr_count: 1,
+      offset: 0,
+      description: 'Master toggle. Preserves all config when OFF.'
+    },
+    {
       group_role: 'start_ref',
       data_type: 'uint16',
       value_format: 'enum',
@@ -69,13 +77,17 @@ ActiveRecord::Base.transaction do
     {
       group_role: 'days',
       data_type: 'uint16',
-      value_format: 'numeric',
+      value_format: 'bitmask',
       addr_count: 1,
       offset: 4,
       default_value: 0,
       min_value: 0,
       max_value: 127,
-      description: 'Day-of-week bitmask. bit0=Sun..bit6=Sat. 0 = disabled (unless onetime set).'
+      description: 'Day-of-week bitmask. bit0=Sun..bit6=Sat. 0 = disabled (unless onetime set).',
+      enum_values: {
+        '0' => 'Sun', '1' => 'Mon', '2' => 'Tue', '3' => 'Wed',
+        '4' => 'Thu', '5' => 'Fri', '6' => 'Sat'
+      }
     },
     {
       group_role: 'onetime_month',
@@ -142,6 +154,7 @@ ActiveRecord::Base.transaction do
       group_role: reg[:group_role],
       validation_rules: reg[:validation_rules],
       read_only: false,
+      user_visibility: 'visible',
       min_value: reg[:min_value],
       max_value: reg[:max_value],
       default_value: 0,

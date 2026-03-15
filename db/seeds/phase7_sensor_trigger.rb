@@ -21,7 +21,7 @@
 #
 
 ActiveRecord::Base.transaction do
-  OM_SENSOR_BASE_ADDRESS = 17442
+  OM_SENSOR_BASE_ADDRESS = 17526
   CONDITIONS_PER_DO = 11
 
   SOURCE_TYPE_ENUM = {
@@ -65,7 +65,15 @@ ActiveRecord::Base.transaction do
 
   OM_SENSOR_WINDOW_REGISTERS = [
     {
-      group_role: 'start_ref',
+      group_role: 'window_enabled',
+      data_type: 'boolean',
+      value_format: 'boolean',
+      addr_count: 1,
+      offset: 0,
+      description: 'Master toggle. Preserves all config when OFF.'
+    },
+    {
+      group_role: 'window_start_ref',
       data_type: 'uint16',
       value_format: 'enum',
       addr_count: 1,
@@ -73,20 +81,20 @@ ActiveRecord::Base.transaction do
       min_value: 0,
       max_value: 2,
       enum_values: { '0' => 'fixed', '1' => 'sunrise', '2' => 'sunset' },
-      visibility_conditions: { 'enabled' => ['1'] }
+      visibility_conditions: { 'window_enabled' => ['1'] }
     },
     {
-      group_role: 'start_time',
+      group_role: 'window_start_time',
       data_type: 'int16',
       value_format: 'numeric',
       addr_count: 1,
       offset: 1,
       min_value: -1439,
       max_value: 1439,
-      visibility_conditions: { 'enabled' => ['1'] }
+      visibility_conditions: { 'window_enabled' => ['1'] }
     },
     {
-      group_role: 'end_ref',
+      group_role: 'window_end_ref',
       data_type: 'uint16',
       value_format: 'enum',
       addr_count: 1,
@@ -94,20 +102,20 @@ ActiveRecord::Base.transaction do
       min_value: 0,
       max_value: 2,
       enum_values: { '0' => 'fixed', '1' => 'sunrise', '2' => 'sunset' },
-      visibility_conditions: { 'enabled' => ['1'] }
+      visibility_conditions: { 'window_enabled' => ['1'] }
     },
     {
-      group_role: 'end_time',
+      group_role: 'window_end_time',
       data_type: 'int16',
       value_format: 'numeric',
       addr_count: 1,
       offset: 3,
       min_value: -1439,
       max_value: 1439,
-      visibility_conditions: { 'enabled' => ['1'] }
+      visibility_conditions: { 'window_enabled' => ['1'] }
     },
     {
-      group_role: 'days',
+      group_role: 'window_days',
       data_type: 'uint16',
       value_format: 'numeric',
       addr_count: 1,
@@ -115,10 +123,10 @@ ActiveRecord::Base.transaction do
       min_value: 0,
       max_value: 127,
       description: '0 = always active (no window).',
-      visibility_conditions: { 'enabled' => ['1'] }
+      visibility_conditions: { 'window_enabled' => ['1'] }
     },
     {
-      group_role: 'onetime_date',
+      group_role: 'window_onetime_date',
       data_type: 'uint16',
       value_format: 'numeric',
       addr_count: 1,
@@ -126,11 +134,19 @@ ActiveRecord::Base.transaction do
       min_value: 0,
       max_value: 1231,
       description: 'Encoded month×100+day. 0 = recurring.',
-      visibility_conditions: { 'enabled' => ['1'] }
+      visibility_conditions: { 'window_enabled' => ['1'] }
     }
   ].freeze
 
   SENSOR_CONDITION_REGISTERS = [
+    {
+      group_role: 'enabled',
+      data_type: 'boolean',
+      value_format: 'boolean',
+      addr_count: 1,
+      offset: 0,
+      description: 'Master toggle. Preserves all config when OFF.'
+    },
     {
       group_role: 'source_type',
       data_type: 'uint16',
@@ -247,6 +263,7 @@ ActiveRecord::Base.transaction do
       validation_rules: reg[:validation_rules],
       visibility_conditions: reg[:visibility_conditions],
       read_only: false,
+      user_visibility: 'visible',
       min_value: reg[:min_value],
       max_value: reg[:max_value],
       default_value: 0,
@@ -278,7 +295,7 @@ ActiveRecord::Base.transaction do
     end
 
     OM_SENSOR_WINDOW_REGISTERS.each do |reg|
-      create_register(interface, 'om_sensor_window', address_offset, current_position, interface_register_mapping_position, reg)
+      create_register(interface, 'om_sensor', address_offset, current_position, interface_register_mapping_position, reg)
 
       address_offset += reg[:addr_count]
       current_position += 1

@@ -152,6 +152,7 @@ ActiveRecord::Base.transaction do
       group_name: 'sun_data',
       group_role: reg[:group_role],
       read_only: false,
+      user_visibility: 'hidden',
       min_value: reg[:min_value],
       max_value: reg[:max_value],
       default_value: reg[:default_value],
@@ -163,7 +164,7 @@ ActiveRecord::Base.transaction do
     current_position += 1
   end
 
-  # # IO Active Bitmasks
+  # # IO Active
   address_offset = 0
   IO_ACTIVE_REGISTERS.each do |reg|
     register_template = RegisterTemplate.create!(
@@ -179,10 +180,10 @@ ActiveRecord::Base.transaction do
       factor: 1.0,
       offset: 0.0,
       category: 'interface_configuration',
-      sync_field: 'active',
       group_name: 'io_active',
       group_role: reg[:group_role],
       read_only: false,
+      user_visibility: 'hidden',
       default_value: 0,
       position: current_position,
       plc_version_id: PLC_VERSION_ID
@@ -220,6 +221,7 @@ ActiveRecord::Base.transaction do
       group_name: 'push_data_config',
       group_role: reg[:group_role],
       read_only: false,
+      user_visibility: 'visible',
       min_value: reg[:min_value],
       max_value: reg[:max_value],
       default_value: reg[:default_value],

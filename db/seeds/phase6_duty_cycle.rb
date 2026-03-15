@@ -12,7 +12,7 @@
 #
 
 ActiveRecord::Base.transaction do
-  OM_DUTY_CYCLE_BASE_ADDRESS = 17286
+  OM_DUTY_CYCLE_BASE_ADDRESS = 17358
 
   OM_DUTY_CYCLE_REGISTERS = [
     {
@@ -59,7 +59,15 @@ ActiveRecord::Base.transaction do
 
   OM_DUTY_CYCLE_WINDOW_REGISTERS = [
     {
-      group_role: 'start_ref',
+      group_role: 'window_enabled',
+      data_type: 'boolean',
+      value_format: 'boolean',
+      addr_count: 1,
+      offset: 0,
+      description: 'Master toggle. Preserves all config when OFF.'
+    },
+    {
+      group_role: 'window_start_ref',
       data_type: 'uint16',
       value_format: 'enum',
       addr_count: 1,
@@ -68,10 +76,10 @@ ActiveRecord::Base.transaction do
       max_value: 2,
       enum_values: { '0' => 'fixed', '1' => 'sunrise', '2' => 'sunset' },
       description: 'Time reference for window start.',
-      visibility_conditions: { 'enabled' => ['1'] }
+      visibility_conditions: { 'window_enabled' => ['1'] }
     },
     {
-      group_role: 'start_time',
+      group_role: 'window_start_time',
       data_type: 'int16',
       value_format: 'numeric',
       addr_count: 1,
@@ -79,10 +87,10 @@ ActiveRecord::Base.transaction do
       min_value: -1439,
       max_value: 1439,
       description: 'Local minutes (fixed) or signed offset from sunrise/sunset.',
-      visibility_conditions: { 'enabled' => ['1'] }
+      visibility_conditions: { 'window_enabled' => ['1'] }
     },
     {
-      group_role: 'end_ref',
+      group_role: 'window_end_ref',
       data_type: 'uint16',
       value_format: 'enum',
       addr_count: 1,
@@ -91,10 +99,10 @@ ActiveRecord::Base.transaction do
       max_value: 2,
       enum_values: { '0' => 'fixed', '1' => 'sunrise', '2' => 'sunset' },
       description: 'Time reference for window end.',
-      visibility_conditions: { 'enabled' => ['1'] }
+      visibility_conditions: { 'window_enabled' => ['1'] }
     },
     {
-      group_role: 'end_time',
+      group_role: 'window_end_time',
       data_type: 'int16',
       value_format: 'numeric',
       addr_count: 1,
@@ -102,21 +110,25 @@ ActiveRecord::Base.transaction do
       min_value: -1439,
       max_value: 1439,
       description: 'Local minutes (fixed) or signed offset from sunrise/sunset.',
-      visibility_conditions: { 'enabled' => ['1'] }
+      visibility_conditions: { 'window_enabled' => ['1'] }
     },
     {
-      group_role: 'days',
+      group_role: 'window_days',
       data_type: 'uint16',
-      value_format: 'numeric',
+      value_format: 'bitmask',
       addr_count: 1,
       offset: 4,
       min_value: 0,
       max_value: 127,
       description: 'Day-of-week bitmask. bit0=Sun..bit6=Sat. 0 = no window (always active).',
-      visibility_conditions: { 'enabled' => ['1'] }
+      enum_values: {
+        '0' => 'Sun', '1' => 'Mon', '2' => 'Tue', '3' => 'Wed',
+        '4' => 'Thu', '5' => 'Fri', '6' => 'Sat'
+      },
+      visibility_conditions: { 'window_enabled' => ['1'] }
     },
     {
-      group_role: 'onetime_date',
+      group_role: 'window_onetime_date',
       data_type: 'uint16',
       value_format: 'numeric',
       addr_count: 1,
@@ -124,7 +136,7 @@ ActiveRecord::Base.transaction do
       min_value: 0,
       max_value: 1231,
       description: 'Encoded month×100+day (e.g., 315 = March 15). 0 = recurring per days_bitmask.',
-      visibility_conditions: { 'enabled' => ['1'] }
+      visibility_conditions: { 'window_enabled' => ['1'] }
     }
   ].freeze
 
@@ -155,6 +167,7 @@ ActiveRecord::Base.transaction do
       validation_rules: reg[:validation_rules],
       visibility_conditions: reg[:visibility_conditions],
       read_only: false,
+      user_visibility: 'visible',
       min_value: reg[:min_value],
       max_value: reg[:max_value],
       default_value: 0,
@@ -187,7 +200,7 @@ ActiveRecord::Base.transaction do
 
 
     OM_DUTY_CYCLE_WINDOW_REGISTERS.each do |reg|
-      create_register(interface, 'om_duty_cycle_window', address_offset, current_position, interface_register_mapping_position, reg)
+      create_register(interface, 'om_duty_cycle', address_offset, current_position, interface_register_mapping_position, reg)
 
       address_offset += reg[:addr_count]
       current_position += 1
