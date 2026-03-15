@@ -9,7 +9,9 @@ class MeasurementPointPolicy < ApplicationPolicy
 
   class Scope < Scope
     def resolve
-      scope.where(site: current_site)
+      scope.joins(:register_template)
+        .where(site: current_site)
+        .where.not(register_templates: { user_visibility: 'hidden' })
     end
   end
 end

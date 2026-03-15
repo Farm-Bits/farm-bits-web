@@ -227,6 +227,69 @@ export const valueConverters = {
     fromEdit(parts: DurationParts): RawValue {
       return parts.hours * 3600 + parts.minutes * 60 + parts.seconds;
     }
+  },
+
+  /**
+   * BITMASK (stored as integer, each bit is a boolean flag)
+   * enum_values keys are bit positions (as strings), values are labels.
+   */
+  bitmask: {
+    toDisplay(value: RawValue, enumValues: Record<string, string> | null): FormattedValue {
+      if (value === null)
+        return '—';
+
+      const intVal = typeof value === 'number' ? value : parseInt(String(value), 10);
+      if (isNaN(intVal))
+        return '—';
+
+      if (intVal === 0)
+        return 'None';
+
+      if (!enumValues)
+        return String(intVal);
+
+      const activeLabels: string[] = [];
+      for (const [bitStr, label] of Object.entries(enumValues)) {
+        const bit = parseInt(bitStr, 10);
+        if ((intVal & (1 << bit)) !== 0) {
+          activeLabels.push(label);
+        }
+      }
+
+      return activeLabels.length > 0 ? activeLabels.join(', ') : 'None';
+    },
+
+    toEdit(value: RawValue): number {
+      if (value === null)
+        return 0;
+
+      const intVal = typeof value === 'number' ? value : parseInt(String(value), 10);
+      return isNaN(intVal) ? 0 : intVal;
+    },
+
+    fromEdit(editValue: number): RawValue {
+      return editValue;
+    },
+
+    /** Check if a specific bit is set */
+    isBitSet(value: RawValue, bit: number): boolean {
+      const intVal = typeof value === 'number' ? value : parseInt(String(value ?? '0'), 10);
+      if (isNaN(intVal))
+        return false;
+
+      return (intVal & (1 << bit)) !== 0;
+    },
+
+    /** Toggle a specific bit and return the new bitmask value */
+    toggleBit(value: RawValue, bit: number, checked: boolean): number {
+      const current = typeof value === 'number' ? value : parseInt(String(value ?? '0'), 10);
+      const intVal = isNaN(current) ? 0 : current;
+
+      if (checked) {
+        return intVal | (1 << bit);
+      }
+      return intVal & ~(1 << bit);
+    }
   }
 };
 
@@ -255,6 +318,8 @@ export function getDisplayValue(
       return valueConverters.timeOfDay.toDisplay(value);
     case 'duration_seconds':
       return valueConverters.durationSeconds.toDisplay(value);
+    case 'bitmask':
+      return valueConverters.bitmask.toDisplay(value, metadata?.enumValues ?? null);
     default:
       return String(value ?? '—');
   }

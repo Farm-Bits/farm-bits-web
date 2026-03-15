@@ -7,7 +7,12 @@ class Interface < ApplicationRecord
   has_many :register_templates, through: :interface_register_mappings
 
   COMMUNICATION_TYPES = %w[analog_input analog_output digital_input digital_output].freeze
-  CATEGORIES = (MeasurementSubtype::DATA_CATEGORIES + %w[interface_configuration measurement_point_configuration operation_mode_configuration]).freeze
+  CATEGORIES = (MeasurementSubtype::DATA_CATEGORIES + %w[
+    interface_configuration
+    interface_status
+    operation_mode_configuration
+    operation_mode_status
+  ]).freeze
 
   validates :name, presence: true, uniqueness: { scope: :plc_version_id }
   validates :communication_type, presence: true, inclusion: { in: COMMUNICATION_TYPES }

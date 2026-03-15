@@ -3,14 +3,14 @@ import { type DataCategory, type MeasurementPoint } from './measurementPoint';
 const COMMUNICATION_TYPES = ['analog_input', 'analog_output', 'digital_input', 'digital_output'] as const;
 export type CommunicationType = typeof COMMUNICATION_TYPES[number];
 
-const INTERFACE_CATEGORIES = ['status', 'analog', 'counter', 'interface_configuration', 'measurement_point_configuration', 'operation_mode_configuration'] as const;
+const INTERFACE_CATEGORIES = ['status', 'analog', 'counter', 'interface_configuration', 'interface_status', 'operation_mode_configuration', 'operation_mode_status'] as const;
 type InterfaceCategory = typeof INTERFACE_CATEGORIES[number];
 
 export function isConfigurationCategory(category: string) {
   return ['interface_configuration'].includes(category);
 }
 
-const VALUE_FORMATS = ['numeric', 'boolean', 'enum', 'ascii_string', 'time_of_day', 'duration_seconds'] as const;
+const VALUE_FORMATS = ['numeric', 'boolean', 'enum', 'ascii_string', 'time_of_day', 'duration_seconds', 'bitmask'] as const;
 export type ValueFormat = typeof VALUE_FORMATS[number];
 
 type DataType =

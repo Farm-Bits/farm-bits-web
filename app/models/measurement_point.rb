@@ -26,7 +26,13 @@ class MeasurementPoint < ApplicationRecord
 
   before_save :deactivate_conflicting_measurement_points
   before_save :sync_data_collection_with_active_if_needed
-  after_update :sync_to_plc_registers
+  after_update :trigger_behavior_sync
+
+  scope :interface_related, ->(plc_id) {
+    joins(register_template: :interface_register_mappings)
+      .where(plc_id: plc_id)
+      .distinct
+  }
 
   class WriteValidationError < StandardError;
   end
@@ -120,27 +126,9 @@ class MeasurementPoint < ApplicationRecord
       return MeasurementPoint.none
     end
 
-    MeasurementPoint
-      .joins(register_template: :interface_register_mappings)
-      .where(plc_id: plc_id)
+    interface_related(plc_id)
       .where(register_templates: { category: ['interface_configuration', 'operation_mode_configuration'] })
       .where(interface_register_mappings: { interface_id: interface_ids })
-      .includes(:register_template)
-      .distinct
-  end
-
-  def syncable_measurement_points
-    interface_ids = register_template.interface_register_mappings.pluck(:interface_id)
-    if interface_ids.empty?
-      return MeasurementPoint.none
-    end
-
-    MeasurementPoint
-      .joins(register_template: :interface_register_mappings)
-      .where(plc_id: plc_id)
-      .where(register_template: { category: 'measurement_point_configuration' })
-      .where(interface_register_mappings: { interface_id: interface_ids })
-      .where.not(register_template: { sync_field: [nil, ''] })
       .includes(:register_template)
       .distinct
   end
@@ -291,34 +279,18 @@ class MeasurementPoint < ApplicationRecord
       self.polling_interval_seconds ||= 270
     end
 
-    def sync_to_plc_registers
+    def trigger_behavior_sync
       if !plc.gateway_id
         return
       end
 
-      writes = []
-
-      saved_changes.each_key do |field|
-        sync_points = configuration_measurement_points
-          .joins(:register_template)
-          .where(register_templates: { sync_field: field })
-
-        sync_points.each do |sync_point|
-          raw_value = read_attribute(field)
-          writes << {
-            measurement_point: sync_point,
-            value: raw_value
-          }
-        end
-      end
-
-      if writes.empty?
+      behavior = PlcBehaviors.for(plc)
+      if behavior.mp_triggers.empty?
         return
       end
 
-      context = PlcWriteContext.system_action('system_sync')
-      service = PlcWriteService.new(self)
-      service.bulk_write!(writes, context: context)
+      changed_fields = saved_changes.keys
+      behavior.trigger_from_mp_update(changed_fields)
     end
 
     def compute_live_display_value

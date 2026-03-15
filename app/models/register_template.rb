@@ -28,7 +28,9 @@ class RegisterTemplate < ApplicationRecord
     ascii_string     # Character codes forming ASCII text
     time_of_day      # Time of day in minutes (0-1439)
     duration_seconds # Duration in seconds
+    bitmask          # Bitmask value where each bit represents a boolean flag
   ].freeze
+  USER_VISIBILITIES = %w[visible hidden].freeze
 
   validates :name, presence: true, uniqueness: { scope: :plc_version_id }
   validates :label, presence: true, uniqueness: { scope: :plc_version_id }
@@ -55,8 +57,8 @@ class RegisterTemplate < ApplicationRecord
   validate :group_role_requires_group_name
   validate :validation_rules_format
   validate :visibility_conditions_format
-  validate :measurement_point_configuration_category_requires_sync_field
   validate :bulk_read_offset_requires_bulk_read_address
+  validates :user_visibility, presence: true, inclusion: { in: USER_VISIBILITIES }
 
   def full_address
     "#{address}#{address_count > 1 ? "-#{address + address_count - 1}" : ''}"
@@ -111,6 +113,8 @@ class RegisterTemplate < ApplicationRecord
       decode_time_of_day(data)
     when 'duration_seconds'
       decode_duration_seconds(data)
+    when 'bitmask'
+      decode_numeric(data)
     else
       data.first
     end
@@ -130,9 +134,29 @@ class RegisterTemplate < ApplicationRecord
       encode_time_of_day(value)
     when 'duration_seconds'
       encode_duration_seconds(value)
+    when 'bitmask'
+      encode_numeric(value)
     else
       [value.to_i]
     end
+  end
+
+  def decode_bitmask_labels(raw_value)
+    if !enum_values.present?
+      return []
+    end
+
+    value = raw_value.to_i
+    enum_values.filter_map do |bit_str, label|
+      bit = bit_str.to_i
+      if (value & (1 << bit)) != 0
+        label
+      end
+    end
+  end
+
+  def encode_bitmask_from_bits(bit_positions)
+    bit_positions.map(&:to_i).reduce(0) { |mask, bit| mask | (1 << bit) }
   end
 
   private
@@ -310,12 +334,6 @@ class RegisterTemplate < ApplicationRecord
         if !normalized.all? { |v| v.is_a?(String) || v.is_a?(Numeric) }
           errors.add(:visibility_conditions, "values for '#{controller_role}' must be strings or numbers")
         end
-      end
-    end
-
-    def measurement_point_configuration_category_requires_sync_field
-      if category == 'measurement_point_configuration' && sync_field.blank?
-        errors.add(:sync_field, "must be set for 'measurement_point_configuration' category registers")
       end
     end
 

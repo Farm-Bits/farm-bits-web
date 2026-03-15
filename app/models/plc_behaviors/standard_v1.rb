@@ -1,5 +1,3 @@
-# app/models/plc_behaviors/standard_v1.rb
-#
 # Behavior profile for the standard FarmBits PLC.
 #
 # This file is the complete picture of what this PLC version supports.
@@ -26,7 +24,7 @@ class PlcBehaviors::StandardV1 < PlcBehaviors::Base
   # ════════════════════════════════════════════════════════════
 
   include PlcBehaviors::Concerns::ClockSyncUtc             # sync_clock!, sync_utc_offset!
-  # include PlcBehaviors::Concerns::IoActiveBitmask          # sync_io_active!
+  include PlcBehaviors::Concerns::IoActive                 # sync_io_active!
   include PlcBehaviors::Concerns::SunDataSync              # sync_sun_data!
   include PlcBehaviors::Concerns::SensorCascade            # cascade_sensor_deactivation!
   include PlcBehaviors::Concerns::OnetimeScheduleCleanup   # cleanup_onetime_schedules!
@@ -86,45 +84,114 @@ class PlcBehaviors::StandardV1 < PlcBehaviors::Base
         output_state active_source manual_remaining duty_remaining duty_phase
         on_elapsed off_elapsed error_flags sensor_result
         next_change_time next_change_target next_change_source
-      ]
+      ],
+      ui_hints: {
+        renderer: 'status_summary',
+        position: 0,
+        role_map: {
+          'output_state' => 'output_state',
+          'active_source' => 'active_source',
+          'on_elapsed' => 'on_elapsed',
+          'off_elapsed' => 'off_elapsed',
+          'next_change_seconds' => 'next_change_time',
+          'next_change_target' => 'next_change_target',
+          'next_change_source' => 'next_change_source',
+          'error_flags' => 'error_flags',
+          'manual_remaining' => 'manual_remaining',
+          'duty_phase' => 'duty_phase',
+          'duty_remaining' => 'duty_remaining',
+          'sensor_result' => 'sensor_result',
+        }
+      }
     },
 
     # ── Operation Mode Control (per DO) ───────────────
     'om_manual' => {
       description: 'Manual ON/OFF control with optional duration.',
-      roles: %w[command duration]
+      roles: %w[command duration],
+      ui_hints: {
+        renderer: 'manual_control',
+        position: 10,
+        role_map: {
+          'command' => 'command',
+        },
+        transient_roles: %w[command]
+      }
     },
     'om_safety' => {
       description: 'Safety: max on, min off/on, blackout window, emergency stop.',
-      roles: %w[max_on min_off min_on blackout_start blackout_end blackout_days emergency]
+      roles: %w[max_on min_off min_on blackout_start blackout_end blackout_days emergency],
+      ui_hints: {
+        renderer: 'safety_constraints',
+        position: 20,
+        role_map: {
+          'emergency' => 'emergency',
+        },
+        restricted_roles: {
+          'emergency' => { 'release_min_role' => 'site_admin' },
+        }
+      }
     },
     'om_duty_cycle' => {
       description: 'Duty cycle: ON/OFF phase durations.',
-      roles: %w[enabled on_duration off_duration total_duration]
-    },
-    'om_duty_cycle_window' => {
-      description: 'Optional time window for duty cycle.',
-      roles: %w[start_ref start_time end_ref end_time days onetime_date]
+      roles: %w[
+        enabled on_duration off_duration total_duration
+        window_enabled window_start_ref window_start_time
+        window_end_ref window_end_time window_days window_onetime_date
+      ],
+      ui_hints: {
+        renderer: 'duty_cycle',
+        position: 40,
+        role_map: {
+          'enabled' => 'enabled',
+          'window_enabled' => 'window_enabled',
+        }
+      }
     },
     'om_sensor' => {
       description: 'Sensor trigger master enable.',
-      roles: %w[enabled]
+      roles: %w[
+        enabled
+        window_enabled window_start_ref window_start_time
+        window_end_ref window_end_time window_days window_onetime_date
+      ],
+      ui_hints: {
+        renderer: 'sensor_trigger',
+        children_pattern: 'om_sensor_cond_*',
+        position: 50,
+        role_map: {
+          'enabled' => 'enabled',
+          'window_enabled' => 'window_enabled',
+        }
+      }
     },
-    'om_sensor_window' => {
-      description: 'Optional time window for sensor trigger.',
-      roles: %w[start_ref start_time end_ref end_time days onetime_date]
-    },
-
     # ── Pattern-based groups ──────────────────────────
     'om_schedule_*' => {
       description: 'Schedule slots. Recurring weekly or one-time (with onetime_year for full date).',
-      roles: %w[start_ref start_time duration days onetime_month onetime_day onetime_year],
-      pattern: true
+      roles: %w[enabled start_ref start_time duration days onetime_month onetime_day onetime_year],
+      pattern: true,
+      ui_hints: {
+        renderer: 'schedule_slot',
+        position: 30,
+        role_map: {
+          'enabled' => 'enabled',
+        },
+      }
     },
     'om_sensor_cond_*' => {
       description: 'Sensor conditions. Reference IO via source_type + source_io_number.',
-      roles: %w[source_type source_io_number operator threshold hysteresis logic on_error],
-      pattern: true
+      roles: %w[enabled source_type source_io_number operator threshold hysteresis logic on_error],
+      pattern: true,
+      ui_hints: {
+        renderer: 'sensor_condition',
+        position: 51,
+        role_map: {
+          'enabled' => 'enabled',
+          'source_type' => 'source_type',
+          'threshold' => 'threshold',
+          'logic' => 'logic'
+        }
+      }
     }
   }.freeze
 end

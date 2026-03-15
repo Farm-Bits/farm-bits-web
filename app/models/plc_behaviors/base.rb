@@ -23,8 +23,23 @@ class PlcBehaviors::Base
 
   attr_reader :plc
 
+  class_attribute :mp_triggers, default: []
+
   def initialize(plc)
     @plc = plc
+  end
+
+  def self.register_mp_trigger(fields:, method:)
+    self.mp_triggers = mp_triggers + [{ fields: fields.to_set, method: method }]
+  end
+
+  def trigger_from_mp_update(changed_fields)
+    changed_set = changed_fields.to_set
+    mp_triggers.each do |trigger|
+      if trigger[:fields].intersect?(changed_set)
+        send(trigger[:method])
+      end
+    end
   end
 
   # ── Hooks (all no-ops) ──────────────────────────────

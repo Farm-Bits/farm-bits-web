@@ -1,7 +1,8 @@
 class AnalyticsQueryService
   def self.eligible_scope(site)
-    MeasurementPoint.joins(plc: { gateway: { site: :company } })
+    MeasurementPoint.joins(:register_template, plc: { gateway: { site: :company } })
       .where(active: true, data_collection_enabled: true)
+      .where(register_templates: { user_visibility: 'visible' })
       .where(plcs: { active: true })
       .where(gateways: { active: true })
       .where(sites: { id: site.id })

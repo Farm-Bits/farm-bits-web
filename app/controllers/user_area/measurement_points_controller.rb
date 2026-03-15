@@ -89,6 +89,8 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
 
       # Load allowed config points for this interface
       allowed_config_points = @measurement_point.configuration_measurement_points
+        .joins(:register_template)
+        .where(register_templates: { user_visibility: 'visible' })
         .includes(:register_template, plc: [:gateway])
         .index_by(&:id)
 

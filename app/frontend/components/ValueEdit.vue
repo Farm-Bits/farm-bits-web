@@ -97,6 +97,33 @@
       <span class="input-group-text">s</span>
     </div>
 
+    <!-- Bitmask (Checkboxes per bit) -->
+    <div v-else-if="valueFormat === 'bitmask' && enumValues" class="bitmask-edit">
+      <CFormCheck
+        v-for="(label, bitStr) in enumValues"
+        :key="bitStr"
+        :id="`${fieldId}-bit-${bitStr}`"
+        :label="label"
+        :checked="isBitSet(Number(bitStr))"
+        :disabled="disabled"
+        inline
+        @change="handleBitmaskToggle(Number(bitStr), $event)" />
+    </div>
+
+    <!-- Bitmask without enum_values (raw numeric input) -->
+    <div v-else-if="valueFormat === 'bitmask'" class="input-group">
+      <CFormInput
+        :model-value="editValue"
+        @update:model-value="handleNumericChange"
+        type="number"
+        :min="minValue ?? 0"
+        :max="maxValue ?? undefined"
+        step="1"
+        :disabled="disabled"
+        :invalid="invalid"
+        :placeholder="placeholder" />
+    </div>
+
     <!-- Default (text input) -->
     <CFormInput
       v-else
@@ -190,6 +217,16 @@
     return valueConverters.durationSeconds.toEdit(editValue.value);
   });
 
+  function isBitSet(bit: number) {
+    return valueConverters.bitmask.isBitSet(editValue.value, bit);
+  }
+
+  function handleBitmaskToggle(bit: number, event: Event) {
+    const checked = (event.target as HTMLInputElement).checked;
+    const newValue = valueConverters.bitmask.toggleBit(editValue.value, bit, checked);
+    emit('update:modelValue', newValue);
+  }
+
   function handleNumericChange(value: string) {
     const converted = valueConverters.numeric.fromEdit(value);
     emit('update:modelValue', converted);
@@ -237,5 +274,12 @@
   .form-check-input:checked {
     background-color: var(--cui-success);
     border-color: var(--cui-success);
+  }
+
+  .bitmask-edit {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.375rem 0;
   }
 </style>

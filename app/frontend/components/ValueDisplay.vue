@@ -14,6 +14,23 @@
       {{ displayValue }}
     </CBadge>
 
+   <!-- Bitmask: badge list showing active/inactive bits -->
+    <span v-else-if="valueFormat === 'bitmask' && enumValues" class="value-display__bitmask">
+      <CBadge
+        v-for="(label, bitStr) in enumValues"
+        :key="bitStr"
+        :color="isBitActive(Number(bitStr)) ? 'primary' : 'light'"
+        :class="{ 'text-body-secondary': !isBitActive(Number(bitStr)) }"
+        class="value-display__bitmask-badge">
+        {{ label }}
+      </CBadge>
+    </span>
+
+    <!-- Bitmask without enum_values: show comma-joined text -->
+    <span v-else-if="valueFormat === 'bitmask'" class="value-display__text">
+      {{ displayValue }}
+    </span>
+
     <!-- Enum: label from enum_values map -->
     <template v-else-if="valueFormat === 'enum'">
       <span class="value-display__text">{{ displayValue }}</span>
@@ -30,7 +47,7 @@
 
 <script lang="ts" setup>
   import { computed } from 'vue';
-  import { getDisplayValue } from '@/utils/valueConverters.ts';
+  import { getDisplayValue, valueConverters } from '@/utils/valueConverters';
   import type { AlarmState } from '@/types/measurementPoint';
   import type { ValueFormat } from '@/types/plc';
 
@@ -54,7 +71,6 @@
     showUnit: true
   });
 
-  // ── Computed: alarm/warning CSS class on root ──
   const rootClasses = computed(() => {
     const classes: string[] = [`value-display--${props.size}`];
     if (props.alarmState && props.alarmState !== 'normal')
@@ -63,7 +79,6 @@
     return classes;
   });
 
-  // ── Boolean ──
   const booleanNumeric = computed(() => {
     if (typeof props.value === 'number')
       return props.value;
@@ -81,6 +96,10 @@
     return booleanNumeric.value ? 'success' : 'secondary';
   });
 
+  function isBitActive(bit: number) {
+    return valueConverters.bitmask.isBitSet(props.value, bit);
+  }
+
   const displayValue = computed(() => {
     return getDisplayValue(props.value, props.valueFormat, {
       unit: props.unit,
@@ -94,7 +113,7 @@
       return null;
 
     // Don't show units for non-numeric formats
-    if (props.valueFormat === 'time_of_day' || props.valueFormat === 'ascii_string')
+    if (props.valueFormat === 'time_of_day' || props.valueFormat === 'ascii_string' || props.valueFormat === 'bitmask')
       return null;
 
     return props.unit;
@@ -175,6 +194,30 @@
   .value-display--large .value-display__badge {
     font-size: 0.85rem;
     padding: 0.3em 0.75em;
+  }
+
+  /* ── Bitmask badges ── */
+  .value-display__bitmask {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    align-items: center;
+  }
+
+  .value-display__bitmask-badge {
+    font-size: 0.75rem;
+    padding: 0.2em 0.5em;
+    font-weight: 500;
+  }
+
+  .value-display--compact .value-display__bitmask-badge {
+    font-size: 0.65rem;
+    padding: 0.15em 0.4em;
+  }
+
+  .value-display--large .value-display__bitmask-badge {
+    font-size: 0.85rem;
+    padding: 0.25em 0.6em;
   }
 
   /* ── Alarm states ── */

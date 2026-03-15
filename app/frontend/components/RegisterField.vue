@@ -55,6 +55,12 @@
       class="form-text">
       Duration (hours, minutes, seconds)
     </div>
+
+    <div
+      v-if="isEditing && registerMapping.register_template.value_format === 'bitmask'"
+      class="form-text">
+      Select one or more options
+    </div>
   </div>
 </template>
 
