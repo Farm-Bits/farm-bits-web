@@ -29,7 +29,7 @@ class PlcSerializer < Blueprinter::Base
           measurement_point: MeasurementPointSerializer.render_as_json(mp),
           position: mp.position
         }
-      end.compact.sort_by(&:position)
+      end.compact.sort_by { |mapping| mapping[:position] }
     end
   end
 end

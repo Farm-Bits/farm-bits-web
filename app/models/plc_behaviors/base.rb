@@ -29,6 +29,12 @@ class PlcBehaviors::Base
     @plc = plc
   end
 
+  def self.ui_hints_for_groups
+    self::SYSTEM_GROUPS
+      .select { |_name, config| config[:ui_hints].present? }
+      .transform_values { |config| config[:ui_hints] }
+  end
+
   def self.register_mp_trigger(fields:, method:)
     self.mp_triggers = mp_triggers + [{ fields: fields.to_set, method: method }]
   end

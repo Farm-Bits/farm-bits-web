@@ -33,8 +33,6 @@ ActiveRecord::Base.transaction do
       description: 'Minutes since midnight (site-local time) until sunrise',
       address_count: 1,
       group_role: 'sunrise',
-      min_value: 0,
-      max_value: 1439,
       default_value: 360
     },
     {
@@ -43,8 +41,6 @@ ActiveRecord::Base.transaction do
       description: 'Minutes since midnight (site-local time) until sunset',
       address_count: 1,
       group_role: 'sunset',
-      min_value: 0,
-      max_value: 1439,
       default_value: 1080
     }
   ].freeze
@@ -97,9 +93,9 @@ ActiveRecord::Base.transaction do
 
   PUSH_THRESHOLD_DI_COUNTER_REGISTERS = (1..12).map do |n|
     {
-      name: "Push Threshold DI#{n} Counter",
-      label: "Push_Threshold_DI#{n}_Counter",
-      description: "DI#{n} counter minimum absolute change to trigger push. 1 = every increment. 0 = disabled.",
+      name: "Counter Push Threshold",
+      label: "DI#{n}_CounterPushThreshold",
+      description: "DI#{n} counter minimum absolute change to trigger push. Applicable only if DI#{n} is configured as counter and active. Value is in counts.",
       address_count: 1,
       group_role: "threshold_di_counter_#{n}",
       default_value: 1,
@@ -111,14 +107,15 @@ ActiveRecord::Base.transaction do
   end.freeze
   PUSH_THRESHOLD_AI_REGISTERS = (1..12).map do |n|
     {
-      name: "Push Threshold AI#{n}",
-      label: "Push_Threshold_AI#{n}",
-      description: "AI#{n} change threshold in 0.1% units. 20 = 2.0%. 0 = push on every change",
+      name: "Push Threshold",
+      label: "AI#{n}_PushThreshold",
+      description: "AI#{n} minimum percentage change threshold to trigger push",
       address_count: 1,
       group_role: "threshold_ai_#{n}",
+      factor: 10,
       default_value: 20,
       min_value: 0,
-      max_value: 1000,
+      max_value: 100,
       communication_type: "analog_input",
       io_number: n
     }
@@ -145,16 +142,17 @@ ActiveRecord::Base.transaction do
       register_type: 'holding',
       data_type: 'uint16',
       byte_order: 'big_endian',
-      value_format: 'numeric',
+      value_format: 'time_of_day',
       factor: 1.0,
       offset: 0.0,
       category: 'configuration',
       group_name: 'sun_data',
       group_role: reg[:group_role],
+      bulk_read_group: 'sun_data',
+      bulk_read_address: SUN_DATA_BASE_ADDRESS,
+      bulk_read_offset: address_offset,
       read_only: false,
       user_visibility: 'hidden',
-      min_value: reg[:min_value],
-      max_value: reg[:max_value],
       default_value: reg[:default_value],
       position: current_position,
       plc_version_id: PLC_VERSION_ID
@@ -182,6 +180,9 @@ ActiveRecord::Base.transaction do
       category: 'interface_configuration',
       group_name: 'io_active',
       group_role: reg[:group_role],
+      bulk_read_group: 'io_active',
+      bulk_read_address: IO_ACTIVE_BASE_ADDRESS,
+      bulk_read_offset: address_offset,
       read_only: false,
       user_visibility: 'hidden',
       default_value: 0,
@@ -218,8 +219,11 @@ ActiveRecord::Base.transaction do
       factor: 1.0,
       offset: 0.0,
       category: 'interface_configuration',
-      group_name: 'push_data_config',
+      group_name: 'push_data_thresholds',
       group_role: reg[:group_role],
+      bulk_read_group: 'push_data_thresholds',
+      bulk_read_address: PUSH_THRESHOLD_BASE_ADDRESS,
+      bulk_read_offset: address_offset,
       read_only: false,
       user_visibility: 'visible',
       min_value: reg[:min_value],

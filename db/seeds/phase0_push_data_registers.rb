@@ -97,6 +97,9 @@ ActiveRecord::Base.transaction do
   SMTP_CONFIGURATION_REGISTERS.each do |smtp_configuration_register|
     RegisterTemplate.create!(smtp_configuration_register.merge({
       address: OFFSET_ADDRESS + previous_registers_size,
+      bulk_read_group: 'smtp_push_data',
+      bulk_read_address: OFFSET_ADDRESS,
+      bulk_read_offset: previous_registers_size,
       user_visibility: 'hidden',
       position: position,
       plc_version_id: plc_version_id

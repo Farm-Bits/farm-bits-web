@@ -42,155 +42,124 @@ class PlcBehaviors::StandardV1 < PlcBehaviors::Base
   # varies per DO.
 
   SYSTEM_GROUPS = {
-    # ── Clock & Time ──────────────────────────────────
     'set_system_clock' => {
-      description: 'PLC clock registers (UTC). Written daily.',
+      description: 'PLC clock registers (UTC)',
       roles: %w[seconds minutes hours day_of_week day_of_month month year upload_trigger]
     },
-    'time_config' => {
-      description: 'UTC offset for local time derivation.',
-      roles: %w[utc_offset]
-    },
-
-    # ── Global Configuration ──────────────────────────
-    'io_active' => {
-      description: 'IO active bitmasks. One uint16 per IO type, each bit = one interface number.',
-      roles: %w[active_ai_* active_di_* active_do_* active_ao_*]
-    },
-    'push_data_config' => {
-      description: 'Per-IO push data change thresholds. ' \
-                   'AI: 0.1% units (20=2.0%). DI/FDI counters: absolute change (1=every increment).',
-      role_patterns: %w[threshold_ai_* threshold_di_counter_*]
-    },
-    'sun_data' => {
-      description: 'Sunrise/sunset in local minutes-since-midnight.',
-      roles: %w[sunrise sunset]
-    },
-    'smtp_config' => {
-      description: 'SMTP credentials for push data emails.',
+    'smtp_push_data' => {
+      description: 'SMTP credentials for push data emails',
       roles: %w[hostname port username password to_email]
     },
-
-    # ── IO Health Detection (per input interface) ─────
+    'time_config' => {
+      description: 'UTC offset for local time derivation',
+      roles: %w[utc_offset]
+    },
+    'sun_data' => {
+      description: 'Sunrise/sunset in local minutes-since-midnight',
+      roles: %w[sunrise sunset]
+    },
+    'io_active' => {
+      description: 'IO active booleans. One per interface.',
+      roles: %w[active_ai_* active_di_* active_do_* active_ao_*]
+    },
+    'push_data_thresholds' => {
+      description: 'Per-IO push data change thresholds',
+      role_patterns: %w[threshold_ai_* threshold_di_counter_*]
+    },
     'io_health' => {
-      description: 'Configurable error detection per input interface.',
+      description: 'Configurable error detection per input interface',
       roles: %w[detect_mode detect_value_1 detect_value_2 health_status]
     },
 
-    # ── Operation Mode Status (per DO) ────────────────
-    'om_status' => {
-      description: 'Read-only DO status: output state, active source, timers, predictions.',
+    # ── Operation Mode groups ─────────────────────────────────
+
+    'om_safety' => {
+      description: 'Safety constraints: emergency stop, max on, min off/on',
       roles: %w[
-        output_state active_source manual_remaining duty_remaining duty_phase
-        on_elapsed off_elapsed error_flags sensor_result
-        next_change_time next_change_target next_change_source
+        emergency_stop
+        max_on_enabled max_on
+        min_off_enabled min_off
+        min_on_enabled min_on
       ],
       ui_hints: {
-        renderer: 'status_summary',
-        position: 0,
-        role_map: {
-          'output_state' => 'output_state',
-          'active_source' => 'active_source',
-          'on_elapsed' => 'on_elapsed',
-          'off_elapsed' => 'off_elapsed',
-          'next_change_seconds' => 'next_change_time',
-          'next_change_target' => 'next_change_target',
-          'next_change_source' => 'next_change_source',
-          'error_flags' => 'error_flags',
-          'manual_remaining' => 'manual_remaining',
-          'duty_phase' => 'duty_phase',
-          'duty_remaining' => 'duty_remaining',
-          'sensor_result' => 'sensor_result',
+        position: 1,
+        quick_actions: {
+          'emergency_stop' => { style: 'danger' }
+        },
+        restricted_roles: {
+          'emergency_stop' => { min_role: 'site_admin' }
         }
       }
     },
-
-    # ── Operation Mode Control (per DO) ───────────────
-    'om_manual' => {
-      description: 'Manual ON/OFF control with optional duration.',
-      roles: %w[command duration],
+    'om_window' => {
+      description: 'Time window: if enabled, output can only be ON during this window',
+      roles: %w[enabled start_ref start_time start_offset end_ref end_time end_offset days],
       ui_hints: {
-        renderer: 'manual_control',
-        position: 10,
-        role_map: {
-          'command' => 'command',
-        },
-        transient_roles: %w[command]
+        position: 5,
+        toggle_role: 'enabled'
       }
     },
-    'om_safety' => {
-      description: 'Safety: max on, min off/on, blackout window, emergency stop.',
-      roles: %w[max_on min_off min_on blackout_start blackout_end blackout_days emergency],
+    'om_status' => {
+      description: 'Operation mode status: active source, error flags, next change time',
+      roles: %w[active_source error_flags next_change_time],
       ui_hints: {
-        renderer: 'safety_constraints',
-        position: 20,
-        role_map: {
-          'emergency' => 'emergency',
-        },
-        restricted_roles: {
-          'emergency' => { 'release_min_role' => 'site_admin' },
+        position: 0
+      }
+    },
+    'om_manual' => {
+      description: 'Manual ON/OFF control with optional timed duration',
+      roles: %w[command duration],
+      ui_hints: {
+        position: 10,
+        quick_actions: {
+          'command' => { style: 'primary' }
         }
       }
     },
     'om_duty_cycle' => {
-      description: 'Duty cycle: ON/OFF phase durations.',
-      roles: %w[
-        enabled on_duration off_duration total_duration
-        window_enabled window_start_ref window_start_time
-        window_end_ref window_end_time window_days window_onetime_date
-      ],
+      description: 'Duty cycle: repeating ON/OFF phases',
+      roles: %w[enabled on_duration off_duration],
       ui_hints: {
-        renderer: 'duty_cycle',
-        position: 40,
-        role_map: {
-          'enabled' => 'enabled',
-          'window_enabled' => 'window_enabled',
-        }
+        position: 20,
+        toggle_role: 'enabled'
       }
     },
     'om_sensor' => {
-      description: 'Sensor trigger master enable.',
-      roles: %w[
-        enabled
-        window_enabled window_start_ref window_start_time
-        window_end_ref window_end_time window_days window_onetime_date
-      ],
+      description: 'Sensor trigger master enable',
+      roles: %w[enabled],
       ui_hints: {
-        renderer: 'sensor_trigger',
-        children_pattern: 'om_sensor_cond_*',
-        position: 50,
-        role_map: {
-          'enabled' => 'enabled',
-          'window_enabled' => 'window_enabled',
-        }
-      }
-    },
-    # ── Pattern-based groups ──────────────────────────
-    'om_schedule_*' => {
-      description: 'Schedule slots. Recurring weekly or one-time (with onetime_year for full date).',
-      roles: %w[enabled start_ref start_time duration days onetime_month onetime_day onetime_year],
-      pattern: true,
-      ui_hints: {
-        renderer: 'schedule_slot',
         position: 30,
-        role_map: {
-          'enabled' => 'enabled',
-        },
+        toggle_role: 'enabled',
+        children_pattern: 'om_sensor_cond_*'
       }
     },
     'om_sensor_cond_*' => {
-      description: 'Sensor conditions. Reference IO via source_type + source_io_number.',
-      roles: %w[enabled source_type source_io_number operator threshold hysteresis logic on_error],
+      description: 'Individual sensor conditions. IO via source_type + source_io_number.',
+      roles: %w[enabled source_type source_io_number operator threshold hysteresis],
       pattern: true,
       ui_hints: {
-        renderer: 'sensor_condition',
-        position: 51,
-        role_map: {
-          'enabled' => 'enabled',
-          'source_type' => 'source_type',
-          'threshold' => 'threshold',
-          'logic' => 'logic'
-        }
+        position: 31,
+        toggle_role: 'enabled',
+        resettable: true,
+        composite_fields: [
+          { type: 'measurement_point_selector', roles: { io_type: 'source_type', io_number: 'source_io_number' } }
+        ]
+      }
+    },
+    'om_schedule_*' => {
+      description: 'Schedule slots. Recurring weekly or one-time.',
+      roles: %w[
+        enabled action start_ref start_time start_offset duration schedule_type
+        days onetime_day onetime_month onetime_year
+      ],
+      pattern: true,
+      ui_hints: {
+        position: 50,
+        toggle_role: 'enabled',
+        resettable: true,
+        composite_fields: [
+          { type: 'date_picker', roles: { day: 'onetime_day', month: 'onetime_month', year: 'onetime_year' } }
+        ]
       }
     }
   }.freeze

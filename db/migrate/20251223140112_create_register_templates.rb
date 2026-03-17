@@ -52,7 +52,7 @@ class CreateRegisterTemplates < ActiveRecord::Migration[7.2]
     add_index :register_templates, [:plc_version_id, :address], unique: true
     add_index :register_templates, [:plc_version_id, :bulk_read_group]
     add_index :register_templates, [:plc_version_id, :label], unique: true
-    add_index :register_templates, [:plc_version_id, :name], unique: true
+    add_index :register_templates, [:plc_version_id, :name]
     add_index :register_templates, :category
     add_index :register_templates, [:plc_version_id, :group_name]
     add_index :register_templates, [:plc_version_id, :category]

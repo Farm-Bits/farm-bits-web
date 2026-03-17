@@ -20,12 +20,16 @@ class InterfaceSerializer < Blueprinter::Base
         end
 
         measurement_point = points.find { |mp| mp.register_template_id == irm.register_template_id }
+        if !measurement_point
+          next
+        end
+
         {
           register_template: RegisterTemplateSerializer.render_as_json(irm.register_template),
           measurement_point: MeasurementPointSerializer.render_as_json(measurement_point),
           position: irm.position
         }
-      end.compact.sort_by(&:position)
+      end.compact.sort_by { |mapping| mapping[:position] }
     end
   end
 end

@@ -23,71 +23,63 @@ ActiveRecord::Base.transaction do
 
   IO_HEALTH_REGISTERS = [
     {
-      name_suffix: 'Error Detect Mode',
-      label_suffix: 'Error_Detect_Mode',
-      description: ->(name) { "#{name} error detection. 0=disabled. 1=exact match. 2=below threshold. 3=above threshold 4=out of range" },
+      name: 'Error Detect Mode',
+      label_suffix: 'ErrorDetectMode',
+      description: ->(name) { "#{name} error detection mode: trigger error based on selected mode" },
       address_count: 1,
       data_type: 'uint16',
       value_format: 'enum',
       group_role: 'detect_mode',
       read_only: false,
-      min_value: 0,
-      max_value: 4,
       default_value: 1,
       enum_values: {
-        '0' => 'disabled',
-        '1' => 'exact_match',
-        '2' => 'below_threshold',
-        '3' => 'above_threshold',
-        '4' => 'out_of_range'
+        '0' => 'Disabled',
+        '1' => 'Exact Match',
+        '2' => 'Below Threshold',
+        '3' => 'Above Threshold',
+        '4' => 'Out of Range'
       }
     },
     {
-      name_suffix: 'Error Detect Value 1',
-      label_suffix: 'Error_Detect_Value_1',
-      description: ->(name) { "#{name} error value. exact match: error sentinel. below/above: threshold. out of range: low bound." },
+      name: 'Error Detect Value 1',
+      label_suffix: 'ErrorDetectValue1',
+      description: ->(name) { "#{name} error value. Exact Match: error sentinel. Below/Above Threshold: threshold. Out of Range: low bound." },
       address_count: 1,
       data_type: 'int16',
       value_format: 'numeric',
       group_role: 'detect_value_1',
       visibility_conditions: { 'detect_mode' => ['1', '2', '3', '4'] },
       read_only: false,
-      min_value: -32768,
-      max_value: 32767,
       default_value: -32768
 
     },
     {
-      name_suffix: 'Error Detect Value 2',
-      label_suffix: 'Error_Detect_Value_2',
-      description: ->(name) { "#{name} error value. out_of_range: high bound. Unused in other modes." },
+      name: 'Error Detect Value 2',
+      label_suffix: 'ErrorDetectValue2',
+      description: ->(name) { "#{name} error value. Out of Range: high bound. Unused in other modes." },
       address_count: 1,
       data_type: 'int16',
       value_format: 'numeric',
       group_role: 'detect_value_2',
-      validation_rules: { 'greater_than' => { 'group_role' => 'detect_value_1' }, 'message' => 'high bound must exceed low bound' },
+      validation_rules: { 'greater_than' => { 'group_role' => 'detect_value_1' } },
       visibility_conditions: { 'detect_mode' => ['4'] },
       read_only: false,
-      min_value: -32768,
-      max_value: 32767,
       default_value: 32767
     },
     {
-      name_suffix: 'IO Health Status',
-      label_suffix: 'IO_Health_Status',
-      description: ->(name) { "#{name} health status. 0 = OK. 1 = error. 2 = unknown" },
+      name: 'Health Status',
+      label_suffix: 'HealthStatus',
+      description: ->(name) { "#{name} health status" },
       address_count: 1,
       data_type: 'uint16',
       value_format: 'enum',
       group_role: 'health_status',
       read_only: true,
-      min_value: 0,
-      max_value: 2,
       default_value: 0,
       enum_values: {
-        '0' => 'ok',
-        '1' => 'error',
-        '2' => 'unknown'
+        '0' => 'OK',
+        '1' => 'Error',
+        '2' => 'Unknown'
       }
     }
   ].freeze
@@ -105,7 +97,7 @@ ActiveRecord::Base.transaction do
       is_status = reg[:group_role] == 'health_status'
 
       register_template = RegisterTemplate.create!(
-        name: "AI#{n} #{reg[:name_suffix]}",
+        name: reg[:name],
         label: "AI#{n}_#{reg[:label_suffix]}",
         description: description,
         address: !is_status ? IO_HEALTH_BASE_ADDRESS + address_offset : IO_HEALTH_STATUS_BASE_ADDRESS + address_status_offset,
@@ -121,10 +113,11 @@ ActiveRecord::Base.transaction do
         group_role: reg[:group_role],
         validation_rules: reg[:validation_rules],
         visibility_conditions: reg[:visibility_conditions],
+        bulk_read_group: !is_status ? 'io_health_configuration' : 'io_health_status',
+        bulk_read_address: !is_status ? IO_HEALTH_BASE_ADDRESS : IO_HEALTH_STATUS_BASE_ADDRESS,
+        bulk_read_offset: !is_status ? address_offset : address_status_offset,
         read_only: reg[:read_only],
         user_visibility: 'visible',
-        min_value: reg[:min_value],
-        max_value: reg[:max_value],
         default_value: reg[:default_value],
         enum_values: reg[:enum_values],
         position: current_position,

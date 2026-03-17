@@ -521,7 +521,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_13_131300) do
     t.index ["plc_version_id", "category"], name: "index_register_templates_on_plc_version_id_and_category"
     t.index ["plc_version_id", "group_name"], name: "index_register_templates_on_plc_version_id_and_group_name"
     t.index ["plc_version_id", "label"], name: "index_register_templates_on_plc_version_id_and_label", unique: true
-    t.index ["plc_version_id", "name"], name: "index_register_templates_on_plc_version_id_and_name", unique: true
+    t.index ["plc_version_id", "name"], name: "index_register_templates_on_plc_version_id_and_name"
     t.index ["plc_version_id", "position"], name: "index_register_templates_on_plc_version_id_and_position"
     t.index ["plc_version_id"], name: "index_register_templates_on_plc_version_id"
   end

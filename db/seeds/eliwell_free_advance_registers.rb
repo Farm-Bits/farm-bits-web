@@ -310,7 +310,7 @@ ActiveRecord::Base.transaction do
     end
 
     registers.push(
-      name: name,
+      name: name.split('_').join(' '),
       label: name,
       description: description,
       address: address,
@@ -329,7 +329,7 @@ ActiveRecord::Base.transaction do
       user_visibility: interface_register_mappings_attributes.any? ? 'visible' : 'hidden',
       min_value: min_value,
       max_value: max_value,
-      default_value: default_value,
+      default_value: default_value == 'True' ? 1 : (default_value == 'False' ? 0 : default_value),
       enum_values: enum_values,
       position: index + 1,
       plc_version: free_advance_first_version,
@@ -370,14 +370,13 @@ ActiveRecord::Base.transaction do
       group_name = "analog_input_#{ai_num}_config"
 
       # Find the input type selector register
-      input_type_register = plc_version.register_templates.find_by(name: "Cfg_#{interface_name}")
+      input_type_register = plc_version.register_templates.find_by(label: "Cfg_#{interface_name}")
       next unless input_type_register
 
       # Update the input type selector to be the controller
       input_type_register.update!(
         group_name: group_name,
-        group_role: "input_type_selector",
-        visibility_conditions: {} # Always visible
+        group_role: "input_type_selector"
       )
 
       # NTC gain/offset - visible for NTC types (0, 2, 7)
@@ -530,49 +529,88 @@ ActiveRecord::Base.transaction do
     end
   end
 
-  def update_calibration_register(plc_version, name, group_name, role, visibility)
-    register = plc_version.register_templates.find_by(name: name)
-    return unless register
+  def setup_analog_output_configuration(plc_version)
+    # For each analog output interface (AO1-AO12), set up the group
+    (1..6).each do |ao_num|
+      interface_name = "AO#{ao_num}"
+      group_name = "analog_output_#{ao_num}_config"
 
-    register.update!(
-      group_name: group_name,
-      group_role: role,
-      visibility_conditions: visibility
-    )
+      update_calibration_register(
+        plc_version,
+        "Gain_mA_#{interface_name}",
+        group_name,
+        "ma_gain",
+        nil
+      )
+      update_calibration_register(
+        plc_version,
+        "Offs_mA_#{interface_name}",
+        group_name,
+        "ma_offset",
+        nil
+      )
+
+      update_calibration_register(
+        plc_version,
+        "Gain_10V_#{interface_name}",
+        group_name,
+        "v10_gain",
+        nil
+      )
+      update_calibration_register(
+        plc_version,
+        "Offs_10V_#{interface_name}",
+        group_name,
+        "v10_offset",
+        nil
+      )
+    end
   end
 
-  def update_scale_register(plc_version, name, group_name, role, visibility, validation)
-    register = plc_version.register_templates.find_by(name: name)
+  def update_calibration_register(plc_version, label, group_name, role, visibility)
+    register = plc_version.register_templates.find_by(label: label)
     return unless register
 
     register.update!(
       group_name: group_name,
       group_role: role,
       visibility_conditions: visibility,
-      validation_rules: validation
+      user_visibility: 'hidden'
+    )
+  end
+
+  def update_scale_register(plc_version, label, group_name, role, visibility, validation)
+    register = plc_version.register_templates.find_by(label: label)
+    return unless register
+
+    register.update!(
+      group_name: group_name,
+      group_role: role,
+      visibility_conditions: visibility,
+      validation_rules: validation,
+      user_visibility: 'hidden'
     )
   end
 
   # Example: Set up digital input configuration (FDI)
   def setup_digital_input_configuration(plc_version)
-    (1..8).each do |fdi_num|
+    (1..2).each do |fdi_num|
       interface_name = "FDI#{fdi_num}"
       group_name = "digital_input_#{fdi_num}_config"
 
       # Frequency setting - always visible for digital inputs
-      freq_register = plc_version.register_templates.find_by(name: "#{interface_name}_frequency")
+      freq_register = plc_version.register_templates.find_by(label: "#{interface_name}_frequency")
       freq_register&.update!(
         group_name: group_name,
         group_role: "frequency",
-        visibility_conditions: {}
+        user_visibility: 'hidden'
       )
 
       # Reset counter - always visible
-      reset_register = plc_version.register_templates.find_by(name: "#{interface_name}_reset_counter")
+      reset_register = plc_version.register_templates.find_by(label: "#{interface_name}_reset_counter")
       reset_register&.update!(
         group_name: group_name,
-        group_role: "reset_counter",
-        visibility_conditions: {}
+        group_role: "reset_counter"
       )
     end
   end
@@ -589,8 +627,8 @@ ActiveRecord::Base.transaction do
   }.freeze
 
   def setup_system_clock_group(plc_version)
-    CLOCK_REGISTER_ROLES.each do |name, role|
-      clock_register = plc_version.register_templates.find_by(name: name)
+    CLOCK_REGISTER_ROLES.each do |label, role|
+      clock_register = plc_version.register_templates.find_by(label: label)
       clock_register&.update!(
         group_name: 'set_system_clock',
         group_role: role
@@ -600,5 +638,6 @@ ActiveRecord::Base.transaction do
 
   setup_analog_input_configuration(free_advance_first_version)
   setup_digital_input_configuration(free_advance_first_version)
+  setup_analog_output_configuration(free_advance_first_version)
   setup_system_clock_group(free_advance_first_version)
 end

@@ -32,7 +32,7 @@ class RegisterTemplate < ApplicationRecord
   ].freeze
   USER_VISIBILITIES = %w[visible hidden].freeze
 
-  validates :name, presence: true, uniqueness: { scope: :plc_version_id }
+  validates :name, presence: true
   validates :label, presence: true, uniqueness: { scope: :plc_version_id }
   validates :address,
     presence: true,
