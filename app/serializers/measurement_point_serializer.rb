@@ -84,19 +84,16 @@ class MeasurementPointSerializer < Blueprinter::Base
       mp.plc&.name
     end
 
-    field :register_name do |mp|
-      mp.register_template&.name
+    field :interface_communication_type do |mp|
+      mp.register_template.interface_register_mappings.first&.interface&.communication_type
     end
 
-    field :value_format do |mp|
-      mp.register_template&.value_format
-    end
-
-    field :enum_values do |mp|
-      mp.register_template&.enum_values
+    field :interface_io_number do |mp|
+      mp.register_template.interface_register_mappings.first&.interface&.io_number
     end
 
     association :measurement_subtype, blueprint: MeasurementSubtypeSerializer
+    association :register_template, blueprint: RegisterTemplateSerializer
   end
 
   view :with_details_live do

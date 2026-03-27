@@ -50,7 +50,8 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
     },
     measurement_points: {
       update: true,
-      write: true
+      write: true,
+      operation_mode_config: true
     },
     analytics: {
       show: true,
@@ -110,7 +111,8 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
     },
     measurement_points: {
       update: true,
-      write: true
+      write: true,
+      operation_mode_config: true
     },
     analytics: {
       show: true,
@@ -170,7 +172,8 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
     },
     measurement_points: {
       update: false,
-      write: true
+      write: true,
+      operation_mode_config: true
     },
     analytics: {
       show: true,
@@ -230,7 +233,8 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
     },
     measurement_points: {
       update: false,
-      write: false
+      write: false,
+      operation_mode_config: true
     },
     analytics: {
       show: true,

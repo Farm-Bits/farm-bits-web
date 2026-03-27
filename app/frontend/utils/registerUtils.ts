@@ -20,30 +20,6 @@ export function formatDataCategory(category: DataCategory) {
   return categories[category] || category;
 }
 
-export function getGroupIcon(groupName: string | null) {
-  if (!groupName)
-    return 'cilCog';
-
-  const lowerName = groupName.toLowerCase();
-
-  if (lowerName.includes('input') || lowerName.includes('ai'))
-    return 'cilInput';
-
-  if (lowerName.includes('output') || lowerName.includes('ao'))
-    return 'cilMediaPlay';
-
-  if (lowerName.includes('alarm'))
-    return 'cilBell';
-
-  if (lowerName.includes('scale') || lowerName.includes('calibr'))
-    return 'cilBalanceScale';
-
-  if (lowerName.includes('time'))
-    return 'cilClock';
-
-  return 'cilCog';
-}
-
 export function getConfigFieldClass(registerMapping: RegisterMapping) {
   const template = registerMapping.register_template;
 
@@ -87,9 +63,9 @@ export function groupMappingsByName(
 
   registerMappings.forEach((registerMapping) => {
     const groupName = registerMapping.register_template.group_name;
-    if (!groups.has(groupName)) {
+    if (!groups.has(groupName))
       groups.set(groupName, []);
-    }
+
     groups.get(groupName)!.push(registerMapping);
   });
 

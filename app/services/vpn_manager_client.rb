@@ -100,11 +100,10 @@ class VpnManagerClient
         sample_time: Time.current.iso8601,
         error: nil,
         error_type: nil,
-        results: measurement_points_with_values.each_with_object({}) do |entry, hash|
-          mp_id = entry[:measurement_point].id
-          hash[mp_id] = {
+        results: writes.each_with_object({}) do |entry, hash|
+          hash[entry[:id]] = {
             status: 'ok',
-            values: register_template.encode_value(entry[:value]),
+            values: entry[:values],
             error: nil
           }
         end

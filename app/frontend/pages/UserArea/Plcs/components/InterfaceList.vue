@@ -122,7 +122,7 @@
     selectedInterface.value = null;
   }
 
-  function openHistoryModal(registerMapping: RegisterMapping) {
+  function openHistoryModal(ioNumber: number, registerMapping: RegisterMapping) {
     const measurementSubtype = measurementSubtypes.find(
       (subtype) => subtype.id === registerMapping.measurement_point.measurement_subtype_id
     );
@@ -130,9 +130,9 @@
       ...registerMapping.measurement_point,
       measurement_subtype: measurementSubtype ?? null,
       plc_name: plcName,
-      register_name: registerMapping.register_template.name,
-      value_format: registerMapping.register_template.value_format,
-      enum_values: registerMapping.register_template.enum_values
+      register_template: registerMapping.register_template,
+      interface_communication_type: communicationType,
+      interface_io_number: ioNumber
     }];
     showHistoryModal.value = true;
   }

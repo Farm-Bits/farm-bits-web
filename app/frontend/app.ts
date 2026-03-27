@@ -39,6 +39,7 @@ import {
   CFormInput,
   CFormLabel,
   CFormSelect,
+  CFormSwitch,
   CFormText,
   CFormTextarea,
   CHeader,
@@ -117,6 +118,7 @@ import {
   cilInfo,
   cilLocationPin,
   cilLockLocked,
+  cilMediaPlay,
   cilMemory,
   cilMenu,
   cilOptions,
@@ -222,6 +224,7 @@ export default function () {
         cilInfo,
         cilLocationPin,
         cilLockLocked,
+        cilMediaPlay,
         cilMemory,
         cilMenu,
         cilOptions,
@@ -279,6 +282,7 @@ export default function () {
       app.component('CFormInput', CFormInput);
       app.component('CFormLabel', CFormLabel);
       app.component('CFormSelect', CFormSelect);
+      app.component('CFormSwitch', CFormSwitch);
       app.component('CFormText', CFormText);
       app.component('CFormTextarea', CFormTextarea);
       app.component('CHeader', CHeader);

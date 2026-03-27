@@ -1,12 +1,16 @@
 class UserArea::MeasurementPointsController < UserArea::ApplicationController
-  before_action :set_measurement_point, only: [:update, :write]
+  before_action :set_measurement_point_for_update, only: [:update]
+  before_action :set_measurement_point_for_write, only: [:write]
+  before_action :set_measurement_point_for_om_config, only: [:operation_mode_config]
 
   def update
     authorize @measurement_point, :update?
 
     ActiveRecord::Base.transaction do
-      if !@measurement_point.update(measurement_point_params)
-        raise ActiveRecord::Rollback
+      if params[:measurement_point].present?
+        if !@measurement_point.update(measurement_point_params)
+          raise ActiveRecord::Rollback
+        end
       end
 
       if params[:configuration_updates].present?
@@ -17,7 +21,7 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
     if @measurement_point.errors.empty?
       render json: {
         measurement_point: MeasurementPointSerializer.render_as_json(@measurement_point),
-        sibling_measurement_points: MeasurementPointSerializer.render_as_json(sibling_measurement_points)
+        sibling_measurement_points: MeasurementPointSerializer.render_as_json(@measurement_point.sibling_measurement_points)
       }, status: :ok
     else
       render json: { error: @measurement_point.errors.full_messages.to_sentence }, status: :unprocessable_entity
@@ -43,11 +47,112 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
     end
   end
 
+  def operation_mode_config
+    authorize @measurement_point, :operation_mode_config?
+
+    interface = @measurement_point.register_template
+      .interface_register_mappings
+      .first&.interface
+
+    if !interface
+      render json: { error: 'Measurement point is not associated with an interface' }, status: :unprocessable_entity
+      return
+    end
+
+    plc = @measurement_point.plc
+
+    # Load all OM registers (status + configuration) for this interface
+    om_measurement_points = plc.measurement_points
+      .joins(:register_template)
+      .joins(
+        "INNER JOIN interface_register_mappings irm " \
+        "ON irm.register_template_id = register_templates.id"
+      )
+      .where("irm.interface_id = ?", interface.id)
+      .where(register_templates: {
+        category: ['operation_mode_status', 'operation_mode_configuration'],
+        user_visibility: 'visible'
+      })
+      .includes(:register_template, plc: [:gateway])
+      .order('register_templates.position')
+
+    register_mappings = om_measurement_points.map do |mp|
+      {
+        register_template: RegisterTemplateSerializer.render_as_json(mp.register_template),
+        measurement_point: MeasurementPointSerializer.render_as_json(mp),
+        position: mp.register_template.position
+      }
+    end.sort_by { |rm| rm[:position] }
+
+    # Pre-resolved group labels from GroupSchemas
+    group_labels = om_measurement_points
+      .map { |mp| mp.register_template.group_name }
+      .compact
+      .uniq
+      .each_with_object({}) do |name, hash|
+        label = PlcBehaviors::GroupSchemas.label_for(name)
+        if label.present?
+          hash[name] = label
+        end
+      end
+
+    render json: {
+      register_mappings: register_mappings,
+      group_labels: group_labels,
+      available_sources: build_available_sources(plc)
+    }, status: :ok
+  end
+
   private
-    def set_measurement_point
+    # For update: the anchor must be a data-category register on an interface.
+    # This ensures we can find sibling config registers on the same interface.
+    def set_measurement_point_for_update
       @measurement_point = policy_scope(MeasurementPoint)
         .includes(:measurement_subtype, :register_template, :segment, plc: [:gateway])
         .find(params[:id])
+
+      if @measurement_point.register_template.interface_register_mappings.empty?
+        render json: { error: 'Measurement point is not associated with an interface' }, status: :unprocessable_entity
+        return
+      end
+
+      if !@measurement_point.register_template.category.in?(MeasurementSubtype::DATA_CATEGORIES)
+        render json: { error: 'Can not update configuration directly from this measurement point' }, status: :unprocessable_entity
+        return
+      end
+    end
+
+    # For write: any writable, visible MP the user has access to.
+    # Used for immediate actions (manual commands, emergency stop, etc.)
+    def set_measurement_point_for_write
+      @measurement_point = policy_scope(MeasurementPoint)
+        .includes(:register_template, plc: [:gateway])
+        .find(params[:id])
+
+      if @measurement_point.register_template.read_only?
+        render json: { error: 'Register is read-only' }, status: :unprocessable_entity
+        return
+      end
+    end
+
+    def set_measurement_point_for_om_config
+      @measurement_point = policy_scope(MeasurementPoint)
+        .includes(
+          :register_template,
+          register_template: :interface_register_mappings,
+          plc: [:gateway, :plc_version]
+        )
+        .find(params[:id])
+
+      if @measurement_point.register_template.interface_register_mappings.empty?
+        render json: { error: 'Measurement point is not associated with an interface' }, status: :unprocessable_entity
+        return
+      end
+
+      if !@measurement_point.register_template.category.in?(MeasurementSubtype::DATA_CATEGORIES)
+        render json: { error: 'Must use a data-category measurement point as anchor' }, status: :unprocessable_entity
+        return
+      end
     end
 
     def measurement_point_params
@@ -81,6 +186,13 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
       end
     end
 
+    # ── Configuration Updates ─────────────────────────────
+
+    WRITABLE_CONFIG_CATEGORIES = %w[
+      interface_configuration
+      operation_mode_configuration
+    ].freeze
+
     def process_configuration_updates!
       updates = configuration_updates_params
       if updates.empty?
@@ -88,9 +200,10 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
       end
 
       # Load allowed config points for this interface
-      allowed_config_points = @measurement_point.configuration_measurement_points
+      allowed_config_points = @measurement_point.sibling_measurement_points
         .joins(:register_template)
-        .where(register_templates: { user_visibility: 'visible' })
+        .where(register_templates: { user_visibility: 'visible', category: WRITABLE_CONFIG_CATEGORIES })
+        .where(register_templates: { read_only: false })
         .includes(:register_template, plc: [:gateway])
         .index_by(&:id)
 
@@ -137,18 +250,41 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
       raise ActiveRecord::Rollback
     end
 
-    def sibling_measurement_points
-      interface_ids = @measurement_point.register_template
-          &.interface_register_mappings
-          &.pluck(:interface_id)
-      if !interface_ids.present?
-        return []
+    def build_available_sources(plc)
+      source_type_map = {
+        'analog_input' => 1,
+        'digital_input' => 2,
+        'digital_output' => 3,
+        'analog_output' => 4
+      }
+
+      sources = []
+
+      plc.plc_version.interfaces.each do |iface|
+        source_type = source_type_map[iface.communication_type]
+        if !source_type
+          next
+        end
+
+        plc.measurement_points.select do |mp|
+          mp.active &&
+            mp.measurement_subtype_id.present? &&
+            mp.register_template.category.in?(MeasurementSubtype::DATA_CATEGORIES) &&
+            mp.register_template.interface_register_mappings.any? { |irm| irm.interface_id == iface.id }
+        end.each do |mp|
+          sources << {
+            label: "#{iface.name}: #{mp.name}",
+            communication_type: iface.communication_type,
+            io_number: iface.io_number,
+            source_type: source_type,
+            effective_factor: (mp.factor_override || mp.register_template.factor)&.to_f,
+            effective_offset: (mp.offset_override || mp.register_template.offset)&.to_f,
+            effective_unit: mp.effective_unit,
+            last_value: mp.scaled_last_decoded_value
+          }
+        end
       end
 
-      MeasurementPoint
-        .joins(register_template: :interface_register_mappings)
-        .where(interface_register_mappings: { interface_id: interface_ids })
-        .where.not(id: @measurement_point.id)
-        .distinct
+      sources
     end
 end

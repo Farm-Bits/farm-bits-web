@@ -1,12 +1,14 @@
 import { type MeasurementPoint, type MeasurementSubtype, type ValueType } from './measurementPoint';
-import type { RegisterTemplate } from './plc';
+import type { RegisterMapping, SourceIoInfo } from './plc';
+import type { CommunicationType, RegisterTemplate } from './plc';
+import type { OmGroupNameOrSlot } from './operationMode';
 
 export type LiveMeasurementPoint = MeasurementPoint & {
   measurement_subtype: MeasurementSubtype | null;
   plc_name: string;
-  register_name: string;
-  value_format: RegisterTemplate['value_format'];
-  enum_values: RegisterTemplate['enum_values'];
+  register_template: RegisterTemplate;
+  interface_communication_type: CommunicationType | null;
+  interface_io_number: number | null;
 };
 
 export type RawValue = {
@@ -74,3 +76,9 @@ type StatusSummary = {
 export type AnalyticsSummary = InstantaneousSummary | AccumulativeSummary | StatusSummary;
 
 export type AggregationLevel = 'hourly' | 'raw';
+
+export type OperationModeConfigResponse = {
+  register_mappings: RegisterMapping[];
+  group_labels: Record<OmGroupNameOrSlot | string, string>;
+  available_sources: SourceIoInfo[];
+};

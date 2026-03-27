@@ -7,6 +7,10 @@ class MeasurementPointPolicy < ApplicationPolicy
     admin? || site_admin? || manager?
   end
 
+  def operation_mode_config?
+    true
+  end
+
   class Scope < Scope
     def resolve
       scope.joins(:register_template)

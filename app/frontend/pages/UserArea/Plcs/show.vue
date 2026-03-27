@@ -78,13 +78,13 @@
           v-for="tab in COMMUNICATION_TYPE_TABS"
           :key="tab.key"
           :item-key="tab.key">
-        <InterfaceList
-          :plcName="plc.name"
-          :interfaces="getInterfacesByType(tab.key)"
-          :communicationType="tab.key"
-          :segments="segments"
-          :measurementSubtypes="measurementSubtypes"
-          @update-interface="handleUpdateInterface" />
+          <InterfaceList
+            :plcName="plc.name"
+            :interfaces="getInterfacesByType(tab.key)"
+            :communicationType="tab.key"
+            :segments="segments"
+            :measurementSubtypes="measurementSubtypes"
+            @update-interface="handleUpdateInterface" />
         </CTabPanel>
         <CTabPanel item-key="configuration">
           <ConfigurationPanel :plc="plc" />

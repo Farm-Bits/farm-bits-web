@@ -28,12 +28,6 @@ class MeasurementPoint < ApplicationRecord
   before_save :sync_data_collection_with_active_if_needed
   after_update :trigger_behavior_sync
 
-  scope :interface_related, ->(plc_id) {
-    joins(register_template: :interface_register_mappings)
-      .where(plc_id: plc_id)
-      .distinct
-  }
-
   class WriteValidationError < StandardError;
   end
 
@@ -120,16 +114,17 @@ class MeasurementPoint < ApplicationRecord
     :normal
   end
 
-  def configuration_measurement_points
+  def sibling_measurement_points
     interface_ids = register_template.interface_register_mappings.pluck(:interface_id)
     if interface_ids.empty?
       return MeasurementPoint.none
     end
 
-    interface_related(plc_id)
-      .where(register_templates: { category: ['interface_configuration', 'operation_mode_configuration'] })
+    MeasurementPoint
+      .joins(register_template: :interface_register_mappings)
+      .where(plc_id: plc_id)
       .where(interface_register_mappings: { interface_id: interface_ids })
-      .includes(:register_template)
+      .where.not(id: id)
       .distinct
   end
 

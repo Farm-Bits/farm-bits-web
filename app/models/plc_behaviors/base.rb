@@ -4,9 +4,9 @@
 # Behavior classes include concerns to override the hooks they support.
 #
 # HOOKS:
-#   sync_clock!                                     - Daily clock sync
-#   sync_utc_offset!                                - Write UTC offset
-#   sync_io_active!                                 - Sync IO active state
+#   sync_clock!                                      - Daily clock sync
+#   sync_utc_offset!                                 - Write UTC offset
+#   sync_io_active!                                  - Sync IO active state
 #   sync_sun_data!(sunrise_minutes, sunset_minutes)  - Write sunrise/sunset
 #   cascade_sensor_deactivation!(communication_type, io_number) - Clear sensor refs
 #   cleanup_onetime_schedules!                       - Clear expired one-time slots
@@ -27,12 +27,6 @@ class PlcBehaviors::Base
 
   def initialize(plc)
     @plc = plc
-  end
-
-  def self.ui_hints_for_groups
-    self::SYSTEM_GROUPS
-      .select { |_name, config| config[:ui_hints].present? }
-      .transform_values { |config| config[:ui_hints] }
   end
 
   def self.register_mp_trigger(fields:, method:)

@@ -1,9 +1,7 @@
 import { computed, type Ref } from 'vue';
 import type { RegisterMapping } from '@/types/plc';
-import type { MeasurementPoint } from '@/types/measurementPoint';
 import { normalizeValue } from '@/utils/registerUtils';
-
-export type ConfigValues = Record<MeasurementPoint['id'], MeasurementPoint['last_value']>;
+import type { ConfigValues } from './useConfigurationValues';
 
 export function useRegisterVisibility(
   allRegisterMappings: Ref<RegisterMapping[]>,

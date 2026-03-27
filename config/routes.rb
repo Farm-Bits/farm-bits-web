@@ -60,6 +60,7 @@ Rails.application.routes.draw do
       resources :measurement_points, only: [:update] do
         member do
           post :write
+          get :operation_mode_config
         end
       end
 

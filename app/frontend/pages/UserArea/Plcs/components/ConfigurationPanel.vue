@@ -140,9 +140,9 @@
 
     configurationMappings.value.forEach((registerMapping) => {
       const groupName = registerMapping.register_template.group_name;
-      if (!groups.has(groupName)) {
+      if (!groups.has(groupName))
         groups.set(groupName, []);
-      }
+
       groups.get(groupName)!.push(registerMapping);
     });
 
@@ -152,8 +152,12 @@
         registerMappings: [...registerMappings].sort((a, b) => a.position - b.position)
       }))
       .sort((a, b) => {
-        if (a.groupName === null) return 1;
-        if (b.groupName === null) return -1;
+        if (a.groupName === null)
+          return 1;
+
+        if (b.groupName === null)
+          return -1;
+
         return a.groupName.localeCompare(b.groupName);
       });
   });
@@ -192,9 +196,8 @@
   async function saveField(registerMapping: RegisterMapping) {
     const measurementPointId = registerMapping.measurement_point.id;
 
-    if (!hasChanges(measurementPointId) || hasValidationError(measurementPointId)) {
+    if (!hasChanges(measurementPointId) || hasValidationError(measurementPointId))
       return;
-    }
 
     isSaving[measurementPointId] = true;
 

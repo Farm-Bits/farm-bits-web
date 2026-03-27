@@ -92,7 +92,8 @@
   }>();
 
   const hasMinMax = computed(() => {
-    return registerMapping.register_template.min_value !== null &&
+    return registerMapping.register_template.value_format === 'numeric' &&
+          registerMapping.register_template.min_value !== null &&
           registerMapping.register_template.max_value !== null;
   });
 

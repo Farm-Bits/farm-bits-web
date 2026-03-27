@@ -8,7 +8,7 @@ export function mapMeasurementPointToSerieDefinition(mp: LiveMeasurementPoint): 
     unit: mp.effective_unit,
     chart_type: mp.effective_chart_type,
     color: mp.effective_color,
-    value_format: mp.value_format,
+    value_format: mp.register_template.value_format,
     value_type: mp.measurement_subtype?.value_type ?? 'instantaneous'
   };
 }

@@ -3,8 +3,15 @@ class UserArea::LiveController < UserArea::ApplicationController
     authorize :live, :show?
 
     measurement_points = AnalyticsQueryService.eligible_scope(current_site)
-      .includes(:register_template, :segment, measurement_subtype: [:measurement_type])
+      .includes(
+        :segment,
+        measurement_subtype: [:measurement_type],
+        register_template: { interface_register_mappings: :interface }
+      )
       .eager_load(:plc)
+
+    om_statuses = om_status_scope
+
     measurement_subtypes = MeasurementSubtype
       .joins(:measurement_type)
       .where(id: measurement_points.select(:measurement_subtype_id).distinct)
@@ -13,6 +20,7 @@ class UserArea::LiveController < UserArea::ApplicationController
 
     render inertia: 'UserArea/Live/index', props: {
       measurement_points: MeasurementPointSerializer.render_as_hash(measurement_points, view: :with_details_live),
+      operation_mode_statuses: MeasurementPointSerializer.render_as_hash(om_statuses, view: :with_details),
       measurement_subtypes: MeasurementSubtypeSerializer.render_as_hash(measurement_subtypes)
     }
   end
@@ -23,7 +31,12 @@ class UserArea::LiveController < UserArea::ApplicationController
     measurement_points = AnalyticsQueryService.eligible_scope(current_site)
       .includes(:register_template, :measurement_subtype)
 
-    render json: { measurement_points: MeasurementPointSerializer.render_as_hash(measurement_points, view: :live_poll) }
+    om_statuses = om_status_scope
+
+    render json: {
+      measurement_points: MeasurementPointSerializer.render_as_hash(measurement_points, view: :live_poll),
+      operation_mode_statuses: MeasurementPointSerializer.render_as_hash(om_statuses, view: :live_poll)
+    }
   end
 
   def poll_weather
@@ -38,6 +51,18 @@ class UserArea::LiveController < UserArea::ApplicationController
   end
 
   private
+    def om_status_scope
+      MeasurementPoint
+        .joins(:register_template, plc: { gateway: { site: :company } })
+        .where(active: true)
+        .where(register_templates: { category: 'operation_mode_status', user_visibility: 'visible' })
+        .where(plcs: { active: true })
+        .where(gateways: { active: true })
+        .where(sites: { id: current_site.id })
+        .where(companies: { active: true })
+        .includes(:register_template, register_template: { interface_register_mappings: :interface })
+    end
+
     def weather_data
       weather_station_api_location = current_site.weather_station_api_location
       if weather_station_api_location.nil? || !weather_station_api_location.active?

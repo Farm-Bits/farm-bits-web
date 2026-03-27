@@ -1,5 +1,5 @@
 // Auto-generated file - Do not edit manually
-// Generated at: 2026-02-26 18:34:03 UTC
+// Generated at: 2026-03-23 14:47:00 UTC
 
 import type { Method } from '@inertiajs/core';
 
@@ -84,6 +84,7 @@ export type RoutePermissions = {
   };
   measurement_points: {
     write: boolean;
+    operation_mode_config: boolean;
     update: boolean;
   };
   analytics: {
@@ -274,6 +275,12 @@ export const ROUTES: Record<string, RouteInfo> = {
     action: 'write',
     path: '/user/measurement_points/:id/write',
     verb: 'post'
+  },
+  measurement_points_operation_mode_config: {
+    controller: 'measurement_points',
+    action: 'operation_mode_config',
+    path: '/user/measurement_points/:id/operation_mode_config',
+    verb: 'get'
   },
   measurement_points_update: {
     controller: 'measurement_points',

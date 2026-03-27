@@ -17,7 +17,6 @@
 
       <div v-for="group in configurationGroups" :key="group.name || 'ungrouped'" class="mb-4">
         <h6 class="text-muted border-bottom pb-2 mb-3">
-          <CIcon :icon="getGroupIcon(group.name)" class="me-2" />
           {{ formatGroupName(group.name) }}
         </h6>
 
@@ -28,7 +27,7 @@
             :class="getConfigFieldClass(registerMapping)"
             v-show="isConfigurationVisible(registerMapping)">
             <CFormLabel class="fw-semibold d-flex align-items-center gap-2">
-              {{ registerMapping.register_template.label }}
+              {{ registerMapping.register_template.name }}
               <CTooltip
                 v-if="registerMapping.register_template.description"
                 :content="registerMapping.register_template.description">
@@ -53,7 +52,7 @@
   import { computed } from 'vue';
   import RegisterField from '@/components/RegisterField.vue';
   import type { ConfigValues } from '@/composables/useConfigurationValues';
-  import { formatGroupName, getGroupIcon, getConfigFieldClass } from '@/utils/registerUtils';
+  import { formatGroupName, getConfigFieldClass } from '@/utils/registerUtils';
   import type { RegisterMapping } from '@/types/plc';
   import type { MeasurementPoint } from '@/types/measurementPoint';
 

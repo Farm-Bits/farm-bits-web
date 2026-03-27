@@ -73,7 +73,7 @@
             <CIcon icon="cilOptions" />
           </CDropdownToggle>
           <CDropdownMenu>
-            <CDropdownItem @click="viewHistory(activeRegisterMapping)">
+            <CDropdownItem @click="viewHistory(iface.io_number, activeRegisterMapping)">
               <CIcon icon="cilHistory" class="me-2" />
               View History
             </CDropdownItem>
@@ -135,7 +135,7 @@
   }>();
 
   const emit = defineEmits<{
-    (e: 'viewHistory', registerMapping: RegisterMapping): void;
+    (e: 'viewHistory', ioNumber: number, registerMapping: RegisterMapping): void;
     (e: 'edit', iface: InterfaceWithMeasurementPoints): void;
     (
       e: 'update',
@@ -206,8 +206,8 @@
     return categories[category] || category;
   }
 
-  function viewHistory(registerMapping: RegisterMapping) {
-    emit('viewHistory', registerMapping);
+  function viewHistory(ioNumber: number, registerMapping: RegisterMapping) {
+    emit('viewHistory', ioNumber, registerMapping);
   }
 
   async function toggleActive(measurementPoint: MeasurementPoint) {

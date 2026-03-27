@@ -1,9 +1,7 @@
 import { computed, ref, watch, type Ref } from 'vue';
 import type { RegisterMapping, ValidationRules } from '@/types/plc';
-import type { MeasurementPoint } from '@/types/measurementPoint';
 import { normalizeValue, buildRoleMapping, groupMappingsByName } from '@/utils/registerUtils';
-
-export type ConfigValues = Record<MeasurementPoint['id'], MeasurementPoint['last_value']>;
+import type { ConfigValues } from './useConfigurationValues';
 
 export function useRegisterValidation(
   allRegisterMappings: Ref<RegisterMapping[]>,

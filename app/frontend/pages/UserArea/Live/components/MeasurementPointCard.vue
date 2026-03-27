@@ -17,24 +17,24 @@
       </CBadge>
     </div>
 
-    <div class="mp-card__value">
-      <ValueDisplay
-        :value="measurementPoint.last_value"
-        :valueFormat="measurementPoint.value_format"
-        :unit="measurementPoint.effective_unit"
-        :enumValues="measurementPoint.enum_values"
-        :alarmState="measurementPoint.alarm_state"
-        placeholder="No data"
-        size="default" />
-    </div>
-
     <div class="mp-card__meta d-flex align-items-center gap-2">
       <span class="small text-body-secondary">{{ measurementPoint.plc_name }}</span>
       <span class="small text-body-secondary">·</span>
-      <span class="small text-body-secondary">{{ measurementPoint.register_name }}</span>
+      <span class="small text-body-secondary">{{ measurementPoint.register_template.name }}</span>
       <span v-if="measurementPoint.last_value_at" class="small text-body-secondary ms-auto">
         <RelativeTime :datetime="measurementPoint.last_value_at" />
       </span>
+    </div>
+
+    <div class="mp-card__value">
+      <ValueDisplay
+        :value="measurementPoint.last_value"
+        :valueFormat="measurementPoint.register_template.value_format"
+        :unit="measurementPoint.effective_unit"
+        :enumValues="measurementPoint.register_template.enum_values"
+        :alarmState="measurementPoint.alarm_state"
+        placeholder="No data"
+        size="default" />
     </div>
   </div>
 </template>

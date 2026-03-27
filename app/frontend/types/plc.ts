@@ -1,4 +1,5 @@
 import { type DataCategory, type MeasurementPoint } from './measurementPoint';
+import type { OmGroupNameOrSlot, OmRole } from './operationMode';
 
 const COMMUNICATION_TYPES = ['analog_input', 'analog_output', 'digital_input', 'digital_output'] as const;
 export type CommunicationType = typeof COMMUNICATION_TYPES[number];
@@ -79,8 +80,8 @@ export type RegisterTemplate = {
   factor: number;
   offset: number;
   category: InterfaceCategory | 'configuration' | 'diagnostic';
-  group_name: string | null;
-  group_role: string | null;
+  group_name: OmGroupNameOrSlot | string | null;
+  group_role: OmRole | string | null;
   validation_rules: ValidationRules | null;
   visibility_conditions: VisibilityConditions | null;
   read_only: boolean;
@@ -116,6 +117,7 @@ type PlcVersion = {
   description: string | null;
   is_latest: boolean;
   is_supported: boolean;
+  group_labels: Record<OmGroupNameOrSlot | string, string>;
 };
 
 export type Plc = {
@@ -133,3 +135,13 @@ export type PlcWithInterfaces = Plc & {
   register_mappings: RegisterMapping[];
 };
 
+export type SourceIoInfo = {
+  label: string;
+  communication_type: CommunicationType;
+  io_number: number;
+  source_type: number;
+  effective_factor: number;
+  effective_offset: number;
+  effective_unit: string | null;
+  last_value: MeasurementPoint['last_value'];
+};
