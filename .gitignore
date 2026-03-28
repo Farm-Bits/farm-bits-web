@@ -43,3 +43,5 @@ node_modules
 /config/credentials/test.key
 
 /lib/tasks/load_gateways_plcs.rake
+
+.env
