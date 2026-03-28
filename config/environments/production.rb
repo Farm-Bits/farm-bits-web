@@ -102,15 +102,7 @@ Rails.application.configure do
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 
   config.action_mailer.default_url_options = { host: ENV["HOSTNAME"] }
-  config.action_mailer.delivery_method = :smtp
-  config.action_mailer.smtp_settings = {
-    address:              Rails.application.credentials[:mailer][:address],
-    port:                 Rails.application.credentials[:mailer][:port],
-    user_name:            Rails.application.credentials[:mailer][:user_name],
-    password:             Rails.application.credentials[:mailer][:password],
-    authentication:       "plain",
-    enable_starttls_auto: true
-  }
+  config.action_mailer.delivery_method = :onesignal
 end
 
 Rails.application.routes.default_url_options[:host] = ENV["HOSTNAME"]
