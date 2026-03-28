@@ -6,7 +6,7 @@
       class="mb-2">
       <RegisterField
         v-if="isVisible(rm)"
-        v-model="configValues[rm.measurement_point.id]"
+        :model-value="configValues[rm.measurement_point.id]"
         :register-mapping="rm"
         :is-editing="true"
         @update:model-value="$emit('value-change', rm.measurement_point.id, $event)" />

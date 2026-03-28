@@ -2,15 +2,15 @@
   <CForm @submit.prevent="handleSubmit">
     <!-- Gateway Details -->
     <GatewayDetailsForm
-      v-model="formData"
+      :model-value="formData"
       :gateway="gateway"
-      :availablePlcs="localAvailablePlcs" />
+      :available-plcs="localAvailablePlcs" />
 
     <!-- PLC Assignment Section -->
     <div class="pt-3 mb-3">
       <PlcAssignmentManager
         v-model="formData.plc_assignments"
-        :availablePlcs="localAvailablePlcs" />
+        :available-plcs="localAvailablePlcs" />
     </div>
 
     <!-- Form Actions -->

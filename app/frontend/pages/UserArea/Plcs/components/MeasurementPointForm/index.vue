@@ -26,40 +26,40 @@
       <CTabContent>
         <CTabPanel item-key="measurement">
           <MeasurementTab
-            :modelValue="measurementFormData"
+            :model-value="measurementFormData"
             :segments="segments"
-            :measurementSubtypes="availableMeasurementSubtypes"
-            :registerTemplate="editRegisterMapping.register_template"
+            :measurement-subtypes="availableMeasurementSubtypes"
+            :register-template="editRegisterMapping.register_template"
             :v$="v$.measurement_point"
-            @update:modelValue="handleMeasurementFormUpdate"
+            @update:model-value="handleMeasurementFormUpdate"
             @field-edited="markFieldEdited" />
         </CTabPanel>
 
         <CTabPanel item-key="device">
           <DeviceConfigurationTab
-            v-model="configValues"
-            :configurationRegisterMappings="configurationRegisterMappings"
-            :validationErrors="configErrors"
-            :isConfigurationVisible="isConfigurationVisible"
+            :model-value="configValues"
+            :configuration-register-mappings="configurationRegisterMappings"
+            :validation-errors="configErrors"
+            :is-configuration-visible="isConfigurationVisible"
             @value-change="handleConfigValueChange" />
         </CTabPanel>
 
         <CTabPanel item-key="display">
           <DisplayOptionsTab
-            :modelValue="displayFormData"
-            :selectedMeasurementSubtype="selectedMeasurementSubtype"
+            :model-value="displayFormData"
+            :selected-measurement-subtype="selectedMeasurementSubtype"
             :v$="v$.measurement_point"
-            @update:modelValue="Object.assign(displayFormData, $event)"
+            @update:model-value="Object.assign(displayFormData, $event)"
             @field-edited="markFieldEdited" />
         </CTabPanel>
 
         <CTabPanel item-key="alerts">
           <AlertsTab
-            :modelValue="alertsFormData"
-            :selectedMeasurementSubtype="selectedMeasurementSubtype"
-            :unitOverride="displayFormData.unit_override"
+            :model-value="alertsFormData"
+            :selected-measurement-subtype="selectedMeasurementSubtype"
+            :unit-override="displayFormData.unit_override"
             :v$="v$.measurement_point"
-            @update:modelValue="Object.assign(alertsFormData, $event)"
+            @update:model-value="Object.assign(alertsFormData, $event)"
             @field-edited="markFieldEdited" />
         </CTabPanel>
       </CTabContent>

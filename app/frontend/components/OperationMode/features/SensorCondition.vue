@@ -61,7 +61,7 @@
           :key="rm.measurement_point.id"
           class="col-4">
           <RegisterField
-            v-model="configValues[rm.measurement_point.id]"
+            :model-value="configValues[rm.measurement_point.id]"
             :register-mapping="rm"
             :is-editing="true"
             @update:model-value="emitChange(rm.measurement_point.id, $event)" />
@@ -74,7 +74,7 @@
         :key="rm.measurement_point.id"
         class="mb-2 mt-2">
         <RegisterField
-          v-model="configValues[rm.measurement_point.id]"
+          :model-value="configValues[rm.measurement_point.id]"
           :register-mapping="rm"
           :is-editing="true"
           @update:model-value="emitChange(rm.measurement_point.id, $event)" />

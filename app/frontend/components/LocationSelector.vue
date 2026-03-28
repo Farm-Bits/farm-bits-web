@@ -174,7 +174,7 @@
     errors: NestedValidations<Location>
   }>();
 
-  const API_KEY = '***REMOVED***';
+  const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string;
 
   const mapContainer = ref<HTMLElement | null>(null);
   const map = ref<google.maps.Map | null>(null);

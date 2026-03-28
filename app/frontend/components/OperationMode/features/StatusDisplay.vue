@@ -27,8 +27,8 @@
           {{ rm.register_template.name }}:
         </small>
         <RegisterField
+          v-model="rm.measurement_point.last_value"
           :register-mapping="rm"
-          :model-value="rm.measurement_point.last_value"
           :is-editing="false" />
       </div>
     </template>

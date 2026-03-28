@@ -31,7 +31,7 @@
         <div class="col-6">
           <RegisterField
             v-if="startRefMapping"
-            v-model="configValues[startRefMapping.measurement_point.id]"
+            :model-value="configValues[startRefMapping.measurement_point.id]"
             :register-mapping="startRefMapping"
             :is-editing="true"
             @update:model-value="emitChange(startRefMapping.measurement_point.id, $event)" />
@@ -39,7 +39,7 @@
         <div class="col-6">
           <RegisterField
             v-if="startTimeOrOffsetMapping"
-            v-model="configValues[startTimeOrOffsetMapping.measurement_point.id]"
+            :model-value="configValues[startTimeOrOffsetMapping.measurement_point.id]"
             :register-mapping="startTimeOrOffsetMapping"
             :is-editing="true"
             @update:model-value="emitChange(startTimeOrOffsetMapping.measurement_point.id, $event)" />
@@ -52,7 +52,7 @@
         :key="rm.measurement_point.id"
         class="mb-2">
         <RegisterField
-          v-model="configValues[rm.measurement_point.id]"
+          :model-value="configValues[rm.measurement_point.id]"
           :register-mapping="rm"
           :is-editing="true"
           @update:model-value="emitChange(rm.measurement_point.id, $event)" />

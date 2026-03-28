@@ -20,7 +20,7 @@
         <div class="col-6">
           <RegisterField
             v-if="startRefMapping"
-            v-model="configValues[startRefMapping.measurement_point.id]"
+            :model-value="configValues[startRefMapping.measurement_point.id]"
             :register-mapping="startRefMapping"
             :is-editing="true"
             @update:model-value="emitChange(startRefMapping.measurement_point.id, $event)" />
@@ -28,7 +28,7 @@
         <div class="col-6">
           <RegisterField
             v-if="startTimeOrOffsetMapping"
-            v-model="configValues[startTimeOrOffsetMapping.measurement_point.id]"
+            :model-value="configValues[startTimeOrOffsetMapping.measurement_point.id]"
             :register-mapping="startTimeOrOffsetMapping"
             :is-editing="true"
             @update:model-value="emitChange(startTimeOrOffsetMapping.measurement_point.id, $event)" />
@@ -40,7 +40,7 @@
         <div class="col-6">
           <RegisterField
             v-if="endRefMapping"
-            v-model="configValues[endRefMapping.measurement_point.id]"
+            :model-value="configValues[endRefMapping.measurement_point.id]"
             :register-mapping="endRefMapping"
             :is-editing="true"
             @update:model-value="emitChange(endRefMapping.measurement_point.id, $event)" />
@@ -48,7 +48,7 @@
         <div class="col-6">
           <RegisterField
             v-if="endTimeOrOffsetMapping"
-            v-model="configValues[endTimeOrOffsetMapping.measurement_point.id]"
+            :model-value="configValues[endTimeOrOffsetMapping.measurement_point.id]"
             :register-mapping="endTimeOrOffsetMapping"
             :is-editing="true"
             @update:model-value="emitChange(endTimeOrOffsetMapping.measurement_point.id, $event)" />
@@ -60,7 +60,7 @@
         v-if="daysMapping"
         class="mb-3">
         <RegisterField
-          v-model="configValues[daysMapping.measurement_point.id]"
+          :model-value="configValues[daysMapping.measurement_point.id]"
           :register-mapping="daysMapping"
           :is-editing="true"
           @update:model-value="emitChange(daysMapping.measurement_point.id, $event)" />
@@ -72,7 +72,7 @@
         :key="rm.measurement_point.id"
         class="mb-2">
         <RegisterField
-          v-model="configValues[rm.measurement_point.id]"
+          :model-value="configValues[rm.measurement_point.id]"
           :register-mapping="rm"
           :is-editing="true"
           @update:model-value="emitChange(rm.measurement_point.id, $event)" />

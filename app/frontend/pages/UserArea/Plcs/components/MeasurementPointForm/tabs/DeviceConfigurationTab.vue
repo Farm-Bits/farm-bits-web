@@ -37,9 +37,9 @@
               </CTooltip>
             </CFormLabel>
             <RegisterField
-              v-model="modelValue[registerMapping.measurement_point.id]"
-              :registerMapping="registerMapping"
-              :isEditing="true"
+              :model-value="modelValue[registerMapping.measurement_point.id]"
+              :register-mapping="registerMapping"
+              :is-editing="true"
               @update:model-value="handleValueChange(registerMapping.measurement_point.id, $event)" />
           </div>
         </div>
@@ -69,8 +69,7 @@
   }>();
 
   const emit = defineEmits<{
-    (eventName: 'update:modelValue', value: ConfigValues): void;
-    (eventName: 'value-change', measurementPointId: number, value: MeasurementPoint['last_value']): void;
+    (eventName: 'value-change', measurementPointId: MeasurementPoint['id'], value: MeasurementPoint['last_value']): void;
   }>();
 
   const hasConfiguration = computed(() => configurationRegisterMappings.length > 0);
@@ -103,11 +102,11 @@
   });
 
   function handleValueChange(
-    measurementPointId: number,
+    measurementPointId: MeasurementPoint['id'],
     value: MeasurementPoint['last_value']
   ) {
-    const updated = { ...modelValue, [measurementPointId]: value };
-    emit('update:modelValue', updated);
+    // const updated = { ...modelValue, [measurementPointId]: value };
+    // emit('update:modelValue', updated);
     emit('value-change', measurementPointId, value);
   }
 </script>

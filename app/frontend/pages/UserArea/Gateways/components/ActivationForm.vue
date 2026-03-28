@@ -22,7 +22,7 @@
     <!-- Selected Gateway Details Card -->
     <div v-if="selectedGatewayDetails">
       <GatewayDetailsForm
-        v-model="formData"
+        :model-value="formData"
         :gateway="selectedGatewayDetails"
         :availablePlcs="availablePlcs" />
     </div>

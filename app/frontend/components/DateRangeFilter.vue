@@ -3,7 +3,7 @@
     <CFormLabel class="mb-1 small text-body-secondary">Date Range</CFormLabel>
     <div class="d-flex align-items-center gap-2">
       <CFormSelect
-        v-model="selectedPreset"
+        :model-value="selectedPreset"
         size="sm"
         class="preset-select"
         @update:model-value="handlePresetChange">
@@ -18,15 +18,13 @@
           type="date"
           size="sm"
           :model-value="dateRange.start"
-          @update:model-value="handleStartChange"
-        />
+          @update:model-value="handleStartChange" />
         <span class="text-body-secondary">to</span>
         <CFormInput
           type="date"
           size="sm"
           :model-value="dateRange.end"
-          @update:model-value="handleEndChange"
-        />
+          @update:model-value="handleEndChange" />
       </template>
       <template v-else>
         <span class="small text-body-secondary">

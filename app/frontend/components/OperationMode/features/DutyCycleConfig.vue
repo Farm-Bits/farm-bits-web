@@ -44,8 +44,8 @@
         v-if="onDurationMapping"
         class="col-6">
         <RegisterField
-          :register-mapping="onDurationMapping"
           :model-value="configValues[onDurationMapping.measurement_point.id]"
+          :register-mapping="onDurationMapping"
           :isEditing="true"
           @update:model-value="emitChange(onDurationMapping.measurement_point.id, $event)" />
       </div>
@@ -53,8 +53,8 @@
         v-if="offDurationMapping"
         class="col-6">
         <RegisterField
-          :register-mapping="offDurationMapping"
           :model-value="configValues[offDurationMapping.measurement_point.id]"
+          :register-mapping="offDurationMapping"
           :isEditing="true"
           @update:model-value="emitChange(offDurationMapping.measurement_point.id, $event)" />
       </div>
@@ -66,7 +66,7 @@
       :key="rm.measurement_point.id"
       class="mb-2">
       <RegisterField
-        v-model="configValues[rm.measurement_point.id]"
+        :model-value="configValues[rm.measurement_point.id]"
         :register-mapping="rm"
         :isEditing="isEnabled"
         @update:model-value="emitChange(rm.measurement_point.id, $event)" />

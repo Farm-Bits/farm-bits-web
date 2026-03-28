@@ -23,9 +23,9 @@
       :key="rm.measurement_point.id"
       class="mb-2">
       <RegisterField
-        v-model="paramValues[rm.measurement_point.id]"
-        :registerMapping="rm"
-        :isEditing="true"
+        :model-value="paramValues[rm.measurement_point.id]"
+        :register-mapping="rm"
+        :is-editing="true"
         @update:model-value="handleParamChange(rm.measurement_point.id, $event)" />
     </div>
   </div>
