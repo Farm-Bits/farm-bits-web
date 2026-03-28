@@ -46,6 +46,7 @@
   "type": "module",
   "scripts": {
     "type-check": "vue-tsc --noEmit",
-    "build-check": "vue-tsc --noEmit && vite build"
+    "build-check": "vue-tsc --noEmit && vite build",
+    "build": "NODE_OPTIONS=--max-old-space-size=1024 vite build --mode production"
   }
 }
