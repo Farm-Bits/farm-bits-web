@@ -14,7 +14,8 @@ class OnesignalDeliveryMethod
       app_id:               Rails.application.credentials[:onesignal][:app_id],
       email_subject:        mail.subject,
       email_body:           extract_html_body(mail),
-      include_email_tokens: [mail.to.first]
+      include_email_tokens: [mail.to.first],
+      include_unsubscribed: true
     }
 
     response = self.class.post(
