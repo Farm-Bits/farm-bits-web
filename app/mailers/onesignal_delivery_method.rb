@@ -30,7 +30,8 @@ class OnesignalDeliveryMethod
     errors = parsed['errors']
 
     if !response.success? || (errors && errors.any?)
-      raise "OneSignal delivery failed (#{response.code}): #{errors&.join(', ') || response.body}"
+      error_message = errors.is_a?(Array) ? errors.join(', ') : errors.to_s
+      raise "OneSignal delivery failed (#{response.code}): #{error_message}"
     end
   end
 
