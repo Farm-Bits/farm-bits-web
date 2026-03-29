@@ -32,7 +32,7 @@ class OnesignalDeliveryMethod
 
     if !response.success? || (errors && errors.any?)
       error_message = errors.is_a?(Array) ? errors.join(', ') : errors.to_s
-      raise "OneSignal delivery failed (#{response.code}): #{error_message}"
+      Bugsnag.notify("OneSignal delivery failed: #{error_message}")
     end
   end
 
