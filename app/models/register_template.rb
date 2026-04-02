@@ -125,7 +125,8 @@ class RegisterTemplate < ApplicationRecord
     when 'numeric'
       encode_numeric(value)
     when 'boolean'
-      [value ? 1 : 0]
+      bool = ActiveModel::Type::Boolean.new.cast(value)
+      [bool ? 1 : 0]
     when 'enum'
       [value.to_i]
     when 'ascii_string'
