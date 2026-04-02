@@ -1,17 +1,22 @@
-class PlcReadJob
+class PlcInitialReadJob
   include Sidekiq::Job
   sidekiq_options queue: 'default', retry: 3
 
   def perform(plc_id)
-    plc = Plc.includes(:gateway, :plc_version, site: :company).find_by(id: plc_id)
-    if !plc&.operational?
+    plc = Plc.includes(:gateway).find_by(id: plc_id)
+    if !plc
       return
     end
 
-    measurement_points = plc.measurement_points
-      .where(active: true, data_collection_enabled: true)
-      .includes(:register_template)
-      .select { |mp| mp.needs_polling? }
+    if !plc.gateway
+      return
+    end
+
+    measurement_points = MeasurementPoint
+      .joins(:register_template, plc: { gateway: { site: :company } })
+      .where(register_templates: { user_visibility: 'visible' })
+      .where(plcs: { id: plc_id })
+      .includes(:register_template, register_template: { interface_register_mappings: :interface })
     if measurement_points.empty?
       return
     end
