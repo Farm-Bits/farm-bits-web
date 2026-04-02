@@ -319,7 +319,7 @@
     { intervalMs: 30000, immediate: false }
   );
 
-  // polling.start();
+  polling.start();
 
   // ── Analytics Modal ─────────────────────────────
 
