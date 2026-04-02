@@ -15,6 +15,7 @@ ActiveRecord::Base.transaction do
   free_advance_first_version = PlcVersion.create!(
     name: 'V1',
     version_code: '1.0',
+    behavior_profile: 'standard_v1',
     is_latest: true,
     is_supported: true,
     model: free_advance_model

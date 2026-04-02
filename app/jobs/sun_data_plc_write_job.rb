@@ -13,8 +13,8 @@ class SunDataPlcWriteJob
       return
     end
 
-    sunrise_minutes = time_to_minutes(today_sun.sunrise)
-    sunset_minutes = time_to_minutes(today_sun.sunset)
+    sunrise_minutes = today_sun.sunrise.hour * 60 + today_sun.sunrise.min
+    sunset_minutes = today_sun.sunset.hour * 60 + today_sun.sunset.min
     if !sunrise_minutes.present? || !sunset_minutes.present?
       return
     end
@@ -25,19 +25,4 @@ class SunDataPlcWriteJob
   rescue PlcWriteService::WriteError => e
     Rails.logger.error("[SunDataPlcWrite] PLC #{plc_id} write failed: #{e.message}")
   end
-
-  private
-    def time_to_minutes(time_str)
-      if !time_str.present?
-        return nil
-      end
-
-      parts = time_str.to_s.split(':')
-
-      if parts.length < 2
-        return nil
-      end
-
-      parts[0].to_i * 60 + parts[1].to_i
-    end
 end
