@@ -70,6 +70,7 @@ module PlcBehaviors::Concerns::IoActive
       plc.measurement_points
         .joins(register_template: { interface_register_mappings: :interface })
         .where(active: true)
+        .where(register_templates: { category: MeasurementSubtype::DATA_CATEGORIES })
         .pluck('interfaces.communication_type', 'interfaces.io_number')
         .each { |ct, io_number| io_numbers[ct].add(io_number) }
 
