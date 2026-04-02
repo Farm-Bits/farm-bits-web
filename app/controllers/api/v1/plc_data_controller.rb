@@ -104,8 +104,6 @@ module Api
         end
 
         def process_data_points(plc, data_points)
-          site_tz = plc.site&.time_zone_object || ActiveSupport::TimeZone['UTC']
-
           register_templates_by_label = plc.plc_version.register_templates.index_by(&:label)
           measurement_points_by_register_id = plc.measurement_points.index_by(&:register_template_id)
 
@@ -134,11 +132,10 @@ module Api
               next
             end
 
-            utc_sample_time = site_tz.parse(dp[:sample_time]).utc
             readings << {
               measurement_point: measurement_point,
               value: value_normalized,
-              sample_time: utc_sample_time
+              sample_time: dp[:sample_time]
             }
 
             results[:processed] += 1

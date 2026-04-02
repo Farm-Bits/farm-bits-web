@@ -41,8 +41,8 @@ class Site < ApplicationRecord
   after_commit :sync_sun_data, on: :create
   after_commit :resync_sun_data_if_location_changed, on: :update
 
-  def time_zone_object
-    ActiveSupport::TimeZone[time_zone]
+  def utc_offset
+    Time.now.in_time_zone(time_zone).utc_offset
   end
 
   def weather_station_api_metric_keys

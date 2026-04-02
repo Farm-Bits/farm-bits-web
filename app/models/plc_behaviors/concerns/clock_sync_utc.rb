@@ -46,8 +46,8 @@ module PlcBehaviors::Concerns::ClockSyncUtc
       return
     end
 
-    site_tz = plc.site&.time_zone_object || ActiveSupport::TimeZone['UTC']
-    offset_minutes = site_tz.utc_offset / 60
+    utc_offset = plc&.site&.utc_offset || 0
+    offset_minutes = utc_offset / 60
 
     single_write!(offset_mp, offset_minutes, source: 'utc_offset_sync')
   end
