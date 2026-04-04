@@ -37,12 +37,13 @@ class Plc < ApplicationRecord
   validate :model_is_plc_type
   validate :plc_version_belongs_to_model
 
-  attr_accessor :disable_sync_plc_ingestion_service
+  attr_accessor :disable_sync_plc_ingestion_service, :disable_initial_read
 
   after_create :create_measurement_points_from_templates
   after_update :sync_measurement_points_site
   after_commit :sync_plc_ingestion_service, on: :create
   after_commit :update_plc_ingestion_service, on: :update
+  after_commit :enqueue_initial_read, on: :update, if: -> { saved_change_to_active? && active? }
   after_commit :remove_plc_ingestion_service, on: :destroy
 
   scope :operational, -> {
@@ -132,6 +133,14 @@ class Plc < ApplicationRecord
           saved_change_to_password?
         )
       end
+    end
+
+    def enqueue_initial_read
+      if disable_initial_read
+        return
+      end
+
+      PlcInitialReadJob.perform_async(id)
     end
 
     def remove_plc_ingestion_service
