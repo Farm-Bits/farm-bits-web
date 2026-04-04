@@ -42,30 +42,13 @@ environment ENV.fetch("RAILS_ENV", "development")
 
 # Production-specific configuration
 if ENV["RAILS_ENV"] == "production"
-  # Bind to unix socket (tmp/sockets is symlinked to shared)
   bind "unix://tmp/sockets/puma.sock"
-
-  # Logging
-  stdout_redirect "log/puma.stdout.log", "log/puma.stderr.log", true
-
-  # State and PID
-  state_path "tmp/pids/puma.state"
-  pidfile "tmp/pids/puma.pid"
-
-  # Set up database connections for workers
-  on_worker_boot do
-    ActiveRecord::Base.establish_connection if defined?(ActiveRecord)
-  end
-
-  before_fork do
-    ActiveRecord::Base.connection_pool.disconnect! if defined?(ActiveRecord)
-  end
-
-  # Notify systemd when ready
-  on_booted do
-    require 'sd_notify'
-    SdNotify.ready
-  end
 else
   port ENV.fetch("PORT", 3000)
+end
+
+# Notify systemd when ready
+on_booted do
+  require 'sd_notify'
+  SdNotify.ready
 end
