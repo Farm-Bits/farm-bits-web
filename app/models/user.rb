@@ -42,6 +42,7 @@ class User < ApplicationRecord
     companies.joins(:company_users)
       .where(company_users: { user: self })
       .where(active: true)
+      .distinct
   end
 
   def company_user_for(company)
