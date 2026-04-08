@@ -8,6 +8,7 @@
       v-for="action in cmdGroup.actions"
       :key="action.enumKey"
       :color="buttonColor(action.label)"
+      @click.stop
       variant="outline"
       size="sm"
       :disabled="sending !== null"
@@ -48,7 +49,8 @@
       size="sm"
       class="w-100"
       :disabled="sending !== null"
-      @click="handleEmergencyStop(true)">
+      @click="handleEmergencyStop(true)"
+      @click.stop>
       <CSpinner v-if="sending === 'estop'" size="sm" class="me-1" />
       Emergency Stop
     </CButton>
@@ -72,7 +74,8 @@
     :param-mappings="paramsModalMappings"
     :all-mappings="props.mappings"
     @close="paramsModalVisible = false"
-    @confirm="handleParamsConfirm" />
+    @confirm="handleParamsConfirm"
+    @click.stop />
 </template>
 
 <script lang="ts" setup>

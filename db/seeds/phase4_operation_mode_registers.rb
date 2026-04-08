@@ -52,13 +52,13 @@ ActiveRecord::Base.transaction do
   ].freeze
 
   OM_STATUS_REGISTERS = [
-    { name: 'Active Source',  group_role: 'active_source',    data_type: 'uint16', value_format: 'enum',             addr_count: 1, read_only: true, enum_values: ACTIVE_SOURCE_ENUM, description: 'What is currently controlling this output' },
-    { name: 'Error Flags',    group_role: 'error_flags',      data_type: 'uint16', value_format: 'bitmask',          addr_count: 1, read_only: true, enum_values: { '0' => 'Max ON exceeded', '1' => 'Min OFF active', '2' => 'Sensor error', '3' => 'Blackout active' }, description: 'Active safety or error conditions' },
-    { name: 'Next Change In', group_role: 'next_change_time', data_type: 'uint32', value_format: 'duration_seconds', addr_count: 2, read_only: true, visibility_conditions: { 'active_source' => ['2', '3', '4', '5', '6', '7', '8', '9'] }, description: 'Seconds until next predicted state change' }
+    { name: 'Active Source',  group_role: 'active_source',    data_type: 'uint16', value_format: 'enum',             addr_count: 1, read_only: true, is_status: true, enum_values: ACTIVE_SOURCE_ENUM, description: 'What is currently controlling this output' },
+    { name: 'Error Flags',    group_role: 'error_flags',      data_type: 'uint16', value_format: 'bitmask',          addr_count: 1, read_only: true, is_status: true, enum_values: { '0' => 'Max ON exceeded', '1' => 'Min OFF active', '2' => 'Sensor error', '3' => 'Blackout active' }, description: 'Active safety or error conditions' },
+    { name: 'Next Change In', group_role: 'next_change_time', data_type: 'uint32', value_format: 'duration_seconds', addr_count: 2, read_only: true, is_status: true, visibility_conditions: { 'active_source' => ['2', '3', '4', '5', '6', '7', '8', '9'] }, description: 'Seconds until next predicted state change' }
   ].freeze
 
   OM_MANUAL_REGISTERS = [
-    { name: 'Command',  group_role: 'command',  data_type: 'uint16', value_format: 'enum',             addr_count: 1, default_value: 0, enum_values: { '0' => 'Auto', '1' => 'Turn On', '2' => 'Turn On (Timed)', '3' => 'Turn Off' }, description: 'Manual command. PLC resets to None after executing' },
+    { name: 'Command',  group_role: 'command',  data_type: 'uint16', value_format: 'enum',             addr_count: 1, is_status: true, default_value: 0, enum_values: { '0' => 'Auto', '1' => 'Turn On', '2' => 'Turn On (Timed)', '3' => 'Turn Off' }, description: 'Manual command. PLC resets to None after executing' },
     { name: 'Duration', group_role: 'duration', data_type: 'uint32', value_format: 'duration_seconds', addr_count: 2, default_value: 1, min_value: 1, visibility_conditions: { 'command' => ['2'] }, validation_rules: { 'required_when' => { 'group_role' => 'command', 'equals' => '2' } }, description: 'Duration for Turn On (Timed)' }
   ].freeze
 
@@ -107,6 +107,22 @@ ActiveRecord::Base.transaction do
     label = "DO#{interface.io_number}_OM_#{group_label}_#{reg[:name].split(' ').join('')}"
     read_only = reg[:read_only] || false
 
+    bulk_read_group = nil
+    bulk_read_offset = nil
+    bulk_read_address = nil
+    if read_only
+      bulk_read_group = 'om_status'
+      bulk_read_address = OM_STATUS_BASE_ADDRESS
+      bulk_read_offset = address - OM_STATUS_BASE_ADDRESS
+    else
+      is_status = reg[:is_status] || false
+      if is_status
+        bulk_read_group = "do#{interface.io_number}_om_config"
+        bulk_read_address = OM_BASE_ADDRESS
+        bulk_read_offset = address - OM_BASE_ADDRESS
+      end
+    end
+
     register_template = RegisterTemplate.create!(
       name: reg[:name],
       label: label,
@@ -124,9 +140,9 @@ ActiveRecord::Base.transaction do
       group_role: reg[:group_role],
       validation_rules: reg[:validation_rules],
       visibility_conditions: reg[:visibility_conditions],
-      bulk_read_group: !read_only ? "do#{interface.io_number}_om_config" : 'om_status',
-      bulk_read_address: !read_only ? OM_BASE_ADDRESS : OM_STATUS_BASE_ADDRESS,
-      bulk_read_offset: !read_only ? address - OM_BASE_ADDRESS : address - OM_STATUS_BASE_ADDRESS,
+      bulk_read_group: bulk_read_group,
+      bulk_read_address: bulk_read_address,
+      bulk_read_offset: bulk_read_offset,
       read_only: read_only,
       user_visibility: 'visible',
       min_value: reg[:min_value],
@@ -153,20 +169,21 @@ ActiveRecord::Base.transaction do
     interface_register_mapping_position = InterfaceRegisterMapping.where(interface: interface).maximum(:position).to_i + 1
 
     [
-      { registers: OM_SAFETY_REGISTERS,        group_name: 'om_safety',      status: false, slots: 1 },
-      { registers: OM_WINDOW_REGISTERS,        group_name: 'om_window',      status: false, slots: 1 },
-      { registers: OM_STATUS_REGISTERS,        group_name: 'om_status',      status: true,  slots: 1 },
-      { registers: OM_MANUAL_REGISTERS,        group_name: 'om_manual',      status: false, slots: 1 },
-      { registers: OM_DUTY_CYCLE_REGISTERS,    group_name: 'om_duty_cycle',  status: false, slots: 1 },
-      { registers: OM_SENSOR_REGISTERS,        group_name: 'om_sensor',      status: false, slots: 1 },
-      { registers: SENSOR_CONDITION_REGISTERS, group_name: 'om_sensor_cond', status: false, slots: 11 },
-      { registers: SCHEDULE_SLOT_REGISTERS,    group_name: 'om_schedule',    status: false, slots: 6 }
+      { registers: OM_SAFETY_REGISTERS,        group_name: 'om_safety',      slots: 1 },
+      { registers: OM_WINDOW_REGISTERS,        group_name: 'om_window',      slots: 1 },
+      { registers: OM_STATUS_REGISTERS,        group_name: 'om_status',      slots: 1 },
+      { registers: OM_MANUAL_REGISTERS,        group_name: 'om_manual',      slots: 1 },
+      { registers: OM_DUTY_CYCLE_REGISTERS,    group_name: 'om_duty_cycle',  slots: 1 },
+      { registers: OM_SENSOR_REGISTERS,        group_name: 'om_sensor',      slots: 1 },
+      { registers: SENSOR_CONDITION_REGISTERS, group_name: 'om_sensor_cond', slots: 11 },
+      { registers: SCHEDULE_SLOT_REGISTERS,    group_name: 'om_schedule',    slots: 6 }
     ].each do |reg_group|
 
       reg_group[:slots].times do |slot_number|
         reg_group[:registers].each do |reg|
 
-          address = reg_group[:status] ? OM_STATUS_BASE_ADDRESS + address_status_offset : OM_BASE_ADDRESS + address_offset
+          is_status = reg[:is_status] || false
+          address = is_status ? OM_STATUS_BASE_ADDRESS + address_status_offset : OM_BASE_ADDRESS + address_offset
           group_name = reg_group[:group_name]
           if reg_group[:slots] > 1
             group_name += "_#{slot_number + 1}"
@@ -174,7 +191,7 @@ ActiveRecord::Base.transaction do
 
           create_register(interface, group_name, address, current_position, interface_register_mapping_position, reg)
 
-          if reg_group[:status]
+          if is_status
             address_status_offset += reg[:addr_count]
           else
             address_offset += reg[:addr_count]

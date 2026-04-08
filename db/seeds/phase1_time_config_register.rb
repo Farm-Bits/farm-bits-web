@@ -13,7 +13,7 @@ ActiveRecord::Base.transaction do
   position = RegisterTemplate.where(plc_version_id: plc_version_id).maximum(:position).to_i + 1
   register = RegisterTemplate.create!(
     name: 'UTC Offset Minutes',
-    label: 'UTC_Offset_Minutes',
+    label: 'UtcOffsetMinutes',
     description: 'Current UTC offset for site timezone in minutes',
     address: UTC_OFFSET_ADDRESS,
     address_count: 1,

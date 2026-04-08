@@ -29,7 +29,7 @@ ActiveRecord::Base.transaction do
   SUN_DATA_REGISTERS = [
     {
       name: 'Sunrise Minutes',
-      label: 'Sunrise_Minutes',
+      label: 'SunriseMinutes',
       description: 'Minutes since midnight (site-local time) until sunrise',
       address_count: 1,
       group_role: 'sunrise',
@@ -37,7 +37,7 @@ ActiveRecord::Base.transaction do
     },
     {
       name: 'Sunset Minutes',
-      label: 'Sunset_Minutes',
+      label: 'SunsetMinutes',
       description: 'Minutes since midnight (site-local time) until sunset',
       address_count: 1,
       group_role: 'sunset',
