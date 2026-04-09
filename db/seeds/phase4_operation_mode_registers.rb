@@ -58,7 +58,6 @@ ActiveRecord::Base.transaction do
   ].freeze
 
   OM_MANUAL_REGISTERS = [
-    { name: 'Command',  group_role: 'command',  data_type: 'uint16', value_format: 'enum',             addr_count: 1, is_status: true, default_value: 0, enum_values: { '0' => 'Auto', '1' => 'Turn On', '2' => 'Turn On (Timed)', '3' => 'Turn Off' }, description: 'Manual command. PLC resets to None after executing' },
     { name: 'Duration', group_role: 'duration', data_type: 'uint32', value_format: 'duration_seconds', addr_count: 2, default_value: 1, min_value: 1, visibility_conditions: { 'command' => ['2'] }, validation_rules: { 'required_when' => { 'group_role' => 'command', 'equals' => '2' } }, description: 'Duration for Turn On (Timed)' }
   ].freeze
 
@@ -95,6 +94,10 @@ ActiveRecord::Base.transaction do
     { name: 'Onetime Day',        group_role: 'onetime_day',     data_type: 'uint16',  value_format: 'numeric',          addr_count: 1, default_value: 0, min_value: 1, max_value: 31, validation_rules: { 'required_when' => { 'group_role' => 'schedule_type', 'equals' => '1' } }, visibility_conditions: { 'schedule_type' => ['1'] } },
     { name: 'Onetime Month',      group_role: 'onetime_month',   data_type: 'uint16',  value_format: 'numeric',          addr_count: 1, default_value: 0, min_value: 1, max_value: 12, validation_rules: { 'required_when' => { 'group_role' => 'schedule_type', 'equals' => '1' } }, visibility_conditions: { 'schedule_type' => ['1'] } },
     { name: 'Onetime Year',       group_role: 'onetime_year',    data_type: 'uint16',  value_format: 'numeric',          addr_count: 1, default_value: 0, min_value: 2020, max_value: 9999, validation_rules: { 'required_when' => { 'group_role' => 'schedule_type', 'equals' => '1' } }, visibility_conditions: { 'schedule_type' => ['1'] } }
+  ].freeze
+
+  OM_MANUAL_STATUS_REGISTERS = [
+    { name: 'Command',  group_role: 'command',  data_type: 'uint16', value_format: 'enum',             addr_count: 1, is_status: true, default_value: 0, enum_values: { '0' => 'Auto', '1' => 'Turn On', '2' => 'Turn On (Timed)', '3' => 'Turn Off' }, description: 'Manual command. PLC resets to None after executing' }
   ].freeze
 
   PLC_VERSION_ID = PlcVersion.first.id
@@ -204,4 +207,21 @@ ActiveRecord::Base.transaction do
     end
 
   end
+
+  (1..12).each do |n|
+    interface = Interface.find_by(communication_type: 'digital_output', io_number: n, plc_version_id: PLC_VERSION_ID)
+    interface_register_mapping_position = InterfaceRegisterMapping.where(interface: interface).maximum(:position).to_i + 1
+
+    OM_MANUAL_STATUS_REGISTERS.each do |reg|
+      address = OM_STATUS_BASE_ADDRESS + address_status_offset
+      group_name = 'om_manual'
+
+      create_register(interface, group_name, address, current_position, interface_register_mapping_position, reg)
+
+      address_status_offset += reg[:addr_count]
+      current_position += 1
+      interface_register_mapping_position += 1
+    end
+  end
+
 end
