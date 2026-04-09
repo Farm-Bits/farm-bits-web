@@ -94,7 +94,7 @@
   import { ROUTES } from '@/types/permissions';
   import type { Segment } from '@/types/location';
   import { isDataCategory, isChartType, isValidChartTypeForValueType, type MeasurementPoint, type MeasurementSubtype, type ChartType } from '@/types/measurementPoint';
-  import { isConfigurationCategory, type InterfaceWithMeasurementPoints } from '@/types/plc';
+  import { isConfigurationCategory, type InterfaceWithMeasurementPoints, type MeasurementPointConfigResponse } from '@/types/plc';
 
   const {
     iface,
@@ -320,10 +320,7 @@
       String(editRegisterMapping.value.measurement_point.id)
     );
 
-    const { success, data } = await execute<{
-      measurement_point: MeasurementPoint;
-      sibling_measurement_points: MeasurementPoint[];
-    }>(
+    const { success, data } = await execute<MeasurementPointConfigResponse>(
       () => axios.put(url, {
         ...formData.value,
         configuration_updates: getConfigurationUpdates()

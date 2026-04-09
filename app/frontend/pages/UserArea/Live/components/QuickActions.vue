@@ -73,13 +73,14 @@
     :title="paramsModalTitle"
     :param-mappings="paramsModalMappings"
     :all-mappings="props.mappings"
+    :pending-write="pendingFinalWrite"
     @close="paramsModalVisible = false"
     @confirm="handleParamsConfirm"
     @click.stop />
 </template>
 
 <script lang="ts" setup>
-  import { computed, ref, reactive, toRef } from 'vue';
+  import { computed, ref, reactive, toRef, watch } from 'vue';
   import type { ConfigValues } from '@/composables/useConfigurationValues';
   import type { RegisterMapping } from '@/types/plc';
   import type { MeasurementPoint } from '@/types/measurementPoint';
@@ -91,7 +92,6 @@
     type FeatureToggle,
   } from '@/composables/useQuickActions';
   import CommandParamsModal from './CommandParamsModal.vue';
-  import { OM_GROUPS } from '@/types/operationMode';
 
   const props = defineProps<{
     mappings: RegisterMapping[];
@@ -248,6 +248,12 @@
     emit('write', emergencyStop.value.mapping.measurement_point.id, activate ? 1 : 0);
     clearSending(key);
   }
+
+  watch(() => props.mappings, (mappings) => {
+    for (const rm of mappings) {
+      configValues[rm.measurement_point.id] = rm.measurement_point.last_value;
+    }
+  }, { deep: true });
 </script>
 
 <style scoped>

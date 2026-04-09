@@ -122,7 +122,7 @@
     (e: 'analytics', mp: LiveMeasurementPoint): void;
     (e: 'configure', mp: LiveMeasurementPoint): void;
     (e: 'write', measurementPointId: MeasurementPoint['id'], value: NonNullable<MeasurementPoint['last_value']>): void;
-    (e: 'bulk-write', updates: { measurement_point_id: MeasurementPoint['id']; value: NonNullable<MeasurementPoint['last_value']> }[]): void;
+    (e: 'bulk-write', anchorMpId: MeasurementPoint['id'], updates: { measurement_point_id: MeasurementPoint['id']; value: NonNullable<MeasurementPoint['last_value']> }[]): void;
   }>();
 
   const { permissions } = usePermissions();
@@ -155,6 +155,26 @@
     }
     omConfigLoading.value = false;
   }
+
+  // ── Public: patch local mappings after successful writes ──
+  //
+  // Called by parent with updated MP data from write responses.
+  // Patches measurement_point.last_value/last_value_at in-place
+  // so QuickActions sees fresh configValues via its watcher.
+
+  function updateMappings(updates: Pick<MeasurementPoint, 'id' | 'last_value' | 'last_value_at'>[]) {
+    for (const update of updates) {
+      const rm = omRegisterMappings.value.find(
+        (m) => m.measurement_point.id === update.id
+      );
+      if (rm) {
+        rm.measurement_point.last_value = update.last_value;
+        rm.measurement_point.last_value_at = update.last_value_at;
+      }
+    }
+  }
+
+  defineExpose({ updateMappings });
 
   // ── Status display (from omStatuses prop — available immediately) ──
   //
@@ -299,7 +319,7 @@
   }
 
   function handleBulkWrite(updates: { measurement_point_id: MeasurementPoint['id']; value: NonNullable<MeasurementPoint['last_value']> }[]) {
-    emit('bulk-write', updates);
+    emit('bulk-write', measurementPoint.id, updates);
   }
 </script>
 

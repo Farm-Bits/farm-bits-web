@@ -68,6 +68,7 @@
               class="col-sm-6 col-md-4 col-lg-3">
               <OutputControlCard
                 v-if="hasOperationMode(mp)"
+                :ref="(el: any) => setOutputCardRef(mp.id, el)"
                 :measurement-point="mp"
                 :om-statuses="omStatusesForInterface(mp)"
                 @analytics="handleMpClick"
@@ -144,6 +145,7 @@
   import OutputControlCard from './components/OutputControlCard.vue';
   import { ROUTES } from '@/types/permissions';
   import type { MeasurementPoint, MeasurementSubtype } from '@/types/measurementPoint';
+  import type { MeasurementPointConfigResponse } from '@/types/plc';
   import type { LiveMeasurementPoint, OperationModeConfigResponse } from '@/types/analytics';
 
   type MeasurementPointGroup = {
@@ -177,6 +179,16 @@
   const segments = currentSite.value?.segments || [];
 
   const { execute } = useApiCall();
+
+  const outputCardRefs = new Map<number, InstanceType<typeof OutputControlCard>>();
+
+  function setOutputCardRef(mpId: number, el: InstanceType<typeof OutputControlCard> | null) {
+    if (el) {
+      outputCardRefs.set(mpId, el);
+    } else {
+      outputCardRefs.delete(mpId);
+    }
+  }
 
   // ── Reactive data ───────────────────────────────
 
@@ -321,6 +333,47 @@
 
   polling.start();
 
+  // ── Delayed poll (for status registers to catch up after PLC processes a command) ──
+
+  let delayedPollTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function scheduleDelayedPoll(delayMs = 4000) {
+    if (delayedPollTimer)
+      clearTimeout(delayedPollTimer);
+
+    delayedPollTimer = setTimeout(() => {
+      fetchPollData();
+      delayedPollTimer = null;
+    }, delayMs);
+  }
+
+  // ── Apply write results to local state ──
+
+  function applyWriteResult(mp: MeasurementPoint) {
+    // Patch main measurement points list
+    const existing = measurementPoints.value.find((m) => m.id === mp.id);
+    if (existing) {
+      existing.last_value = mp.last_value;
+      existing.last_value_at = mp.last_value_at;
+      if (mp.alarm_state)
+        existing.alarm_state = mp.alarm_state;
+    }
+
+    // Patch OM statuses list
+    const omExisting = omStatuses.value.find((m) => m.id === mp.id);
+    if (omExisting) {
+      omExisting.last_value = mp.last_value;
+      omExisting.last_value_at = mp.last_value_at;
+    }
+  }
+
+  function applyWriteResultToCard(anchorMpId: number, updates: MeasurementPoint[]) {
+    const card = outputCardRefs.get(anchorMpId);
+    if (card) {
+      card.updateMappings(updates);
+    }
+  }
+
   // ── Analytics Modal ─────────────────────────────
 
   const analyticsModalVisible = ref(false);
@@ -343,26 +396,55 @@
     value: NonNullable<MeasurementPoint['last_value']>
   ) {
     const writePath = ROUTES.measurement_points_write.path.replace(':id', String(measurementPointId));
-    await execute(() => axios.post(writePath, { value }));
-    fetchPollData();
+    const { success, data } = await execute<MeasurementPoint>(
+      () => axios.post(writePath, { value })
+    );
+
+    if (success) {
+      applyWriteResult(data);
+      // Find which card this MP belongs to and patch its local mappings
+      for (const [cardMpId, card] of outputCardRefs) {
+        card.updateMappings([data]);
+      }
+      scheduleDelayedPoll();
+    }
   }
 
   // ── Bulk Write (params + command in sequence) ──
 
   async function handleBulkWrite(
+    anchorMpId: MeasurementPoint['id'],
     updates: { measurement_point_id: MeasurementPoint['id']; value: NonNullable<MeasurementPoint['last_value']> }[]
   ) {
     if (updates.length === 0)
       return;
 
-    for (const update of updates) {
-      const writePath = ROUTES.measurement_points_write.path
-        .replace(':id', String(update.measurement_point_id));
+    const updatePath = ROUTES.measurement_points_update.path
+      .replace(':id', String(anchorMpId));
 
-      await execute(() => axios.post(writePath, { value: update.value }));
+    const configurationUpdates = updates.map((u) => ({
+      measurement_point_id: u.measurement_point_id,
+      value: u.value,
+    }));
+
+    const { success, data } = await execute<MeasurementPointConfigResponse>(
+      () => axios.patch(updatePath, { configuration_updates: configurationUpdates })
+    );
+
+    if (success) {
+      // Apply the anchor MP
+      applyWriteResult(data.measurement_point);
+
+      // Apply all sibling updates (includes the config registers that were written)
+      for (const sibling of data.sibling_measurement_points) {
+        applyWriteResult(sibling);
+      }
+
+      // Patch the OutputControlCard's local mappings
+      applyWriteResultToCard(anchorMpId, data.sibling_measurement_points);
+
+      scheduleDelayedPoll();
     }
-
-    fetchPollData();
   }
 
   // ── Operation Mode Configure Modal ──────────────
@@ -420,8 +502,16 @@
     value: NonNullable<MeasurementPoint['last_value']>
   ) {
     const writePath = ROUTES.measurement_points_write.path.replace(':id', String(measurementPointId));
-    await execute(() => axios.post(writePath, { value }));
-    fetchPollData();
+    const { success, data } = await execute<MeasurementPoint>(
+      () => axios.post(writePath, { value })
+    );
+
+    if (success) {
+      applyWriteResult(data);
+      // Update the OM modal's config values with the write result
+      omConfigValues[data.id] = data.last_value;
+      scheduleDelayedPoll();
+    }
   }
 
   async function handleOmSave() {
@@ -438,16 +528,26 @@
       value: omConfigValues[mpId],
     }));
 
-    const { success } = await execute(
+
+    const { success, data } = await execute<MeasurementPointConfigResponse>(
       () => axios.patch(updatePath, { configuration_updates: configurationUpdates })
     );
 
     omSaving.value = false;
 
     if (success) {
+      // Apply anchor + all sibling updates to local state
+      applyWriteResult(data.measurement_point);
+      for (const sibling of data.sibling_measurement_points) {
+        applyWriteResult(sibling);
+      }
+
+      // Patch the OutputControlCard's local OM mappings
+      applyWriteResultToCard(anchorMpId, data.sibling_measurement_points);
+
       omEditedIds.value = new Set();
-      fetchPollData();
       omModalVisible.value = false;
+      scheduleDelayedPoll();
     }
   }
 

@@ -146,3 +146,8 @@ export type SourceIoInfo = {
   effective_unit: string | null;
   last_value: MeasurementPoint['last_value'];
 };
+
+export type MeasurementPointConfigResponse = {
+  measurement_point: MeasurementPoint;
+  sibling_measurement_points: MeasurementPoint[];
+};

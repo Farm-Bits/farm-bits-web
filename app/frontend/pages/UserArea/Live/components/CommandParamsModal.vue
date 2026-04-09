@@ -50,6 +50,7 @@
     paramMappings: RegisterMapping[];
     /** All mappings in the parent scope — needed for visibility condition resolution */
     allMappings: RegisterMapping[];
+    pendingWrite?: { measurementPointId: number; value: string | number } | null;
   }>();
 
   const emit = defineEmits<{
@@ -87,6 +88,11 @@
     // Override with local values
     for (const [mpIdStr, value] of Object.entries(localValues)) {
       merged[Number(mpIdStr)] = value;
+    }
+    // Inject the pending command/enable value so visibility conditions
+    // that depend on it (e.g. "show duration when command = Timed") resolve correctly
+    if (props.pendingWrite) {
+      merged[props.pendingWrite.measurementPointId] = String(props.pendingWrite.value);
     }
     return merged;
   });
