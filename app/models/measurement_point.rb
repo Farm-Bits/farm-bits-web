@@ -151,7 +151,8 @@ class MeasurementPoint < ApplicationRecord
   def serialize_for_storage(decoded_value)
     case register_template.value_format
     when 'boolean'
-      decoded_value ? '1' : '0'
+      bool = ActiveModel::Type::Boolean.new.cast(decoded_value)
+      bool ? '1' : '0'
     else
       decoded_value.to_s
     end
