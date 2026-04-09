@@ -364,7 +364,51 @@ class RegisterTemplate < ApplicationRecord
       end
     end
 
+    def registers_to_big_endian(data)
+      if data.length <= 1
+        return data
+      end
+
+      case byte_order
+      when 'big_endian'
+        data
+      when 'little_endian'
+        data.reverse
+      when 'big_endian_swap'
+        data.map { |word| swap_bytes(word) }
+      when 'little_endian_swap'
+        data.reverse.map { |word| swap_bytes(word) }
+      else
+        data
+      end
+    end
+
+    def registers_from_big_endian(data)
+      if data.length <= 1
+        return data
+      end
+
+      case byte_order
+      when 'big_endian'
+        data
+      when 'little_endian'
+        data.reverse
+      when 'big_endian_swap'
+        data.map { |word| swap_bytes(word) }
+      when 'little_endian_swap'
+        data.map { |word| swap_bytes(word) }.reverse
+      else
+        data
+      end
+    end
+
+    def swap_bytes(word)
+      ((word & 0xFF) << 8) | ((word >> 8) & 0xFF)
+    end
+
     def decode_numeric(data)
+      data = registers_to_big_endian(data)
+
       case data_type
       when 'uint8'
         data.first & 0xFF
@@ -401,9 +445,20 @@ class RegisterTemplate < ApplicationRecord
 
     def decode_ascii_string(data)
       data.flat_map do |value|
-        high_byte = (value >> 8) & 0xFF
-        low_byte = value & 0xFF
-        [high_byte, low_byte]
+        case byte_order
+        when 'big_endian', 'little_endian'
+          high_byte = (value >> 8) & 0xFF
+          low_byte = value & 0xFF
+          [high_byte, low_byte]
+        when 'big_endian_swap', 'little_endian_swap'
+          high_byte = (value >> 8) & 0xFF
+          low_byte = value & 0xFF
+          [low_byte, high_byte]
+        else
+          high_byte = (value >> 8) & 0xFF
+          low_byte = value & 0xFF
+          [high_byte, low_byte]
+        end
       end
       .take_while { |byte| byte != 0 }
       .pack('C*')
@@ -435,6 +490,8 @@ class RegisterTemplate < ApplicationRecord
     end
 
     def encode_numeric(value)
+      result = [value.to_i]
+
       case data_type
       when 'uint8', 'int8'
         [value.to_i & 0xFF]
@@ -453,13 +510,22 @@ class RegisterTemplate < ApplicationRecord
       else
         [value.to_i]
       end
+
+      registers_from_big_endian(result)
     end
 
     def encode_ascii_string(value)
       padded = value.to_s.ljust(address_count * 2, "\x00")
 
       padded.bytes.each_slice(2).map do |high, low|
-        (high << 8) | (low || 0)
+        case byte_order
+        when 'big_endian', 'little_endian'
+          (high << 8) | (low || 0)
+        when 'big_endian_swap', 'little_endian_swap'
+          ((low || 0) << 8) | high
+        else
+          (high << 8) | (low || 0)
+        end
       end
     end
 
