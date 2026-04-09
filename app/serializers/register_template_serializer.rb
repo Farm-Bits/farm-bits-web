@@ -15,6 +15,7 @@ class RegisterTemplateSerializer < Blueprinter::Base
     :read_only,
     :default_value,
     :enum_values,
+    :read_only_enum_keys,
     :position
 
   field :factor do |rt|

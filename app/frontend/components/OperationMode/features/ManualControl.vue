@@ -71,7 +71,9 @@
     if (!rt?.enum_values)
       return [];
 
-    const entries = Object.entries(rt.enum_values);
+    const readOnlyKeys = new Set(rt.read_only_enum_keys ?? []);
+    const entries = Object.entries(rt.enum_values)
+      .filter(([value]) => !readOnlyKeys.has(value));
     const lastIndex = entries.length - 1;
 
     return entries.map(([value, label], index) => ({

@@ -53,6 +53,7 @@ class RegisterTemplate < ApplicationRecord
   validate :address_count_matches_data_type
   validate :valid_value_bounds
   validate :enum_values_format, if: :enum_values?
+  validate :read_only_enum_keys_format, if: :read_only_enum_keys?
   validate :address_range_does_not_overlap
   validate :group_role_requires_group_name
   validate :validation_rules_format
@@ -207,6 +208,25 @@ class RegisterTemplate < ApplicationRecord
 
       if !enum_values.values.all? { |v| v.is_a?(String) }
         errors.add(:enum_values, "values must be strings")
+      end
+    end
+
+    def read_only_enum_keys_format
+      if !read_only_enum_keys.is_a?(Array)
+        errors.add(:read_only_enum_keys, 'must be an array')
+        return
+      end
+
+      if !read_only_enum_keys.all? { |k| k.is_a?(String) }
+        errors.add(:read_only_enum_keys, 'all entries must be strings')
+        return
+      end
+
+      if enum_values.present?
+        invalid_keys = read_only_enum_keys - enum_values.keys
+        if invalid_keys.any?
+          errors.add(:read_only_enum_keys, "contains keys not in enum_values: #{invalid_keys.join(', ')}")
+        end
       end
     end
 

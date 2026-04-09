@@ -91,6 +91,7 @@
     type FeatureToggle,
   } from '@/composables/useQuickActions';
   import CommandParamsModal from './CommandParamsModal.vue';
+  import { OM_GROUPS } from '@/types/operationMode';
 
   const props = defineProps<{
     mappings: RegisterMapping[];
@@ -111,7 +112,7 @@
   const {
     commandGroups,
     featureToggles,
-    emergencyStop,
+    emergencyStop
   } = useQuickActions(
     toRef(props, 'mappings'),
     toRef(props, 'groupLabels'),
@@ -122,8 +123,6 @@
     return featureToggles.value.filter((t) => t.isEnabled);
   });
 
-  // ── Sending state ──
-
   const sending = ref<string | null>(null);
 
   function clearSending(key: string) {
@@ -132,8 +131,6 @@
         sending.value = null;
     }, 1500);
   }
-
-  // ── Button color heuristic (derived from enum label text) ──
 
   function buttonColor(label: string): string {
     const lower = label.toLowerCase();

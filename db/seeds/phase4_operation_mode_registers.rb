@@ -8,17 +8,18 @@ ActiveRecord::Base.transaction do
   OM_STATUS_BASE_ADDRESS = 9018
 
   ACTIVE_SOURCE_ENUM = {
-    '0' => 'Auto',
+    '0' => 'None',
     '1' => 'Manual (Indefinite)',
     '2' => 'Manual (Timed)',
-    '3' => 'Schedule 1',
-    '4' => 'Schedule 2',
-    '5' => 'Schedule 3',
-    '6' => 'Schedule 4',
-    '7' => 'Schedule 5',
-    '8' => 'Schedule 6',
-    '9' => 'Duty Cycle',
-    '10' => 'Sensor Trigger'
+    '3' => 'Manual (Off)',
+    '4' => 'Schedule 1',
+    '5' => 'Schedule 2',
+    '6' => 'Schedule 3',
+    '7' => 'Schedule 4',
+    '8' => 'Schedule 5',
+    '9' => 'Schedule 6',
+    '10' => 'Duty Cycle',
+    '11' => 'Sensor Trigger'
   }.freeze
 
   OPERATOR_ENUM = {
@@ -52,9 +53,9 @@ ActiveRecord::Base.transaction do
   ].freeze
 
   OM_STATUS_REGISTERS = [
-    { name: 'Active Source',  group_role: 'active_source',    data_type: 'uint16', value_format: 'enum',             addr_count: 1, read_only: true, is_status: true, enum_values: ACTIVE_SOURCE_ENUM, description: 'What is currently controlling this output' },
+    { name: 'Active Source',  group_role: 'active_source',    data_type: 'uint16', value_format: 'enum',             addr_count: 1, read_only: true, is_status: true, enum_values: ACTIVE_SOURCE_ENUM, read_only_enum_keys: ['0'], description: 'What is currently controlling this output' },
     { name: 'Error Flags',    group_role: 'error_flags',      data_type: 'uint16', value_format: 'bitmask',          addr_count: 1, read_only: true, is_status: true, enum_values: { '0' => 'Max ON exceeded', '1' => 'Min OFF active', '2' => 'Sensor error', '3' => 'Blackout active' }, description: 'Active safety or error conditions' },
-    { name: 'Next Change In', group_role: 'next_change_time', data_type: 'uint32', value_format: 'duration_seconds', addr_count: 2, read_only: true, is_status: true, visibility_conditions: { 'active_source' => ['2', '3', '4', '5', '6', '7', '8', '9'] }, description: 'Seconds until next predicted state change' }
+    { name: 'Next Change In', group_role: 'next_change_time', data_type: 'uint32', value_format: 'duration_seconds', addr_count: 2, read_only: true, is_status: true, visibility_conditions: { 'active_source' => ['2', '4', '5', '6', '7', '8', '9', '10'] }, description: 'Seconds until next predicted state change' }
   ].freeze
 
   OM_MANUAL_REGISTERS = [
@@ -97,7 +98,7 @@ ActiveRecord::Base.transaction do
   ].freeze
 
   OM_MANUAL_STATUS_REGISTERS = [
-    { name: 'Command',  group_role: 'command',  data_type: 'uint16', value_format: 'enum',             addr_count: 1, is_status: true, default_value: 0, enum_values: { '0' => 'Auto', '1' => 'Turn On', '2' => 'Turn On (Timed)', '3' => 'Turn Off' }, description: 'Manual command. PLC resets to None after executing' }
+    { name: 'Command',  group_role: 'command',  data_type: 'uint16', value_format: 'enum',             addr_count: 1, is_status: true, default_value: 0, enum_values: { '0' => 'Idle', '1' => 'Turn On', '2' => 'Turn On (Timed)', '3' => 'Turn Off', '4' => 'Release to Auto' }, description: 'Manual command. PLC resets to None after executing' }
   ].freeze
 
   PLC_VERSION_ID = PlcVersion.first.id
@@ -152,6 +153,7 @@ ActiveRecord::Base.transaction do
       max_value: reg[:max_value],
       default_value: reg[:default_value],
       enum_values: reg[:enum_values],
+      read_only_enum_keys: reg[:read_only_enum_keys],
       position: current_position,
       plc_version_id: PLC_VERSION_ID
     )

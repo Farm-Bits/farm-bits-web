@@ -89,6 +89,7 @@ export type RegisterTemplate = {
   max_value: number | null;
   default_value: string | null;
   enum_values: Record<string, string> | null;
+  read_only_enum_keys: string[] | null;
   position: number;
 };
 

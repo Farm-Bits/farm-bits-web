@@ -150,7 +150,10 @@ export function useQuickActions(
       if (!cmdRole)
         continue;
 
-      const actions: CommandAction[] = Object.entries(enumValues).map(([enumKey, label]) => {
+      const readOnlyKeys = new Set(cmdMapping.register_template.read_only_enum_keys ?? []);
+      const actions: CommandAction[] = Object.entries(enumValues)
+        .filter(([enumKey]) => !readOnlyKeys.has(enumKey))
+        .map(([enumKey, label]) => {
         // Find siblings visible only when command === enumKey
         const paramMappings = groupMappings.filter(rm => {
           if (rm.register_template.id === cmdMapping.register_template.id)
