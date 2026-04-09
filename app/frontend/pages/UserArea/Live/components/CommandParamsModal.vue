@@ -14,9 +14,16 @@
         <div
           v-if="isVisible(rm)"
           class="mb-3">
-          <label class="form-label small fw-semibold">
+          <CFormLabel class="fw-semibold d-flex align-items-center gap-2">
             {{ rm.register_template.name }}
-          </label>
+            <CTooltip
+              v-if="rm.register_template.description"
+              :content="rm.register_template.description">
+              <template #toggler="{ on }">
+                <CIcon v-on="on" icon="cilInfo" size="sm" class="text-muted" />
+              </template>
+            </CTooltip>
+          </CFormLabel>
           <RegisterField
             :register-mapping="rm"
             :model-value="localValues[rm.measurement_point.id]"

@@ -1,8 +1,20 @@
 <template>
   <div>
     <!-- Master enable -->
-    <div class="d-flex align-items-center gap-2 p-3 rounded border mb-3"
+    <div
+      v-if="enabledMapping"
+      class="d-flex align-items-center gap-2 p-3 rounded border mb-3"
       :class="isEnabled ? 'border-success-subtle bg-success-subtle' : ''">
+      <CFormLabel class="fw-semibold d-flex align-items-center gap-2">
+        {{ enabledMapping.register_template.name }}
+        <CTooltip
+          v-if="enabledMapping.register_template.description"
+          :content="enabledMapping.register_template.description">
+          <template #toggler="{ on }">
+            <CIcon v-on="on" icon="cilInfo" size="sm" class="text-muted" />
+          </template>
+        </CTooltip>
+      </CFormLabel>
       <CFormSwitch
         :model-value="isEnabled"
         @update:model-value="handleMasterToggle" />
@@ -59,7 +71,7 @@
 
   const mappingsRef = computed(() => mappings);
   const groupName = vueRef(OM_GROUPS.sensor);
-  const { mpForRole } = useGroupRegisters(mappingsRef, groupName);
+  const { mpForRole, mappingForRole } = useGroupRegisters(mappingsRef, groupName);
 
   const isEnabled = computed(() => {
     const mpId = mpForRole(OM_ROLES.enabled)?.id;
@@ -68,6 +80,8 @@
 
     return String(configValues[mpId]) === '1';
   });
+
+  const enabledMapping = computed(() => mappingForRole(OM_ROLES.enabled));
 
   function handleMasterToggle(value: boolean) {
     const mp = mpForRole(OM_ROLES.enabled);

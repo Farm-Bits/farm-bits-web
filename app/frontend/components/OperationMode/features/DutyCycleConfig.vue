@@ -1,7 +1,17 @@
 <template>
   <div>
     <!-- Enable toggle -->
-    <div class="d-flex align-items-center gap-2 mb-3">
+    <div class="d-flex align-items-center gap-2 mb-3" v-if="enableMapping">
+      <CFormLabel class="fw-semibold d-flex align-items-center gap-2">
+        {{ enableMapping.register_template.name }}
+        <CTooltip
+          v-if="enableMapping.register_template.description"
+          :content="enableMapping.register_template.description">
+          <template #toggler="{ on }">
+            <CIcon v-on="on" icon="cilInfo" size="sm" class="text-muted" />
+          </template>
+        </CTooltip>
+      </CFormLabel>
       <CFormSwitch
         :model-value="isEnabled"
         @update:model-value="handleToggle" />
@@ -43,6 +53,16 @@
       <div
         v-if="onDurationMapping"
         class="col-6">
+        <CFormLabel class="fw-semibold d-flex align-items-center gap-2">
+          {{ onDurationMapping.register_template.name }}
+          <CTooltip
+            v-if="onDurationMapping.register_template.description"
+            :content="onDurationMapping.register_template.description">
+            <template #toggler="{ on }">
+              <CIcon v-on="on" icon="cilInfo" size="sm" class="text-muted" />
+            </template>
+          </CTooltip>
+        </CFormLabel>
         <RegisterField
           :model-value="configValues[onDurationMapping.measurement_point.id]"
           :register-mapping="onDurationMapping"
@@ -52,6 +72,16 @@
       <div
         v-if="offDurationMapping"
         class="col-6">
+        <CFormLabel class="fw-semibold d-flex align-items-center gap-2">
+          {{ offDurationMapping.register_template.name }}
+          <CTooltip
+            v-if="offDurationMapping.register_template.description"
+            :content="offDurationMapping.register_template.description">
+            <template #toggler="{ on }">
+              <CIcon v-on="on" icon="cilInfo" size="sm" class="text-muted" />
+            </template>
+          </CTooltip>
+        </CFormLabel>
         <RegisterField
           :model-value="configValues[offDurationMapping.measurement_point.id]"
           :register-mapping="offDurationMapping"
@@ -145,6 +175,7 @@
 
   // ── Mappings ─────────────────────────────────────
 
+  const enableMapping = computed(() => mappingForRole(OM_ROLES.enabled));
   const onDurationMapping = computed(() => mappingForRole(OM_ROLES.onDuration));
   const offDurationMapping = computed(() => mappingForRole(OM_ROLES.offDuration));
 

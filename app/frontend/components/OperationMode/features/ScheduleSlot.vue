@@ -4,9 +4,20 @@
     :class="isEnabled ? 'border-info-subtle' : ''">
     <!-- Header: toggle + label + collapse arrow -->
     <div
+      v-if="enabledMapping"
       class="d-flex align-items-center gap-2 px-3 py-2"
       role="button"
       @click="isOpen = !isOpen">
+      <CFormLabel class="fw-semibold d-flex align-items-center gap-2">
+        {{ enabledMapping.register_template.name }}
+        <CTooltip
+          v-if="enabledMapping.register_template.description"
+          :content="enabledMapping.register_template.description">
+          <template #toggler="{ on }">
+            <CIcon v-on="on" icon="cilInfo" size="sm" class="text-muted" />
+          </template>
+        </CTooltip>
+      </CFormLabel>
       <CFormSwitch
         :model-value="isEnabled"
         @click.stop
@@ -28,17 +39,35 @@
       class="px-3 pb-3">
       <!-- Start time: sun reference composite -->
       <div class="row g-3 mb-2">
-        <div class="col-6">
+        <div class="col-6" v-if="startRefMapping">
+          <CFormLabel class="fw-semibold d-flex align-items-center gap-2">
+            {{ startRefMapping.register_template.name }}
+            <CTooltip
+              v-if="startRefMapping.register_template.description"
+              :content="startRefMapping.register_template.description">
+              <template #toggler="{ on }">
+                <CIcon v-on="on" icon="cilInfo" size="sm" class="text-muted" />
+              </template>
+            </CTooltip>
+          </CFormLabel>
           <RegisterField
-            v-if="startRefMapping"
             :model-value="configValues[startRefMapping.measurement_point.id]"
             :register-mapping="startRefMapping"
             :is-editing="true"
             @update:model-value="emitChange(startRefMapping.measurement_point.id, $event)" />
         </div>
-        <div class="col-6">
+        <div class="col-6" v-if="startTimeOrOffsetMapping">
+          <CFormLabel class="fw-semibold d-flex align-items-center gap-2">
+            {{ startTimeOrOffsetMapping.register_template.name }}
+            <CTooltip
+              v-if="startTimeOrOffsetMapping.register_template.description"
+              :content="startTimeOrOffsetMapping.register_template.description">
+              <template #toggler="{ on }">
+                <CIcon v-on="on" icon="cilInfo" size="sm" class="text-muted" />
+              </template>
+            </CTooltip>
+          </CFormLabel>
           <RegisterField
-            v-if="startTimeOrOffsetMapping"
             :model-value="configValues[startTimeOrOffsetMapping.measurement_point.id]"
             :register-mapping="startTimeOrOffsetMapping"
             :is-editing="true"
@@ -51,6 +80,16 @@
         v-for="rm in visibleRemainingMappings"
         :key="rm.measurement_point.id"
         class="mb-2">
+        <CFormLabel class="fw-semibold d-flex align-items-center gap-2">
+          {{ rm.register_template.name }}
+          <CTooltip
+            v-if="rm.register_template.description"
+            :content="rm.register_template.description">
+            <template #toggler="{ on }">
+              <CIcon v-on="on" icon="cilInfo" size="sm" class="text-muted" />
+            </template>
+          </CTooltip>
+        </CFormLabel>
         <RegisterField
           :model-value="configValues[rm.measurement_point.id]"
           :register-mapping="rm"
@@ -97,6 +136,8 @@
 
     return String(configValues[mpId]) === '1';
   });
+
+  const enabledMapping = computed(() => mappingForRole(OM_ROLES.enabled));
 
   // ── Start time: sun reference composite ──────────
 

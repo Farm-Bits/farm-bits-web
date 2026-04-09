@@ -4,9 +4,20 @@
     :class="isEnabled ? 'border-success-subtle' : ''">
     <!-- Header -->
     <div
+      v-if="enabledMapping"
       class="d-flex align-items-center gap-2 px-3 py-2"
       role="button"
       @click="isOpen = !isOpen">
+      <CFormLabel class="fw-semibold d-flex align-items-center gap-2">
+        {{ enabledMapping.register_template.name }}
+        <CTooltip
+          v-if="enabledMapping.register_template.description"
+          :content="enabledMapping.register_template.description">
+          <template #toggler="{ on }">
+            <CIcon v-on="on" icon="cilInfo" size="sm" class="text-muted" />
+          </template>
+        </CTooltip>
+      </CFormLabel>
       <CFormSwitch
         :model-value="isEnabled"
         @click.stop
@@ -60,6 +71,16 @@
           v-for="rm in visibleGenericMappings"
           :key="rm.measurement_point.id"
           class="col-4">
+          <CFormLabel class="fw-semibold d-flex align-items-center gap-2">
+            {{ rm.register_template.name }}
+            <CTooltip
+              v-if="rm.register_template.description"
+              :content="rm.register_template.description">
+              <template #toggler="{ on }">
+                <CIcon v-on="on" icon="cilInfo" size="sm" class="text-muted" />
+              </template>
+            </CTooltip>
+          </CFormLabel>
           <RegisterField
             :model-value="configValues[rm.measurement_point.id]"
             :register-mapping="rm"
@@ -73,6 +94,16 @@
         v-for="rm in extraMappings"
         :key="rm.measurement_point.id"
         class="mb-2 mt-2">
+        <CFormLabel class="fw-semibold d-flex align-items-center gap-2">
+          {{ rm.register_template.name }}
+          <CTooltip
+            v-if="rm.register_template.description"
+            :content="rm.register_template.description">
+            <template #toggler="{ on }">
+              <CIcon v-on="on" icon="cilInfo" size="sm" class="text-muted" />
+            </template>
+          </CTooltip>
+        </CFormLabel>
         <RegisterField
           :model-value="configValues[rm.measurement_point.id]"
           :register-mapping="rm"
@@ -120,6 +151,8 @@
 
     return String(configValues[mpId]) === '1';
   });
+
+  const enabledMapping = computed(() => mappingForRole(OM_ROLES.enabled));
 
   // ── Source selection (composite: source_type + source_io_number) ──
 

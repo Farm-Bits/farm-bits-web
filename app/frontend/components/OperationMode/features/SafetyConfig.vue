@@ -4,6 +4,16 @@
       v-for="rm in safetyFieldMappings"
       :key="rm.measurement_point.id"
       class="mb-2">
+      <CFormLabel class="fw-semibold d-flex align-items-center gap-2">
+        {{ rm.register_template.name }}
+        <CTooltip
+          v-if="rm.register_template.description"
+          :content="rm.register_template.description">
+          <template #toggler="{ on }">
+            <CIcon v-on="on" icon="cilInfo" size="sm" class="text-muted" />
+          </template>
+        </CTooltip>
+      </CFormLabel>
       <RegisterField
         v-if="isVisible(rm)"
         :model-value="configValues[rm.measurement_point.id]"
