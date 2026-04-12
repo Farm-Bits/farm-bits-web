@@ -4,7 +4,7 @@
     <div class="body">
       <Sidebar />
       <!-- Main content -->
-      <div class="main">
+      <div class="main" :style="{ marginLeft: sidebarOffset }">
         <Navbar />
 
         <!-- Toast notifications -->
@@ -53,6 +53,7 @@
   import Sidebar from './Sidebar/index.vue';
   import Footer from './Footer.vue';
   import { usePage } from '@inertiajs/vue3';
+  import useStore from '@/stores';
   import useToastStore from '@/stores/toast';
 
   const page = usePage<{
@@ -62,6 +63,15 @@
       [key: string]: any;
     };
   }>();
+
+  const store = useStore();
+
+  const sidebarOffset = computed(() => {
+    if (!store.sidebarVisible)
+      return '0px';
+
+    return store.sidebarNarrow ? '56px' : '256px';
+  });
 
   const dismissedFlash = ref<Set<string>>(new Set());
 

@@ -1,16 +1,16 @@
 <template>
   <CSidebar
     :narrow="sidebarNarrow"
+    :visible="sidebarVisible"
+    @visible-change="store.setSidebarVisible"
     minimizer
     colorScheme="dark"
-    class="d-print-none full-height-sidebar">
+    class="d-print-none sidebar-fixed">
 
     <div class="sidebar-brand">
       <CIcon name="cilShieldAlt" size="lg" class="brand-icon" />
       <span v-if="!sidebarNarrow" class="brand-text">Admin Panel</span>
     </div>
-
-    <CIcon name="cilMenu" size="lg" @click="store.toggleSidebar" class="sidebar-toggler" />
 
     <CSidebarNav>
       <CNavItem href="#/admin/dashboard">
@@ -52,6 +52,7 @@
 
   const store = useStore();
   const sidebarNarrow = computed(() => store.$state.sidebarNarrow);
+  const sidebarVisible = computed(() => store.$state.sidebarVisible);
 </script>
 
 <style scoped>

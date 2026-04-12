@@ -1,6 +1,10 @@
 <template>
   <CHeader position="sticky">
-    <CContainer fluid class="px-4">
+    <CContainer fluid class="px-2">
+      <CHeaderToggler @click="handleSidebarToggle">
+        <CIcon name="cilMenu" size="lg" />
+      </CHeaderToggler>
+
       <!-- Left side: Logo/Brand or Site Selection -->
       <div class="d-flex align-items-center">
         <!-- Admin User: Just logo/brand -->
@@ -16,7 +20,7 @@
           <CDropdown variant="nav-item">
             <CDropdownToggle class="d-flex align-items-center">
               <CIcon name="cilLocationPin" class="me-1" />
-              {{ currentSite?.name || 'No Sites Configured' }}
+              <span style="padding-bottom: 1px">{{ currentSite?.name || 'No Sites Configured' }}</span>
             </CDropdownToggle>
             <CDropdownMenu>
               <template v-if="accessibleSites && accessibleSites.length > 0">
@@ -44,7 +48,7 @@
       </div>
 
       <!-- Right side navigation -->
-      <CHeaderNav class="d-none d-md-flex ms-auto align-items-center">
+      <CHeaderNav class="ms-auto align-items-center">
         <!-- Not logged in: Sign In/Sign Up buttons -->
         <template v-if="!isSignedIn">
           <CNavItem>
@@ -73,13 +77,24 @@
 
 <script lang="ts" setup>
   import { router } from '@inertiajs/vue3';
+  import { useWindowSize } from '@vueuse/core';
   import WeatherNavBar from './components/WeatherNavBar.vue';
   import AccountDropdown from './components/AccountDropdown.vue';
   import AdminAccountDropdown from './components/AdminAccountDropdown.vue';
   import useAuth from '@/composables/useAuth';
+  import useStore from '@/stores';
   import type { Site } from '@/types/location';
 
   const { isAdminUser, isSignedIn, paths, features, currentSite, accessibleSites } = useAuth();
+  const store = useStore();
+  const { width } = useWindowSize();
+
+  function handleSidebarToggle() {
+    if (width.value >= 992)
+      store.toggleSidebar();
+    else
+      store.toggleSidebarVisibility();
+  }
 
   function onSelectSite(siteId: Site['id']) {
     router.visit(window.location.pathname, { data: { site_id: siteId } });
