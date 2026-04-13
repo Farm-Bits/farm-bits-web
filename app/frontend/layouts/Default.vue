@@ -53,6 +53,7 @@
   import Sidebar from './Sidebar/index.vue';
   import Footer from './Footer.vue';
   import { usePage } from '@inertiajs/vue3';
+  import useAuth from '@/composables/useAuth';
   import useStore from '@/stores';
   import useToastStore from '@/stores/toast';
 
@@ -64,9 +65,13 @@
     };
   }>();
 
+  const { isAdminUser, isSignedIn } = useAuth();
   const store = useStore();
 
   const sidebarOffset = computed(() => {
+    if (!isAdminUser.value && !isSignedIn.value)
+      return '0px';
+
     if (!store.sidebarVisible)
       return '0px';
 

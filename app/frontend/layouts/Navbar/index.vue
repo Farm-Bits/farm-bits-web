@@ -1,7 +1,7 @@
 <template>
   <CHeader position="sticky">
     <CContainer fluid class="px-2">
-      <CHeaderToggler @click="handleSidebarToggle">
+      <CHeaderToggler v-if="isAdminUser || isSignedIn" @click="handleSidebarToggle">
         <CIcon name="cilMenu" size="lg" />
       </CHeaderToggler>
 
