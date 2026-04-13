@@ -85,6 +85,11 @@ class PlcWriteService
 
     validate_gateway!
 
+    # Allow behavior profile to adjust MPs before encoding
+    # (e.g., propagate source IO scaling to sensor condition thresholds)
+    behavior = PlcBehaviors.for(@plc)
+    measurement_points_with_values = behavior.pre_write_transforms(measurement_points_with_values)
+
     measurement_points_with_values.each do |entry|
       raw_value = entry[:measurement_point].reverse_scaled(entry[:value])
 

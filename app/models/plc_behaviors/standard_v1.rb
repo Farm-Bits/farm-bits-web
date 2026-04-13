@@ -4,6 +4,7 @@ class PlcBehaviors::StandardV1 < PlcBehaviors::Base
   include PlcBehaviors::Concerns::SunDataSync              # sync_sun_data!
   include PlcBehaviors::Concerns::SensorCascade            # cascade_sensor_deactivation!
   include PlcBehaviors::Concerns::OnetimeScheduleCleanup   # cleanup_onetime_schedules!
+  include PlcBehaviors::Concerns::SensorConditionScaling   # pre_write_transforms
 
   SYSTEM_GROUPS = {
 

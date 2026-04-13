@@ -251,17 +251,10 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
     end
 
     def build_available_sources(plc)
-      source_type_map = {
-        'analog_input' => 1,
-        'digital_input' => 2,
-        'digital_output' => 3,
-        'analog_output' => 4
-      }
-
       sources = []
 
       plc.plc_version.interfaces.each do |iface|
-        source_type = source_type_map[iface.communication_type]
+        source_type = PlcBehaviors::Base::SOURCE_TYPE_MAP[iface.communication_type]
         if !source_type
           next
         end

@@ -62,6 +62,14 @@ class PlcBehaviors::Base
   def cleanup_onetime_schedules!
   end
 
+  # Pre-write transform: called by PlcWriteService before encoding values.
+  # Receives the array of { measurement_point:, value: } hashes.
+  # Returns the (possibly mutated) array.
+  # Override in concerns to adjust MPs or values before reverse_scaled runs.
+  def pre_write_transforms(entries)
+    entries
+  end
+
   # ── Introspection ───────────────────────────────────
 
   def supports?(hook_name)
