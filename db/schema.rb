@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_09_103646) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_14_181428) do
   create_table "action_mailbox_inbound_emails", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "status", default: 0, null: false
     t.string "message_id", null: false
@@ -373,6 +373,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_09_103646) do
     t.string "default_unit", null: false
     t.string "default_chart_type", null: false
     t.string "default_color"
+    t.string "icon_key"
     t.integer "position", default: 0, null: false
     t.bigint "measurement_type_id", null: false
     t.datetime "created_at", null: false

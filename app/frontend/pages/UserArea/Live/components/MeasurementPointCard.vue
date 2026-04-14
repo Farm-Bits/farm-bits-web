@@ -10,7 +10,16 @@
           class="status-dot"
           :class="statusDotClass"
           :title="statusTooltip" />
-        <span class="mp-card__name">{{ measurementPoint.name }}</span>
+        <img
+          v-if="measurementPoint.measurement_subtype && measurementPoint.measurement_subtype.icon_key"
+          class="w-5 h-5"
+          :src="iconMap[measurementPoint.measurement_subtype.icon_key]"
+          :alt="measurementPoint.measurement_subtype.name" />
+        <span class="mp-card__name">
+          {{ measurementPoint.measurement_subtype && !measurementPoint.measurement_subtype.icon_key ?
+            `${measurementPoint.measurement_subtype.name} |` : '' }}
+          {{ measurementPoint.name }}
+        </span>
       </div>
       <CBadge v-if="alarmBadge" :color="alarmBadge.color" size="sm">
         {{ alarmBadge.label }}
@@ -44,6 +53,7 @@
   import RelativeTime from '@/components/RelativeTime.vue';
   import ValueDisplay from '@/components/ValueDisplay.vue';
   import { type LiveMeasurementPoint } from '@/types/analytics';
+  import { iconMap } from '@/assets/icons/measurement';
 
   const { measurementPoint } = defineProps<{
     measurementPoint: LiveMeasurementPoint;

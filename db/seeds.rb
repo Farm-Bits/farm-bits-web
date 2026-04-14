@@ -19,8 +19,8 @@ ActiveRecord::Base.transaction do
       name: 'Weather',
       position: 1,
       measurement_subtypes_attributes: [
-        { name: 'Temperature',         data_category: 'analog',  value_type: 'instantaneous', default_unit: '°C',    default_chart_type: 'line', default_color: '#FF8C00', position: 1 },
-        { name: 'Humidity',            data_category: 'analog',  value_type: 'instantaneous', default_unit: '%',     default_chart_type: 'line', default_color: '#39A0CA', position: 2 },
+        { name: 'Temperature',         data_category: 'analog',  value_type: 'instantaneous', default_unit: '°C',    default_chart_type: 'line', default_color: '#FF8C00', icon_key: 'temperature', position: 1 },
+        { name: 'Humidity',            data_category: 'analog',  value_type: 'instantaneous', default_unit: '%',     default_chart_type: 'line', default_color: '#39A0CA', icon_key: 'humidity', position: 2 },
         { name: 'Wind Speed',          data_category: 'analog',  value_type: 'instantaneous', default_unit: 'm/s',   default_chart_type: 'line', default_color: '#00008B', position: 3 },
         { name: 'Wind Direction',      data_category: 'analog',  value_type: 'instantaneous', default_unit: '°',     default_chart_type: 'line', default_color: '#4682B4', position: 4 },
         { name: 'Precipitation',       data_category: 'counter', value_type: 'accumulative',  default_unit: 'mm',    default_chart_type: 'bar',  default_color: '#1E90FF', position: 5 },
@@ -37,8 +37,8 @@ ActiveRecord::Base.transaction do
       name: 'Ambient',
       position: 2,
       measurement_subtypes_attributes: [
-        { name: 'Temperature',         data_category: 'analog', value_type: 'instantaneous', default_unit: '°C',       default_chart_type: 'line', default_color: '#FF8C00', position: 1 },
-        { name: 'Humidity',            data_category: 'analog', value_type: 'instantaneous', default_unit: '%',        default_chart_type: 'line', default_color: '#39A0CA', position: 2 },
+        { name: 'Temperature',         data_category: 'analog', value_type: 'instantaneous', default_unit: '°C',       default_chart_type: 'line', default_color: '#FF8C00', icon_key: 'temperature', position: 1 },
+        { name: 'Humidity',            data_category: 'analog', value_type: 'instantaneous', default_unit: '%',        default_chart_type: 'line', default_color: '#39A0CA', icon_key: 'humidity', position: 2 },
         { name: 'CO2',                 data_category: 'analog', value_type: 'instantaneous', default_unit: 'ppm',      default_chart_type: 'line', default_color: '#A9A9A9', position: 3 },
         { name: 'Light Level',         data_category: 'analog', value_type: 'instantaneous', default_unit: 'µmol/m²s', default_chart_type: 'line', default_color: '#FFD700', position: 4 },
         { name: 'Light Integral',      data_category: 'analog', value_type: 'accumulative',  default_unit: 'mol/m²',   default_chart_type: 'bar',  default_color: '#FFD700', position: 5 }
@@ -48,7 +48,7 @@ ActiveRecord::Base.transaction do
       name: 'Soil',
       position: 3,
       measurement_subtypes_attributes: [
-        { name: 'Temperature',         data_category: 'analog', value_type: 'instantaneous', default_unit: '°C',    default_chart_type: 'line', default_color: '#FF8C00', position: 1 },
+        { name: 'Temperature',         data_category: 'analog', value_type: 'instantaneous', default_unit: '°C',    default_chart_type: 'line', default_color: '#FF8C00', icon_key: 'temperature', position: 1 },
         { name: 'Moisture',            data_category: 'analog', value_type: 'instantaneous', default_unit: '%',     default_chart_type: 'line', default_color: '#39A0CA', position: 2 },
         { name: 'Water Tension',       data_category: 'analog', value_type: 'instantaneous', default_unit: 'kPa',   default_chart_type: 'line', default_color: '#6B8E23', position: 3 },
         { name: 'EC',                  data_category: 'analog', value_type: 'instantaneous', default_unit: 'dS/m',  default_chart_type: 'line', default_color: '#DAA520', position: 4 },
@@ -61,7 +61,7 @@ ActiveRecord::Base.transaction do
       measurement_subtypes_attributes: [
         { name: 'EC',                  data_category: 'analog', value_type: 'instantaneous', default_unit: 'dS/m',  default_chart_type: 'line', default_color: '#DAA520', position: 1 },
         { name: 'pH',                  data_category: 'analog', value_type: 'instantaneous', default_unit: 'pH',    default_chart_type: 'line', default_color: '#9370DB', position: 2 },
-        { name: 'Temperature',         data_category: 'analog', value_type: 'instantaneous', default_unit: '°C',    default_chart_type: 'line', default_color: '#FF8C00', position: 3 },
+        { name: 'Temperature',         data_category: 'analog', value_type: 'instantaneous', default_unit: '°C',    default_chart_type: 'line', default_color: '#FF8C00', icon_key: 'temperature', position: 3 },
         { name: 'Dissolved Oxygen',    data_category: 'analog', value_type: 'instantaneous', default_unit: 'mg/L',  default_chart_type: 'line', default_color: '#00CED1', position: 4 },
         { name: 'Turbidity',           data_category: 'analog', value_type: 'instantaneous', default_unit: 'NTU',   default_chart_type: 'line', default_color: '#D2B48C', position: 5 }
       ]
@@ -87,23 +87,23 @@ ActiveRecord::Base.transaction do
         { name: 'Volume',              data_category: 'counter', value_type: 'accumulative',  default_unit: 'L',    default_chart_type: 'bar',  default_color: '#39A0CA', position: 3 },
         { name: 'Volume Meter',        data_category: 'analog',  value_type: 'accumulative',  default_unit: 'L',    default_chart_type: 'bar',  default_color: '#39A0CA', position: 4 },
         { name: 'Level',               data_category: 'analog',  value_type: 'instantaneous', default_unit: '%',    default_chart_type: 'area', default_color: '#17A2B8', position: 5 },
-        { name: 'Temperature',         data_category: 'analog',  value_type: 'instantaneous', default_unit: '°C',   default_chart_type: 'line', default_color: '#FF8C00', position: 6 }
+        { name: 'Temperature',         data_category: 'analog',  value_type: 'instantaneous', default_unit: '°C',   default_chart_type: 'line', default_color: '#FF8C00', icon_key: 'temperature', position: 6 }
       ]
     },
     {
       name: 'Switch',
       position: 7,
       measurement_subtypes_attributes: [
-        { name: 'Irrigation',          data_category: 'status', value_type: 'status', default_unit: 'Closed/Open',  default_chart_type: 'step', default_color: '#398439', position: 1 },
-        { name: 'Fertigation',         data_category: 'status', value_type: 'status', default_unit: 'Closed/Open',  default_chart_type: 'step', default_color: '#6B8E23', position: 2 },
+        { name: 'Irrigation',          data_category: 'status', value_type: 'status', default_unit: 'Closed/Open',  default_chart_type: 'step', default_color: '#398439', icon_key: 'irrigation', position: 1 },
+        { name: 'Fertigation',         data_category: 'status', value_type: 'status', default_unit: 'Closed/Open',  default_chart_type: 'step', default_color: '#6B8E23', icon_key: 'fertigation', position: 2 },
         { name: 'Valve',               data_category: 'status', value_type: 'status', default_unit: 'Closed/Open',  default_chart_type: 'step', default_color: '#398439', position: 3 },
         { name: 'Pump',                data_category: 'status', value_type: 'status', default_unit: 'Off/On',       default_chart_type: 'step', default_color: '#50C878', position: 4 },
-        { name: 'Fan',                 data_category: 'status', value_type: 'status', default_unit: 'Off/On',       default_chart_type: 'step', default_color: '#5C6267', position: 5 },
-        { name: 'Heater',              data_category: 'status', value_type: 'status', default_unit: 'Off/On',       default_chart_type: 'step', default_color: '#FF8C00', position: 6 },
+        { name: 'Fan',                 data_category: 'status', value_type: 'status', default_unit: 'Off/On',       default_chart_type: 'step', default_color: '#5C6267', icon_key: 'fan', position: 5 },
+        { name: 'Heater',              data_category: 'status', value_type: 'status', default_unit: 'Off/On',       default_chart_type: 'step', default_color: '#FF8C00', icon_key: 'heater', position: 6 },
         { name: 'Curtain',             data_category: 'status', value_type: 'status', default_unit: 'Closed/Open',  default_chart_type: 'step', default_color: '#8B4513', position: 7 },
         { name: 'Window',              data_category: 'status', value_type: 'status', default_unit: 'Closed/Open',  default_chart_type: 'step', default_color: '#39A0CA', position: 8 },
-        { name: 'Light',               data_category: 'status', value_type: 'status', default_unit: 'Off/On',       default_chart_type: 'step', default_color: '#F0E68C', position: 9 },
-        { name: 'Humidifier',          data_category: 'status', value_type: 'status', default_unit: 'Off/On',       default_chart_type: 'step', default_color: '#39AFCA', position: 10 },
+        { name: 'Light',               data_category: 'status', value_type: 'status', default_unit: 'Off/On',       default_chart_type: 'step', default_color: '#F0E68C', icon_key: 'light', position: 9 },
+        { name: 'Humidifier',          data_category: 'status', value_type: 'status', default_unit: 'Off/On',       default_chart_type: 'step', default_color: '#39AFCA', icon_key: 'humidifier', position: 10 },
         { name: 'Door',                data_category: 'status', value_type: 'status', default_unit: 'Closed/Open',  default_chart_type: 'step', default_color: '#0D6EFD', position: 11 },
         { name: 'Compressor',          data_category: 'status', value_type: 'status', default_unit: 'Off/On',       default_chart_type: 'step', default_color: '#6C757D', position: 12 },
         { name: 'Motor',               data_category: 'status', value_type: 'status', default_unit: 'Off/On',       default_chart_type: 'step', default_color: '#495057', position: 13 },

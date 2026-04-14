@@ -8,6 +8,7 @@ class MeasurementSubtypeSerializer < Blueprinter::Base
     :default_unit,
     :default_chart_type,
     :default_color,
+    :icon_key,
     :position
 
   association :measurement_type, blueprint: MeasurementTypeSerializer
