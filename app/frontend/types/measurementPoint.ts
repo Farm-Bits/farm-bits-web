@@ -35,6 +35,13 @@ export function isValueType(valueType: unknown): valueType is ValueType {
   return VALUE_TYPES.includes(valueType as ValueType);
 }
 
+type ControlGroup = {
+  id: number;
+  name: string;
+  icon_key: string | null;
+  position: number;
+};
+
 export type MeasurementSubtype = {
   id: number;
   name: string;
@@ -47,6 +54,7 @@ export type MeasurementSubtype = {
   icon_key: string | null;
   position: number;
   measurement_type: MeasurementType;
+  control_group: ControlGroup | null;
 };
 
 export type AlarmState = 'normal' | 'warning_low' | 'warning_high' | 'alarm_low' | 'alarm_high';

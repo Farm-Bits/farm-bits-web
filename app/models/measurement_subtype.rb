@@ -2,6 +2,7 @@ class MeasurementSubtype < ApplicationRecord
   audited
 
   belongs_to :measurement_type
+  belongs_to :control_group, optional: true
 
   has_many :register_templates, dependent: :restrict_with_error
 

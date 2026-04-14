@@ -12,4 +12,5 @@ class MeasurementSubtypeSerializer < Blueprinter::Base
     :position
 
   association :measurement_type, blueprint: MeasurementTypeSerializer
+  association :control_group, blueprint: ControlGroupSerializer
 end

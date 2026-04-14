@@ -27,47 +27,94 @@
       </p>
     </div>
 
-    <!-- Grouped measurement points -->
+    <!-- Segment Accordion -->
     <template v-else>
       <CCard
-        v-for="group in groups"
-        :key="group.key"
+        v-for="segment in segmentGroups"
+        :key="segment.key"
         class="mb-4 shadow-sm">
         <CCardHeader
-          class="group-header"
+          class="segment-header"
           role="button"
-          @click="handleGroupClick(group)">
+          @click="toggleSegment(segment.key)">
           <div class="d-flex align-items-center justify-content-between">
             <h6 class="mb-0">
-              {{ group.label }}
-              <CBadge color="light" class="ms-2 text-body-secondary">
-                {{ group.measurementPoints.length }}
-              </CBadge>
+              {{ segment.label }}
             </h6>
-            <small class="text-body-secondary">Click to view analytics</small>
+            <CIcon
+              v-if="openSegments[segment.key]" name="cilChevronTop" size="sm" />
+            <CIcon v-else name="cilChevronBottom" size="sm" />
           </div>
         </CCardHeader>
-        <CCardBody>
-          <div class="row g-3">
-            <div
-              v-for="mp in group.measurementPoints"
-              :key="mp.id"
-              class="col-sm-6 col-md-4 col-lg-3">
-              <OutputControlCard
-                v-if="hasOperationMode(mp)"
-                :ref="(el: any) => setOutputCardRef(mp.id, el)"
-                :measurement-point="mp"
-                :om-statuses="omStatusesForInterface(mp)"
-                @analytics="handleMpClick"
-                @configure="handleConfigureClick"
-                @write="handleQuickWrite"
-                @bulk-write="handleBulkWrite" />
-
-              <MeasurementPointCard
-                v-else
-                :measurement-point="mp"
-                @click="handleMpClick" />
+        <CCardBody v-show="openSegments[segment.key]">
+          <!-- Sensors Section -->
+          <div v-if="segment.sensorMps.length > 0" class="mb-4">
+            <div class="d-flex align-items-center mb-3">
+              <h6 class="mb-0 text-body-secondary text-uppercase small fw-semibold">
+                Sensors
+              </h6>
+              <button
+                class="btn btn-link btn-sm ms-auto p-0 text-body-secondary"
+                @click="handleSensorGroupClick(segment)">
+                <small>View analytics</small>
+              </button>
             </div>
+            <div class="row g-3">
+              <div
+                v-for="mp in segment.sensorMps"
+                :key="mp.id"
+                class="col-sm-6 col-md-4 col-lg-3">
+                <MeasurementPointCard
+                  :measurement-point="mp"
+                  @click="handleMpClick" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Control Section -->
+          <div v-if="segment.controlGroups.length > 0">
+            <div class="d-flex align-items-center mb-3">
+              <h6 class="mb-0 text-body-secondary text-uppercase small fw-semibold">
+                Control
+              </h6>
+            </div>
+
+            <!-- Control sub-groups (Climate Control, Irrigation, etc.) -->
+            <div
+              v-for="controlGroup in segment.controlGroups"
+              :key="controlGroup.key"
+              class="mb-3">
+              <div class="d-flex align-items-center mb-2">
+                <img
+                  v-if="controlGroup.icon"
+                  :src="controlGroup.icon"
+                  :alt="controlGroup.label"
+                  class="control-group-icon me-2" />
+                <span class="fw-medium small">{{ controlGroup.label }}</span>
+              </div>
+              <div class="row g-3">
+                <div
+                  v-for="mp in controlGroup.measurementPoints"
+                  :key="mp.id"
+                  class="col-sm-6 col-md-4 col-lg-3">
+                  <OutputControlCard
+                    :ref="(el: any) => setOutputCardRef(mp.id, el)"
+                    :measurement-point="mp"
+                    :om-statuses="omStatusesForInterface(mp)"
+                    @analytics="handleMpClick"
+                    @configure="handleConfigureClick"
+                    @write="handleQuickWrite"
+                    @bulk-write="handleBulkWrite" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fully empty segment -->
+          <div
+            v-if="segment.sensorMps.length === 0 && segment.controlGroups.length === 0"
+            class="text-center py-3 text-body-secondary">
+            <small>No active measurement points in this segment.</small>
           </div>
         </CCardBody>
       </CCard>
@@ -117,7 +164,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, computed, reactive } from 'vue';
+  import { ref, computed, reactive, watch } from 'vue';
   import axios from 'axios';
   import useAuth from '@/composables/useAuth';
   import { useApiCall } from '@/composables/useApi';
@@ -133,11 +180,23 @@
   import type { MeasurementPoint, MeasurementSubtype } from '@/types/measurementPoint';
   import type { MeasurementPointConfigResponse } from '@/types/plc';
   import type { LiveMeasurementPoint, OperationModeConfigResponse } from '@/types/analytics';
+  import { iconMap } from '@/assets/icons/controlGroup';
 
-  type MeasurementPointGroup = {
+  type ControlGroupView = {
     key: string;
     label: string;
+    icon: string | null;
+    position: number;
     measurementPoints: LiveMeasurementPoint[];
+  };
+
+  type SegmentGroup = {
+    key: string;
+    label: string;
+    allMps: LiveMeasurementPoint[];
+    sensorMps: LiveMeasurementPoint[];
+    controlGroups: ControlGroupView[];
+    controlMpCount: number;
   };
 
   type PollResponse = {
@@ -166,6 +225,7 @@
 
   const { execute } = useApiCall();
 
+  const openSegments = reactive<Record<string, boolean>>({});
   const outputCardRefs = new Map<number, InstanceType<typeof OutputControlCard>>();
 
   function setOutputCardRef(mpId: number, el: InstanceType<typeof OutputControlCard> | null) {
@@ -184,10 +244,6 @@
   const selectedSegmentId = ref<number | null>(null);
 
   // ── OM detection ────────────────────────────────
-  //
-  // A measurement point has operation mode if there are OM status registers
-  // for its interface. Detected by matching interface_communication_type +
-  // interface_io_number. Works for any interface type (DO, AO, etc.).
 
   const omInterfaceIndex = computed(() => {
     const index = new Set<string>();
@@ -217,7 +273,7 @@
     );
   }
 
-  // ── Filtering & Grouping ────────────────────────
+  // ── Filtering ───────────────────────────────────
 
   const filteredMeasurementPoints = computed(() => {
     if (selectedSegmentId.value === null)
@@ -228,29 +284,77 @@
     );
   });
 
-  const groups = computed<MeasurementPointGroup[]>(() => {
-    const mps = filteredMeasurementPoints.value;
+  function toggleSegment(key: string) {
+    openSegments[key] = !openSegments[key];
+  }
 
+  // ── Segment → Sensors / Control grouping ────────
+
+  function buildControlGroups(controlMps: LiveMeasurementPoint[]): ControlGroupView[] {
+    const map = new Map<string, {
+      mps: LiveMeasurementPoint[];
+      icon: string | null;
+      position: number;
+    }>();
+
+    for (const mp of controlMps) {
+      const cg = mp.measurement_subtype?.control_group;
+      const key = cg?.name ?? 'Other';
+
+      if (!map.has(key)) {
+        map.set(key, {
+          mps: [],
+          icon: cg?.icon_key ? (iconMap[cg.icon_key] ?? null) : null,
+          position: cg?.position ?? Infinity,
+        });
+      }
+      map.get(key)!.mps.push(mp);
+    }
+
+    return Array.from(map.entries())
+      .map(([key, { mps, icon, position }]) => ({
+        key,
+        label: key,
+        icon,
+        position,
+        measurementPoints: mps,
+      }))
+      .sort((a, b) => a.position - b.position);
+  }
+
+  const segmentGroups = computed<SegmentGroup[]>(() => {
+    const mps = filteredMeasurementPoints.value;
     const map = new Map<string, LiveMeasurementPoint[]>();
 
     for (const mp of mps) {
       const key = mp.segment_id ? String(mp.segment_id) : 'unassigned';
       if (!map.has(key))
         map.set(key, []);
-
       map.get(key)!.push(mp);
     }
 
-    return Array.from(map.entries()).map(([key, groupMps]) => {
-      const segment = segments.find((s) => String(s.id) === key);
-      return {
-        key,
-        label: segment?.name ?? 'Unassigned',
-        // position: segment?.position ?? Infinity,
-        measurementPoints: groupMps,
-      };
-    });
-    // .sort((a, b) => a.position - b.position);
+    return Array.from(map.entries())
+      .map(([key, groupMps]) => {
+        const segment = segments.find((s) => String(s.id) === key);
+        const sensorMps = groupMps.filter((mp) => !hasOperationMode(mp));
+        const controlMps = groupMps.filter((mp) => hasOperationMode(mp));
+
+        return {
+          key,
+          label: segment?.name ?? 'Unassigned',
+          allMps: groupMps,
+          sensorMps,
+          controlGroups: buildControlGroups(controlMps),
+          controlMpCount: controlMps.length,
+        };
+      })
+      // .sort((a, b) => {
+      //   const segA = segments.find((s) => String(s.id) === a.key);
+      //   const segB = segments.find((s) => String(s.id) === b.key);
+      //   const posA = segA?.position ?? Infinity;
+      //   const posB = segB?.position ?? Infinity;
+      //   return posA - posB;
+      // });
   });
 
   // ── Polling ─────────────────────────────────────
@@ -287,7 +391,7 @@
 
   polling.start();
 
-  // ── Delayed poll (for status registers to catch up after PLC processes a command) ──
+  // ── Delayed poll ────────────────────────────────
 
   let delayedPollTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -301,10 +405,9 @@
     }, delayMs);
   }
 
-  // ── Apply write results to local state ──
+  // ── Apply write results to local state ──────────
 
   function applyWriteResult(mp: MeasurementPoint) {
-    // Patch main measurement points list
     const existing = measurementPoints.value.find((m) => m.id === mp.id);
     if (existing) {
       existing.last_value = mp.last_value;
@@ -313,7 +416,6 @@
         existing.alarm_state = mp.alarm_state;
     }
 
-    // Patch OM statuses list
     const omExisting = omStatuses.value.find((m) => m.id === mp.id);
     if (omExisting) {
       omExisting.last_value = mp.last_value;
@@ -338,12 +440,12 @@
     analyticsModalVisible.value = true;
   }
 
-  function handleGroupClick(group: MeasurementPointGroup) {
-    analyticsModalMeasurementPoints.value = group.measurementPoints;
+  function handleSensorGroupClick(segment: SegmentGroup) {
+    analyticsModalMeasurementPoints.value = segment.sensorMps;
     analyticsModalVisible.value = true;
   }
 
-  // ── Quick Write (immediate PLC command) ─────────
+  // ── Quick Write ─────────────────────────────────
 
   async function handleQuickWrite(
     measurementPointId: MeasurementPoint['id'],
@@ -356,7 +458,6 @@
 
     if (success) {
       applyWriteResult(data);
-      // Find which card this MP belongs to and patch its local mappings
       for (const [cardMpId, card] of outputCardRefs) {
         card.updateMappings([data]);
       }
@@ -364,7 +465,7 @@
     }
   }
 
-  // ── Bulk Write (params + command in sequence) ──
+  // ── Bulk Write ──────────────────────────────────
 
   async function handleBulkWrite(
     anchorMpId: MeasurementPoint['id'],
@@ -386,25 +487,18 @@
     );
 
     if (success) {
-      // Apply the anchor MP
       applyWriteResult(data.measurement_point);
 
-      // Apply all sibling updates (includes the config registers that were written)
       for (const sibling of data.sibling_measurement_points) {
         applyWriteResult(sibling);
       }
 
-      // Patch the OutputControlCard's local mappings
       applyWriteResultToCard(anchorMpId, data.sibling_measurement_points);
-
       scheduleDelayedPoll();
     }
   }
 
   // ── Operation Mode Configure Modal ──────────────
-  //
-  // Uses the new operation_mode_config endpoint — lightweight,
-  // returns only OM registers for the specific interface.
 
   const omModalVisible = ref(false);
   const omModalLoading = ref(false);
@@ -462,7 +556,6 @@
 
     if (success) {
       applyWriteResult(data);
-      // Update the OM modal's config values with the write result
       omConfigValues[data.id] = data.last_value;
       scheduleDelayedPoll();
     }
@@ -474,14 +567,12 @@
 
     omSaving.value = true;
 
-    // Anchor is the data-category MP that opened the modal
     const anchorMpId = omModalMp.value.id;
     const updatePath = ROUTES.measurement_points_update.path.replace(':id', String(anchorMpId));
     const configurationUpdates = Array.from(omEditedIds.value).map(mpId => ({
       measurement_point_id: mpId,
       value: omConfigValues[mpId],
     }));
-
 
     const { success, data } = await execute<MeasurementPointConfigResponse>(
       () => axios.patch(updatePath, { configuration_updates: configurationUpdates })
@@ -490,13 +581,11 @@
     omSaving.value = false;
 
     if (success) {
-      // Apply anchor + all sibling updates to local state
       applyWriteResult(data.measurement_point);
       for (const sibling of data.sibling_measurement_points) {
         applyWriteResult(sibling);
       }
 
-      // Patch the OutputControlCard's local OM mappings
       applyWriteResultToCard(anchorMpId, data.sibling_measurement_points);
 
       omEditedIds.value = new Set();
@@ -510,15 +599,24 @@
     omModalData.value = null;
     omModalMp.value = null;
   }
+
+  watch(segmentGroups, (groups) => {
+    for (const g of groups) {
+      if (!(g.key in openSegments)) {
+        openSegments[g.key] = true;
+      }
+    }
+  }, { immediate: true });
 </script>
 
 <style scoped>
-  .group-header {
-    cursor: pointer;
-    transition: background-color 0.15s;
+  .collapse {
+    visibility: visible;
   }
 
-  .group-header:hover {
-    background-color: #f9fafb;
+  .control-group-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
   }
 </style>
