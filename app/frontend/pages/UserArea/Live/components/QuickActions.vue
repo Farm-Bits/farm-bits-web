@@ -22,7 +22,7 @@
   </div>
 
   <!-- Feature toggles -->
-  <div
+  <!-- <div
     v-if="enabledFeatureToggles.length > 0"
     class="quick-actions__toggles d-flex flex-wrap align-items-center gap-2 mb-2">
     <span class="small text-body-secondary">Features:</span>
@@ -31,16 +31,14 @@
       :key="toggle.groupName"
       :color="toggle.isEnabled ? 'success' : 'secondary'"
       class="quick-actions__toggle-badge"
-      role="button"
-      :title="toggle.isEnabled ? `Disable ${toggle.groupLabel}` : `Enable ${toggle.groupLabel}`"
-      @click="handleToggleClick(toggle)">
+      :title="toggle.isEnabled ? `Disable ${toggle.groupLabel}` : `Enable ${toggle.groupLabel}`">
       {{ toggle.groupLabel }}
       <span class="ms-1">{{ toggle.isEnabled ? '✓' : '○' }}</span>
     </CBadge>
-  </div>
+  </div> -->
 
   <!-- Emergency stop -->
-  <div
+  <!-- <div
     v-if="emergencyStop"
     class="quick-actions__estop mt-1">
     <CButton
@@ -65,7 +63,7 @@
       <CSpinner v-if="sending === 'clear_estop'" size="sm" class="me-1" />
       Clear Emergency Stop
     </CButton>
-  </div>
+  </div> -->
 
   <!-- Params modal (shared by commands and toggles) -->
   <CommandParamsModal
@@ -218,25 +216,6 @@
     clearSending(key);
   }
 
-  // ── Feature toggle handling ──
-
-  function handleToggleClick(toggle: FeatureToggle) {
-    if (toggle.isEnabled) {
-      emit('write', toggle.enabledMapping.measurement_point.id, 0);
-      return;
-    }
-
-    if (toggle.paramMappings.length > 0) {
-      openParamsModal(`Enable ${toggle.groupLabel}`, toggle.paramMappings, {
-        measurementPointId: toggle.enabledMapping.measurement_point.id,
-        value: 1,
-      });
-      return;
-    }
-
-    emit('write', toggle.enabledMapping.measurement_point.id, 1);
-  }
-
   // ── Emergency stop ──
 
   function handleEmergencyStop(activate: boolean) {
@@ -267,7 +246,6 @@
   }
 
   .quick-actions__toggle-badge {
-    cursor: pointer;
     font-size: 0.65rem;
     font-weight: 600;
     transition: opacity 0.15s;

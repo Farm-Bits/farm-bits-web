@@ -6,7 +6,6 @@
       'mp-card--warning': isWarning,
       'mp-card--estop': hasActiveEstop,
     }"
-    role="button"
     @click="emit('analytics', measurementPoint)">
     <!-- Header: status dot + name + alarm badge -->
     <div class="d-flex align-items-start justify-content-between">
@@ -36,17 +35,17 @@
     </div>
 
     <!-- Meta: PLC name + interface + last seen -->
-    <div class="mp-card__meta d-flex align-items-center gap-2 mb-2">
+    <!-- <div class="mp-card__meta d-flex align-items-center gap-2 mb-2">
       <span class="small text-body-secondary">{{ measurementPoint.plc_name }}</span>
       <span class="small text-body-secondary">·</span>
       <span class="small text-body-secondary">{{ measurementPoint.register_template.name }}</span>
       <span v-if="measurementPoint.last_value_at" class="small text-body-secondary ms-auto">
         <RelativeTime :datetime="measurementPoint.last_value_at" />
       </span>
-    </div>
+    </div> -->
 
     <!-- Value display -->
-    <div class="mp-card__value">
+    <div class="flex items-center mb-2 gap-2">
       <ValueDisplay
         :value="measurementPoint.last_value"
         :valueFormat="measurementPoint.register_template.value_format"
@@ -55,32 +54,17 @@
         :alarmState="measurementPoint.alarm_state"
         placeholder="No data"
         size="default" />
+      <p class="text-body-secondary small">({{ statusLabels }})</p>
     </div>
 
     <!-- OM Status: enum statuses from read-only status registers -->
-    <div
+    <!-- <div
       v-if="statusBadges.length > 0"
       class="mp-card__om-status d-flex flex-wrap align-items-center gap-2 mb-2">
       <template v-for="badge in statusBadges" :key="badge.label">
         <CBadge :color="badge.color" size="sm">{{ badge.label }}</CBadge>
       </template>
-    </div>
-
-    <!-- Enabled features (from status registers — available before config loads) -->
-    <!-- <StatusDisplay :mappings="[]" /> -->
-    <div
-      v-if="enabledFeatureBadges.length > 0 && !omConfigLoaded"
-      class="mp-card__features d-flex flex-wrap align-items-center gap-1 mb-2">
-      <span class="small text-body-secondary">Enabled:</span>
-      <CBadge
-        v-for="badge in enabledFeatureBadges"
-        :key="badge.label"
-        :color="badge.color"
-        size="sm"
-        class="feature-badge">
-        {{ badge.label }}
-      </CBadge>
-    </div>
+    </div> -->
 
     <!-- Quick actions (loaded from OM config endpoint) -->
     <div v-if="omConfigLoaded" class="mp-card__actions">
@@ -177,9 +161,6 @@
   defineExpose({ updateMappings });
 
   // ── Status display (from omStatuses prop — available immediately) ──
-  //
-  // Render ALL read-only enum/boolean statuses as badges.
-  // No group_name matching — purely structural detection.
 
   const statusBadges = computed<{ label: string; color: string }[]>(() => {
     const badges: { label: string; color: string }[] = [];
@@ -202,42 +183,8 @@
     return badges;
   });
 
-  // Enabled features from status registers with boolean 'enabled' group_role
-  const enabledFeatureBadges = computed<{ label: string; color: string }[]>(() => {
-    const badges: { label: string; color: string }[] = [];
-
-    // Group status registers by group_name, look for 'enabled' roles
-    const byGroup = new Map<string, LiveMeasurementPoint[]>();
-    for (const s of omStatuses) {
-      if (!s.register_template.group_name)
-        continue;
-
-      if (!byGroup.has(s.register_template.group_name))
-        byGroup.set(s.register_template.group_name, []);
-
-      byGroup.get(s.register_template.group_name)!.push(s);
-    }
-
-    for (const [groupName, groupStatuses] of byGroup) {
-      const enabledStatus = groupStatuses.find(s =>
-        s.register_template.group_role === 'enabled' && String(s.last_value) === '1'
-      );
-
-      if (!enabledStatus)
-        continue;
-
-      // Use omGroupLabels if available (from config), otherwise derive
-      const label = omGroupLabels.value[groupName]
-        ?? groupName
-          .replace(/^om_/, '')
-          .replace(/_\d+$/, '')
-          .replace(/_/g, ' ')
-          .replace(/\b\w/g, c => c.toUpperCase());
-
-      badges.push({ label, color: 'success' });
-    }
-
-    return badges;
+  const statusLabels = computed(() => {
+    return statusBadges.value.map((s) => s.label).join(', ');
   });
 
   // Emergency stop detection from status registers
@@ -362,10 +309,6 @@
     font-weight: 600;
     font-size: 0.875rem;
     color: #374151;
-  }
-
-  .mp-card__value {
-    margin: 0.25rem 0;
   }
 
   .feature-badge {

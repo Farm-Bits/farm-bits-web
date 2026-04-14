@@ -17,14 +17,14 @@
       </CBadge>
     </div>
 
-    <div class="mp-card__meta d-flex align-items-center gap-2">
+    <!-- <div class="mp-card__meta d-flex align-items-center gap-2">
       <span class="small text-body-secondary">{{ measurementPoint.plc_name }}</span>
       <span class="small text-body-secondary">·</span>
       <span class="small text-body-secondary">{{ measurementPoint.register_template.name }}</span>
       <span v-if="measurementPoint.last_value_at" class="small text-body-secondary ms-auto">
         <RelativeTime :datetime="measurementPoint.last_value_at" />
       </span>
-    </div>
+    </div> -->
 
     <div class="mp-card__value">
       <ValueDisplay
