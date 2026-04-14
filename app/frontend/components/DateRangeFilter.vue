@@ -27,7 +27,7 @@
           @update:model-value="handleEndChange" />
       </template>
       <template v-else>
-        <span class="small text-body-secondary">
+        <span class="small text-body-secondary text-nowrap">
           {{ formatDateRange(dateRange) }}
         </span>
       </template>

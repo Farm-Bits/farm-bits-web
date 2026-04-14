@@ -1,15 +1,14 @@
 <template>
   <div v-if="weatherStationApiMetrics.length > 0" class="weather-overlay-toggle">
-    <CFormLabel class="mb-1 small text-body-secondary d-flex align-items-center gap-1">
-      <span>🌤️</span>
-      <span>Weather Overlay</span>
+    <CFormLabel class="mb-1 small text-body-secondary">
+      🌤️ Weather Overlay
     </CFormLabel>
-    <div class="d-flex flex-wrap gap-2">
+    <div class="d-flex flex-wrap gap-3 align-items-center filter-input-height">
       <CFormCheck
         v-for="metric in weatherStationApiMetrics"
+        class="mb-0 small"
         :key="metric.id"
         :id="`weather-metric-${metric.id}`"
-        type="checkbox"
         :label="metric.label"
         :checked="modelValue.includes(metric.id)"
         @change="toggleMetric(metric.id)" />
@@ -33,10 +32,8 @@
     const current = [...modelValue];
     const idx = current.indexOf(metricId);
 
-    if (idx >= 0)
-      current.splice(idx, 1);
-    else
-      current.push(metricId);
+    if (idx >= 0) current.splice(idx, 1);
+    else current.push(metricId);
 
     emit('update:modelValue', current);
   }
@@ -45,5 +42,19 @@
 <style scoped>
   .weather-overlay-toggle {
     min-width: 180px;
+  }
+
+  /* This matches the standard height of CoreUI 'sm' inputs
+     to ensure the checkboxes are vertically centered with the selects */
+  .filter-input-height {
+    min-height: 31px; 
+    display: flex;
+    align-items: center;
+  }
+
+  /* Optional: make the checkbox labels a bit smaller to match the 'sm' theme */
+  :deep(.form-check-label) {
+    font-size: 0.875rem;
+    line-height: 1;
   }
 </style>

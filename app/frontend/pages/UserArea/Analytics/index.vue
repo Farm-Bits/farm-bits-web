@@ -1,46 +1,35 @@
 <template>
-  <CContainer fluid class="px-4 py-4">
+  <CContainer fluid class="px-4 py-2">
     <!-- Header -->
-    <div class="mb-4">
-      <h2 class="mb-1">Analytics</h2>
-      <p class="text-body-secondary mb-0">
-        Historical data visualization and summaries for {{ currentSite?.name }}
-      </p>
+    <div class="d-flex align-items-center justify-content-between mb-2">
+      <h2>Analytics</h2>
     </div>
 
-    <!-- Filter bar -->
-    <CCard class="mb-4 shadow-sm">
-      <CCardBody class="py-3">
-        <div class="row g-3 align-items-end">
-          <div class="col-auto">
-            <SegmentFilter
-              v-model="selectedSegmentId"
-              :segments="segments" />
-          </div>
-          <div class="col-auto">
-            <DateRangeFilter v-model="dateRange" />
-          </div>
-          <div v-if="isSingleDay" class="col-auto">
-            <CFormLabel class="mb-1 small text-body-secondary">Aggregation</CFormLabel>
-            <CFormSelect
-              v-model="aggregationLevel"
-              size="sm"
-              style="max-width: 120px;">
-              <option value="hourly">Hourly</option>
-              <option value="raw">Raw</option>
-            </CFormSelect>
-          </div>
-          <div class="col-auto">
-            <GroupByToggle v-model="groupBy" />
-          </div>
-          <div v-if="hasWeatherStationApiMetrics" class="col-auto">
-            <WeatherOverlayToggle
-              v-model="selectedWeatherStationApiMetricIds"
-              :weatherStationApiMetrics="weatherStationApiMetrics" />
-          </div>
-        </div>
-      </CCardBody>
-    </CCard>
+    <div class="row g-3 align-items-end mb-4">
+      <div class="col-auto">
+        <SegmentFilter
+          v-model="selectedSegmentId"
+          :segments="segments" />
+      </div>
+      <div class="col-auto">
+        <DateRangeFilter v-model="dateRange" />
+      </div>
+      <div v-if="isSingleDay" class="col-auto">
+        <CFormLabel class="mb-1 small text-body-secondary">Aggregation</CFormLabel>
+        <CFormSelect
+          v-model="aggregationLevel"
+          size="sm"
+          style="max-width: 120px;">
+          <option value="hourly">Hourly</option>
+          <option value="raw">Raw</option>
+        </CFormSelect>
+      </div>
+      <div v-if="hasWeatherStationApiMetrics" class="col-auto">
+        <WeatherOverlayToggle
+          v-model="selectedWeatherStationApiMetricIds"
+          :weatherStationApiMetrics="weatherStationApiMetrics" />
+      </div>
+    </div>
 
     <!-- Loading -->
     <div v-if="analytics.loading.value || weatherAnalytics.loading.value" class="text-center py-5">
@@ -103,7 +92,6 @@
   import { useWeatherAnalyticsData } from '@/composables/useWeatherAnalyticsData';
   import SegmentFilter from '@/components/SegmentFilter.vue';
   import DateRangeFilter, { type DateRange } from '@/components/DateRangeFilter.vue';
-  import GroupByToggle, { type GroupBy } from '@/components/GroupByToggle.vue';
   import WeatherOverlayToggle from './components/WeatherOverlayToggle.vue';
   import ComboTimeSeriesChart, { type ChartEntry, type SerieDefinition } from '@/components/ComboTimeSeriesChart.vue';
   import SummaryTable, { type RowDefinition } from '@/components/SummaryTable.vue';
@@ -127,7 +115,6 @@
   const today = new Date().toISOString().slice(0, 10);
   const dateRange = ref<DateRange>({ start: today, end: today });
   const aggregationLevel = ref<AggregationLevel>('hourly');
-  const groupBy = ref<GroupBy>('measurement_subtype');
   const selectedWeatherStationApiMetricIds = ref<WeatherStationApiMetric['id'][]>([]);
 
   const isSingleDay = computed(() => dateRange.value.start === dateRange.value.end);
@@ -157,17 +144,21 @@
   const groups = computed<MeasurementPointGroup[]>(() => {
     const mps = filteredMeasurementPoints.value;
 
-    let groupsResult: MeasurementPointGroup[] = [];
-    switch (groupBy.value) {
-      case 'measurement_subtype':
-        groupsResult = groupByMeasurementTypeFn(mps);
-        break;
-      case 'segment':
-        groupsResult = groupBySegmentFn(mps);
-        break;
-      default:
-        break;
+    const map = new Map<string, LiveMeasurementPoint[]>();
+    for (const mp of mps) {
+      const key = mp.segment_id ? String(mp.segment_id) : 'unassigned';
+      if (!map.has(key))
+        map.set(key, []);
+      map.get(key)!.push(mp);
     }
+    const groupsResult = Array.from(map.entries()).map(([key, groupMps]) => {
+      const segment = segments.find((s) => String(s.id) === key);
+      return {
+        key,
+        label: segment?.name ?? 'Unassigned',
+        serieDefinitions: groupMps.map(mapMeasurementPointToSerieDefinition)
+      };
+    });
 
     const weatherOverlaySerieDefinitions: SerieDefinition[] = weatherStationApiMetrics
       .filter((metric) => selectedWeatherStationApiMetricIds.value.includes(metric.id))
@@ -187,46 +178,6 @@
 
     return groupsResult;
   });
-
-  function groupBySegmentFn(mps: LiveMeasurementPoint[]): MeasurementPointGroup[] {
-    const map = new Map<string, LiveMeasurementPoint[]>();
-    for (const mp of mps) {
-      const key = mp.segment_id ? String(mp.segment_id) : 'unassigned';
-      if (!map.has(key))
-        map.set(key, []);
-      map.get(key)!.push(mp);
-    }
-    return Array.from(map.entries()).map(([key, groupMps]) => {
-      const segment = segments.find((s) => String(s.id) === key);
-      return {
-        key,
-        label: segment?.name ?? 'Unassigned',
-        serieDefinitions: groupMps.map(mapMeasurementPointToSerieDefinition)
-      };
-    });
-  }
-
-  function groupByMeasurementTypeFn(mps: LiveMeasurementPoint[]): MeasurementPointGroup[] {
-    const map = new Map<string, { mps: LiveMeasurementPoint[]; position: number }>();
-    for (const mp of mps) {
-      const type = mp.measurement_subtype?.measurement_type;
-      const typeName = type?.name ?? 'Unknown';
-      if (!map.has(typeName))
-        map.set(typeName, { mps: [], position: type?.position ?? Infinity });
-      map.get(typeName)!.mps.push(mp);
-    }
-    return Array.from(map.entries())
-      .sort(([, a], [, b]) => a.position - b.position)
-      .map(([key, { mps: groupMps }]) => ({
-        key,
-        label: key,
-        serieDefinitions: groupMps.sort((a, b) => {
-          const posA = a.measurement_subtype?.position ?? Infinity;
-          const posB = b.measurement_subtype?.position ?? Infinity;
-          return posA - posB;
-        }).map(mapMeasurementPointToSerieDefinition),
-      }));
-  }
 
   // Build chart entries for the combo chart — include weather overlay series
   function chartEntries(serieDefinitions: SerieDefinition[]): ChartEntry[] {

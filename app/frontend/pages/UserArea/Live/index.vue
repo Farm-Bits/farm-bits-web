@@ -1,13 +1,8 @@
 <template>
-  <CContainer fluid class="px-4 py-4">
+  <CContainer fluid class="px-4 py-2">
     <!-- Header -->
-    <div class="d-flex align-items-center justify-content-between mb-4">
-      <div>
-        <h2 class="mb-1">Live Data</h2>
-        <p class="text-body-secondary mb-0">
-          Real-time overview of active measurement points for {{ currentSite?.name }}
-        </p>
-      </div>
+    <div class="d-flex align-items-center justify-content-between mb-2">
+      <h2>Live Data</h2>
       <div class="d-flex align-items-center gap-2">
         <span v-if="polling.lastPollAt.value" class="small text-body-secondary">
           Updated <RelativeTime :datetime="polling.lastPollAt.value.toISOString()" />
@@ -15,21 +10,13 @@
       </div>
     </div>
 
-    <!-- Filter bar -->
-    <CCard class="mb-4 shadow-sm">
-      <CCardBody class="py-3">
-        <div class="row g-3 align-items-end">
-          <div class="col-auto">
-            <SegmentFilter
-              v-model="selectedSegmentId"
-              :segments="segments" />
-          </div>
-          <div class="col-auto">
-            <GroupByToggle v-model="groupBy" />
-          </div>
-        </div>
-      </CCardBody>
-    </CCard>
+    <div class="row g-3 align-items-end mb-4">
+      <div class="col-auto">
+        <SegmentFilter
+          v-model="selectedSegmentId"
+          :segments="segments" />
+      </div>
+    </div>
 
     <!-- Empty state -->
     <div v-if="filteredMeasurementPoints.length === 0" class="text-center py-5">
@@ -137,7 +124,6 @@
   import { useLivePolling } from '@/composables/useLivePolling';
   import type { ConfigValues } from '@/composables/useConfigurationValues';
   import SegmentFilter from '@/components/SegmentFilter.vue';
-  import GroupByToggle, { type GroupBy } from '@/components/GroupByToggle.vue';
   import MeasurementPointAnalyticsModal from '@/components/MeasurementPointAnalyticsModal.vue';
   import RelativeTime from '@/components/RelativeTime.vue';
   import OperationModePanel from '@/components/OperationMode/OperationModePanel.vue';
@@ -183,11 +169,10 @@
   const outputCardRefs = new Map<number, InstanceType<typeof OutputControlCard>>();
 
   function setOutputCardRef(mpId: number, el: InstanceType<typeof OutputControlCard> | null) {
-    if (el) {
+    if (el)
       outputCardRefs.set(mpId, el);
-    } else {
+    else
       outputCardRefs.delete(mpId);
-    }
   }
 
   // ── Reactive data ───────────────────────────────
@@ -197,7 +182,6 @@
 
   // Filters
   const selectedSegmentId = ref<number | null>(null);
-  const groupBy = ref<GroupBy>('measurement_subtype');
 
   // ── OM detection ────────────────────────────────
   //
@@ -247,13 +231,6 @@
   const groups = computed<MeasurementPointGroup[]>(() => {
     const mps = filteredMeasurementPoints.value;
 
-    if (groupBy.value === 'segment')
-      return groupBySegment(mps);
-
-    return groupByMeasurementType(mps);
-  });
-
-  function groupBySegment(mps: LiveMeasurementPoint[]) {
     const map = new Map<string, LiveMeasurementPoint[]>();
 
     for (const mp of mps) {
@@ -274,30 +251,7 @@
       };
     });
     // .sort((a, b) => a.position - b.position);
-  }
-
-  function groupByMeasurementType(mps: LiveMeasurementPoint[]): MeasurementPointGroup[] {
-    const map = new Map<string, { mps: LiveMeasurementPoint[]; position: number }>();
-    for (const mp of mps) {
-      const type = mp.measurement_subtype?.measurement_type;
-      const typeName = type?.name ?? 'Unknown';
-      if (!map.has(typeName))
-        map.set(typeName, { mps: [], position: type?.position ?? Infinity });
-
-      map.get(typeName)!.mps.push(mp);
-    }
-    return Array.from(map.entries())
-      .sort(([, a], [, b]) => a.position - b.position)
-      .map(([key, { mps: groupMps }]) => ({
-        key,
-        label: key,
-        measurementPoints: groupMps.sort((a, b) => {
-          const posA = a.measurement_subtype?.position ?? Infinity;
-          const posB = b.measurement_subtype?.position ?? Infinity;
-          return posA - posB;
-        }),
-      }));
-  }
+  });
 
   // ── Polling ─────────────────────────────────────
 
