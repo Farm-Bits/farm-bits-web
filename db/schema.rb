@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_14_181428) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_14_192137) do
   create_table "action_mailbox_inbound_emails", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "status", default: 0, null: false
     t.string "message_id", null: false
@@ -215,6 +215,14 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_14_181428) do
     t.index ["user_id"], name: "index_company_users_on_user_id"
   end
 
+  create_table "control_groups", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "icon_key"
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "gateways", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "label", null: false
     t.string "name", null: false
@@ -370,6 +378,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_14_181428) do
     t.string "name", null: false
     t.string "data_category", null: false
     t.string "value_type", null: false
+    t.bigint "control_group_id"
     t.string "default_unit", null: false
     t.string "default_chart_type", null: false
     t.string "default_color"
@@ -378,6 +387,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_14_181428) do
     t.bigint "measurement_type_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["control_group_id"], name: "index_measurement_subtypes_on_control_group_id"
     t.index ["data_category"], name: "index_measurement_subtypes_on_data_category"
     t.index ["measurement_type_id", "name"], name: "index_measurement_subtypes_on_measurement_type_id_and_name", unique: true
     t.index ["measurement_type_id", "position"], name: "index_measurement_subtypes_on_measurement_type_id_and_position"
@@ -688,6 +698,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_14_181428) do
   add_foreign_key "measurement_points", "register_templates", on_delete: :cascade
   add_foreign_key "measurement_points", "segments", on_delete: :cascade
   add_foreign_key "measurement_points", "sites", on_delete: :cascade
+  add_foreign_key "measurement_subtypes", "control_groups", on_delete: :nullify
   add_foreign_key "measurement_subtypes", "measurement_types", on_delete: :cascade
   add_foreign_key "models", "manufacturers", on_delete: :cascade
   add_foreign_key "plc_versions", "models", on_delete: :cascade
