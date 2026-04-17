@@ -19,9 +19,7 @@ class UserArea::PlcsController < UserArea::ApplicationController
     authorize @plc, :update?
 
     if @plc.update(plc_params)
-      @plc = policy_scope(Plc)
-        .includes(plc_includes_for_serializer)
-        .find(@plc.id)
+      set_plc
       render json: PlcSerializer.render_as_json(@plc, view: :with_interfaces), status: :ok
     else
       render json: { error: @plc.errors.full_messages.to_sentence }, status: :unprocessable_entity
@@ -33,35 +31,24 @@ class UserArea::PlcsController < UserArea::ApplicationController
       params.require(:plc).permit(:name)
     end
 
-    def plc_includes_for_serializer
-      [
-        :model,
-        :measurement_points,
-        {
-          measurement_points: [
-            :measurement_subtype,
-            { register_template: :interface_register_mappings }
-          ]
-        },
-        {
-          plc_version: {
-            interfaces: {
-              interface_register_mappings: :register_template
-            }
-          }
-        }
-      ]
-    end
-
     def set_plc
       @plc = policy_scope(Plc)
-        .includes(plc_includes_for_serializer)
+        .includes(:model, plc_version: { interfaces: { interface_register_mappings: :register_template } })
         .find(params[:id])
+
+      visible_mps = @plc.measurement_points
+        .joins(:register_template)
+        .where(register_templates: { user_visibility: 'visible' })
+        .includes(:measurement_subtype, register_template: :interface_register_mappings)
+        .to_a
+
+      @plc.association(:measurement_points).target = visible_mps
+      @plc.association(:measurement_points).loaded!
     end
 
     def measurement_subtypes
       MeasurementSubtype
-        .includes(:measurement_type)
+        .includes(:measurement_type, :control_group)
         .joins(:measurement_type)
         .order('measurement_types.position, measurement_subtypes.position')
     end

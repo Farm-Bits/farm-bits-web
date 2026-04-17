@@ -5,18 +5,18 @@ class UserArea::LiveController < UserArea::ApplicationController
     measurement_points = AnalyticsQueryService.eligible_scope(current_site)
       .includes(
         :segment,
-        measurement_subtype: [:measurement_type],
+        :plc,
+        measurement_subtype: [:measurement_type, :control_group],
         register_template: { interface_register_mappings: :interface }
       )
-      .eager_load(:plc)
 
-    om_statuses = om_status_scope
+    om_statuses = om_status_scope(includes: [:plc, register_template: { interface_register_mappings: :interface }])
 
     measurement_subtypes = MeasurementSubtype
       .joins(:measurement_type)
       .where(id: measurement_points.select(:measurement_subtype_id).distinct)
       .order('measurement_types.position, measurement_subtypes.position')
-      .includes(:measurement_type)
+      .includes(:measurement_type, :control_group)
 
     render inertia: 'UserArea/Live/index', props: {
       measurement_points: MeasurementPointSerializer.render_as_hash(measurement_points, view: :with_details_live),
@@ -31,7 +31,7 @@ class UserArea::LiveController < UserArea::ApplicationController
     measurement_points = AnalyticsQueryService.eligible_scope(current_site)
       .includes(:register_template, :measurement_subtype)
 
-    om_statuses = om_status_scope
+    om_statuses = om_status_scope(includes: :register_template)
 
     render json: {
       measurement_points: MeasurementPointSerializer.render_as_hash(measurement_points, view: :live_poll),
@@ -51,7 +51,7 @@ class UserArea::LiveController < UserArea::ApplicationController
   end
 
   private
-    def om_status_scope
+    def om_status_scope(includes:)
       MeasurementPoint
         .joins(:register_template, plc: { gateway: { site: :company } })
         .where(active: true)
@@ -60,7 +60,7 @@ class UserArea::LiveController < UserArea::ApplicationController
         .where(gateways: { active: true })
         .where(sites: { id: current_site.id })
         .where(companies: { active: true })
-        .includes(:register_template, register_template: { interface_register_mappings: :interface })
+        .includes(includes)
     end
 
     def weather_data

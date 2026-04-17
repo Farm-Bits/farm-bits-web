@@ -19,9 +19,12 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
     end
 
     if @measurement_point.errors.empty?
+      siblings = @measurement_point.sibling_measurement_points
+        .includes(:register_template, :measurement_subtype)
+
       render json: {
         measurement_point: MeasurementPointSerializer.render_as_json(@measurement_point),
-        sibling_measurement_points: MeasurementPointSerializer.render_as_json(@measurement_point.sibling_measurement_points)
+        sibling_measurement_points: MeasurementPointSerializer.render_as_json(siblings)
       }, status: :ok
     else
       render json: { error: @measurement_point.errors.full_messages.to_sentence }, status: :unprocessable_entity
@@ -251,20 +254,31 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
     end
 
     def build_available_sources(plc)
-      sources = []
+      data_mps = plc.measurement_points
+        .joins(:register_template)
+        .where(active: true)
+        .where.not(measurement_subtype_id: nil)
+        .where(register_templates: { category: MeasurementSubtype::DATA_CATEGORIES })
+        .includes(
+          :measurement_subtype,
+          register_template: { interface_register_mappings: :interface }
+        )
 
+      mps_by_interface_id = Hash.new { |h, k| h[k] = [] }
+      data_mps.each do |mp|
+        mp.register_template.interface_register_mappings.each do |irm|
+          mps_by_interface_id[irm.interface_id] << mp
+        end
+      end
+
+      sources = []
       plc.plc_version.interfaces.each do |iface|
         source_type = PlcBehaviors::Base::SOURCE_TYPE_MAP[iface.communication_type]
         if !source_type
           next
         end
 
-        plc.measurement_points.select do |mp|
-          mp.active &&
-            mp.measurement_subtype_id.present? &&
-            mp.register_template.category.in?(MeasurementSubtype::DATA_CATEGORIES) &&
-            mp.register_template.interface_register_mappings.any? { |irm| irm.interface_id == iface.id }
-        end.each do |mp|
+        mps_by_interface_id[iface.id].each do |mp|
           sources << {
             label: "#{iface.name}: #{mp.name}",
             communication_type: iface.communication_type,

@@ -20,16 +20,12 @@ class PlcSerializer < Blueprinter::Base
       end
 
       non_interface_measurement_points.map do |mp|
-        if mp.register_template.user_visibility == 'hidden'
-          next
-        end
-
         {
           register_template: RegisterTemplateSerializer.render_as_json(mp.register_template),
           measurement_point: MeasurementPointSerializer.render_as_json(mp),
           position: mp.position
         }
-      end.compact.sort_by { |mapping| mapping[:position] }
+      end.sort_by { |mapping| mapping[:position] }
     end
   end
 end
