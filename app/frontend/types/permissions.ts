@@ -1,5 +1,5 @@
 // Auto-generated file - Do not edit manually
-// Generated at: 2026-03-23 14:47:00 UTC
+// Generated at: 2026-04-15 18:42:16 UTC
 
 import type { Method } from '@inertiajs/core';
 
@@ -79,6 +79,7 @@ export type RoutePermissions = {
     destroy: boolean;
   };
   plcs: {
+    refresh_interfaces: boolean;
     show: boolean;
     update: boolean;
   };
@@ -257,6 +258,12 @@ export const ROUTES: Record<string, RouteInfo> = {
     action: 'destroy',
     path: '/user/gateways/:id',
     verb: 'delete'
+  },
+  plcs_refresh_interfaces: {
+    controller: 'plcs',
+    action: 'refresh_interfaces',
+    path: '/user/plcs/:id/refresh_interfaces',
+    verb: 'post'
   },
   plcs_show: {
     controller: 'plcs',

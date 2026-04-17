@@ -25,22 +25,24 @@ class BulkRecordingService
     now = Time.current
 
     ApplicationRecord.transaction do
-      # 1. Bulk insert raw values
-      raw_value_rows = @readings.map do |r|
-        measurement_point = r[:measurement_point]
-        scaled_value = measurement_point.scale_decoded_value(r[:value])
+      active_readings = @readings.select { |r| r[:measurement_point].active }
 
-        {
-          measurement_point_id: measurement_point.id,
-          value: r[:value],
-          scaled_value: scaled_value,
-          sample_time: r[:sample_time],
-          created_at: now
-        }
+      if active_readings.any?
+        raw_value_rows = active_readings.map do |r|
+          measurement_point = r[:measurement_point]
+          scaled_value = measurement_point.scale_decoded_value(r[:value])
+
+          {
+            measurement_point_id: measurement_point.id,
+            value: r[:value],
+            scaled_value: scaled_value,
+            sample_time: r[:sample_time],
+            created_at: now
+          }
+        end
+        RawValue.insert_all(raw_value_rows)
       end
-      RawValue.insert_all(raw_value_rows)
 
-      # 2. Update last_decoded_value for ALL measurement points (including config registers)
       latest_per_mp = @readings
         .group_by { |r| r[:measurement_point].id }
         .transform_values { |rs| rs.max_by { |r| r[:sample_time] } }
@@ -56,15 +58,7 @@ class BulkRecordingService
       end
     end
 
-    # 3. Touch PLC/gateway last_seen_at (outside transaction for performance)
     touch_devices!
-
-    # TODO: Enqueue threshold check job for affected measurement points
-    # data_mp_ids = @readings
-    #   .select { |r| r[:measurement_point].register_template.category.in?(RegisterTemplate::DATA_CATEGORIES) }
-    #   .map { |r| r[:measurement_point].id }
-    #   .uniq
-    # ThresholdCheckJob.perform_async(data_mp_ids) if data_mp_ids.any?
   end
 
   private

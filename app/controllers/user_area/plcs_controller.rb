@@ -1,5 +1,5 @@
 class UserArea::PlcsController < UserArea::ApplicationController
-  before_action :set_plc, only: [:show, :update]
+  before_action :set_plc, only: [:show, :update, :refresh_interfaces]
 
   def show
     authorize @plc, :show?
@@ -24,6 +24,14 @@ class UserArea::PlcsController < UserArea::ApplicationController
     else
       render json: { error: @plc.errors.full_messages.to_sentence }, status: :unprocessable_entity
     end
+  end
+
+  def refresh_interfaces
+    authorize @plc, :update?
+
+    PlcRefreshInterfaceValuesJob.perform_async(@plc.id)
+
+    render json: { status: 'refresh_started' }, status: :accepted
   end
 
   private

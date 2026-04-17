@@ -56,7 +56,11 @@ Rails.application.routes.draw do
 
       resources :sites, only: [:index, :show, :create, :update, :destroy]
       resources :gateways, only: [:index, :update, :destroy]
-      resources :plcs, only: [:show, :update]
+      resources :plcs, only: [:show, :update] do
+        member do
+          post :refresh_interfaces
+        end
+      end
       resources :measurement_points, only: [:update] do
         member do
           post :write

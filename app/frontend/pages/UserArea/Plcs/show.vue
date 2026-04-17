@@ -1,20 +1,31 @@
 <template>
   <CContainer fluid class="px-4 py-4">
     <!-- Header with Breadcrumb -->
-    <CRow class="mb-3">
-      <div>
-        <nav aria-label="breadcrumb">
-          <ol class="breadcrumb mb-2">
-            <li class="breadcrumb-item">
-              <Link :href="ROUTES.gateways_index.path">Gateways & Controllers</Link>
-            </li>
-            <li class="breadcrumb-item active">{{ plc.name }}</li>
-          </ol>
-        </nav>
-        <h1 class="h3 mb-1">Controller Configuration</h1>
-        <p class="text-muted mb-0">
-          Configure interfaces and measurement points for <strong>{{ plc.name }}</strong>
-        </p>
+    <CRow class="mb-3 align-items-center">
+      <div class="col d-flex justify-content-between align-items-start">
+        <div>
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2">
+              <li class="breadcrumb-item">
+                <Link :href="ROUTES.gateways_index.path">Gateways & Controllers</Link>
+              </li>
+              <li class="breadcrumb-item active">{{ plc.name }}</li>
+            </ol>
+          </nav>
+          <h1 class="h3 mb-1">Controller Configuration</h1>
+          <p class="text-muted mb-0">
+            Configure interfaces and measurement points for <strong>{{ plc.name }}</strong>
+          </p>
+        </div>
+        <CButton
+          color="primary"
+          variant="outline"
+          :disabled="refreshing"
+          @click="refreshValues">
+          <CSpinner v-if="refreshing" component="span" size="sm" class="me-1" />
+          <CIcon v-else icon="cilReload" class="me-1" />
+          Refresh Values
+        </CButton>
       </div>
     </CRow>
 
@@ -96,10 +107,13 @@
 
 <script lang="ts" setup>
   import { ref } from 'vue';
+  import { router } from '@inertiajs/vue3';
+  import axios from 'axios';
   import InterfaceList from './components/InterfaceList.vue';
   import ConfigurationPanel from './components/ConfigurationPanel.vue';
   import useAuth from '@/composables/useAuth';
   import usePermissions from '@/composables/usePermissions';
+  import { useApiCall } from '@/composables/useApi';
   import { ROUTES } from '@/types/permissions';
   import type { Segment } from '@/types/location';
   import type { CommunicationType, PlcWithInterfaces } from '@/types/plc';
@@ -113,7 +127,10 @@
   const segments = currentSite.value?.segments || [];
   const { plc, measurementSubtypes } = pageProps.value;
 
+  const { execute } = useApiCall();
+
   const activeTab = ref<CommunicationType>('digital_input');
+  const refreshing = ref(false);
 
   function getInterfacesByType(type: CommunicationType) {
     return plc.interfaces.filter((i) => i.communication_type === type);
@@ -126,6 +143,31 @@
   function formatDate(dateString: string): string {
     const date = new Date(dateString);
     return date.toLocaleString();
+  }
+
+  async function refreshValues() {
+    refreshing.value = true;
+
+    const url = ROUTES.plcs_refresh_interfaces.path.replace(':id', String(plc.id));
+    const { success } = await execute<void>(
+      () => axios.post(url),
+      {
+        showSuccessToast: true,
+        successMessage: 'Refresh started — values will update shortly',
+        showErrorToast: true,
+        errorTitle: 'Could not start refresh'
+      }
+    );
+
+    if (success) {
+      // Give the job a moment to complete, then reload page data so UI shows fresh values.
+      setTimeout(() => {
+        router.reload({ only: ['plc'] });
+        refreshing.value = false;
+      }, 3000);
+    } else {
+      refreshing.value = false;
+    }
   }
 
   async function handleUpdateInterface(

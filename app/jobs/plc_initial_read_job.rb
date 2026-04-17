@@ -4,11 +4,7 @@ class PlcInitialReadJob
 
   def perform(plc_id)
     plc = Plc.includes(:gateway).find_by(id: plc_id)
-    if !plc
-      return
-    end
-
-    if !plc.gateway
+    if !plc || !plc.gateway
       return
     end
 
@@ -21,40 +17,7 @@ class PlcInitialReadJob
       return
     end
 
-    client = VpnManagerClient.new
-    response = client.bulk_read_registers(
-      plc,
-      measurement_points
-    )
-
-    sample_time = Time.current
-    if response[:sample_time].present?
-      sample_time = Time.parse(response[:sample_time])
-    end
-
-    readings = []
-    measurement_points.each do |mp|
-      result = response[:results][mp.id]
-      if !result
-        next
-      end
-
-      if result[:status] == 'ok' && result[:values].present?
-        decoded_value = mp.register_template.decode_data(result[:values])
-
-        readings << {
-          measurement_point: mp,
-          value: decoded_value,
-          sample_time: sample_time
-        }
-      else
-        Rails.logger.warn(
-          "Failed to read MP #{mp.id} (#{mp.name}) on PLC #{plc.id}: #{result[:error]}"
-        )
-      end
-    end
-
-    BulkRecordingService.new(readings).call
+    PlcReadService.new(plc, measurement_points).call
   rescue VpnManagerClient::ConnectionError => e
     Rails.logger.error("PLC #{plc_id} connection error: #{e.message}")
     raise

@@ -45,13 +45,14 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       destroy: true
     },
     plcs: {
+      refresh_interfaces: true,
       show: true,
       update: true
     },
     measurement_points: {
-      update: true,
       write: true,
-      operation_mode_config: true
+      operation_mode_config: true,
+      update: true
     },
     analytics: {
       show: true,
@@ -106,13 +107,14 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       destroy: true
     },
     plcs: {
+      refresh_interfaces: true,
       show: true,
       update: true
     },
     measurement_points: {
-      update: true,
       write: true,
-      operation_mode_config: true
+      operation_mode_config: true,
+      update: true
     },
     analytics: {
       show: true,
@@ -167,13 +169,14 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       destroy: false
     },
     plcs: {
+      refresh_interfaces: true,
       show: true,
       update: false
     },
     measurement_points: {
-      update: false,
       write: true,
-      operation_mode_config: true
+      operation_mode_config: true,
+      update: false
     },
     analytics: {
       show: true,
@@ -228,13 +231,14 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       destroy: false
     },
     plcs: {
+      refresh_interfaces: true,
       show: true,
       update: false
     },
     measurement_points: {
-      update: false,
       write: false,
-      operation_mode_config: true
+      operation_mode_config: true,
+      update: false
     },
     analytics: {
       show: true,

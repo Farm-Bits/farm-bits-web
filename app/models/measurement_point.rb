@@ -26,6 +26,7 @@ class MeasurementPoint < ApplicationRecord
 
   before_save :deactivate_conflicting_measurement_points
   before_save :sync_data_collection_with_active_if_needed
+  after_update :sync_read_after_enable
   after_update :trigger_behavior_sync
 
   class WriteValidationError < StandardError;
@@ -158,6 +159,13 @@ class MeasurementPoint < ApplicationRecord
     end
   end
 
+  def sync_read_from_plc!
+    PlcReadService.new(plc, [self]).call
+  rescue VpnManagerClient::Error, Timeout::Error => e
+    Rails.logger.warn("sync_read_from_plc! failed for MP #{id}: #{e.class} - #{e.message}")
+    false
+  end
+
   private
     def register_template_matches_plc_version
       if !plc.present? || !register_template.present?
@@ -287,6 +295,19 @@ class MeasurementPoint < ApplicationRecord
 
       changed_fields = saved_changes.keys
       behavior.trigger_from_mp_update(changed_fields)
+    end
+
+    def sync_read_after_enable
+      saved = saved_change_to_active
+      if !saved
+        return
+      end
+
+      if saved[0] != false || saved[1] != true
+        return
+      end
+
+      sync_read_from_plc!
     end
 
     def compute_live_display_value

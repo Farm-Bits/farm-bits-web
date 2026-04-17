@@ -23,7 +23,7 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
         .includes(:register_template, :measurement_subtype)
 
       render json: {
-        measurement_point: MeasurementPointSerializer.render_as_json(@measurement_point),
+        measurement_point: MeasurementPointSerializer.render_as_json(@measurement_point.reload),
         sibling_measurement_points: MeasurementPointSerializer.render_as_json(siblings)
       }, status: :ok
     else
