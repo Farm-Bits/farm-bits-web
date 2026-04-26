@@ -93,7 +93,7 @@
                       <div class="text-muted small">{{ plc.label }}</div>
                     </CTableDataCell>
                     <CTableDataCell class="text-center">
-                      <CBadge color="info">{{ plc.plc_version.name }}</CBadge>
+                      <CBadge color="info">{{ plc.modbus_firmware_version.name }}</CBadge>
                     </CTableDataCell>
                     <CTableDataCell class="text-center">
                       <CBadge color="success">

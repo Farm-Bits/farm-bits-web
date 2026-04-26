@@ -3,12 +3,12 @@ class PlcSerializer < Blueprinter::Base
 
   fields :label, :name, :slave_id, :private_ip, :last_seen_at
 
-  association :plc_version, blueprint: PlcVersionSerializer
+  association :modbus_firmware_version, blueprint: ModbusFirmwareVersionSerializer
 
   view :with_interfaces do
     field :interfaces do |plc|
       InterfaceSerializer.render_as_json(
-        plc.plc_version.interfaces,
+        plc.modbus_firmware_version.interfaces,
         view: :with_measurement_points,
         plc: plc
       )

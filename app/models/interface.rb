@@ -1,7 +1,7 @@
 class Interface < ApplicationRecord
   audited
 
-  belongs_to :plc_version
+  belongs_to :modbus_firmware_version
 
   has_many :interface_register_mappings, dependent: :destroy
   has_many :register_templates, through: :interface_register_mappings
@@ -14,7 +14,7 @@ class Interface < ApplicationRecord
     operation_mode_status
   ]).freeze
 
-  validates :name, presence: true, uniqueness: { scope: :plc_version_id }
+  validates :name, presence: true, uniqueness: { scope: :modbus_firmware_version_id }
   validates :communication_type, presence: true, inclusion: { in: COMMUNICATION_TYPES }
   validates :io_number, presence: true, numericality: { only_integer: true, greater_than: 0 }
 

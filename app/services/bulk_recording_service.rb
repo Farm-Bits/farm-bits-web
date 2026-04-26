@@ -63,8 +63,22 @@ class BulkRecordingService
 
   private
     def touch_devices!
-      plc_ids = @readings.map { |r| r[:measurement_point].plc_id }.uniq
-      Plc.where(id: plc_ids).update_all(last_seen_at: Time.current)
-      Gateway.joins(:plcs).where(plcs: { id: plc_ids }).update_all(last_seen_at: Time.current)
-    end
+      plc_ids           = @readings.map { |r| r[:measurement_point].plc_id }.compact.uniq
+      modbus_device_ids = @readings.map { |r| r[:measurement_point].modbus_device_id }.compact.uniq
+
+      if plc_ids.any?
+        Plc.where(id: plc_ids).update_all(last_seen_at: Time.current)
+      end
+
+      if modbus_device_ids.any?
+        ModbusDevice.where(id: modbus_device_ids).update_all(last_seen_at: Time.current)
+      end
+
+      gateway_ids_from_plcs    = Plc.where(id: plc_ids).pluck(:gateway_id)
+      gateway_ids_from_devices = ModbusDevice.where(id: modbus_device_ids).pluck(:gateway_id)
+      gateway_ids = (gateway_ids_from_plcs + gateway_ids_from_devices).compact.uniq
+
+      if gateway_ids.any?
+        Gateway.where(id: gateway_ids).update_all(last_seen_at: Time.current)
+      end
 end

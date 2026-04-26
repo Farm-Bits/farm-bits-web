@@ -38,7 +38,7 @@
                 </span>
                 <span class="metadata-separator">•</span>
                 <span class="metadata-item">
-                  <strong>Version:</strong> {{ plc.plc_version.name }}
+                  <strong>Version:</strong> {{ plc.modbus_firmware_version.name }}
                 </span>
                 <span class="metadata-separator">•</span>
                 <span class="metadata-item">
@@ -93,7 +93,7 @@
                   <strong>Label:</strong> {{ plc.label }}
                 </CCardText>
                 <CCardText class="text-muted small mb-1">
-                  <strong>Version:</strong> {{ plc.plc_version.name }}
+                  <strong>Version:</strong> {{ plc.modbus_firmware_version.name }}
                 </CCardText>
                 <CCardText class="text-muted small">
                   <strong>Slave ID:</strong> {{ plc.slave_id }}

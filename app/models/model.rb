@@ -3,14 +3,14 @@ class Model < ApplicationRecord
 
   belongs_to :manufacturer
 
-  has_many :plc_versions, dependent: :destroy
-  accepts_nested_attributes_for :plc_versions, :allow_destroy => true
+  has_many :modbus_firmware_versions, dependent: :destroy
+  accepts_nested_attributes_for :modbus_firmware_versions, :allow_destroy => true
 
   has_many :gateways, dependent: :restrict_with_error
 
   has_many :plcs, dependent: :restrict_with_error
 
-  DEVICE_TYPES = %w[gateway plc].freeze
+  DEVICE_TYPES = %w[gateway plc modbus_device].freeze
 
   validates :name, presence: true, uniqueness: { scope: :manufacturer_id }
   validates :device_type, presence: true, inclusion: { in: DEVICE_TYPES }

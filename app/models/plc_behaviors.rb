@@ -1,8 +1,8 @@
 # Resolver for PLC behavior profiles.
 #
-# Each PlcVersion has a `behavior_profile` string that maps to a
+# Each ModbusFirmwareVersion has a `behavior_profile` string that maps to a
 # behavior class. The class defines what the backend can do with
-# that PLC version.
+# that Modbus Firmware Version.
 #
 # Usage:
 #   behavior = PlcBehaviors.for(plc)
@@ -15,7 +15,7 @@ module PlcBehaviors
   }.freeze
 
   def self.for(plc)
-    profile = plc.plc_version&.behavior_profile
+    profile = plc.modbus_firmware_version&.behavior_profile
     if !profile.present?
       return PlcBehaviors::Base.new(plc)
     end
@@ -24,7 +24,7 @@ module PlcBehaviors
 
     if !class_name.present?
       Rails.logger.warn(
-        "[PlcBehaviors] Unknown profile '#{profile}' for PlcVersion #{plc.plc_version_id}"
+        "[PlcBehaviors] Unknown profile '#{profile}' for ModbusFirmwareVersion #{plc.modbus_firmware_version_id}"
       )
       return PlcBehaviors::Base.new(plc)
     end

@@ -3,7 +3,7 @@ class PlcReadJob
   sidekiq_options queue: 'default', retry: 3
 
   def perform(plc_id)
-    plc = Plc.includes(:gateway, :plc_version, site: :company).find_by(id: plc_id)
+    plc = Plc.includes(:gateway, :modbus_firmware_version, site: :company).find_by(id: plc_id)
     if !plc&.operational?
       return
     end

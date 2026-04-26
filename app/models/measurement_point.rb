@@ -3,7 +3,8 @@ class MeasurementPoint < ApplicationRecord
 
   belongs_to :measurement_subtype, optional: true
   belongs_to :register_template
-  belongs_to :plc
+  belongs_to :plc, optional: true
+  belongs_to :modbus_device, optional: true
   belongs_to :segment, optional: true
   belongs_to :site, optional: true
 
@@ -12,8 +13,8 @@ class MeasurementPoint < ApplicationRecord
   has_many :hourly_aggregations, dependent: :delete_all
 
   validates :name, presence: true
-  validates :register_template_id, uniqueness: { scope: :plc_id }
-  validate :register_template_matches_plc_version
+  validates :register_template_id, uniqueness: { scope: [:plc_id, :modbus_device_id] }
+  validate :register_template_matches_modbus_firmware_version
   validates :chart_type_override, inclusion: { in: MeasurementSubtype::CHART_TYPES }, allow_blank: true
   validate :chart_type_override_compatible_with_value_type
   validates :color_override, format: { with: /\A#[0-9A-Fa-f]{6}\z/, message: 'must be a valid hex color' }, allow_blank: true
@@ -167,13 +168,17 @@ class MeasurementPoint < ApplicationRecord
   end
 
   private
-    def register_template_matches_plc_version
+    def register_template_matches_modbus_firmware_version
       if !plc.present? || !register_template.present?
         return
       end
 
-      if register_template.plc_version_id != plc.plc_version_id
-        errors.add(:register_template, "must belong to the PLC's version")
+      if register_template.modbus_firmware_version_id != plc.modbus_firmware_version_id
+        errors.add(:register_template, "must belong to the PLC's firmware version")
+      end
+
+      if modbus_device.present? && register_template.modbus_firmware_version_id != modbus_device.modbus_firmware_version_id
+        errors.add(:register_template, "must belong to the device's firmware version")
       end
     end
 
@@ -206,6 +211,10 @@ class MeasurementPoint < ApplicationRecord
       has_interface_mapping = register_template.interface_register_mappings.any?
       if has_interface_mapping
         errors.add(:measurement_subtype, 'must be present for active interface measurements')
+      end
+
+      if modbus_device
+        errors.add(:measurement_subtype, 'must be present for active measurements on a device')
       end
     end
 
@@ -284,7 +293,7 @@ class MeasurementPoint < ApplicationRecord
     end
 
     def trigger_behavior_sync
-      if !plc.gateway_id
+      if !plc || !plc.gateway_id
         return
       end
 
@@ -343,10 +352,17 @@ class MeasurementPoint < ApplicationRecord
         return []
       end
 
-      plc.measurement_points
+      scope = MeasurementPoint.none
+      if modbus_device.present?
+        scope = modbus_device.measurement_points
+      elsif plc.present?
+        scope = plc.measurement_points
+      end
+
+      scope
         .joins(:register_template)
         .where(register_templates: {
-          plc_version_id: register_template.plc_version_id,
+          modbus_firmware_version_id: register_template.modbus_firmware_version_id,
           group_name: register_template.group_name
         })
         .to_a

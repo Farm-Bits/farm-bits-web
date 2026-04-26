@@ -1,7 +1,3 @@
-# Creates the utc_offset_minutes register template for each PlcVersion
-# that has system_clock registers. This register belongs to the PLC
-# globally (not interface-mapped), category: 'configuration'.
-#
 # Usage:
 #   rails runner db/seeds/phase1_time_config_register.rb
 #
@@ -9,8 +5,8 @@
 ActiveRecord::Base.transaction do
   UTC_OFFSET_ADDRESS = 16449
 
-  plc_version_id = PlcVersion.first.id
-  position = RegisterTemplate.where(plc_version_id: plc_version_id).maximum(:position).to_i + 1
+  modbus_firmware_version_id = ModbusFirmwareVersion.first.id
+  position = RegisterTemplate.where(modbus_firmware_version_id: modbus_firmware_version_id).maximum(:position).to_i + 1
   register = RegisterTemplate.create!(
     name: 'UTC Offset Minutes',
     label: 'UtcOffsetMinutes',
@@ -32,6 +28,6 @@ ActiveRecord::Base.transaction do
     max_value: 840,
     default_value: 0,
     position: position,
-    plc_version_id: plc_version_id
+    modbus_firmware_version_id: modbus_firmware_version_id
   )
 end

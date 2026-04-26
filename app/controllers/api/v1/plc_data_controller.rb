@@ -45,7 +45,7 @@ module Api
 
           Plc.includes(
             :site,
-            plc_version: :register_templates,
+            modbus_firmware_version: :register_templates,
             measurement_points: :register_template
           ).find_by(username: email)
         end
@@ -104,7 +104,7 @@ module Api
         end
 
         def process_data_points(plc, data_points)
-          register_templates_by_label = plc.plc_version.register_templates.index_by(&:label)
+          register_templates_by_label = plc.modbus_firmware_version.register_templates.index_by(&:label)
           measurement_points_by_register_id = plc.measurement_points.index_by(&:register_template_id)
 
           results = { processed: 0, skipped: 0, errors: [] }

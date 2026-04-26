@@ -13,7 +13,7 @@ class InterfaceRegisterMapping < ApplicationRecord
   #     category.in?(MeasurementSubtype::DATA_CATEGORIES)
   #   }
   validate :register_template_has_interface_category
-  validate :register_template_belongs_to_same_plc_version
+  validate :register_template_belongs_to_same_modbus_firmware_version
 
   private
     def register_template_has_interface_category
@@ -30,13 +30,13 @@ class InterfaceRegisterMapping < ApplicationRecord
       end
     end
 
-    def register_template_belongs_to_same_plc_version
+    def register_template_belongs_to_same_modbus_firmware_version
       if !interface.present? || !register_template.present?
         return
       end
 
-      if interface.plc_version_id != register_template.plc_version_id
-        errors.add(:register_template, 'must belong to the same PLC version as the interface')
+      if interface.modbus_firmware_version_id != register_template.modbus_firmware_version_id
+        errors.add(:register_template, 'must belong to the same firmware version as the interface')
       end
     end
 end

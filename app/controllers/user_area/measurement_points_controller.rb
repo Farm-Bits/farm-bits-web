@@ -143,7 +143,7 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
         .includes(
           :register_template,
           register_template: :interface_register_mappings,
-          plc: [:gateway, :plc_version]
+          plc: [:gateway, :modbus_firmware_version]
         )
         .find(params[:id])
 
@@ -272,7 +272,7 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
       end
 
       sources = []
-      plc.plc_version.interfaces.each do |iface|
+      plc.modbus_firmware_version.interfaces.each do |iface|
         source_type = PlcBehaviors::Base::SOURCE_TYPE_MAP[iface.communication_type]
         if !source_type
           next

@@ -57,10 +57,10 @@ module PlcBehaviors
       }&.last
     end
 
-    def self.validate_plc_version!(plc_version)
+    def self.validate_modbus_firmware_version!(modbus_firmware_version)
       errors = []
 
-      plc_version.register_templates.group_by(&:group_name).each do |group_name, templates|
+      modbus_firmware_version.register_templates.group_by(&:group_name).each do |group_name, templates|
         if !group_name.present?
           next
         end

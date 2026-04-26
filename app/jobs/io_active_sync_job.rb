@@ -3,7 +3,7 @@ class IoActiveSyncJob
   sidekiq_options queue: 'critical'
 
   def perform(plc_id)
-    plc = Plc.includes(:gateway, :plc_version, site: :company).find_by(id: plc_id)
+    plc = Plc.includes(:gateway, :modbus_firmware_version, site: :company).find_by(id: plc_id)
     if !plc&.operational?
       return
     end

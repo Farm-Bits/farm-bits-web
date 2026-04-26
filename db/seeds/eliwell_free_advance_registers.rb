@@ -12,64 +12,68 @@ ActiveRecord::Base.transaction do
     manufacturer: eliwell_manufacturer
   )
 
-  free_advance_first_version = PlcVersion.create!(
+  free_advance_first_version = ModbusFirmwareVersion.create!(
     name: 'V1',
     version_code: '1.0',
     behavior_profile: 'standard_v1',
+    relay_slot_base: 12_008,
+    relay_slot_size: 33,
+    relay_max_slots: 8,
+    relay_register_type: 'holding',
     is_latest: true,
     is_supported: true,
     model: free_advance_model
   )
 
   interfaces_data = [
-    { name: 'DIL1',  communication_type: 'digital_input',  description: 'Digital Input 1',   io_number: 1,  plc_version: free_advance_first_version },
-    { name: 'DIL2',  communication_type: 'digital_input',  description: 'Digital Input 2',   io_number: 2,  plc_version: free_advance_first_version },
-    { name: 'DIL3',  communication_type: 'digital_input',  description: 'Digital Input 3',   io_number: 3,  plc_version: free_advance_first_version },
-    { name: 'DIL4',  communication_type: 'digital_input',  description: 'Digital Input 4',   io_number: 4,  plc_version: free_advance_first_version },
-    { name: 'DIL5',  communication_type: 'digital_input',  description: 'Digital Input 5',   io_number: 5,  plc_version: free_advance_first_version },
-    { name: 'DIL6',  communication_type: 'digital_input',  description: 'Digital Input 6',   io_number: 6,  plc_version: free_advance_first_version },
-    { name: 'DIL7',  communication_type: 'digital_input',  description: 'Digital Input 7',   io_number: 7,  plc_version: free_advance_first_version },
-    { name: 'DIL8',  communication_type: 'digital_input',  description: 'Digital Input 8',   io_number: 8,  plc_version: free_advance_first_version },
-    { name: 'DIL9',  communication_type: 'digital_input',  description: 'Digital Input 9',   io_number: 9,  plc_version: free_advance_first_version },
-    { name: 'DIL10', communication_type: 'digital_input',  description: 'Digital Input 10',  io_number: 10, plc_version: free_advance_first_version },
-    { name: 'DIL11', communication_type: 'digital_input',  description: 'Digital Input 11',  io_number: 11, plc_version: free_advance_first_version },
-    { name: 'DIL12', communication_type: 'digital_input',  description: 'Digital Input 12',  io_number: 12, plc_version: free_advance_first_version },
-    { name: 'AIL1',  communication_type: 'analog_input',   description: 'Analog Input 1',    io_number: 1,  plc_version: free_advance_first_version },
-    { name: 'AIL2',  communication_type: 'analog_input',   description: 'Analog Input 2',    io_number: 2,  plc_version: free_advance_first_version },
-    { name: 'AIL3',  communication_type: 'analog_input',   description: 'Analog Input 3',    io_number: 3,  plc_version: free_advance_first_version },
-    { name: 'AIL4',  communication_type: 'analog_input',   description: 'Analog Input 4',    io_number: 4,  plc_version: free_advance_first_version },
-    { name: 'AIL5',  communication_type: 'analog_input',   description: 'Analog Input 5',    io_number: 5,  plc_version: free_advance_first_version },
-    { name: 'AIL6',  communication_type: 'analog_input',   description: 'Analog Input 6',    io_number: 6,  plc_version: free_advance_first_version },
-    { name: 'AIL7',  communication_type: 'analog_input',   description: 'Analog Input 7',    io_number: 7,  plc_version: free_advance_first_version },
-    { name: 'AIL8',  communication_type: 'analog_input',   description: 'Analog Input 8',    io_number: 8,  plc_version: free_advance_first_version },
-    { name: 'AIL9',  communication_type: 'analog_input',   description: 'Analog Input 9',    io_number: 9,  plc_version: free_advance_first_version },
-    { name: 'AIL10', communication_type: 'analog_input',   description: 'Analog Input 10',   io_number: 10, plc_version: free_advance_first_version },
-    { name: 'AIL11', communication_type: 'analog_input',   description: 'Analog Input 11',   io_number: 11, plc_version: free_advance_first_version },
-    { name: 'AIL12', communication_type: 'analog_input',   description: 'Analog Input 12',   io_number: 12, plc_version: free_advance_first_version },
-    { name: 'AOL1',  communication_type: 'analog_output',  description: 'Analog Output 1',   io_number: 1,  plc_version: free_advance_first_version },
-    { name: 'AOL2',  communication_type: 'analog_output',  description: 'Analog Output 2',   io_number: 2,  plc_version: free_advance_first_version },
-    { name: 'AOL3',  communication_type: 'analog_output',  description: 'Analog Output 3',   io_number: 3,  plc_version: free_advance_first_version },
-    { name: 'AOL4',  communication_type: 'analog_output',  description: 'Analog Output 4',   io_number: 4,  plc_version: free_advance_first_version },
-    { name: 'AOL5',  communication_type: 'analog_output',  description: 'Analog Output 5',   io_number: 5,  plc_version: free_advance_first_version },
-    { name: 'AOL6',  communication_type: 'analog_output',  description: 'Analog Output 6',   io_number: 6,  plc_version: free_advance_first_version },
-    { name: 'DOL1',  communication_type: 'digital_output', description: 'Digital Output 1',  io_number: 1,  plc_version: free_advance_first_version },
-    { name: 'DOL2',  communication_type: 'digital_output', description: 'Digital Output 2',  io_number: 2,  plc_version: free_advance_first_version },
-    { name: 'DOL3',  communication_type: 'digital_output', description: 'Digital Output 3',  io_number: 3,  plc_version: free_advance_first_version },
-    { name: 'DOL4',  communication_type: 'digital_output', description: 'Digital Output 4',  io_number: 4,  plc_version: free_advance_first_version },
-    { name: 'DOL5',  communication_type: 'digital_output', description: 'Digital Output 5',  io_number: 5,  plc_version: free_advance_first_version },
-    { name: 'DOL6',  communication_type: 'digital_output', description: 'Digital Output 6',  io_number: 6,  plc_version: free_advance_first_version },
-    { name: 'DOL7',  communication_type: 'digital_output', description: 'Digital Output 7',  io_number: 7,  plc_version: free_advance_first_version },
-    { name: 'DOL8',  communication_type: 'digital_output', description: 'Digital Output 8',  io_number: 8,  plc_version: free_advance_first_version },
-    { name: 'DOL9',  communication_type: 'digital_output', description: 'Digital Output 9',  io_number: 9,  plc_version: free_advance_first_version },
-    { name: 'DOL10', communication_type: 'digital_output', description: 'Digital Output 10', io_number: 10, plc_version: free_advance_first_version },
-    { name: 'DOL11', communication_type: 'digital_output', description: 'Digital Output 11', io_number: 11, plc_version: free_advance_first_version },
-    { name: 'DOL12', communication_type: 'digital_output', description: 'Digital Output 12', io_number: 12, plc_version: free_advance_first_version }
+    { name: 'DIL1',  communication_type: 'digital_input',  description: 'Digital Input 1',   io_number: 1,  modbus_firmware_version: free_advance_first_version },
+    { name: 'DIL2',  communication_type: 'digital_input',  description: 'Digital Input 2',   io_number: 2,  modbus_firmware_version: free_advance_first_version },
+    { name: 'DIL3',  communication_type: 'digital_input',  description: 'Digital Input 3',   io_number: 3,  modbus_firmware_version: free_advance_first_version },
+    { name: 'DIL4',  communication_type: 'digital_input',  description: 'Digital Input 4',   io_number: 4,  modbus_firmware_version: free_advance_first_version },
+    { name: 'DIL5',  communication_type: 'digital_input',  description: 'Digital Input 5',   io_number: 5,  modbus_firmware_version: free_advance_first_version },
+    { name: 'DIL6',  communication_type: 'digital_input',  description: 'Digital Input 6',   io_number: 6,  modbus_firmware_version: free_advance_first_version },
+    { name: 'DIL7',  communication_type: 'digital_input',  description: 'Digital Input 7',   io_number: 7,  modbus_firmware_version: free_advance_first_version },
+    { name: 'DIL8',  communication_type: 'digital_input',  description: 'Digital Input 8',   io_number: 8,  modbus_firmware_version: free_advance_first_version },
+    { name: 'DIL9',  communication_type: 'digital_input',  description: 'Digital Input 9',   io_number: 9,  modbus_firmware_version: free_advance_first_version },
+    { name: 'DIL10', communication_type: 'digital_input',  description: 'Digital Input 10',  io_number: 10, modbus_firmware_version: free_advance_first_version },
+    { name: 'DIL11', communication_type: 'digital_input',  description: 'Digital Input 11',  io_number: 11, modbus_firmware_version: free_advance_first_version },
+    { name: 'DIL12', communication_type: 'digital_input',  description: 'Digital Input 12',  io_number: 12, modbus_firmware_version: free_advance_first_version },
+    { name: 'AIL1',  communication_type: 'analog_input',   description: 'Analog Input 1',    io_number: 1,  modbus_firmware_version: free_advance_first_version },
+    { name: 'AIL2',  communication_type: 'analog_input',   description: 'Analog Input 2',    io_number: 2,  modbus_firmware_version: free_advance_first_version },
+    { name: 'AIL3',  communication_type: 'analog_input',   description: 'Analog Input 3',    io_number: 3,  modbus_firmware_version: free_advance_first_version },
+    { name: 'AIL4',  communication_type: 'analog_input',   description: 'Analog Input 4',    io_number: 4,  modbus_firmware_version: free_advance_first_version },
+    { name: 'AIL5',  communication_type: 'analog_input',   description: 'Analog Input 5',    io_number: 5,  modbus_firmware_version: free_advance_first_version },
+    { name: 'AIL6',  communication_type: 'analog_input',   description: 'Analog Input 6',    io_number: 6,  modbus_firmware_version: free_advance_first_version },
+    { name: 'AIL7',  communication_type: 'analog_input',   description: 'Analog Input 7',    io_number: 7,  modbus_firmware_version: free_advance_first_version },
+    { name: 'AIL8',  communication_type: 'analog_input',   description: 'Analog Input 8',    io_number: 8,  modbus_firmware_version: free_advance_first_version },
+    { name: 'AIL9',  communication_type: 'analog_input',   description: 'Analog Input 9',    io_number: 9,  modbus_firmware_version: free_advance_first_version },
+    { name: 'AIL10', communication_type: 'analog_input',   description: 'Analog Input 10',   io_number: 10, modbus_firmware_version: free_advance_first_version },
+    { name: 'AIL11', communication_type: 'analog_input',   description: 'Analog Input 11',   io_number: 11, modbus_firmware_version: free_advance_first_version },
+    { name: 'AIL12', communication_type: 'analog_input',   description: 'Analog Input 12',   io_number: 12, modbus_firmware_version: free_advance_first_version },
+    { name: 'AOL1',  communication_type: 'analog_output',  description: 'Analog Output 1',   io_number: 1,  modbus_firmware_version: free_advance_first_version },
+    { name: 'AOL2',  communication_type: 'analog_output',  description: 'Analog Output 2',   io_number: 2,  modbus_firmware_version: free_advance_first_version },
+    { name: 'AOL3',  communication_type: 'analog_output',  description: 'Analog Output 3',   io_number: 3,  modbus_firmware_version: free_advance_first_version },
+    { name: 'AOL4',  communication_type: 'analog_output',  description: 'Analog Output 4',   io_number: 4,  modbus_firmware_version: free_advance_first_version },
+    { name: 'AOL5',  communication_type: 'analog_output',  description: 'Analog Output 5',   io_number: 5,  modbus_firmware_version: free_advance_first_version },
+    { name: 'AOL6',  communication_type: 'analog_output',  description: 'Analog Output 6',   io_number: 6,  modbus_firmware_version: free_advance_first_version },
+    { name: 'DOL1',  communication_type: 'digital_output', description: 'Digital Output 1',  io_number: 1,  modbus_firmware_version: free_advance_first_version },
+    { name: 'DOL2',  communication_type: 'digital_output', description: 'Digital Output 2',  io_number: 2,  modbus_firmware_version: free_advance_first_version },
+    { name: 'DOL3',  communication_type: 'digital_output', description: 'Digital Output 3',  io_number: 3,  modbus_firmware_version: free_advance_first_version },
+    { name: 'DOL4',  communication_type: 'digital_output', description: 'Digital Output 4',  io_number: 4,  modbus_firmware_version: free_advance_first_version },
+    { name: 'DOL5',  communication_type: 'digital_output', description: 'Digital Output 5',  io_number: 5,  modbus_firmware_version: free_advance_first_version },
+    { name: 'DOL6',  communication_type: 'digital_output', description: 'Digital Output 6',  io_number: 6,  modbus_firmware_version: free_advance_first_version },
+    { name: 'DOL7',  communication_type: 'digital_output', description: 'Digital Output 7',  io_number: 7,  modbus_firmware_version: free_advance_first_version },
+    { name: 'DOL8',  communication_type: 'digital_output', description: 'Digital Output 8',  io_number: 8,  modbus_firmware_version: free_advance_first_version },
+    { name: 'DOL9',  communication_type: 'digital_output', description: 'Digital Output 9',  io_number: 9,  modbus_firmware_version: free_advance_first_version },
+    { name: 'DOL10', communication_type: 'digital_output', description: 'Digital Output 10', io_number: 10, modbus_firmware_version: free_advance_first_version },
+    { name: 'DOL11', communication_type: 'digital_output', description: 'Digital Output 11', io_number: 11, modbus_firmware_version: free_advance_first_version },
+    { name: 'DOL12', communication_type: 'digital_output', description: 'Digital Output 12', io_number: 12, modbus_firmware_version: free_advance_first_version }
   ]
   interfaces = Interface.create!(interfaces_data)
 
   interfaces = {}
   interfaces_data.each do |iface|
-    interfaces[iface[:name]] = Interface.find_by(name: iface[:name], plc_version: free_advance_first_version)
+    interfaces[iface[:name]] = Interface.find_by(name: iface[:name], modbus_firmware_version: free_advance_first_version)
   end
 
   type_mapping = {
@@ -333,7 +337,7 @@ ActiveRecord::Base.transaction do
       default_value: default_value == 'True' ? 1 : (default_value == 'False' ? 0 : default_value),
       enum_values: enum_values,
       position: index + 1,
-      plc_version: free_advance_first_version,
+      modbus_firmware_version: free_advance_first_version,
       interface_register_mappings_attributes: interface_register_mappings_attributes
     )
   end
@@ -364,14 +368,14 @@ ActiveRecord::Base.transaction do
   #   11 = 0/20mA
 
   # This method sets up the proper group structure and visibility conditions
-  def setup_analog_input_configuration(plc_version)
+  def setup_analog_input_configuration(modbus_firmware_version)
     # For each analog input interface (AI1-AI12), set up the group
     (1..12).each do |ai_num|
       interface_name = "AI#{ai_num}"
       group_name = "analog_input_#{ai_num}_config"
 
       # Find the input type selector register
-      input_type_register = plc_version.register_templates.find_by(label: "Cfg_#{interface_name}")
+      input_type_register = modbus_firmware_version.register_templates.find_by(label: "Cfg_#{interface_name}")
       next unless input_type_register
 
       # Update the input type selector to be the controller
@@ -383,14 +387,14 @@ ActiveRecord::Base.transaction do
       # NTC gain/offset - visible for NTC types (0, 2, 7)
       ntc_values = %w[0 2 7]
       update_calibration_register(
-        plc_version,
+        modbus_firmware_version,
         "Gain_Ntc_#{interface_name}",
         group_name,
         "ntc_gain",
         { "input_type_selector" => ntc_values }
       )
       update_calibration_register(
-        plc_version,
+        modbus_firmware_version,
         "Offs_Ntc_#{interface_name}",
         group_name,
         "ntc_offset",
@@ -400,14 +404,14 @@ ActiveRecord::Base.transaction do
       # PT1000 gain/offset - visible for PT1000 types (6, 8)
       pt1000_values = %w[6 8]
       update_calibration_register(
-        plc_version,
+        modbus_firmware_version,
         "Gain_PT1000_#{interface_name}",
         group_name,
         "pt1000_gain",
         { "input_type_selector" => pt1000_values }
       )
       update_calibration_register(
-        plc_version,
+        modbus_firmware_version,
         "Offs_PT1000_#{interface_name}",
         group_name,
         "pt1000_offset",
@@ -417,14 +421,14 @@ ActiveRecord::Base.transaction do
       # 4-20mA gain/offset - visible for mA types (3, 11)
       ma_values = %w[3 11]
       update_calibration_register(
-        plc_version,
+        modbus_firmware_version,
         "Gain_mA_#{interface_name}",
         group_name,
         "ma_gain",
         { "input_type_selector" => ma_values }
       )
       update_calibration_register(
-        plc_version,
+        modbus_firmware_version,
         "Offs_mA_#{interface_name}",
         group_name,
         "ma_offset",
@@ -434,14 +438,14 @@ ActiveRecord::Base.transaction do
       # 0-10V gain/offset - visible for 10V type (4)
       v10_values = %w[4]
       update_calibration_register(
-        plc_version,
+        modbus_firmware_version,
         "Gain_10V_#{interface_name}",
         group_name,
         "v10_gain",
         { "input_type_selector" => v10_values }
       )
       update_calibration_register(
-        plc_version,
+        modbus_firmware_version,
         "Offs_10V_#{interface_name}",
         group_name,
         "v10_offset",
@@ -451,14 +455,14 @@ ActiveRecord::Base.transaction do
       # 0-5V gain/offset - visible for 5V type (10)
       v5_values = %w[10]
       update_calibration_register(
-        plc_version,
+        modbus_firmware_version,
         "Gain_5V_#{interface_name}",
         group_name,
         "v5_gain",
         { "input_type_selector" => v5_values }
       )
       update_calibration_register(
-        plc_version,
+        modbus_firmware_version,
         "Offs_5V_#{interface_name}",
         group_name,
         "v5_offset",
@@ -468,14 +472,14 @@ ActiveRecord::Base.transaction do
       # 0-5Vr (ratiometric) gain/offset - visible for 5Vr type (5)
       v5r_values = %w[5]
       update_calibration_register(
-        plc_version,
+        modbus_firmware_version,
         "Gain_5Vr_#{interface_name}",
         group_name,
         "v5r_gain",
         { "input_type_selector" => v5r_values }
       )
       update_calibration_register(
-        plc_version,
+        modbus_firmware_version,
         "Offs_5Vr_#{interface_name}",
         group_name,
         "v5r_offset",
@@ -485,14 +489,14 @@ ActiveRecord::Base.transaction do
       # PTC gain/offset - visible for PTC type (9)
       ptc_values = %w[9]
       update_calibration_register(
-        plc_version,
+        modbus_firmware_version,
         "Gain_PTC_#{interface_name}",
         group_name,
         "ptc_gain",
         { "input_type_selector" => ptc_values }
       )
       update_calibration_register(
-        plc_version,
+        modbus_firmware_version,
         "Offs_PTC_#{interface_name}",
         group_name,
         "ptc_offset",
@@ -502,7 +506,7 @@ ActiveRecord::Base.transaction do
       # Full scale min/max - visible for scalable types (3, 4, 5, 10, 11)
       scalable_values = %w[3 4 5 10 11]
       update_scale_register(
-        plc_version,
+        modbus_firmware_version,
         "FullScaleMin_#{interface_name}",
         group_name,
         "scale_min",
@@ -510,7 +514,7 @@ ActiveRecord::Base.transaction do
         { "less_than" => { "group_role" => "scale_max" } }
       )
       update_scale_register(
-        plc_version,
+        modbus_firmware_version,
         "FullScaleMax_#{interface_name}",
         group_name,
         "scale_max",
@@ -521,7 +525,7 @@ ActiveRecord::Base.transaction do
       # Calibration (differential) - always visible when not in DI mode
       non_di_values = %w[0 2 3 4 5 6 7 8 9 10 11]
       update_calibration_register(
-        plc_version,
+        modbus_firmware_version,
         "Calibration_#{interface_name}",
         group_name,
         "calibration_diff",
@@ -530,21 +534,21 @@ ActiveRecord::Base.transaction do
     end
   end
 
-  def setup_analog_output_configuration(plc_version)
+  def setup_analog_output_configuration(modbus_firmware_version)
     # For each analog output interface (AO1-AO12), set up the group
     (1..6).each do |ao_num|
       interface_name = "AO#{ao_num}"
       group_name = "analog_output_#{ao_num}_config"
 
       update_calibration_register(
-        plc_version,
+        modbus_firmware_version,
         "Gain_mA_#{interface_name}",
         group_name,
         "ma_gain",
         nil
       )
       update_calibration_register(
-        plc_version,
+        modbus_firmware_version,
         "Offs_mA_#{interface_name}",
         group_name,
         "ma_offset",
@@ -552,14 +556,14 @@ ActiveRecord::Base.transaction do
       )
 
       update_calibration_register(
-        plc_version,
+        modbus_firmware_version,
         "Gain_10V_#{interface_name}",
         group_name,
         "v10_gain",
         nil
       )
       update_calibration_register(
-        plc_version,
+        modbus_firmware_version,
         "Offs_10V_#{interface_name}",
         group_name,
         "v10_offset",
@@ -568,8 +572,8 @@ ActiveRecord::Base.transaction do
     end
   end
 
-  def update_calibration_register(plc_version, label, group_name, role, visibility)
-    register = plc_version.register_templates.find_by(label: label)
+  def update_calibration_register(modbus_firmware_version, label, group_name, role, visibility)
+    register = modbus_firmware_version.register_templates.find_by(label: label)
     return unless register
 
     register.update!(
@@ -580,8 +584,8 @@ ActiveRecord::Base.transaction do
     )
   end
 
-  def update_scale_register(plc_version, label, group_name, role, visibility, validation)
-    register = plc_version.register_templates.find_by(label: label)
+  def update_scale_register(modbus_firmware_version, label, group_name, role, visibility, validation)
+    register = modbus_firmware_version.register_templates.find_by(label: label)
     return unless register
 
     register.update!(
@@ -594,13 +598,13 @@ ActiveRecord::Base.transaction do
   end
 
   # Example: Set up digital input configuration (FDI)
-  def setup_digital_input_configuration(plc_version)
+  def setup_digital_input_configuration(modbus_firmware_version)
     (1..2).each do |fdi_num|
       interface_name = "FDI#{fdi_num}"
       group_name = "digital_input_#{fdi_num}_config"
 
       # Frequency setting - always visible for digital inputs
-      freq_register = plc_version.register_templates.find_by(label: "#{interface_name}_frequency")
+      freq_register = modbus_firmware_version.register_templates.find_by(label: "#{interface_name}_frequency")
       freq_register&.update!(
         group_name: group_name,
         group_role: "frequency",
@@ -608,7 +612,7 @@ ActiveRecord::Base.transaction do
       )
 
       # Reset counter - always visible
-      reset_register = plc_version.register_templates.find_by(label: "#{interface_name}_reset_counter")
+      reset_register = modbus_firmware_version.register_templates.find_by(label: "#{interface_name}_reset_counter")
       reset_register&.update!(
         group_name: group_name,
         group_role: "reset_counter"
@@ -627,9 +631,9 @@ ActiveRecord::Base.transaction do
     'sysClockSet_upload'   => 'upload_trigger'
   }.freeze
 
-  def setup_system_clock_group(plc_version)
+  def setup_system_clock_group(modbus_firmware_version)
     CLOCK_REGISTER_ROLES.each do |label, role|
-      clock_register = plc_version.register_templates.find_by(label: label)
+      clock_register = modbus_firmware_version.register_templates.find_by(label: label)
       clock_register&.update!(
         group_name: 'set_system_clock',
         group_role: role

@@ -41,7 +41,7 @@ class UserArea::PlcsController < UserArea::ApplicationController
 
     def set_plc
       @plc = policy_scope(Plc)
-        .includes(:model, plc_version: { interfaces: { interface_register_mappings: :register_template } })
+        .includes(:model, modbus_firmware_version: { interfaces: { interface_register_mappings: :register_template } })
         .find(params[:id])
 
       visible_mps = @plc.measurement_points

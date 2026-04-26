@@ -45,7 +45,7 @@
           </div>
           <div class="col-md-2">
             <div class="text-muted small">Version</div>
-            <div class="fw-semibold">{{ plc.plc_version.name }}</div>
+            <div class="fw-semibold">{{ plc.modbus_firmware_version.name }}</div>
           </div>
           <div class="col-md-2">
             <div class="text-muted small">Slave ID</div>
@@ -149,7 +149,7 @@
     refreshing.value = true;
 
     const url = ROUTES.plcs_refresh_interfaces.path.replace(':id', String(plc.id));
-    const { success } = await execute<void>(
+    const { success } = await execute(
       () => axios.post(url),
       {
         showSuccessToast: true,

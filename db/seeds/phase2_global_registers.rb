@@ -122,13 +122,13 @@ ActiveRecord::Base.transaction do
   end.freeze
   PUSH_THRESHOLD_REGISTERS = PUSH_THRESHOLD_DI_COUNTER_REGISTERS + PUSH_THRESHOLD_AI_REGISTERS
 
-  PLC_VERSION_ID = PlcVersion.first.id
+  MODBUS_FIRMWARE_VERSION_ID = ModbusFirmwareVersion.first.id
 
   # ============================================================
   # Seeding logic
   # ============================================================
 
-  current_position = RegisterTemplate.where(plc_version_id: PLC_VERSION_ID).maximum(:position).to_i + 1
+  current_position = RegisterTemplate.where(modbus_firmware_version_id: MODBUS_FIRMWARE_VERSION_ID).maximum(:position).to_i + 1
 
   # Sunrise / Sunset
   address_offset = 0
@@ -155,7 +155,7 @@ ActiveRecord::Base.transaction do
       user_visibility: 'hidden',
       default_value: reg[:default_value],
       position: current_position,
-      plc_version_id: PLC_VERSION_ID
+      modbus_firmware_version_id: MODBUS_FIRMWARE_VERSION_ID
     )
 
     address_offset += reg[:address_count]
@@ -187,10 +187,10 @@ ActiveRecord::Base.transaction do
       user_visibility: 'hidden',
       default_value: 0,
       position: current_position,
-      plc_version_id: PLC_VERSION_ID
+      modbus_firmware_version_id: MODBUS_FIRMWARE_VERSION_ID
     )
 
-    interface = Interface.find_by(communication_type: reg[:communication_type], io_number: reg[:io_number], plc_version_id: PLC_VERSION_ID)
+    interface = Interface.find_by(communication_type: reg[:communication_type], io_number: reg[:io_number], modbus_firmware_version_id: MODBUS_FIRMWARE_VERSION_ID)
     last_position = InterfaceRegisterMapping.where(interface: interface).maximum(:position).to_i + 1
     InterfaceRegisterMapping.create!(
       description: reg[:description],
@@ -230,10 +230,10 @@ ActiveRecord::Base.transaction do
       max_value: reg[:max_value],
       default_value: reg[:default_value],
       position: current_position,
-      plc_version_id: PLC_VERSION_ID
+      modbus_firmware_version_id: MODBUS_FIRMWARE_VERSION_ID
     )
 
-    interface = Interface.find_by(communication_type: reg[:communication_type], io_number: reg[:io_number], plc_version_id: PLC_VERSION_ID)
+    interface = Interface.find_by(communication_type: reg[:communication_type], io_number: reg[:io_number], modbus_firmware_version_id: MODBUS_FIRMWARE_VERSION_ID)
     last_position = InterfaceRegisterMapping.where(interface: interface).maximum(:position).to_i + 1
     InterfaceRegisterMapping.create!(
       description: reg[:description],

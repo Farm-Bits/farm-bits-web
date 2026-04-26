@@ -70,10 +70,10 @@ class UserArea::GatewaysController < UserArea::ApplicationController
           slave_id: p.slave_id,
           private_ip: p.private_ip,
           last_seen_at: p.last_seen_at,
-          plc_version: {
-            id: p.plc_version.id,
-            name: p.plc_version.name,
-            description: p.plc_version.description
+          modbus_firmware_version: {
+            id: p.modbus_firmware_version.id,
+            name: p.modbus_firmware_version.name,
+            description: p.modbus_firmware_version.description
           }
         }
       end

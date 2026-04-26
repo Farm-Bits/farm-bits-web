@@ -155,7 +155,7 @@
    * Each slot is a separate section so they render independently.
    */
   function buildScheduleSections(): SectionDef[] {
-    // This runs once at setup — schedule groups are stable for a given PLC version.
+    // This runs once at setup — schedule groups are stable for a given Modbus Firmware Version.
     // If no schedules exist, the tab won't show (useOperationMode handles that).
     return om.scheduleGroups.value.map(groupName => ({
       key: `schedule-${groupName}`,

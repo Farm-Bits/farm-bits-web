@@ -84,9 +84,9 @@ ActiveRecord::Base.transaction do
     }
   ].freeze
 
-  PLC_VERSION_ID = PlcVersion.first.id
+  MODBUS_FIRMWARE_VERSION_ID = ModbusFirmwareVersion.first.id
 
-  current_position = RegisterTemplate.where(plc_version_id: PLC_VERSION_ID).maximum(:position).to_i + 1
+  current_position = RegisterTemplate.where(modbus_firmware_version_id: MODBUS_FIRMWARE_VERSION_ID).maximum(:position).to_i + 1
   address_offset = 0
   address_status_offset = 0
 
@@ -121,10 +121,10 @@ ActiveRecord::Base.transaction do
         default_value: reg[:default_value],
         enum_values: reg[:enum_values],
         position: current_position,
-        plc_version_id: PLC_VERSION_ID
+        modbus_firmware_version_id: MODBUS_FIRMWARE_VERSION_ID
       )
 
-      interface = Interface.find_by(communication_type: 'analog_input', io_number: n, plc_version_id: PLC_VERSION_ID)
+      interface = Interface.find_by(communication_type: 'analog_input', io_number: n, modbus_firmware_version_id: MODBUS_FIRMWARE_VERSION_ID)
       last_position = InterfaceRegisterMapping.where(interface: interface).maximum(:position).to_i + 1
       InterfaceRegisterMapping.create!(
         description: description,

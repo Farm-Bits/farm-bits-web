@@ -91,9 +91,9 @@ ActiveRecord::Base.transaction do
   ]
   OFFSET_ADDRESS = 16384
 
-  plc_version_id = PlcVersion.first.id
+  modbus_firmware_version_id = ModbusFirmwareVersion.first.id
   previous_registers_size = 0
-  position = RegisterTemplate.where(plc_version_id: plc_version_id).maximum(:position).to_i + 1
+  position = RegisterTemplate.where(modbus_firmware_version_id: modbus_firmware_version_id).maximum(:position).to_i + 1
   SMTP_CONFIGURATION_REGISTERS.each do |smtp_configuration_register|
     RegisterTemplate.create!(smtp_configuration_register.merge({
       address: OFFSET_ADDRESS + previous_registers_size,
@@ -102,7 +102,7 @@ ActiveRecord::Base.transaction do
       bulk_read_offset: previous_registers_size,
       user_visibility: 'hidden',
       position: position,
-      plc_version_id: plc_version_id
+      modbus_firmware_version_id: modbus_firmware_version_id
     }))
 
     previous_registers_size += smtp_configuration_register[:address_count]

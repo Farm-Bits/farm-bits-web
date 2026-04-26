@@ -112,7 +112,7 @@ export type InterfaceWithMeasurementPoints = Interface & {
   register_mappings: RegisterMapping[];
 };
 
-type PlcVersion = {
+type ModbusFirmwareVersion = {
   id: number;
   name: string;
   description: string | null;
@@ -128,7 +128,7 @@ export type Plc = {
   slave_id: number;
   private_ip: string | null;
   last_seen_at: string | null;
-  plc_version: PlcVersion;
+  modbus_firmware_version: ModbusFirmwareVersion;
 };
 
 export type PlcWithInterfaces = Plc & {

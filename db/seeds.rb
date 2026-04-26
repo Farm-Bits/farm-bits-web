@@ -34,14 +34,17 @@ ActiveRecord::Base.transaction do
         { name: 'Humidity',            data_category: 'analog',  value_type: 'instantaneous', control_group: climate_control_group, default_unit: '%',     default_chart_type: 'line', default_color: '#39A0CA', icon_key: 'humidity', position: 2 },
         { name: 'Wind Speed',          data_category: 'analog',  value_type: 'instantaneous', control_group: climate_control_group, default_unit: 'm/s',   default_chart_type: 'line', default_color: '#00008B', position: 3 },
         { name: 'Wind Direction',      data_category: 'analog',  value_type: 'instantaneous', control_group: climate_control_group, default_unit: '°',     default_chart_type: 'line', default_color: '#4682B4', position: 4 },
-        { name: 'Precipitation',       data_category: 'counter', value_type: 'accumulative',  control_group: climate_control_group, default_unit: 'mm',    default_chart_type: 'bar',  default_color: '#1E90FF', position: 5 },
-        { name: 'Precipitation Rate',  data_category: 'analog',  value_type: 'instantaneous', control_group: climate_control_group, default_unit: 'mm/hr', default_chart_type: 'line', default_color: '#1E90FF', position: 6 },
-        { name: 'Global Radiation',    data_category: 'analog',  value_type: 'instantaneous', control_group: climate_control_group, default_unit: 'W/m²',  default_chart_type: 'line', default_color: '#FFD700', position: 7 },
-        { name: 'Direct Radiation',    data_category: 'analog',  value_type: 'instantaneous', control_group: climate_control_group, default_unit: 'W/m²',  default_chart_type: 'line', default_color: '#FFA500', position: 8 },
-        { name: 'Diffused Radiation',  data_category: 'analog',  value_type: 'instantaneous', control_group: climate_control_group, default_unit: 'W/m²',  default_chart_type: 'line', default_color: '#FFDAB9', position: 9 },
-        { name: 'Barometric Pressure', data_category: 'analog',  value_type: 'instantaneous', control_group: climate_control_group, default_unit: 'hPa',   default_chart_type: 'line', default_color: '#708090', position: 10 },
-        { name: 'Leaf Wetness',        data_category: 'analog',  value_type: 'instantaneous', control_group: climate_control_group, default_unit: '%',     default_chart_type: 'line', default_color: '#32CD32', position: 11 },
-        { name: 'Dew Point',           data_category: 'analog',  value_type: 'instantaneous', control_group: climate_control_group, default_unit: '°C',    default_chart_type: 'line', default_color: '#87CEEB', position: 12 }
+        { name: 'Wind Direction (Cardinal)', data_category: 'analog',  value_type: 'instantaneous', control_group: climate_control_group, default_unit: 'cardinal', default_chart_type: 'step', default_color: '#4682B4', position: 5 },
+        { name: 'Wind Force',          data_category: 'analog',  value_type: 'instantaneous', control_group: climate_control_group, default_unit: 'Beaufort', default_chart_type: 'line', default_color: '#4169E1', position: 6 },
+        { name: 'Precipitation',       data_category: 'counter', value_type: 'accumulative',  control_group: climate_control_group, default_unit: 'mm',    default_chart_type: 'bar',  default_color: '#1E90FF', position: 7 },
+        { name: 'Precipitation Rate',  data_category: 'analog',  value_type: 'instantaneous', control_group: climate_control_group, default_unit: 'mm/hr', default_chart_type: 'line', default_color: '#1E90FF', position: 8 },
+        { name: 'Global Radiation',    data_category: 'analog',  value_type: 'instantaneous', control_group: climate_control_group, default_unit: 'W/m²',  default_chart_type: 'line', default_color: '#FFD700', position: 9 },
+        { name: 'Direct Radiation',    data_category: 'analog',  value_type: 'instantaneous', control_group: climate_control_group, default_unit: 'W/m²',  default_chart_type: 'line', default_color: '#FFA500', position: 10 },
+        { name: 'Diffused Radiation',  data_category: 'analog',  value_type: 'instantaneous', control_group: climate_control_group, default_unit: 'W/m²',  default_chart_type: 'line', default_color: '#FFDAB9', position: 11 },
+        { name: 'Barometric Pressure', data_category: 'analog',  value_type: 'instantaneous', control_group: climate_control_group, default_unit: 'hPa',   default_chart_type: 'line', default_color: '#708090', position: 12 },
+        { name: 'Leaf Wetness',        data_category: 'analog',  value_type: 'instantaneous', control_group: climate_control_group, default_unit: '%',     default_chart_type: 'line', default_color: '#32CD32', position: 13 },
+        { name: 'Dew Point',           data_category: 'analog',  value_type: 'instantaneous', control_group: climate_control_group, default_unit: '°C',    default_chart_type: 'line', default_color: '#87CEEB', position: 14 },
+        { name: 'Illuminance',         data_category: 'analog',  value_type: 'instantaneous', control_group: climate_control_group, default_unit: 'lux',   default_chart_type: 'line', default_color: '#FFD700', position: 15 }
       ]
     },
     {
@@ -119,6 +122,15 @@ ActiveRecord::Base.transaction do
         { name: 'Compressor',          data_category: 'status', value_type: 'status', control_group: irrgfer_control_group, default_unit: 'Off/On',       default_chart_type: 'step', default_color: '#6C757D', position: 12 },
         { name: 'Motor',               data_category: 'status', value_type: 'status', control_group: irrgfer_control_group, default_unit: 'Off/On',       default_chart_type: 'step', default_color: '#495057', position: 13 },
         { name: 'Alarm',               data_category: 'status', value_type: 'status', control_group: irrgfer_control_group, default_unit: 'OK/Fault',     default_chart_type: 'step', default_color: '#DC3545', position: 14 }
+      ]
+    },
+    {
+      name: 'Air Quality',
+      position: 8,
+      measurement_subtypes_attributes: [
+        { name: 'Noise',               data_category: 'analog', value_type: 'instantaneous', control_group: climate_control_group, default_unit: 'dB',    default_chart_type: 'line', default_color: '#6C757D', position: 1 },
+        { name: 'PM2.5',               data_category: 'analog', value_type: 'instantaneous', control_group: climate_control_group, default_unit: 'µg/m³', default_chart_type: 'line', default_color: '#8B4513', position: 2 },
+        { name: 'PM10',                data_category: 'analog', value_type: 'instantaneous', control_group: climate_control_group, default_unit: 'µg/m³', default_chart_type: 'line', default_color: '#A0522D', position: 3 }
       ]
     }
   ])

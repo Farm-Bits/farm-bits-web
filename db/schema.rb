@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_14_192137) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_20_202721) do
   create_table "action_mailbox_inbound_emails", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "status", default: 0, null: false
     t.string "message_id", null: false
@@ -291,13 +291,13 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_14_192137) do
     t.string "communication_type", null: false
     t.text "description"
     t.integer "io_number", null: false
-    t.bigint "plc_version_id", null: false
+    t.bigint "modbus_firmware_version_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["plc_version_id", "communication_type"], name: "index_interfaces_on_plc_version_id_and_communication_type"
-    t.index ["plc_version_id", "io_number"], name: "index_interfaces_on_plc_version_id_and_io_number"
-    t.index ["plc_version_id", "name"], name: "index_interfaces_on_plc_version_id_and_name", unique: true
-    t.index ["plc_version_id"], name: "index_interfaces_on_plc_version_id"
+    t.index ["modbus_firmware_version_id", "communication_type"], name: "idx_on_modbus_firmware_version_id_communication_typ_60c6b69306"
+    t.index ["modbus_firmware_version_id", "io_number"], name: "index_interfaces_on_modbus_firmware_version_id_and_io_number"
+    t.index ["modbus_firmware_version_id", "name"], name: "index_interfaces_on_modbus_firmware_version_id_and_name", unique: true
+    t.index ["modbus_firmware_version_id"], name: "index_interfaces_on_modbus_firmware_version_id"
   end
 
   create_table "invitation_sites", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -357,7 +357,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_14_192137) do
     t.boolean "active", default: true, null: false
     t.bigint "measurement_subtype_id"
     t.bigint "register_template_id", null: false
-    t.bigint "plc_id", null: false
+    t.bigint "plc_id"
+    t.bigint "modbus_device_id"
     t.bigint "segment_id"
     t.bigint "site_id"
     t.datetime "created_at", null: false
@@ -365,6 +366,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_14_192137) do
     t.index ["active"], name: "index_measurement_points_on_active"
     t.index ["data_collection_enabled"], name: "index_measurement_points_on_data_collection_enabled"
     t.index ["measurement_subtype_id"], name: "index_measurement_points_on_measurement_subtype_id"
+    t.index ["modbus_device_id"], name: "index_measurement_points_on_modbus_device_id"
     t.index ["plc_id", "data_collection_enabled"], name: "index_measurement_points_on_plc_id_and_data_collection_enabled"
     t.index ["plc_id", "position"], name: "index_measurement_points_on_plc_id_and_position"
     t.index ["plc_id", "register_template_id"], name: "index_measurement_points_on_plc_id_and_register_template_id", unique: true
@@ -403,6 +405,63 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_14_192137) do
     t.index ["name"], name: "index_measurement_types_on_name", unique: true
   end
 
+  create_table "modbus_devices", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "label"
+    t.integer "slave_id", null: false
+    t.string "private_ip"
+    t.integer "slot_number"
+    t.datetime "last_seen_at"
+    t.boolean "active", default: true, null: false
+    t.bigint "model_id", null: false
+    t.bigint "modbus_firmware_version_id", null: false
+    t.bigint "plc_id"
+    t.bigint "gateway_id"
+    t.bigint "site_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["gateway_id", "private_ip"], name: "index_modbus_devices_on_gateway_id_and_private_ip", unique: true
+    t.index ["gateway_id"], name: "index_modbus_devices_on_gateway_id"
+    t.index ["modbus_firmware_version_id"], name: "index_modbus_devices_on_modbus_firmware_version_id"
+    t.index ["model_id"], name: "index_modbus_devices_on_model_id"
+    t.index ["plc_id", "slot_number"], name: "index_modbus_devices_on_plc_id_and_slot_number", unique: true
+    t.index ["plc_id"], name: "index_modbus_devices_on_plc_id"
+    t.index ["site_id"], name: "index_modbus_devices_on_site_id"
+  end
+
+  create_table "modbus_firmware_compatibilities", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "host_version_id", null: false
+    t.bigint "peripheral_version_id", null: false
+    t.integer "firmware_code"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["host_version_id", "firmware_code"], name: "idx_on_host_version_id_firmware_code_a0c5a4bb26", unique: true
+    t.index ["host_version_id", "peripheral_version_id"], name: "idx_on_host_version_id_peripheral_version_id_f74bc09a68", unique: true
+    t.index ["host_version_id"], name: "index_modbus_firmware_compatibilities_on_host_version_id"
+    t.index ["peripheral_version_id"], name: "index_modbus_firmware_compatibilities_on_peripheral_version_id"
+  end
+
+  create_table "modbus_firmware_versions", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "version_code", null: false
+    t.string "behavior_profile"
+    t.integer "relay_slot_base"
+    t.integer "relay_slot_size"
+    t.integer "relay_max_slots"
+    t.string "relay_register_type"
+    t.text "description"
+    t.boolean "is_latest", default: false, null: false
+    t.boolean "is_supported", default: true, null: false
+    t.bigint "model_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["behavior_profile"], name: "index_modbus_firmware_versions_on_behavior_profile"
+    t.index ["is_supported"], name: "index_modbus_firmware_versions_on_is_supported"
+    t.index ["model_id", "is_latest"], name: "index_modbus_firmware_versions_on_model_id_and_is_latest"
+    t.index ["model_id", "name"], name: "index_modbus_firmware_versions_on_model_id_and_name", unique: true
+    t.index ["model_id"], name: "index_modbus_firmware_versions_on_model_id"
+  end
+
   create_table "models", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "device_type", null: false
@@ -412,23 +471,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_14_192137) do
     t.index ["device_type"], name: "index_models_on_device_type"
     t.index ["manufacturer_id", "name"], name: "index_models_on_manufacturer_id_and_name", unique: true
     t.index ["manufacturer_id"], name: "index_models_on_manufacturer_id"
-  end
-
-  create_table "plc_versions", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
-    t.string "name", null: false
-    t.string "version_code", null: false
-    t.string "behavior_profile"
-    t.text "description"
-    t.boolean "is_latest", default: false, null: false
-    t.boolean "is_supported", default: true, null: false
-    t.bigint "model_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["behavior_profile"], name: "index_plc_versions_on_behavior_profile"
-    t.index ["is_supported"], name: "index_plc_versions_on_is_supported"
-    t.index ["model_id", "is_latest"], name: "index_plc_versions_on_model_id_and_is_latest"
-    t.index ["model_id", "name"], name: "index_plc_versions_on_model_id_and_name", unique: true
-    t.index ["model_id"], name: "index_plc_versions_on_model_id"
   end
 
   create_table "plc_write_logs", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -469,7 +511,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_14_192137) do
     t.datetime "last_seen_at"
     t.boolean "active", default: true, null: false
     t.bigint "model_id", null: false
-    t.bigint "plc_version_id", null: false
+    t.bigint "modbus_firmware_version_id", null: false
     t.bigint "gateway_id"
     t.bigint "site_id"
     t.datetime "created_at", null: false
@@ -478,8 +520,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_14_192137) do
     t.index ["gateway_id", "active"], name: "index_plcs_on_gateway_id_and_active"
     t.index ["gateway_id"], name: "index_plcs_on_gateway_id"
     t.index ["label"], name: "index_plcs_on_label", unique: true
+    t.index ["modbus_firmware_version_id"], name: "index_plcs_on_modbus_firmware_version_id"
     t.index ["model_id"], name: "index_plcs_on_model_id"
-    t.index ["plc_version_id"], name: "index_plcs_on_plc_version_id"
     t.index ["serial_number"], name: "index_plcs_on_serial_number", unique: true
     t.index ["site_id"], name: "index_plcs_on_site_id"
     t.index ["username"], name: "index_plcs_on_username", unique: true
@@ -502,6 +544,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_14_192137) do
     t.text "description"
     t.integer "address", null: false
     t.integer "address_count", default: 1, null: false
+    t.integer "relay_offset"
     t.string "register_type", null: false
     t.string "data_type", null: false
     t.string "byte_order", null: false
@@ -524,18 +567,20 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_14_192137) do
     t.json "enum_values"
     t.json "read_only_enum_keys"
     t.integer "position", default: 0, null: false
-    t.bigint "plc_version_id", null: false
+    t.bigint "default_measurement_subtype_id"
+    t.bigint "modbus_firmware_version_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["category"], name: "index_register_templates_on_category"
-    t.index ["plc_version_id", "address"], name: "index_register_templates_on_plc_version_id_and_address", unique: true
-    t.index ["plc_version_id", "bulk_read_group"], name: "index_register_templates_on_plc_version_id_and_bulk_read_group"
-    t.index ["plc_version_id", "category"], name: "index_register_templates_on_plc_version_id_and_category"
-    t.index ["plc_version_id", "group_name"], name: "index_register_templates_on_plc_version_id_and_group_name"
-    t.index ["plc_version_id", "label"], name: "index_register_templates_on_plc_version_id_and_label", unique: true
-    t.index ["plc_version_id", "name"], name: "index_register_templates_on_plc_version_id_and_name"
-    t.index ["plc_version_id", "position"], name: "index_register_templates_on_plc_version_id_and_position"
-    t.index ["plc_version_id"], name: "index_register_templates_on_plc_version_id"
+    t.index ["default_measurement_subtype_id"], name: "index_register_templates_on_default_measurement_subtype_id"
+    t.index ["modbus_firmware_version_id", "address"], name: "idx_on_modbus_firmware_version_id_address_3be5d60660", unique: true
+    t.index ["modbus_firmware_version_id", "bulk_read_group"], name: "idx_on_modbus_firmware_version_id_bulk_read_group_fec5f958f2"
+    t.index ["modbus_firmware_version_id", "category"], name: "idx_on_modbus_firmware_version_id_category_fb2ebbd4fe"
+    t.index ["modbus_firmware_version_id", "group_name"], name: "idx_on_modbus_firmware_version_id_group_name_444938a547"
+    t.index ["modbus_firmware_version_id", "label"], name: "idx_on_modbus_firmware_version_id_label_1c522bb600", unique: true
+    t.index ["modbus_firmware_version_id", "name"], name: "idx_on_modbus_firmware_version_id_name_cb822f8b8e"
+    t.index ["modbus_firmware_version_id", "position"], name: "idx_on_modbus_firmware_version_id_position_06de66e444"
+    t.index ["modbus_firmware_version_id"], name: "index_register_templates_on_modbus_firmware_version_id"
   end
 
   create_table "segments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -689,30 +734,39 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_14_192137) do
   add_foreign_key "hourly_aggregations", "measurement_points", on_delete: :cascade
   add_foreign_key "interface_register_mappings", "interfaces", on_delete: :cascade
   add_foreign_key "interface_register_mappings", "register_templates", on_delete: :cascade
-  add_foreign_key "interfaces", "plc_versions", on_delete: :cascade
+  add_foreign_key "interfaces", "modbus_firmware_versions", on_delete: :cascade
   add_foreign_key "invitation_sites", "invitations"
   add_foreign_key "invitation_sites", "sites"
   add_foreign_key "invitations", "companies", on_delete: :cascade
   add_foreign_key "measurement_points", "measurement_subtypes", on_delete: :cascade
+  add_foreign_key "measurement_points", "modbus_devices", on_delete: :cascade
   add_foreign_key "measurement_points", "plcs", on_delete: :cascade
   add_foreign_key "measurement_points", "register_templates", on_delete: :cascade
   add_foreign_key "measurement_points", "segments", on_delete: :cascade
   add_foreign_key "measurement_points", "sites", on_delete: :cascade
   add_foreign_key "measurement_subtypes", "control_groups", on_delete: :nullify
   add_foreign_key "measurement_subtypes", "measurement_types", on_delete: :cascade
+  add_foreign_key "modbus_devices", "gateways"
+  add_foreign_key "modbus_devices", "modbus_firmware_versions"
+  add_foreign_key "modbus_devices", "models"
+  add_foreign_key "modbus_devices", "plcs"
+  add_foreign_key "modbus_devices", "sites"
+  add_foreign_key "modbus_firmware_compatibilities", "modbus_firmware_versions", column: "host_version_id", on_delete: :cascade
+  add_foreign_key "modbus_firmware_compatibilities", "modbus_firmware_versions", column: "peripheral_version_id", on_delete: :cascade
+  add_foreign_key "modbus_firmware_versions", "models", on_delete: :cascade
   add_foreign_key "models", "manufacturers", on_delete: :cascade
-  add_foreign_key "plc_versions", "models", on_delete: :cascade
   add_foreign_key "plc_write_logs", "measurement_points", on_delete: :cascade
   add_foreign_key "plc_write_logs", "plcs", on_delete: :cascade
   add_foreign_key "plc_write_logs", "register_templates", on_delete: :cascade
   add_foreign_key "plc_write_logs", "sites", on_delete: :cascade
   add_foreign_key "plc_write_logs", "users", on_delete: :nullify
   add_foreign_key "plcs", "gateways"
+  add_foreign_key "plcs", "modbus_firmware_versions"
   add_foreign_key "plcs", "models"
-  add_foreign_key "plcs", "plc_versions"
   add_foreign_key "plcs", "sites"
   add_foreign_key "raw_values", "measurement_points", on_delete: :cascade
-  add_foreign_key "register_templates", "plc_versions", on_delete: :cascade
+  add_foreign_key "register_templates", "measurement_subtypes", column: "default_measurement_subtype_id", on_delete: :nullify
+  add_foreign_key "register_templates", "modbus_firmware_versions", on_delete: :cascade
   add_foreign_key "segments", "sites", on_delete: :cascade
   add_foreign_key "site_sun_data", "sites", on_delete: :cascade
   add_foreign_key "sites", "companies", on_delete: :cascade

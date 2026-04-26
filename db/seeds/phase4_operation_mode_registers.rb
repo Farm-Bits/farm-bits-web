@@ -107,7 +107,7 @@ ActiveRecord::Base.transaction do
     { name: 'Command',  group_role: 'command',  data_type: 'uint16', value_format: 'enum',             addr_count: 1, is_status: true, default_value: 0, enum_values: { '0' => 'Idle', '1' => 'On', '2' => 'On (Timed)', '3' => 'Off', '4' => 'Auto' }, description: 'Manual command. PLC resets to None after executing' }
   ].freeze
 
-  PLC_VERSION_ID = PlcVersion.first.id
+  MODBUS_FIRMWARE_VERSION_ID = ModbusFirmwareVersion.first.id
 
   def create_register(interface, group_name, address, current_position, interface_register_mapping_position, reg)
     group_label = group_name.split('_')
@@ -161,7 +161,7 @@ ActiveRecord::Base.transaction do
       enum_values: reg[:enum_values],
       read_only_enum_keys: reg[:read_only_enum_keys],
       position: current_position,
-      plc_version_id: PLC_VERSION_ID
+      modbus_firmware_version_id: MODBUS_FIRMWARE_VERSION_ID
     )
     InterfaceRegisterMapping.create!(
       description: reg[:description],
@@ -171,12 +171,12 @@ ActiveRecord::Base.transaction do
     )
   end
 
-  current_position = RegisterTemplate.where(plc_version_id: PLC_VERSION_ID).maximum(:position).to_i + 1
+  current_position = RegisterTemplate.where(modbus_firmware_version_id: MODBUS_FIRMWARE_VERSION_ID).maximum(:position).to_i + 1
   address_offset = 0
   address_status_offset = 0
 
   (1..12).each do |n|
-    interface = Interface.find_by(communication_type: 'digital_output', io_number: n, plc_version_id: PLC_VERSION_ID)
+    interface = Interface.find_by(communication_type: 'digital_output', io_number: n, modbus_firmware_version_id: MODBUS_FIRMWARE_VERSION_ID)
     interface_register_mapping_position = InterfaceRegisterMapping.where(interface: interface).maximum(:position).to_i + 1
 
     [
@@ -217,7 +217,7 @@ ActiveRecord::Base.transaction do
   end
 
   (1..12).each do |n|
-    interface = Interface.find_by(communication_type: 'digital_output', io_number: n, plc_version_id: PLC_VERSION_ID)
+    interface = Interface.find_by(communication_type: 'digital_output', io_number: n, modbus_firmware_version_id: MODBUS_FIRMWARE_VERSION_ID)
     interface_register_mapping_position = InterfaceRegisterMapping.where(interface: interface).maximum(:position).to_i + 1
 
     OM_MANUAL_STATUS_REGISTERS.each do |reg|

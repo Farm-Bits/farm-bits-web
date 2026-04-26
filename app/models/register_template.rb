@@ -1,7 +1,8 @@
 class RegisterTemplate < ApplicationRecord
   audited
 
-  belongs_to :plc_version
+  belongs_to :modbus_firmware_version
+  belongs_to :default_measurement_subtype, class_name: 'MeasurementSubtype', optional: true
 
   has_many :interface_register_mappings, dependent: :destroy
   accepts_nested_attributes_for :interface_register_mappings, allow_destroy: true
@@ -33,7 +34,7 @@ class RegisterTemplate < ApplicationRecord
   USER_VISIBILITIES = %w[visible hidden].freeze
 
   validates :name, presence: true
-  validates :label, presence: true, uniqueness: { scope: :plc_version_id }
+  validates :label, presence: true, uniqueness: { scope: :modbus_firmware_version_id }
   validates :address,
     presence: true,
     numericality: {
@@ -41,7 +42,7 @@ class RegisterTemplate < ApplicationRecord
       greater_than_or_equal_to: 0,
       message: 'must be greater than or equal to 0 (Modbus specification)'
     },
-    uniqueness: { scope: :plc_version_id }
+    uniqueness: { scope: :modbus_firmware_version_id }
   validates :address_count, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validates :register_type, presence: true, inclusion: { in: REGISTER_TYPES }
   validates :data_type, presence: true, inclusion: { in: DATA_TYPES }
@@ -231,7 +232,7 @@ class RegisterTemplate < ApplicationRecord
     end
 
     def address_range_does_not_overlap
-      if !plc_version_id.present? || !address.present? || !address_count.present?
+      if !modbus_firmware_version_id.present? || !address.present? || !address_count.present?
         return
       end
 
@@ -239,7 +240,7 @@ class RegisterTemplate < ApplicationRecord
       end_addr = address + address_count - 1
 
       overlapping = RegisterTemplate
-        .where(plc_version_id: plc_version_id, register_type: register_type)
+        .where(modbus_firmware_version_id: modbus_firmware_version_id, register_type: register_type)
         .where.not(id: id)
         .where('address <= ? AND (address + address_count - 1) >= ?', end_addr, start_addr)
 

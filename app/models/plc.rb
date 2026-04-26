@@ -2,7 +2,7 @@ class Plc < ApplicationRecord
   audited
 
   belongs_to :model
-  belongs_to :plc_version
+  belongs_to :modbus_firmware_version
   belongs_to :gateway, optional: true
   belongs_to :site, optional: true
 
@@ -35,7 +35,7 @@ class Plc < ApplicationRecord
   validates :web_username, presence: true
   validates :web_password, presence: true
   validate :model_is_plc_type
-  validate :plc_version_belongs_to_model
+  validate :modbus_firmware_version_belongs_to_model
 
   attr_accessor :disable_sync_plc_ingestion_service, :disable_initial_read
 
@@ -72,28 +72,28 @@ class Plc < ApplicationRecord
       end
     end
 
-    def plc_version_belongs_to_model
-      if !model.present? || !plc_version.present?
+    def modbus_firmware_version_belongs_to_model
+      if !model.present? || !modbus_firmware_version.present?
         return
       end
 
-      if plc_version.model_id != model_id
-        errors.add(:plc_version, "must belong to the selected model (#{model.full_name})")
+      if modbus_firmware_version.model_id != model_id
+        errors.add(:modbus_firmware_version, "must belong to the selected model (#{model.full_name})")
       end
     end
 
     def create_measurement_points_from_templates
-      if !plc_version.present?
+      if !modbus_firmware_version.present?
         return
       end
 
-      plc_version.register_templates.includes(:interface_register_mappings).find_each do |template|
+      modbus_firmware_version.register_templates.includes(:interface_register_mappings).find_each do |template|
         measurement_points.create!(
           name: template.name,
           description: template.description,
           position: template.position,
           active: !template.interface_register_mappings.any? || !MeasurementSubtype::DATA_CATEGORIES.include?(template.category),
-          measurement_subtype: nil,
+          measurement_subtype: template.default_measurement_subtype,
           register_template: template,
           site: site
         )
