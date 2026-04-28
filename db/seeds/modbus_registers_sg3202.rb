@@ -26,7 +26,7 @@ ActiveRecord::Base.transaction do
 
   registers = [
     { rel: 0, name: 'Power',   category: 'analog',  address: 16, data_type: 'uint32', value_format: 'numeric', unit: 'W',   factor: 1.0,   read_only: true, value_type: 'instantaneous', count: 2 },
-    { rel: 2, name: 'Energy',  category: 'counter', address: 18, data_type: 'uint32', value_format: 'numeric', unit: 'kWh', factor: 0.001, read_only: true, value_type: 'accumulative',  count: 2 },
+    { rel: 2, name: 'Energy',  category: 'counter', address: 18, data_type: 'uint32', value_format: 'numeric', unit: 'Wh',  factor: 10,    read_only: true, value_type: 'accumulative',  count: 2 },
     { rel: 6, name: 'Voltage', category: 'analog',  address: 22, data_type: 'uint16', value_format: 'numeric', unit: 'V',   factor: 0.1,   read_only: true, value_type: 'instantaneous', count: 1 },
     { rel: 7, name: 'Current', category: 'analog',  address: 23, data_type: 'uint16', value_format: 'numeric', unit: 'A',   factor: 0.01,  read_only: true, value_type: 'instantaneous', count: 1 }
   ]

@@ -37,12 +37,14 @@ class ModbusDevice < ApplicationRecord
   validate :modbus_firmware_version_supported_by_plc_firmware
   validate :site_matches_connection
 
+  attr_accessor :disable_initial_read
+
   before_validation :auto_assign_slot_number
   before_validation :derive_site_from_connection
   before_save :clear_slot_when_disconnected
   after_create :create_measurement_points_from_templates
   after_update :sync_measurement_points_site
-  after_commit :enqueue_initial_read, on: :create, if: :active?
+  after_commit :enqueue_initial_read, on: :create, if: -> { active? && polled_by_gateway? }
   after_commit :enqueue_initial_read, on: :update, if: -> { saved_change_to_active? && active? }
 
   def polled_by_plc?

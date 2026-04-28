@@ -25,10 +25,10 @@ ActiveRecord::Base.transaction do
   )
 
   registers = [
-    { rel: 0, name: 'Voltage', category: 'analog',  address: 0,   data_type: 'float32', value_format: 'numeric', unit: 'V',   read_only: true, value_type: 'instantaneous' },
-    { rel: 2, name: 'Current', category: 'analog',  address: 6,   data_type: 'float32', value_format: 'numeric', unit: 'A',   read_only: true, value_type: 'instantaneous' },
-    { rel: 4, name: 'Power',   category: 'analog',  address: 12,  data_type: 'float32', value_format: 'numeric', unit: 'W',   read_only: true, value_type: 'instantaneous' },
-    { rel: 6, name: 'Energy',  category: 'counter', address: 342, data_type: 'float32', value_format: 'numeric', unit: 'kWh', read_only: true, value_type: 'accumulative'  }
+    { rel: 0, name: 'Voltage', category: 'analog',  address: 1,   data_type: 'float32', value_format: 'numeric', unit: 'V',   factor: 1.0, read_only: true, value_type: 'instantaneous' },
+    { rel: 2, name: 'Current', category: 'analog',  address: 7,   data_type: 'float32', value_format: 'numeric', unit: 'A',   factor: 1.0, read_only: true, value_type: 'instantaneous' },
+    { rel: 4, name: 'Power',   category: 'analog',  address: 13,  data_type: 'float32', value_format: 'numeric', unit: 'W',   factor: 1.0, read_only: true, value_type: 'instantaneous' },
+    { rel: 6, name: 'Energy',  category: 'counter', address: 343, data_type: 'float32', value_format: 'numeric', unit: 'Wh',  factor: 1000.0, read_only: true, value_type: 'accumulative'  }
   ]
 
   registers.each_with_index do |r, i|
@@ -49,7 +49,7 @@ ActiveRecord::Base.transaction do
       data_type:     r[:data_type],
       byte_order:    'big_endian',
       value_format:  r[:value_format],
-      factor:        1.0,
+      factor:        r[:factor],
       offset:        0.0,
       category:      r[:category],
       read_only:     r[:read_only],
