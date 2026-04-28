@@ -106,7 +106,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref } from 'vue';
+  import { computed, ref } from 'vue';
   import { router } from '@inertiajs/vue3';
   import axios from 'axios';
   import InterfaceList from './components/InterfaceList.vue';
@@ -125,7 +125,9 @@
     measurementSubtypes: MeasurementSubtype[];
   }>();
   const segments = currentSite.value?.segments || [];
-  const { plc, measurementSubtypes } = pageProps.value;
+
+  const plc = computed(() => pageProps.value.plc);
+  const measurementSubtypes = computed(() => pageProps.value.measurementSubtypes);
 
   const { execute } = useApiCall();
 
@@ -133,7 +135,7 @@
   const refreshing = ref(false);
 
   function getInterfacesByType(type: CommunicationType) {
-    return plc.interfaces.filter((i) => i.communication_type === type);
+    return plc.value.interfaces.filter((i) => i.communication_type === type);
   }
 
   function getInterfaceCount(type: CommunicationType) {
@@ -148,7 +150,7 @@
   async function refreshValues() {
     refreshing.value = true;
 
-    const url = ROUTES.plcs_refresh_interfaces.path.replace(':id', String(plc.id));
+    const url = ROUTES.plcs_refresh_interfaces.path.replace(':id', String(plc.value.id));
     const { success } = await execute(
       () => axios.post(url),
       {
@@ -179,7 +181,7 @@
     );
 
     let remaining = pointsMap.size;
-    for (const iface of plc.interfaces) {
+    for (const iface of plc.value.interfaces) {
       for (const mapping of iface.register_mappings) {
         const updatedPoint = pointsMap.get(mapping.measurement_point.id);
         if (updatedPoint) {

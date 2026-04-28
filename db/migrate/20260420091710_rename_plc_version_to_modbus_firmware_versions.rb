@@ -6,6 +6,7 @@ class RenamePlcVersionToModbusFirmwareVersions < ActiveRecord::Migration[7.2]
     add_column :modbus_firmware_versions, :relay_slot_size, :integer, after: :relay_slot_base
     add_column :modbus_firmware_versions, :relay_max_slots, :integer, after: :relay_slot_size
     add_column :modbus_firmware_versions, :relay_register_type, :string, after: :relay_max_slots
+    add_column :modbus_firmware_versions, :relay_read_strategy, :string, after: :relay_register_type
 
     rename_column :interfaces,          :plc_version_id, :modbus_firmware_version_id
     rename_column :plcs,                :plc_version_id, :modbus_firmware_version_id

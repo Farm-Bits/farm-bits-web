@@ -118,7 +118,7 @@ class PlcWriteService
       raise WriteError, response[:error] || 'Bulk write to PLC failed'
     end
 
-    # Verify each result, store written values, and log
+    # Verify each result first (fail fast before any DB writes)
     measurement_points_with_values.each do |entry|
       measurement_point = entry[:measurement_point]
       result = response[:results][measurement_point.id]
@@ -127,10 +127,13 @@ class PlcWriteService
         error_msg = result&.dig(:error) || 'No response from PLC'
         raise WriteError, "Failed to write '#{measurement_point.register_template.label}': #{error_msg}"
       end
-
-      store_written_value(measurement_point, entry[:value])
-      log_write(measurement_point, old_values[measurement_point.id], entry[:value], context)
     end
+
+    # Bulk update last_decoded_value / _at for all measurement points
+    bulk_store_written_values(measurement_points_with_values)
+
+    # Bulk insert write logs
+    bulk_log_writes(measurement_points_with_values, old_values, context)
 
     touch_devices!
 
@@ -193,6 +196,56 @@ class PlcWriteService
         Rails.logger.error(
           "Failed to create PlcWriteLog for MeasurementPoint #{measurement_point.id}: #{e.message}"
         )
+      end
+    end
+
+    def bulk_store_written_values(entries)
+      if entries.empty?
+        return
+      end
+
+      now = Time.current
+      mp_ids = entries.map { |e| e[:measurement_point].id }
+
+      value_cases = entries.map do |entry|
+        mp = entry[:measurement_point]
+        serialized = mp.serialize_for_storage(entry[:value])
+        "WHEN #{mp.id.to_i} THEN #{ActiveRecord::Base.connection.quote(serialized)}"
+      end.join(' ')
+
+      MeasurementPoint.where(id: mp_ids).update_all(
+        "last_decoded_value = CASE id #{value_cases} END, " \
+        "last_decoded_value_at = #{ActiveRecord::Base.connection.quote(now)}, " \
+        "updated_at = #{ActiveRecord::Base.connection.quote(now)}"
+      )
+    end
+
+    def bulk_log_writes(entries, old_values, context)
+      if entries.empty?
+        return
+      end
+
+      now = Time.current
+      rows = entries.map do |entry|
+        mp = entry[:measurement_point]
+        {
+          plc_id: @plc.id,
+          site_id: mp.site_id,
+          user_id: context.user&.id,
+          measurement_point_id: mp.id,
+          register_template_id: mp.register_template_id,
+          source: context.source,
+          old_value: old_values[mp.id],
+          new_value: mp.serialize_for_storage(entry[:value]),
+          batch_id: context.batch_id,
+          created_at: now
+        }
+      end
+
+      begin
+        PlcWriteLog.insert_all(rows)
+      rescue => e
+        Rails.logger.error("Failed to bulk insert PlcWriteLogs: #{e.message}")
       end
     end
 

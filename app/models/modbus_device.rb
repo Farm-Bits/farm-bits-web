@@ -42,10 +42,8 @@ class ModbusDevice < ApplicationRecord
   before_save :clear_slot_when_disconnected
   after_create :create_measurement_points_from_templates
   after_update :sync_measurement_points_site
-
-  def connected?
-    plc_id.present? || gateway_id.present?
-  end
+  after_commit :enqueue_initial_read, on: :create, if: :active?
+  after_commit :enqueue_initial_read, on: :update, if: -> { saved_change_to_active? && active? }
 
   def polled_by_plc?
     plc_id.present?
@@ -71,7 +69,7 @@ class ModbusDevice < ApplicationRecord
   end
 
   def relay_address_for(register_template)
-    if !polled_by_plc? || register_template.relay_offset.nil?
+    if !polled_by_plc?
       return nil
     end
 
@@ -80,7 +78,12 @@ class ModbusDevice < ApplicationRecord
       return nil
     end
 
-    version.relay_slot_base + (version.relay_slot_size * slot_number) + register_template.relay_offset
+    mapping = version.relay_mappings.detect { |m| m.register_template_id == register_template.id }
+    if mapping.nil?
+      return nil
+    end
+
+    version.relay_slot_base + (version.relay_slot_size * (slot_number - 1)) + mapping.relay_offset
   end
 
   private
@@ -89,8 +92,8 @@ class ModbusDevice < ApplicationRecord
         return
       end
 
-      if model.device_type != "modbus_device"
-        errors.add(:model, "must be a Modbus device model")
+      if model.device_type != 'modbus_device'
+        errors.add(:model, 'must be a Modbus device model')
       end
     end
 
@@ -155,8 +158,8 @@ class ModbusDevice < ApplicationRecord
         return
       end
 
-      if !slot_number.between?(0, max - 1)
-        errors.add(:slot_number, "must be between 0 and #{max - 1}")
+      if !slot_number.between?(1, max)
+        errors.add(:slot_number, "must be between 1 and #{max}")
       end
     end
 
@@ -195,7 +198,7 @@ class ModbusDevice < ApplicationRecord
 
       max   = plc.modbus_firmware_version.relay_max_slots
       taken = ModbusDevice.where(plc_id: plc_id).where.not(id: id).pluck(:slot_number).compact.to_set
-      free  = (0...max).find { |s| !taken.include?(s) }
+      free  = (1...max).find { |s| !taken.include?(s) }
 
       if free.nil?
         errors.add(:plc, "has no free slots (limit: #{max})")
@@ -254,5 +257,13 @@ class ModbusDevice < ApplicationRecord
       if !update_attrs.empty?
         measurement_points.update_all(update_attrs)
       end
+    end
+
+    def enqueue_initial_read
+      if disable_initial_read
+        return
+      end
+
+      ModbusRefreshJob.perform_async('ModbusDevice', id)
     end
 end

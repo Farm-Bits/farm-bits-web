@@ -22,7 +22,5 @@ class CreateModbusDevices < ActiveRecord::Migration[7.2]
 
     add_reference :measurement_points, :modbus_device, null: true, foreign_key: { on_delete: :cascade }, after: :plc_id
     change_column_null :measurement_points, :plc_id, true
-
-    add_column :register_templates, :relay_offset, :integer, after: :address_count
   end
 end

@@ -15,9 +15,9 @@ scheduler:
       class: PlcSyncJob
       queue: critical
 
-    plc_polling:
+    modbus_polling:
       cron: '*/5 * * * *'
-      class: PlcPollingJob
+      class: ModbusPollingJob
       queue: default
 
     site_sun_data_sync:

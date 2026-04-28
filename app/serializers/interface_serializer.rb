@@ -15,10 +15,6 @@ class InterfaceSerializer < Blueprinter::Base
       end.sort_by(&:position)
 
       interface.interface_register_mappings.map do |irm|
-        if irm.register_template.user_visibility == 'hidden'
-          next
-        end
-
         measurement_point = points.find { |mp| mp.register_template_id == irm.register_template_id }
         if !measurement_point
           next

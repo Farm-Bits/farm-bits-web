@@ -6,6 +6,7 @@ class UserArea::AnalyticsController < UserArea::ApplicationController
       .includes(
         :segment,
         :plc,
+        :modbus_device,
         measurement_subtype: [:measurement_type, :control_group],
         register_template: { interface_register_mappings: :interface }
       )

@@ -29,7 +29,11 @@ class UserArea::PlcsController < UserArea::ApplicationController
   def refresh_interfaces
     authorize @plc, :update?
 
-    PlcRefreshInterfaceValuesJob.perform_async(@plc.id)
+    ModbusRefreshJob.perform_async(
+      'Plc',
+      @plc.id,
+      'categories' => MeasurementSubtype::DATA_CATEGORIES
+    )
 
     render json: { status: 'refresh_started' }, status: :accepted
   end
@@ -45,8 +49,7 @@ class UserArea::PlcsController < UserArea::ApplicationController
         .find(params[:id])
 
       visible_mps = @plc.measurement_points
-        .joins(:register_template)
-        .where(register_templates: { user_visibility: 'visible' })
+        .user_visible
         .includes(:measurement_subtype, register_template: :interface_register_mappings)
         .to_a
 

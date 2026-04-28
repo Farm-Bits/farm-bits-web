@@ -21,11 +21,16 @@ class ModbusFirmwareVersion < ApplicationRecord
   has_many :modbus_firmware_compatibilities_as_peripheral, class_name: 'ModbusFirmwareCompatibility', foreign_key: :peripheral_version_id, dependent: :destroy
   has_many :supporting_host_versions, through: :modbus_firmware_compatibilities_as_peripheral, source: :host_version
 
+  has_many :relay_mappings, class_name: 'ModbusFirmwareRelayMapping', dependent: :destroy
+
+  RELAY_FIELDS = %i[relay_slot_base relay_slot_size relay_max_slots relay_register_type relay_read_strategy].freeze
+
   validates :name, presence: true, uniqueness: { scope: :model_id }
   validates :version_code, presence: true, uniqueness: { scope: :model_id }
-  validate :relay_layout_all_or_none
   validates :relay_slot_base, :relay_slot_size, :relay_max_slots, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
   validates :relay_register_type, inclusion: { in: RegisterTemplate::REGISTER_TYPES }, allow_nil: true
+  validates :relay_read_strategy, inclusion: { in: RelayReadStrategyRegistry::STRATEGIES }, allow_nil: true
+  validate :relay_layout_all_or_none
   validate :only_one_latest_per_model, if: :is_latest?
 
   after_save :ensure_single_latest, if: :saved_change_to_is_latest?
@@ -35,7 +40,7 @@ class ModbusFirmwareVersion < ApplicationRecord
   end
 
   def host_capable?
-    relay_slot_base.present? && relay_slot_size.present? && relay_max_slots.present? && relay_register_type.present?
+    RELAY_FIELDS.all? { |f| public_send(f).present? }
   end
 
   def copy_registers_from(source_version)
@@ -48,13 +53,12 @@ class ModbusFirmwareVersion < ApplicationRecord
 
   private
     def relay_layout_all_or_none
-      fields = [relay_slot_base, relay_slot_size, relay_max_slots, relay_register_type]
-      present_count = fields.count(&:present?)
-      if present_count == 0 || present_count == 4
+      present_count = RELAY_FIELDS.count { |f| public_send(f).present? }
+      if present_count == 0 || present_count == RELAY_FIELDS.length
         return
       end
 
-      errors.add(:base, "relay_slot_base, relay_slot_size, relay_max_slots, and relay_register_type must all be set together, or all left blank")
+      errors.add(:base, "relay fields must all be set together, or all left blank: #{RELAY_FIELDS.join(', ')}")
     end
 
     def only_one_latest_per_model

@@ -140,7 +140,7 @@ class Plc < ApplicationRecord
         return
       end
 
-      PlcInitialReadJob.perform_async(id)
+      ModbusRefreshJob.perform_async('Plc', id)
     end
 
     def remove_plc_ingestion_service

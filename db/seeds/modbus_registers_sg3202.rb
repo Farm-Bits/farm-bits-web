@@ -1,6 +1,5 @@
 # Usage:
 #   rails runner db/seeds/modbus_registers_sg3202.rb
-#
 
 ActiveRecord::Base.transaction do
   manufacturer = Manufacturer.find_or_create_by!(name: 'Billion Watts')
@@ -10,11 +9,20 @@ ActiveRecord::Base.transaction do
     device_type:  'modbus_device'
   )
 
-  version = ModbusFirmwareVersion.find_or_create_by!(name: 'v1.0', model: model) do |v|
-    v.version_code = '1.0'
-    v.is_latest    = true
-    v.is_supported = true
-  end
+  version = ModbusFirmwareVersion.create!(
+    name: 'v1.0',
+    version_code: '1.0',
+    is_latest: true,
+    is_supported: true,
+    model: model
+  )
+
+  host_version = ModbusFirmwareVersion.first
+  ModbusFirmwareCompatibility.create!(
+    host_version:       host_version,
+    peripheral_version: version,
+    firmware_code:      2
+  )
 
   registers = [
     { rel: 0, name: 'Power',   category: 'analog',  address: 16, data_type: 'uint32', value_format: 'numeric', unit: 'W',   factor: 1.0,   read_only: true, value_type: 'instantaneous', count: 2 },
@@ -31,13 +39,12 @@ ActiveRecord::Base.transaction do
       default_unit:  r[:unit]
     )
 
-    RegisterTemplate.create!(
+    template = RegisterTemplate.create!(
       name:            r[:name],
       label:           label,
       description:     "SG3202 #{r[:name]} (holding register #{r[:address]})",
       address:         r[:address],
       address_count:   r[:count],
-      relay_offset:    r[:rel],
       register_type:   'holding',
       data_type:       r[:data_type],
       byte_order:      'big_endian',
@@ -51,13 +58,11 @@ ActiveRecord::Base.transaction do
       default_measurement_subtype: default_subtype,
       modbus_firmware_version: version
     )
+
+    ModbusFirmwareRelayMapping.create!(
+      modbus_firmware_version: host_version,
+      register_template:       template,
+      relay_offset:            r[:rel]
+    )
   end
-
-  host_version = ModbusFirmwareVersion.first
-  ModbusDeviceCompatibility.find_or_create_by!(
-    host_version:       host_version,
-    peripheral_version: version,
-    firmware_code: 2
-  )
-
 end

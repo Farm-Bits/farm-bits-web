@@ -9,11 +9,20 @@ ActiveRecord::Base.transaction do
     device_type:  'modbus_device'
   )
 
-  version = ModbusFirmwareVersion.find_or_create_by!(name: 'v1.2', model: model) do |v|
-    v.version_code = '1.2'
-    v.is_latest    = true
-    v.is_supported = true
-  end
+  version = ModbusFirmwareVersion.create!(
+    name: 'v1.2',
+    version_code: '1.2',
+    is_latest: true,
+    is_supported: true,
+    model: model
+  )
+
+  host_version = ModbusFirmwareVersion.first
+  ModbusFirmwareCompatibility.create!(
+    host_version:       host_version,
+    peripheral_version: version,
+    firmware_code:      3
+  )
 
   # Compass octant enum for register 502. Maps 0..7 to N/NE/E/.../NW.
   wind_direction_octants = {
@@ -50,13 +59,12 @@ ActiveRecord::Base.transaction do
       default_unit:  r[:unit]
     )
 
-    RegisterTemplate.create!(
+    template = RegisterTemplate.create!(
       name:            r[:name],
       label:           label,
       description:     "RS-FSXCS #{r[:name]} (holding register #{r[:address]})",
       address:         r[:address],
       address_count:   r[:count],
-      relay_offset:    r[:rel],
       register_type:   'holding',
       data_type:       r[:data_type],
       byte_order:      'big_endian',
@@ -71,12 +79,11 @@ ActiveRecord::Base.transaction do
       default_measurement_subtype: default_subtype,
       modbus_firmware_version: version
     )
-  end
 
-  host_version = ModbusFirmwareVersion.first
-  ModbusDeviceCompatibility.find_or_create_by!(
-    host_version:       host_version,
-    peripheral_version: version,
-    firmware_code: 3
-  )
+    ModbusFirmwareRelayMapping.create!(
+      modbus_firmware_version: host_version,
+      register_template:       template,
+      relay_offset:            r[:rel]
+    )
+  end
 end

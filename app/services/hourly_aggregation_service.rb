@@ -31,12 +31,9 @@ class HourlyAggregationService
 
   private
     def eligible_measurement_points
-      scope = MeasurementPoint.joins(plc: { gateway: { site: :company } })
-        .where(active: true, data_collection_enabled: true)
-        .where(plcs: { active: true })
-        .where(gateways: { active: true })
-        .where(sites: { companies: { active: true } })
-        .where.not(measurement_subtype_id: nil)
+      scope = MeasurementPoint
+        .operational
+        .where(data_collection_enabled: true)
         .includes(:measurement_subtype)
 
       if @measurement_point_ids

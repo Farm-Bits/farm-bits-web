@@ -2,7 +2,6 @@
 #   rails runner db/seeds/modbus_registers_dcm230.rb
 
 ActiveRecord::Base.transaction do
-
   manufacturer = Manufacturer.find_or_create_by!(name: 'Eastron')
   model = Model.find_or_create_by!(
     manufacturer: manufacturer,
@@ -10,11 +9,20 @@ ActiveRecord::Base.transaction do
     device_type: 'modbus_device'
   )
 
-  version = ModbusFirmwareVersion.find_or_create_by!(name: 'v1.5', model: model) do |v|
-    v.version_code = '1.5'
-    v.is_latest    = true
-    v.is_supported = true
-  end
+  version = ModbusFirmwareVersion.create!(
+    name: 'v1.5',
+    version_code: '1.5',
+    is_latest: true,
+    is_supported: true,
+    model: model
+  )
+
+  host_version = ModbusFirmwareVersion.first
+  ModbusFirmwareCompatibility.create!(
+    host_version:       host_version,
+    peripheral_version: version,
+    firmware_code:      1
+  )
 
   registers = [
     { rel: 0, name: 'Voltage', category: 'analog',  address: 0,   data_type: 'float32', value_format: 'numeric', unit: 'V',   read_only: true, value_type: 'instantaneous' },
@@ -31,13 +39,12 @@ ActiveRecord::Base.transaction do
       default_unit: r[:unit]
     )
 
-    RegisterTemplate.create!(
+    template = RegisterTemplate.create!(
       name:          r[:name],
       label:         label,
       description:   "DCM230 #{r[:name]} (input register #{r[:address]})",
       address:       r[:address],
       address_count: 2,
-      relay_offset:  r[:rel],
       register_type: 'input',
       data_type:     r[:data_type],
       byte_order:    'big_endian',
@@ -51,13 +58,11 @@ ActiveRecord::Base.transaction do
       default_measurement_subtype: default_subtype,
       modbus_firmware_version: version
     )
+
+    ModbusFirmwareRelayMapping.create!(
+      modbus_firmware_version: host_version,
+      register_template:       template,
+      relay_offset:            r[:rel]
+    )
   end
-
-  host_version = ModbusFirmwareVersion.first
-  ModbusDeviceCompatibility.find_or_create_by!(
-    host_version: host_version,
-    peripheral_version: version,
-    firmware_code: 1
-  )
-
 end

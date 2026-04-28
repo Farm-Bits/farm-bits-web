@@ -147,6 +147,13 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
         )
         .find(params[:id])
 
+
+      if @measurement_point.plc.nil?
+        render json: { error: 'Operation mode config is only available on PLC measurement points' },
+               status: :unprocessable_entity
+        return
+      end
+
       if @measurement_point.register_template.interface_register_mappings.empty?
         render json: { error: 'Measurement point is not associated with an interface' }, status: :unprocessable_entity
         return

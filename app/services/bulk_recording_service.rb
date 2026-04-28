@@ -47,15 +47,26 @@ class BulkRecordingService
         .group_by { |r| r[:measurement_point].id }
         .transform_values { |rs| rs.max_by { |r| r[:sample_time] } }
 
-      latest_per_mp.each do |mp_id, reading|
-        measurement_point = reading[:measurement_point]
-
-        MeasurementPoint.where(id: mp_id).update_all(
-          last_decoded_value: measurement_point.serialize_for_storage(reading[:value]),
-          last_decoded_value_at: reading[:sample_time],
-          updated_at: now
-        )
+      if latest_per_mp.empty?
+        return
       end
+
+      mp_ids = latest_per_mp.keys
+
+      value_cases = latest_per_mp.map do |mp_id, reading|
+        serialized = reading[:measurement_point].serialize_for_storage(reading[:value])
+        "WHEN #{mp_id.to_i} THEN #{ActiveRecord::Base.connection.quote(serialized)}"
+      end.join(' ')
+
+      time_cases = latest_per_mp.map do |mp_id, reading|
+        "WHEN #{mp_id.to_i} THEN #{ActiveRecord::Base.connection.quote(reading[:sample_time])}"
+      end.join(' ')
+
+      MeasurementPoint.where(id: mp_ids).update_all(
+        "last_decoded_value = CASE id #{value_cases} END, " \
+        "last_decoded_value_at = CASE id #{time_cases} END, " \
+        "updated_at = #{ActiveRecord::Base.connection.quote(now)}"
+      )
     end
 
     touch_devices!
@@ -81,4 +92,5 @@ class BulkRecordingService
       if gateway_ids.any?
         Gateway.where(id: gateway_ids).update_all(last_seen_at: Time.current)
       end
+    end
 end

@@ -30,6 +30,72 @@ class MeasurementPoint < ApplicationRecord
   after_update :sync_read_after_enable
   after_update :trigger_behavior_sync
 
+  READ_COORDINATES_INCLUDES = [
+    :register_template,
+    { plc: [:gateway, :modbus_firmware_version] },
+    {
+      modbus_device: [
+        :gateway,
+        { modbus_firmware_version: {} },
+        { plc: [:gateway, { modbus_firmware_version: :relay_mappings }] }
+      ]
+    }
+  ].freeze
+
+  scope :user_visible, -> {
+    joins(:register_template).where(register_templates: { user_visibility: 'visible' })
+  }
+  # Topology-agnostic operational scope. An MP is operational when:
+  #   - It's active and has a measurement subtype assigned
+  #   - Its site's company is active
+  #   - Its read endpoint is reachable, where "reachable" means:
+  #       PLC-native:                   plc.active AND plc.gateway.active
+  #       Gateway-direct ModbusDevice:  modbus_device.gateway.active
+  #       PLC-relayed ModbusDevice:     modbus_device.plc.active AND modbus_device.plc.gateway.active
+  #
+  # Use this as the base for any service-level scope that wants
+  # "MPs we should currently care about" (analytics listing, hourly
+  # aggregation, etc.). The polling job has its own simpler filter
+  # because it relies on read_coordinates returning nil for
+  # non-reachable MPs.
+  scope :operational, -> {
+    joins(:site)
+      .joins('INNER JOIN companies ON companies.id = sites.company_id')
+      .where(active: true)
+      .where.not(measurement_subtype_id: nil)
+      .where(companies: { active: true })
+      .where(<<~SQL.squish)
+        (
+          measurement_points.plc_id IS NOT NULL AND EXISTS (
+            SELECT 1 FROM plcs
+            INNER JOIN gateways ON gateways.id = plcs.gateway_id
+            WHERE plcs.id = measurement_points.plc_id
+              AND plcs.active = TRUE
+              AND gateways.active = TRUE
+          )
+        ) OR (
+          measurement_points.modbus_device_id IS NOT NULL AND EXISTS (
+            SELECT 1 FROM modbus_devices
+            LEFT JOIN gateways AS md_direct_gw ON md_direct_gw.id = modbus_devices.gateway_id
+            LEFT JOIN plcs     AS md_host_plc  ON md_host_plc.id  = modbus_devices.plc_id
+            LEFT JOIN gateways AS md_host_gw   ON md_host_gw.id   = md_host_plc.gateway_id
+            WHERE modbus_devices.id = measurement_points.modbus_device_id
+              AND (
+                (modbus_devices.gateway_id IS NOT NULL AND md_direct_gw.active = TRUE)
+                OR
+                (modbus_devices.plc_id IS NOT NULL AND md_host_plc.active = TRUE AND md_host_gw.active = TRUE)
+              )
+          )
+        )
+      SQL
+  }
+  scope :due_for_polling, -> {
+    where(<<~SQL.squish)
+      last_decoded_value_at IS NULL
+      OR last_decoded_value_at + INTERVAL polling_interval_seconds SECOND < NOW()
+    SQL
+  }
+
   class WriteValidationError < StandardError;
   end
 
@@ -160,10 +226,40 @@ class MeasurementPoint < ApplicationRecord
     end
   end
 
-  def sync_read_from_plc!
-    PlcReadService.new(plc, [self]).call
+  def read_coordinates
+    if modbus_device.present?
+      if modbus_device.polled_by_gateway?
+        return direct_coordinates
+      end
+
+      if modbus_device.polled_by_plc?
+        return plc_relayed_coordinates
+      end
+
+      return nil
+    end
+
+    if plc.present?
+      return direct_coordinates
+    end
+
+    nil
+  end
+
+  def sync_read!
+    coords = read_coordinates
+    if coords.nil?
+      return false
+    end
+
+    ModbusEndpointReadService.new(
+      gateway:            coords.gateway,
+      target_ip:          coords.target_ip,
+      slave_id:           coords.slave_id,
+      measurement_points: [self]
+    ).call
   rescue VpnManagerClient::Error, Timeout::Error => e
-    Rails.logger.warn("sync_read_from_plc! failed for MP #{id}: #{e.class} - #{e.message}")
+    Rails.logger.warn("sync_read! failed for MP #{id}: #{e.class} - #{e.message}")
     false
   end
 
@@ -316,7 +412,7 @@ class MeasurementPoint < ApplicationRecord
         return
       end
 
-      sync_read_from_plc!
+      sync_read!
     end
 
     def compute_live_display_value
@@ -394,5 +490,65 @@ class MeasurementPoint < ApplicationRecord
       def respond_to_missing?(method, include_private = false)
         measurement_point.respond_to?(method, include_private)
       end
+    end
+
+    def direct_coordinates
+      if (!plc && !modbus_device) || !register_template
+        return nil
+      end
+
+      modbus_entity = plc ? plc : modbus_device
+      rt = register_template
+
+      ModbusCoordinates.new(
+        gateway:              modbus_entity.gateway,
+        target_ip:            modbus_entity.private_ip,
+        slave_id:             modbus_entity.slave_id,
+        register_type:        rt.register_type,
+        address:              rt.address + MODBUS_ADDRESS_OFFSET,
+        count:                rt.address_count,
+        bulk_strategy:        :bulk,
+        template_bulk_group:  rt.bulk_read_group.presence,
+        template_bulk_base:   rt.bulk_read_address.present? ? rt.bulk_read_address + MODBUS_ADDRESS_OFFSET : nil,
+        template_bulk_offset: rt.bulk_read_offset
+      )
+    end
+
+    def plc_relayed_coordinates
+      if !modbus_device || !register_template
+        return nil
+      end
+
+      host_plc = modbus_device.plc
+      if !host_plc
+        return nil
+      end
+
+      host = host_plc.modbus_firmware_version
+      if !host&.host_capable?
+        return nil
+      end
+
+      relay_address = modbus_device.relay_address_for(register_template)
+      if relay_address.nil?
+        return nil
+      end
+
+      strategy = host.relay_read_strategy
+      if strategy.blank?
+        return nil
+      end
+
+      ModbusCoordinates.new(
+        gateway:                host_plc.gateway,
+        target_ip:              host_plc.private_ip,
+        slave_id:               host_plc.slave_id,
+        register_type:          host.relay_register_type,
+        address:                relay_address + MODBUS_ADDRESS_OFFSET,
+        count:                  register_template.address_count,
+        bulk_strategy:          strategy.to_sym,
+        relay_slot_number:      modbus_device.slot_number,
+        relay_modbus_device_id: modbus_device.id
+      )
     end
 end

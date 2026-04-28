@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_20_202721) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_27_094515) do
   create_table "action_mailbox_inbound_emails", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "status", default: 0, null: false
     t.string "message_id", null: false
@@ -441,6 +441,18 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_20_202721) do
     t.index ["peripheral_version_id"], name: "index_modbus_firmware_compatibilities_on_peripheral_version_id"
   end
 
+  create_table "modbus_firmware_relay_mappings", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "modbus_firmware_version_id", null: false
+    t.bigint "register_template_id", null: false
+    t.integer "relay_offset", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["modbus_firmware_version_id", "register_template_id"], name: "idx_on_modbus_firmware_version_id_register_template_cfcb373e38", unique: true
+    t.index ["modbus_firmware_version_id", "relay_offset"], name: "idx_on_modbus_firmware_version_id_relay_offset_d48dd4c6cf"
+    t.index ["modbus_firmware_version_id"], name: "idx_on_modbus_firmware_version_id_05cabbf36f"
+    t.index ["register_template_id"], name: "index_modbus_firmware_relay_mappings_on_register_template_id"
+  end
+
   create_table "modbus_firmware_versions", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "version_code", null: false
@@ -449,6 +461,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_20_202721) do
     t.integer "relay_slot_size"
     t.integer "relay_max_slots"
     t.string "relay_register_type"
+    t.string "relay_read_strategy"
     t.text "description"
     t.boolean "is_latest", default: false, null: false
     t.boolean "is_supported", default: true, null: false
@@ -544,7 +557,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_20_202721) do
     t.text "description"
     t.integer "address", null: false
     t.integer "address_count", default: 1, null: false
-    t.integer "relay_offset"
     t.string "register_type", null: false
     t.string "data_type", null: false
     t.string "byte_order", null: false
@@ -753,6 +765,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_20_202721) do
   add_foreign_key "modbus_devices", "sites"
   add_foreign_key "modbus_firmware_compatibilities", "modbus_firmware_versions", column: "host_version_id", on_delete: :cascade
   add_foreign_key "modbus_firmware_compatibilities", "modbus_firmware_versions", column: "peripheral_version_id", on_delete: :cascade
+  add_foreign_key "modbus_firmware_relay_mappings", "modbus_firmware_versions", on_delete: :cascade
+  add_foreign_key "modbus_firmware_relay_mappings", "register_templates", on_delete: :cascade
   add_foreign_key "modbus_firmware_versions", "models", on_delete: :cascade
   add_foreign_key "models", "manufacturers", on_delete: :cascade
   add_foreign_key "plc_write_logs", "measurement_points", on_delete: :cascade

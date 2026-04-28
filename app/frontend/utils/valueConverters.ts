@@ -60,7 +60,12 @@ export const valueConverters = {
    */
   boolean: {
     toDisplay(value: RawValue, options: string | null): FormattedValue {
-      if (!options) return value ? 'On' : 'Off';
+      if (!options) {
+        if (value === null)
+          return 'On';
+
+        return value === 1 || value === '1' ? 'On' : 'Off';
+      }
 
       const optionsArray = options.split('/');
       const index = typeof value === 'number' ? value : Number(value);

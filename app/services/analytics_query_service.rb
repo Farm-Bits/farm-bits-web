@@ -1,13 +1,10 @@
 class AnalyticsQueryService
   def self.eligible_scope(site)
-    MeasurementPoint.joins(:register_template, plc: { gateway: { site: :company } })
-      .where(active: true, data_collection_enabled: true)
-      .where(register_templates: { user_visibility: 'visible' })
-      .where(plcs: { active: true })
-      .where(gateways: { active: true })
-      .where(sites: { id: site.id })
-      .where(companies: { active: true })
-      .where.not(measurement_subtype_id: nil)
+    MeasurementPoint
+      .operational
+      .user_visible
+      .where(site_id: site.id)
+      .where(data_collection_enabled: true)
   end
 
   def self.hourly(measurement_point_ids, start_date, end_date, time_zone)
