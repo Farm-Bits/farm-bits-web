@@ -1,5 +1,5 @@
 # Abstract base for read strategies. Takes a homogeneous list of
-# (MeasurementPoint, ModbusCoordinates) pairs all using the same bulk_strategy.
+# (MeasurementPoint, ModbusReadCoordinates) pairs all using the same bulk_strategy.
 #
 # #reads   -> Array<{ id:, register_type:, address:, count: }> in wire format
 # #resolve -> distributes a results-by-id hash back to per-MP results

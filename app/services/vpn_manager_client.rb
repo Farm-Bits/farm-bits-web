@@ -2,20 +2,16 @@ class VpnManagerClient
   include HTTParty
   base_uri ENV['VPN_MANAGER_BASE_URL']
 
-  class Error < StandardError; end
-  class ConnectionError < Error; end
+  class Error               < StandardError; end
+  class ConnectionError     < Error; end
   class AuthenticationError < Error; end
-  class NotFoundError < Error; end
+  class NotFoundError       < Error; end
 
   # Modbus protocol limit: max registers per single read (FC 3/4).
-  # The true Modbus spec allows up to 125 registers per read.
-  # Groups exceeding this are split into multiple reads.
   MODBUS_MAX_READ_REGISTERS = 125
 
-  # Max read/write entries per HTTP request to the VPN manager.
-  # Each entry triggers one or more Modbus transactions on the wire,
-  # so keeping this bounded ensures each POST completes well within
-  # the 30s HTTP timeout.
+  # Max read/write entries per HTTP request to the VPN manager. Keeps each
+  # POST well within the 30s HTTP timeout.
   MAX_READS_PER_REQUEST  = 10
   MAX_WRITES_PER_REQUEST = 10
 
@@ -23,64 +19,14 @@ class VpnManagerClient
     @api_token = ENV['VPN_MANAGER_API_TOKEN']
   end
 
-  def read_register(measurement_point)
-    plc = measurement_point.plc
-    gateway = plc.gateway
-
-    address = measurement_point.register_template.address + MODBUS_ADDRESS_OFFSET
-
-    post('/api/v1/modbus/read', {
-      gateway_label: gateway.label,
-      target_ip: plc.private_ip,
-      slave_id: plc.slave_id,
-      register_type: measurement_point.register_template.register_type,
-      address: address,
-      count: measurement_point.register_template.address_count
-    })
-  end
-
-  def write_register(measurement_point, value)
-    plc = measurement_point.plc
-    gateway = plc.gateway
-
-    address = measurement_point.register_template.address + MODBUS_ADDRESS_OFFSET
-
-    if !write_enabled?
-      return {
-        status: 'ok',
-        gateway_label: gateway.label,
-        target_ip: plc.private_ip,
-        slave_id: plc.slave_id.to_i,
-        timestamp: Time.current.iso8601,
-        result: {
-          id: nil,
-          status: 'ok'
-        }
-      }
-    end
-
-    post('/api/v1/modbus/write', {
-      gateway_label: gateway.label,
-      target_ip: plc.private_ip,
-      slave_id: plc.slave_id,
-      register_type: measurement_point.register_template.register_type,
-      address: address,
-      values: measurement_point.register_template.encode_value(value)
-    })
-  end
-
   # Generic bulk Modbus read at a given endpoint. Reads are pre-built by the
   # caller (typically ModbusEndpointReadService via ReadStrategies).
-  #
-  # Reads are batched into separate HTTP requests of MAX_READS_PER_REQUEST
-  # each to stay within the 30s HTTP timeout. All batches go to the same
-  # endpoint so they share Modbus context at the gateway side.
   #
   # @return [Hash] { success:, sample_time:, error:, error_type:, results: }
   #   results is { read_id_string => { 'status' =>, 'values' =>, 'error' => } }
   def bulk_read_registers(gateway_label:, target_ip:, slave_id:, reads:)
-    read_batches = reads.each_slice(MAX_READS_PER_REQUEST).to_a
-    merged_results = {}
+    read_batches      = reads.each_slice(MAX_READS_PER_REQUEST).to_a
+    merged_results    = {}
     last_response_meta = {}
 
     read_batches.each_with_index do |batch, batch_index|
@@ -115,67 +61,56 @@ class VpnManagerClient
     last_response_meta.merge(results: merged_results)
   end
 
-  # Writes registers for a single PLC through its gateway.
+  # Generic bulk Modbus write at a given endpoint. Writes are pre-built by
+  # the caller.
   #
-  # Chunks writes into separate HTTP requests (max MAX_WRITES_PER_REQUEST each)
-  # to stay within Modbus protocol limits and avoid VPN manager timeouts.
-  def bulk_write_registers(plc, measurement_points_with_values)
-    gateway = plc.gateway
-
-    writes = measurement_points_with_values.map do |entry|
-      measurement_point = entry[:measurement_point]
-      register_template = measurement_point.register_template
-      address = register_template.address + MODBUS_ADDRESS_OFFSET
-
-      {
-        id: measurement_point.id,
-        register_type: register_template.register_type,
-        address: address,
-        values: register_template.encode_value(entry[:value])
-      }
-    end
-
+  # @param writes [Array<Hash>] [{ id:, register_type:, address:, values: }, ...]
+  # @return [Hash] { success:, error:, error_type:, results: }
+  #   results is { mp_id_int => { status:, values:, error: } }
+  def bulk_write_registers(gateway_label:, target_ip:, slave_id:, writes:)
     if !write_enabled?
       return {
-        success: true,
-        sample_time: Time.current.iso8601,
-        error: nil,
+        success:    true,
+        error:      nil,
         error_type: nil,
-        results: writes.each_with_object({}) do |entry, hash|
+        results:    writes.each_with_object({}) do |entry, hash|
           hash[entry[:id]] = {
             status: 'ok',
             values: entry[:values],
-            error: nil
+            error:  nil
           }
         end
       }
     end
 
-    write_batches = writes.each_slice(MAX_WRITES_PER_REQUEST).to_a
-    merged_results = {}
+    write_batches      = writes.each_slice(MAX_WRITES_PER_REQUEST).to_a
+    merged_results     = {}
     last_response_meta = {}
 
-    write_batches.each do |batch|
+    write_batches.each_with_index do |batch, batch_index|
+      Rails.logger.info(
+        "[bulk_write_registers] #{gateway_label} #{target_ip}/#{slave_id}: " \
+        "batch #{batch_index + 1}/#{write_batches.size} (#{batch.size} writes)"
+      )
+
       response = post('/api/v1/modbus/bulk_write', {
-        gateway_label: gateway.label,
-        target_ip: plc.private_ip,
-        slave_id: plc.slave_id,
-        writes: batch
+        gateway_label: gateway_label,
+        target_ip:     target_ip,
+        slave_id:      slave_id,
+        writes:        batch
       })
 
       last_response_meta = {
-        success: response['status'] == 'ok',
-        sample_time: response['sample_time'],
-        error: response['error'],
+        success:    response['status'] == 'ok',
+        error:      response['error'],
         error_type: response['error_type']
       }
 
       response['results']&.each do |result|
-        mp_id = result['id'].to_i
-        merged_results[mp_id] = {
+        merged_results[result['id'].to_i] = {
           status: result['status'],
           values: result['values'],
-          error: result['error']
+          error:  result['error']
         }
       end
 
@@ -191,11 +126,11 @@ class VpnManagerClient
     def post(path, body)
       response = self.class.post(path, {
         headers: {
-          'Content-Type' => 'application/json',
+          'Content-Type'  => 'application/json',
           'Authorization' => "Bearer #{@api_token}"
         },
-        body: body.to_json,
-        timeout: 30,
+        body:         body.to_json,
+        timeout:      30,
         open_timeout: 10
       })
 

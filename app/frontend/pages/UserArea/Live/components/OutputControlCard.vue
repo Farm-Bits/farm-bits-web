@@ -63,7 +63,7 @@
         :alarmState="measurementPoint.alarm_state"
         placeholder="No data"
         size="default" />
-      <p class="text-body-secondary small">({{ statusLabels }})</p>
+      <p v-show="statusLabels != ''" class="text-body-secondary small">({{ statusLabels }})</p>
     </div>
 
     <!-- OM Status: enum statuses from read-only status registers -->

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_27_094515) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_29_144747) do
   create_table "action_mailbox_inbound_emails", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "status", default: 0, null: false
     t.string "message_id", null: false
@@ -445,9 +445,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_27_094515) do
     t.bigint "modbus_firmware_version_id", null: false
     t.bigint "register_template_id", null: false
     t.integer "relay_offset", null: false
+    t.string "direction", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["modbus_firmware_version_id", "register_template_id"], name: "idx_on_modbus_firmware_version_id_register_template_cfcb373e38", unique: true
+    t.index ["modbus_firmware_version_id", "register_template_id", "direction"], name: "idx_on_modbus_firmware_version_id_register_template_685faeeeb3", unique: true
     t.index ["modbus_firmware_version_id", "relay_offset"], name: "idx_on_modbus_firmware_version_id_relay_offset_d48dd4c6cf"
     t.index ["modbus_firmware_version_id"], name: "idx_on_modbus_firmware_version_id_05cabbf36f"
     t.index ["register_template_id"], name: "index_modbus_firmware_relay_mappings_on_register_template_id"
@@ -475,6 +476,32 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_27_094515) do
     t.index ["model_id"], name: "index_modbus_firmware_versions_on_model_id"
   end
 
+  create_table "modbus_write_logs", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "source", null: false
+    t.string "old_value"
+    t.string "new_value"
+    t.string "batch_id", null: false
+    t.bigint "measurement_point_id", null: false
+    t.string "target_type", null: false
+    t.integer "target_id", null: false
+    t.bigint "relay_host_plc_id"
+    t.bigint "site_id", null: false
+    t.bigint "user_id"
+    t.bigint "register_template_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["batch_id"], name: "index_modbus_write_logs_on_batch_id"
+    t.index ["created_at"], name: "index_modbus_write_logs_on_created_at"
+    t.index ["created_at"], name: "index_modbus_write_logs_on_plc_id_and_created_at"
+    t.index ["measurement_point_id", "created_at"], name: "index_modbus_write_logs_on_measurement_point_id_and_created_at"
+    t.index ["measurement_point_id"], name: "index_modbus_write_logs_on_measurement_point_id"
+    t.index ["register_template_id"], name: "index_modbus_write_logs_on_register_template_id"
+    t.index ["relay_host_plc_id"], name: "index_modbus_write_logs_on_relay_host_plc_id"
+    t.index ["site_id"], name: "index_modbus_write_logs_on_site_id"
+    t.index ["source"], name: "index_modbus_write_logs_on_source"
+    t.index ["target_type", "target_id"], name: "index_modbus_write_logs_on_target_type_and_target_id"
+    t.index ["user_id"], name: "index_modbus_write_logs_on_user_id"
+  end
+
   create_table "models", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "device_type", null: false
@@ -484,29 +511,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_27_094515) do
     t.index ["device_type"], name: "index_models_on_device_type"
     t.index ["manufacturer_id", "name"], name: "index_models_on_manufacturer_id_and_name", unique: true
     t.index ["manufacturer_id"], name: "index_models_on_manufacturer_id"
-  end
-
-  create_table "plc_write_logs", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
-    t.string "source", null: false
-    t.string "old_value"
-    t.string "new_value"
-    t.string "batch_id", null: false
-    t.bigint "measurement_point_id", null: false
-    t.bigint "plc_id", null: false
-    t.bigint "site_id", null: false
-    t.bigint "user_id"
-    t.bigint "register_template_id", null: false
-    t.datetime "created_at", null: false
-    t.index ["batch_id"], name: "index_plc_write_logs_on_batch_id"
-    t.index ["created_at"], name: "index_plc_write_logs_on_created_at"
-    t.index ["measurement_point_id", "created_at"], name: "index_plc_write_logs_on_measurement_point_id_and_created_at"
-    t.index ["measurement_point_id"], name: "index_plc_write_logs_on_measurement_point_id"
-    t.index ["plc_id", "created_at"], name: "index_plc_write_logs_on_plc_id_and_created_at"
-    t.index ["plc_id"], name: "index_plc_write_logs_on_plc_id"
-    t.index ["register_template_id"], name: "index_plc_write_logs_on_register_template_id"
-    t.index ["site_id"], name: "index_plc_write_logs_on_site_id"
-    t.index ["source"], name: "index_plc_write_logs_on_source"
-    t.index ["user_id"], name: "index_plc_write_logs_on_user_id"
   end
 
   create_table "plcs", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -768,12 +772,12 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_27_094515) do
   add_foreign_key "modbus_firmware_relay_mappings", "modbus_firmware_versions", on_delete: :cascade
   add_foreign_key "modbus_firmware_relay_mappings", "register_templates", on_delete: :cascade
   add_foreign_key "modbus_firmware_versions", "models", on_delete: :cascade
+  add_foreign_key "modbus_write_logs", "measurement_points", on_delete: :cascade
+  add_foreign_key "modbus_write_logs", "plcs", column: "relay_host_plc_id"
+  add_foreign_key "modbus_write_logs", "register_templates", on_delete: :cascade
+  add_foreign_key "modbus_write_logs", "sites", on_delete: :cascade
+  add_foreign_key "modbus_write_logs", "users", on_delete: :nullify
   add_foreign_key "models", "manufacturers", on_delete: :cascade
-  add_foreign_key "plc_write_logs", "measurement_points", on_delete: :cascade
-  add_foreign_key "plc_write_logs", "plcs", on_delete: :cascade
-  add_foreign_key "plc_write_logs", "register_templates", on_delete: :cascade
-  add_foreign_key "plc_write_logs", "sites", on_delete: :cascade
-  add_foreign_key "plc_write_logs", "users", on_delete: :nullify
   add_foreign_key "plcs", "gateways"
   add_foreign_key "plcs", "modbus_firmware_versions"
   add_foreign_key "plcs", "models"

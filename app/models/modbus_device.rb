@@ -1,6 +1,9 @@
 class ModbusDevice < ApplicationRecord
   audited
 
+  READ_DIRECTION  = 'read'.freeze
+  WRITE_DIRECTION = 'write'.freeze
+
   belongs_to :model
   belongs_to :modbus_firmware_version
   belongs_to :plc,     optional: true
@@ -70,7 +73,17 @@ class ModbusDevice < ApplicationRecord
     update_column(:last_seen_at, timestamp)
   end
 
-  def relay_address_for(register_template)
+  # Computes the wire address (in the host PLC's relay address space) that
+  # corresponds to the given register template, in the requested direction.
+  #
+  # `direction` is 'read_from_peripheral' (default; preserves prior behaviour)
+  # or 'write_to_peripheral' (looks up the write-buffer mapping).
+  #
+  # Returns nil if:
+  #   - this device is not PLC-relayed
+  #   - the host's firmware is not host_capable
+  #   - no relay mapping exists for this register_template + direction
+  def relay_address_for(register_template, direction: READ_DIRECTION)
     if !polled_by_plc?
       return nil
     end
@@ -80,7 +93,9 @@ class ModbusDevice < ApplicationRecord
       return nil
     end
 
-    mapping = version.relay_mappings.detect { |m| m.register_template_id == register_template.id }
+    mapping = version.relay_mappings.detect do |m|
+      m.register_template_id == register_template.id && m.direction == direction
+    end
     if mapping.nil?
       return nil
     end

@@ -42,6 +42,17 @@ class MeasurementPoint < ApplicationRecord
     }
   ].freeze
 
+  WRITE_COORDINATES_INCLUDES = [
+    :register_template,
+    { plc: [:gateway] },
+    {
+      modbus_device: [
+        :gateway,
+        { plc: [:gateway, { modbus_firmware_version: :relay_mappings }] }
+      ]
+    }
+  ].freeze
+
   scope :user_visible, -> {
     joins(:register_template).where(register_templates: { user_visibility: 'visible' })
   }
@@ -226,21 +237,79 @@ class MeasurementPoint < ApplicationRecord
     end
   end
 
+  ModbusReadCoordinates = Struct.new(
+    :gateway,
+    :target_ip,
+    :slave_id,
+    :register_type,
+    :address,
+    :count,
+    :bulk_strategy,
+    :template_bulk_group,    # :template_bulk_read only
+    :template_bulk_base,     # :template_bulk_read only (wire-ready)
+    :template_bulk_offset,   # :template_bulk_read only
+    :relay_slot_number,      # relay strategies only
+    :relay_modbus_device_id, # relay strategies only
+    keyword_init: true
+  ) do
+    # Stable key. Two coordinates with the same key share a Modbus session.
+    def endpoint_key
+      [gateway.id, target_ip, slave_id]
+    end
+  end
+
   def read_coordinates
     if modbus_device.present?
       if modbus_device.polled_by_gateway?
-        return direct_coordinates
+        return read_direct_coordinates
       end
 
       if modbus_device.polled_by_plc?
-        return plc_relayed_coordinates
+        return read_plc_relayed_coordinates
       end
 
       return nil
     end
 
     if plc.present?
-      return direct_coordinates
+      return read_direct_coordinates
+    end
+
+    nil
+  end
+
+  ModbusWriteCoordinates = Struct.new(
+    :gateway,
+    :target_ip,
+    :slave_id,
+    :register_type,
+    :address,
+    keyword_init: true
+  ) do
+    def endpoint_key
+      [gateway.id, target_ip, slave_id]
+    end
+  end
+
+  def write_coordinates
+    if !register_template.present? || register_template.read_only?
+      return nil
+    end
+
+    if modbus_device.present?
+      if modbus_device.polled_by_gateway?
+        return write_coordinates_direct(modbus_device)
+      end
+
+      if modbus_device.polled_by_plc?
+        return write_coordinates_via_relay_write
+      end
+
+      return nil
+    end
+
+    if plc.present?
+      return write_coordinates_direct(plc)
     end
 
     nil
@@ -260,6 +329,21 @@ class MeasurementPoint < ApplicationRecord
     ).call
   rescue VpnManagerClient::Error, Timeout::Error => e
     Rails.logger.warn("sync_read! failed for MP #{id}: #{e.class} - #{e.message}")
+    false
+  end
+
+  # Synchronous single-MP write convenience. Mirrors sync_read! semantics:
+  # returns true on success, false on failure (with logging). For batched or
+  # user-action writes, prefer ModbusWriteService#bulk_write! directly so
+  # you keep transactional control of the result.
+  def sync_write!(value, context: nil)
+    ModbusWriteService.new.bulk_write!(
+      [{ measurement_point: self, value: value }],
+      context: context
+    )
+    true
+  rescue ModbusWriteService::WriteError, ModbusWriteService::ValidationError => e
+    Rails.logger.warn("sync_write! failed for MP #{id}: #{e.class} - #{e.message}")
     false
   end
 
@@ -421,6 +505,7 @@ class MeasurementPoint < ApplicationRecord
       if register_template.category != 'counter'
         return { value: scaled_last_decoded_value, unit: unit }
       end
+      return { value: scaled_last_decoded_value, unit: unit }
 
       recent = raw_values.order(sample_time: :desc).limit(2).to_a
       v1, v2 = recent
@@ -492,7 +577,7 @@ class MeasurementPoint < ApplicationRecord
       end
     end
 
-    def direct_coordinates
+    def read_direct_coordinates
       if (!plc && !modbus_device) || !register_template
         return nil
       end
@@ -500,7 +585,7 @@ class MeasurementPoint < ApplicationRecord
       modbus_entity = plc ? plc : modbus_device
       rt = register_template
 
-      ModbusCoordinates.new(
+      ModbusReadCoordinates.new(
         gateway:              modbus_entity.gateway,
         target_ip:            modbus_entity.private_ip,
         slave_id:             modbus_entity.slave_id,
@@ -514,7 +599,7 @@ class MeasurementPoint < ApplicationRecord
       )
     end
 
-    def plc_relayed_coordinates
+    def read_plc_relayed_coordinates
       if !modbus_device || !register_template
         return nil
       end
@@ -539,7 +624,7 @@ class MeasurementPoint < ApplicationRecord
         return nil
       end
 
-      ModbusCoordinates.new(
+      ModbusReadCoordinates.new(
         gateway:                host_plc.gateway,
         target_ip:              host_plc.private_ip,
         slave_id:               host_plc.slave_id,
@@ -549,6 +634,49 @@ class MeasurementPoint < ApplicationRecord
         bulk_strategy:          strategy.to_sym,
         relay_slot_number:      modbus_device.slot_number,
         relay_modbus_device_id: modbus_device.id
+      )
+    end
+
+    def write_coordinates_direct(entity)
+      if !entity.gateway.present?
+        return nil
+      end
+
+      ModbusWriteCoordinates.new(
+        gateway:       entity.gateway,
+        target_ip:     entity.private_ip,
+        slave_id:      entity.slave_id,
+        register_type: register_template.register_type,
+        address:       register_template.address + MODBUS_ADDRESS_OFFSET
+      )
+    end
+
+    def write_coordinates_via_relay_write
+      device = modbus_device
+      host = device.plc
+      if !host&.gateway.present?
+        return nil
+      end
+
+      host_version = host.modbus_firmware_version
+      if !host_version&.host_capable?
+        return nil
+      end
+
+      relay_address = device.relay_address_for(
+        register_template,
+        direction: ModbusDevice::WRITE_DIRECTION
+      )
+      if relay_address.nil?
+        return nil
+      end
+
+      ModbusWriteCoordinates.new(
+        gateway:       host.gateway,
+        target_ip:     host.private_ip,
+        slave_id:      host.slave_id,
+        register_type: host_version.relay_register_type,
+        address:       relay_address + MODBUS_ADDRESS_OFFSET
       )
     end
 end

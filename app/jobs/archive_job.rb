@@ -4,13 +4,13 @@ class ArchiveJob
 
   RAW_RETENTION_DAYS = 90
   HOURLY_RETENTION_MONTHS = 36
-  PLC_WRITE_LOG_RETENTION_DAYS = 90
+  MODBUS_WRITE_LOG_RETENTION_DAYS = 90
   BATCH_SIZE = 10_000
 
   def perform
     archive_raw_values
     archive_hourly_aggregations
-    archive_plc_write_log
+    archive_modbus_write_log
     archive_weather_station_api_raw_values
     archive_weather_station_api_hourly_aggregations
   end
@@ -46,13 +46,13 @@ class ArchiveJob
       end
     end
 
-    def archive_plc_write_log
-      cutoff = PLC_WRITE_LOG_RETENTION_DAYS.days.ago
+    def archive_modbus_write_log
+      cutoff = MODBUS_WRITE_LOG_RETENTION_DAYS.days.ago
 
       loop do
         moved = archive_batch(
-          source: 'plc_write_logs',
-          target: 'archived_plc_write_logs',
+          source: 'modbus_write_logs',
+          target: 'archived_modbus_write_logs',
           condition: "created_at < '#{cutoff.to_fs(:db)}'",
         )
         if moved < BATCH_SIZE

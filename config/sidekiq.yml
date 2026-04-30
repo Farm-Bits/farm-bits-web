@@ -16,7 +16,7 @@ scheduler:
       queue: critical
 
     modbus_polling:
-      cron: '*/5 * * * *'
+      cron: '* * * * *'
       class: ModbusPollingJob
       queue: default
 

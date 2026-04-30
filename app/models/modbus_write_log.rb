@@ -1,4 +1,4 @@
-class PlcWriteLog < ApplicationRecord
+class ModbusWriteLog < ApplicationRecord
   self.record_timestamps = false
 
   SOURCES = %w[
@@ -12,7 +12,8 @@ class PlcWriteLog < ApplicationRecord
     push_bitmask_sync
   ].freeze
 
-  belongs_to :plc
+  belongs_to :target, polymorphic: true
+  belongs_to :relay_host_plc, class_name: 'Plc', optional: true
   belongs_to :site
   belongs_to :user, optional: true
   belongs_to :measurement_point
@@ -21,16 +22,9 @@ class PlcWriteLog < ApplicationRecord
   validates :source, presence: true, inclusion: { in: SOURCES }
   validates :batch_id, presence: true
   validates :created_at, presence: true
+  validates :target_type, inclusion: { in: %w[Plc ModbusDevice] }
 
   before_create { self.created_at = Time.current }
-
-  # Returns logs for all measurement points belonging to a specific interface
-  # on a given PLC. Useful for building the activity log for a DO.
-  scope :for_interface, ->(plc_id, interface_id) {
-    joins(measurement_point: { register_template: :interface_register_mappings })
-      .where(plc_id: plc_id)
-      .where(interface_register_mappings: { interface_id: interface_id })
-  }
 
   # Returns logs grouped by batch_id for display purposes.
   # Each batch represents a single user action or system event.
@@ -44,5 +38,11 @@ class PlcWriteLog < ApplicationRecord
 
   def user_action?
     user_id.present?
+  end
+
+  # Convenience: was this write transported via a host PLC's relay layer,
+  # or did it go directly to the target?
+  def relayed?
+    relay_host_plc_id.present?
   end
 end

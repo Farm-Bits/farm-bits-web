@@ -63,7 +63,7 @@
               <div
                 v-for="mp in segment.sensorMps"
                 :key="mp.id"
-                class="col-sm-6 col-md-4 col-lg-2">
+                class="col-sm-6 col-md-4 col-lg-3">
                 <MeasurementPointCard
                   :measurement-point="mp"
                   @click="handleMpClick" />
@@ -96,7 +96,7 @@
                 <div
                   v-for="mp in controlGroup.measurementPoints"
                   :key="mp.id"
-                  class="col-sm-6 col-md-4 col-lg-2">
+                  class="col-sm-6 col-md-4 col-lg-3">
                   <OutputControlCard
                     :ref="(el: any) => setOutputCardRef(mp.id, el)"
                     :measurement-point="mp"
