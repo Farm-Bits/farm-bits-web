@@ -14,7 +14,8 @@ class UserArea::ApplicationController < ApplicationController
       currentRole: current_company_user&.role,
       accessibleCompanies: @companies,
       currentSite: current_site ? SiteSerializer.render_as_json(current_site, view: :with_segments) : nil,
-      accessibleSites: SiteSerializer.render_as_json(policy_scope(Site))
+      accessibleSites: SiteSerializer.render_as_json(policy_scope(Site)),
+      openAlertCount: policy_scope(Alert).open.count
     }
   end
 

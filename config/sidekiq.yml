@@ -40,6 +40,11 @@ scheduler:
       class: WeatherStationApiHourlyAggregationJob
       queue: low
 
+    alert_inactivity_scan:
+      cron: "* * * * *"
+      class: "AlertInactivityScanJob"
+      queue: default
+
     archive:
       cron: '0 3 * * *'
       class: ArchiveJob

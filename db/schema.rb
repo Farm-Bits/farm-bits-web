@@ -125,7 +125,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_03_184206) do
     t.integer "min_duration_seconds"
     t.string "measurement_point_name", null: false
     t.string "unit"
-    t.string "site_name", null: false
+    t.string "segment_name", null: false
     t.datetime "started_at", null: false
     t.datetime "ended_at"
     t.string "started_value"

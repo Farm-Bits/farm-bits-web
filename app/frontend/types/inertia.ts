@@ -29,5 +29,6 @@ declare module '@inertiajs/core' {
     accessibleCompanies?: Company[];
     currentSite?: SiteWithSegments;
     accessibleSites?: Site[];
+    openAlertCount?: number;
   }
 };

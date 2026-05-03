@@ -1,0 +1,31 @@
+<h2>Alert cleared</h2>
+<p><strong><%= @alert.rule_name %></strong></p>
+
+<table style="border-collapse: collapse; margin: 16px 0;">
+  <tr>
+    <td style="padding: 4px 12px 4px 0;"><strong>Severity:</strong></td>
+    <td style="padding: 4px 0;"><%= @alert.severity.upcase %></td>
+  </tr>
+  <tr>
+    <td style="padding: 4px 12px 4px 0;"><strong>Segment:</strong></td>
+    <td style="padding: 4px 0;"><%= @alert.segment_name %></td>
+  </tr>
+  <tr>
+    <td style="padding: 4px 12px 4px 0;"><strong>Site:</strong></td>
+    <td style="padding: 4px 0;"><%= @alert.measurement_point.site.name %></td>
+  </tr>
+  <tr>
+    <td style="padding: 4px 12px 4px 0;"><strong>Measurement point:</strong></td>
+    <td style="padding: 4px 0;"><%= @alert.measurement_point_name %></td>
+  </tr>
+  <% if @alert.ended_value.present? %>
+    <tr>
+      <td style="padding: 4px 12px 4px 0;"><strong>Closing value:</strong></td>
+      <td style="padding: 4px 0;"><%= format_alert_value(@alert, position: :end) %></td>
+    </tr>
+  <% end %>
+  <tr>
+    <td style="padding: 4px 12px 4px 0;"><strong>Duration:</strong></td>
+    <td style="padding: 4px 0;"><%= format_duration(@alert.duration_seconds) %></td>
+  </tr>
+</table>

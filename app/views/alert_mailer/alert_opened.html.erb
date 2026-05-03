@@ -1,0 +1,35 @@
+<h2>Alert fired</h2>
+<p><strong><%= @alert.rule_name %></strong></p>
+
+<table style="border-collapse: collapse; margin: 16px 0;">
+  <tr>
+    <td style="padding: 4px 12px 4px 0;"><strong>Severity:</strong></td>
+    <td style="padding: 4px 0;"><%= @alert.severity.upcase %></td>
+  </tr>
+  <tr>
+    <td style="padding: 4px 12px 4px 0;"><strong>Segment:</strong></td>
+    <td style="padding: 4px 0;"><%= @alert.segment_name %></td>
+  </tr>
+  <tr>
+    <td style="padding: 4px 12px 4px 0;"><strong>Site:</strong></td>
+    <td style="padding: 4px 0;"><%= @alert.measurement_point.site.name %></td>
+  </tr>
+  <tr>
+    <td style="padding: 4px 12px 4px 0;"><strong>Measurement point:</strong></td>
+    <td style="padding: 4px 0;"><%= @alert.measurement_point_name %></td>
+  </tr>
+  <tr>
+    <td style="padding: 4px 12px 4px 0;"><strong>Condition:</strong></td>
+    <td style="padding: 4px 0;"><%= condition_summary(@alert) %></td>
+  </tr>
+  <% if @alert.started_value.present? %>
+    <tr>
+      <td style="padding: 4px 12px 4px 0;"><strong>Value:</strong></td>
+      <td style="padding: 4px 0;"><%= format_alert_value(@alert) %></td>
+    </tr>
+  <% end %>
+  <tr>
+    <td style="padding: 4px 12px 4px 0;"><strong>Started at:</strong></td>
+    <td style="padding: 4px 0;"><%= @alert.started_at.strftime('%Y-%m-%d %H:%M:%S UTC') %></td>
+  </tr>
+</table>

@@ -24,6 +24,8 @@ class BulkRecordingService
 
     now = Time.current
 
+    transitions = capture_value_transitions
+
     ApplicationRecord.transaction do
       active_readings = @readings.select { |r| r[:measurement_point].active }
 
@@ -70,9 +72,49 @@ class BulkRecordingService
     end
 
     touch_devices!
+    enqueue_alert_evaluations(transitions)
   end
 
   private
+    # Build [{mp_id, old_value, new_value, sample_time}] tuples from the
+    # latest reading per MP. Old values come from the in-memory MPs
+    # before update_all overwrites them. Tuples where old == new are
+    # dropped - threshold/status_change predicates can't trigger without
+    # a transition, and inactivity is handled by the cron scanner.
+    def capture_value_transitions
+      latest_per_mp = @readings
+        .group_by { |r| r[:measurement_point].id }
+        .transform_values { |rs| rs.max_by { |r| r[:sample_time] } }
+
+      latest_per_mp.filter_map do |mp_id, reading|
+        mp        = reading[:measurement_point]
+        new_value = mp.serialize_for_storage(reading[:value])
+        old_value = mp.last_decoded_value
+
+        if old_value == new_value
+          next
+        end
+
+        {
+          mp_id:       mp_id,
+          old_value:   old_value,
+          new_value:   new_value,
+          sample_time: reading[:sample_time]
+        }
+      end
+    end
+
+    def enqueue_alert_evaluations(transitions)
+      transitions.each do |t|
+        AlertEvaluationJob.perform_async(
+          t[:mp_id],
+          t[:old_value],
+          t[:new_value],
+          t[:sample_time].iso8601
+        )
+      end
+    end
+
     def touch_devices!
       plc_ids           = @readings.map { |r| r[:measurement_point].plc_id }.compact.uniq
       modbus_device_ids = @readings.map { |r| r[:measurement_point].modbus_device_id }.compact.uniq

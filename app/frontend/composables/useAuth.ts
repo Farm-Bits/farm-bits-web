@@ -14,6 +14,7 @@ export default function useAuth<T extends PageProps>() {
   const accessibleCompanies = computed(() => page.props.accessibleCompanies || []);
   const currentSite = computed(() => page.props.currentSite);
   const accessibleSites = computed(() => page.props.accessibleSites);
+  const openAlertCount = computed(() => page.props.openAlertCount ?? 0);
 
   const isAdminUser = computed(() => {
     return isSignedIn.value && userScope.value === 'admin_users';
@@ -72,6 +73,7 @@ export default function useAuth<T extends PageProps>() {
     currentCompany,
     currentRole,
     accessibleCompanies,
+    openAlertCount,
     currentSite,
     accessibleSites,
     isAdminUser,

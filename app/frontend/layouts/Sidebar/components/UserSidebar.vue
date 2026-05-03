@@ -35,7 +35,7 @@
       </CNavItem>
 
       <CNavItem v-if="permissions?.alerts.show">
-        <Link :href="ROUTES.devices_index.path" class="nav-link">
+        <Link :href="ROUTES.alerts_index.path" class="nav-link">
           <CIcon customClassName="nav-icon" name="cilBellExclamation" />
           Alerts
           <CBadge v-if="openAlertCount > 0" color="danger" class="ms-auto">
