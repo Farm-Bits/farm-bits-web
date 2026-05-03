@@ -205,14 +205,12 @@
       last_value: MeasurementPoint['last_value'];
       last_value_at: MeasurementPoint['last_value_at'];
       effective_unit: MeasurementPoint['effective_unit'];
-      alarm_state: MeasurementPoint['alarm_state'];
     }[];
     operation_mode_statuses: {
       id: MeasurementPoint['id'];
       last_value: MeasurementPoint['last_value'];
       last_value_at: MeasurementPoint['last_value_at'];
       effective_unit: MeasurementPoint['effective_unit'];
-      alarm_state: MeasurementPoint['alarm_state'];
     }[];
   };
 
@@ -370,7 +368,6 @@
         if (mp) {
           mp.last_value = update.last_value;
           mp.last_value_at = update.last_value_at;
-          mp.alarm_state = update.alarm_state;
         }
       }
 
@@ -412,8 +409,6 @@
     if (existing) {
       existing.last_value = mp.last_value;
       existing.last_value_at = mp.last_value_at;
-      if (mp.alarm_state)
-        existing.alarm_state = mp.alarm_state;
     }
 
     const omExisting = omStatuses.value.find((m) => m.id === mp.id);

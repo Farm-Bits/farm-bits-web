@@ -53,8 +53,6 @@ class MeasurementPointSerializer < Blueprinter::Base
   view :live_poll do
     include_view :live_fields
 
-    fields :alarm_state
-
     field :last_value_at do |mp|
       mp.last_decoded_value_at
     end
