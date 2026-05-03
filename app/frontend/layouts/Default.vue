@@ -39,11 +39,11 @@
           </div>
           <slot />
         </div>
+
+        <!-- Footer -->
+        <Footer />
       </div>
     </div>
-
-    <!-- Footer -->
-    <Footer />
   </div>
 </template>
 

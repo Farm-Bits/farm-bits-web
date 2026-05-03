@@ -3,20 +3,7 @@
     <!-- Header with Breadcrumb -->
     <CRow class="mb-3 align-items-center">
       <div class="col d-flex justify-content-between align-items-start">
-        <div>
-          <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-2">
-              <li class="breadcrumb-item">
-                <Link :href="ROUTES.gateways_index.path">Gateways & Controllers</Link>
-              </li>
-              <li class="breadcrumb-item active">{{ plc.name }}</li>
-            </ol>
-          </nav>
-          <h1 class="h3 mb-1">Controller Configuration</h1>
-          <p class="text-muted mb-0">
-            Configure interfaces and measurement points for <strong>{{ plc.name }}</strong>
-          </p>
-        </div>
+        <h1 class="h3 mb-1">Controller Configuration</h1>
         <CButton
           color="primary"
           variant="outline"

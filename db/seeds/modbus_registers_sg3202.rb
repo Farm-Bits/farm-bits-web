@@ -6,7 +6,10 @@ ActiveRecord::Base.transaction do
   model = Model.find_or_create_by!(
     manufacturer: manufacturer,
     name:         'SG3202',
-    device_type:  'modbus_device'
+    device_type:  'modbus_device',
+    display_type: 'Energy Meter',
+    supports_modbus_tcp: false,
+    supports_modbus_rtu: true
   )
 
   version = ModbusFirmwareVersion.create!(

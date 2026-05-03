@@ -48,7 +48,6 @@
 <script lang="ts" setup>
   import { computed } from 'vue';
   import { getDisplayValue, valueConverters } from '@/utils/valueConverters';
-  import type { AlarmState } from '@/types/measurementPoint';
   import type { ValueFormat } from '@/types/plc';
 
   const props = withDefaults(defineProps<{
@@ -56,7 +55,6 @@
     valueFormat?: ValueFormat;
     unit?: string | null;
     enumValues?: Record<string, string> | null;
-    alarmState?: AlarmState | null;
     placeholder?: string;
     /** Size variant: compact for tables/lists, default for cards, large for hero displays */
     size?: 'compact' | 'default' | 'large';
@@ -65,7 +63,6 @@
     valueFormat: 'numeric',
     unit: null,
     enumValues: null,
-    alarmState: null,
     placeholder: '—',
     size: 'default',
     showUnit: true
@@ -73,9 +70,6 @@
 
   const rootClasses = computed(() => {
     const classes: string[] = [`value-display--${props.size}`];
-    if (props.alarmState && props.alarmState !== 'normal')
-      classes.push(`value-display--${props.alarmState}`);
-
     return classes;
   });
 
@@ -87,12 +81,6 @@
   });
 
   const booleanColor = computed(() => {
-    if (props.alarmState === 'alarm_low' || props.alarmState === 'alarm_high')
-      return 'danger';
-
-    if (props.alarmState === 'warning_low' || props.alarmState === 'warning_high')
-      return 'warning';
-
     return booleanNumeric.value ? 'success' : 'secondary';
   });
 
@@ -218,43 +206,5 @@
   .value-display--large .value-display__bitmask-badge {
     font-size: 0.85rem;
     padding: 0.25em 0.6em;
-  }
-
-  /* ── Alarm states ── */
-  .value-display--alarm_low .value-display__number,
-  .value-display--alarm_high .value-display__number,
-  .value-display--alarm_low .value-display__text,
-  .value-display--alarm_high .value-display__text {
-    color: #dc3545;
-    font-weight: 700;
-  }
-
-  .value-display--warning_low .value-display__number,
-  .value-display--warning_high .value-display__number,
-  .value-display--warning_low .value-display__text,
-  .value-display--warning_high .value-display__text {
-    color: #f59e0b;
-    font-weight: 700;
-  }
-
-  .value-display--alarm_low .value-display__unit,
-  .value-display--alarm_high .value-display__unit {
-    color: #dc354580;
-  }
-
-  .value-display--warning_low .value-display__unit,
-  .value-display--warning_high .value-display__unit {
-    color: #f59e0b80;
-  }
-
-  /* ── Badge alarm borders ── */
-  .value-display--alarm_low .value-display__badge,
-  .value-display--alarm_high .value-display__badge {
-    box-shadow: 0 0 0 2px #dc354540;
-  }
-
-  .value-display--warning_low .value-display__badge,
-  .value-display--warning_high .value-display__badge {
-    box-shadow: 0 0 0 2px #f59e0b40;
   }
 </style>

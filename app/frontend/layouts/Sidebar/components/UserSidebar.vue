@@ -27,16 +27,28 @@
         </Link>
       </CNavItem>
 
-      <CNavItem v-if="permissions?.gateways.index">
-        <Link :href="ROUTES.gateways_index.path" class="nav-link">
-          <CIcon customClassName="nav-icon" name="cilSpeedometer" />
-          Devices
+      <CNavItem v-if="permissions?.programs.index">
+        <Link :href="ROUTES.programs_index.path" class="nav-link">
+          <CIcon customClassName="nav-icon" name="cilList" />
+          Programs
         </Link>
       </CNavItem>
 
-      <CNavItem v-if="true" href="#/dashboard">
-        <CIcon customClassName="nav-icon" name="cilBellExclamation" />
-        Alerts
+      <CNavItem v-if="permissions?.alerts.show">
+        <Link :href="ROUTES.devices_index.path" class="nav-link">
+          <CIcon customClassName="nav-icon" name="cilBellExclamation" />
+          Alerts
+          <CBadge v-if="openAlertCount > 0" color="danger" class="ms-auto">
+            {{ openAlertCount }}
+          </CBadge>
+        </Link>
+      </CNavItem>
+
+      <CNavItem v-if="permissions?.devices.index">
+        <Link :href="ROUTES.devices_index.path" class="nav-link">
+          <CIcon customClassName="nav-icon" name="cilSpeedometer" />
+          Devices
+        </Link>
       </CNavItem>
 
       <!-- <CNavGroup>
@@ -54,12 +66,14 @@
 
 <script lang="ts" setup>
   import { computed } from 'vue';
+  import useAuth from '@/composables/useAuth';
   import usePermissions from '@/composables/usePermissions';
   import useStore from '@/stores';
   import { ROUTES } from '@/types/permissions';
 
-  const store = useStore();
+  const { openAlertCount } = useAuth();
   const { permissions } = usePermissions();
+  const store = useStore();
 
   const sidebarNarrow = computed(() => store.$state.sidebarNarrow);
   const sidebarVisible = computed(() => store.$state.sidebarVisible);

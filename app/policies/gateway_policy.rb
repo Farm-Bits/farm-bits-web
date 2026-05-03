@@ -1,13 +1,5 @@
 class GatewayPolicy < ApplicationPolicy
-  def index?
-    true
-  end
-
   def update?
-    admin? || site_admin?
-  end
-
-  def destroy?
     admin? || site_admin?
   end
 

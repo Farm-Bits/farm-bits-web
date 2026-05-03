@@ -9,7 +9,10 @@ ActiveRecord::Base.transaction do
   free_advance_model = Model.create!(
     name: 'FreeAdvance AVC12600/C/L/U/I (AVC126006I500)',
     device_type: 'plc',
-    manufacturer: eliwell_manufacturer
+    manufacturer: eliwell_manufacturer,
+    display_type: 'Controller',
+    supports_modbus_tcp: true,
+    supports_modbus_rtu: true
   )
 
   free_advance_first_version = ModbusFirmwareVersion.create!(

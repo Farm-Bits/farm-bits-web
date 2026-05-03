@@ -17,10 +17,6 @@
           <CIcon icon="cilChartLine" class="me-2" />
           Display Options
         </CTab>
-        <CTab item-key="alerts" :disabled="!selectedMeasurementSubtype">
-          <CIcon icon="cilBell" class="me-2" />
-          Alerts
-        </CTab>
       </CTabList>
 
       <CTabContent>
@@ -52,16 +48,6 @@
             @update:model-value="Object.assign(displayFormData, $event)"
             @field-edited="markFieldEdited" />
         </CTabPanel>
-
-        <CTabPanel item-key="alerts">
-          <AlertsTab
-            :model-value="alertsFormData"
-            :selected-measurement-subtype="selectedMeasurementSubtype"
-            :unit-override="displayFormData.unit_override"
-            :v$="v$.measurement_point"
-            @update:model-value="Object.assign(alertsFormData, $event)"
-            @field-edited="markFieldEdited" />
-        </CTabPanel>
       </CTabContent>
     </CTabs>
 
@@ -86,7 +72,6 @@
   import MeasurementTab from './tabs/MeasurementTab.vue';
   import DeviceConfigurationTab from './tabs/DeviceConfigurationTab.vue';
   import DisplayOptionsTab from './tabs/DisplayOptionsTab.vue';
-  import AlertsTab from './tabs/AlertsTab.vue';
   import { useApiCall } from '@/composables/useApi';
   import { useConfigurationValues } from '@/composables/useConfigurationValues';
   import { useRegisterVisibility } from '@/composables/useRegisterVisibility';
@@ -178,18 +163,10 @@
     color_override: null as string | null
   });
 
-  const alertsFormData = reactive({
-    alarm_low: null as number | null,
-    alarm_high: null as number | null,
-    warning_low: null as number | null,
-    warning_high: null as number | null
-  });
-
   const formData = computed(() => ({
     measurement_point: {
       ...measurementFormData,
-      ...displayFormData,
-      ...alertsFormData
+      ...displayFormData
     }
   }));
 
@@ -263,10 +240,6 @@
       factor_override: { decimal },
       offset_override: { decimal },
       active: { required, sameAs: sameAs(true) || sameAs(false) },
-      alarm_low: { decimal },
-      alarm_high: { decimal },
-      warning_low: { decimal },
-      warning_high: { decimal },
       measurement_subtype_id: { required },
       segment_id: {}
     }
@@ -295,13 +268,6 @@
       unit_override: measurementPoint.unit_override,
       chart_type_override: measurementPoint.chart_type_override,
       color_override: measurementPoint.color_override
-    });
-
-    Object.assign(alertsFormData, {
-      alarm_low: measurementPoint.alarm_low,
-      alarm_high: measurementPoint.alarm_high,
-      warning_low: measurementPoint.warning_low,
-      warning_high: measurementPoint.warning_high
     });
   }
 

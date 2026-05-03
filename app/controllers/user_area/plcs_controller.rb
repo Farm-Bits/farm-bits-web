@@ -27,7 +27,7 @@ class UserArea::PlcsController < UserArea::ApplicationController
   end
 
   def refresh_interfaces
-    authorize @plc, :update?
+    authorize @plc, :refresh_interfaces?
 
     ModbusRefreshJob.perform_async(
       'Plc',
@@ -40,7 +40,7 @@ class UserArea::PlcsController < UserArea::ApplicationController
 
   private
     def plc_params
-      params.require(:plc).permit(:name)
+      params.require(:plc).permit(:name, :gateway_id, :active)
     end
 
     def set_plc

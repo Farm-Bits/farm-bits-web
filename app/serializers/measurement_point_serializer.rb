@@ -12,7 +12,6 @@ class MeasurementPointSerializer < Blueprinter::Base
       :effective_color,
       :data_collection_enabled,
       :polling_interval_seconds,
-      :alarm_state,
       :position,
       :active,
       :measurement_subtype_id,
@@ -25,22 +24,6 @@ class MeasurementPointSerializer < Blueprinter::Base
 
     field :offset_override do |mp|
       mp.offset_override&.to_f
-    end
-
-    field :alarm_low do |mp|
-      mp.alarm_low&.to_f
-    end
-
-    field :alarm_high do |mp|
-      mp.alarm_high&.to_f
-    end
-
-    field :warning_low do |mp|
-      mp.warning_low&.to_f
-    end
-
-    field :warning_high do |mp|
-      mp.warning_high&.to_f
     end
 
     field :last_value do |mp|

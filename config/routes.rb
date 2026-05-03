@@ -55,18 +55,31 @@ Rails.application.routes.draw do
       put 'invitations/:id/resend', to: 'invitations#resend'
 
       resources :sites, only: [:index, :show, :create, :update, :destroy]
-      resources :gateways, only: [:index, :update, :destroy]
+      resources :devices, only: [:index]
+      resources :gateways, only: [:update]
       resources :plcs, only: [:show, :update] do
         member do
           post :refresh_interfaces
         end
       end
+      resources :modbus_devices, only: [:show, :create, :update, :destroy] do
+        member do
+          post :refresh_values
+        end
+      end
       resources :measurement_points, only: [:update] do
+        collection do
+          post :bulk_write
+        end
         member do
           post :write
           get :operation_mode_config
         end
       end
+
+      resources :alerts, only: [:index, :show]
+      resources :alert_rules, except: [:show]
+      resources :alert_subscriptions, path: 'notification_settings', only: [:index, :create, :update, :destroy]
 
       get 'live' => 'live#show'
       get 'live/poll' => 'live#poll'
@@ -77,6 +90,10 @@ Rails.application.routes.draw do
       get 'analytics/raw' => 'analytics#raw'
       get 'analytics/weather_hourly' => 'analytics#weather_hourly'
       get 'analytics/weather_raw' => 'analytics#weather_raw'
+
+      get 'programs', to: 'programs#index'
+      get 'programs/plc/:id', to: 'programs#show_plc', as: :plc_programs
+      get 'programs/modbus_device/:id', to: 'programs#show_modbus_device', as: :modbus_device_programs
 
       get 'dashboard', to: 'dashboard#show'
     end

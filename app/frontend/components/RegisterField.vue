@@ -6,12 +6,8 @@
       :valueFormat="registerMapping.register_template.value_format"
       :unit="registerMapping.measurement_point.effective_unit"
       :enumValues="registerMapping.register_template.enum_values"
-      :alarmLow="registerMapping.measurement_point.alarm_low"
-      :alarmHigh="registerMapping.measurement_point.alarm_high"
-      :warningLow="registerMapping.measurement_point.warning_low"
-      :warningHigh="registerMapping.measurement_point.warning_high"
-      :alarmState="registerMapping.measurement_point.alarm_state"
-      :showUnit="false" />
+      :showUnit="false"
+      :size="size" />
 
     <ValueEdit
       v-else
@@ -26,6 +22,7 @@
       :addressCount="registerMapping.register_template.address_count"
       :disabled="disabled"
       :invalid="invalid"
+      :size="size"
       @update:model-value="$emit('update:modelValue', $event)" />
 
     <div v-if="invalid && validationError" class="invalid-feedback d-block">
@@ -77,7 +74,8 @@
     isEditing,
     disabled,
     invalid,
-    validationError
+    validationError,
+    size
   } = defineProps<{
     registerMapping: RegisterMapping;
     modelValue: MeasurementPoint['last_value'];
@@ -85,6 +83,7 @@
     disabled?: boolean;
     invalid?: boolean;
     validationError?: string | null;
+    size?: 'compact' | 'default' | 'large';
   }>();
 
   defineEmits<{

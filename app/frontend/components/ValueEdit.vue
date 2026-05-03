@@ -1,5 +1,5 @@
 <template>
-  <div class="value-edit">
+  <div class="value-edit" :class="rootClasses">
     <!-- Numeric -->
     <div v-if="valueFormat === 'numeric'" class="input-group">
       <CFormInput
@@ -140,19 +140,7 @@
   import { valueConverters } from '@/utils/valueConverters';
   import type { ValueFormat } from '@/types/plc';
 
-  const {
-    modelValue,
-    valueFormat,
-    dataType,
-    unit,
-    enumValues,
-    minValue,
-    maxValue,
-    defaultValue,
-    addressCount,
-    disabled,
-    invalid
-  } = defineProps<{
+  const props = withDefaults(defineProps<{
     modelValue: string | number | null;
     valueFormat: ValueFormat;
     dataType?: string;
@@ -164,7 +152,26 @@
     addressCount?: number;
     disabled?: boolean;
     invalid?: boolean;
-  }>();
+    size?: 'compact' | 'default' | 'large';
+  }>(), {
+    size: 'default'
+  });
+  const {
+    modelValue,
+    valueFormat,
+    dataType,
+    unit,
+    enumValues,
+    minValue,
+    maxValue,
+    defaultValue,
+    addressCount,
+    disabled,
+    invalid,
+    size
+  } = props;
+
+  const rootClasses = computed(() => [`value-edit--${size}`]);
 
   const emit = defineEmits<{
     (eventName: 'update:modelValue', value: string | number | null): void;
@@ -281,5 +288,21 @@
     flex-wrap: wrap;
     gap: 0.5rem;
     padding: 0.375rem 0;
+  }
+
+  .value-edit--compact :deep(.form-control),
+  .value-edit--compact :deep(.form-select) {
+    font-size: 0.85rem;
+    padding: 0.25rem 0.5rem;
+    min-height: auto;
+  }
+
+  .value-edit--compact :deep(.input-group-text) {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .value-edit--compact :deep(.form-check-label) {
+    font-size: 0.85rem;
   }
 </style>

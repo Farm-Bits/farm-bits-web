@@ -6,7 +6,10 @@ ActiveRecord::Base.transaction do
   model = Model.find_or_create_by!(
     manufacturer: manufacturer,
     name:         'RS-FSXCS',
-    device_type:  'modbus_device'
+    device_type:  'modbus_device',
+    display_type: 'Weather Station',
+    supports_modbus_tcp: false,
+    supports_modbus_rtu: true
   )
 
   version = ModbusFirmwareVersion.create!(

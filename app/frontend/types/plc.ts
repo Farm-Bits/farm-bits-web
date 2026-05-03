@@ -112,7 +112,7 @@ export type InterfaceWithMeasurementPoints = Interface & {
   register_mappings: RegisterMapping[];
 };
 
-type ModbusFirmwareVersion = {
+export type ModbusFirmwareVersion = {
   id: number;
   name: string;
   description: string | null;

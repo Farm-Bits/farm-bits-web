@@ -169,30 +169,6 @@ class MeasurementPoint < ApplicationRecord
     RegisterGroupValidator.new(simulated_states).validate
   end
 
-  def alarm_state
-    if scaled_last_decoded_value.nil? || !register_template.numeric_register?
-      return :none
-    end
-
-    if alarm_low.present? && scaled_last_decoded_value < alarm_low
-      return :alarm_low
-    end
-
-    if alarm_high.present? && scaled_last_decoded_value > alarm_high
-      return :alarm_high
-    end
-
-    if warning_low.present? && scaled_last_decoded_value < warning_low
-      return :warning_low
-    end
-
-    if warning_high.present? && scaled_last_decoded_value > warning_high
-      return :warning_high
-    end
-
-    :normal
-  end
-
   def sibling_measurement_points
     interface_ids = register_template.interface_register_mappings.pluck(:interface_id)
     if interface_ids.empty?
@@ -442,10 +418,6 @@ class MeasurementPoint < ApplicationRecord
           polling_interval_seconds: nil,
           factor_override: nil,
           offset_override: nil,
-          alarm_low: nil,
-          alarm_high: nil,
-          warning_low: nil,
-          warning_high: nil,
           active: false,
           measurement_subtype_id: nil
         )

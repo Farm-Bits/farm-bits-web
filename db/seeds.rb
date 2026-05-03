@@ -112,16 +112,16 @@ ActiveRecord::Base.transaction do
         { name: 'Fertigation',         data_category: 'status', value_type: 'status', control_group: irrgfer_control_group, default_unit: 'Closed/Open',  default_chart_type: 'step', default_color: '#6B8E23', icon_key: 'fertigation', position: 2 },
         { name: 'Valve',               data_category: 'status', value_type: 'status', control_group: irrgfer_control_group, default_unit: 'Closed/Open',  default_chart_type: 'step', default_color: '#398439', position: 3 },
         { name: 'Pump',                data_category: 'status', value_type: 'status', control_group: irrgfer_control_group, default_unit: 'Off/On',       default_chart_type: 'step', default_color: '#50C878', position: 4 },
-        { name: 'Fan',                 data_category: 'status', value_type: 'status', control_group: irrgfer_control_group, default_unit: 'Off/On',       default_chart_type: 'step', default_color: '#5C6267', icon_key: 'fan', position: 5 },
-        { name: 'Heater',              data_category: 'status', value_type: 'status', control_group: irrgfer_control_group, default_unit: 'Off/On',       default_chart_type: 'step', default_color: '#FF8C00', icon_key: 'heater', position: 6 },
-        { name: 'Curtain',             data_category: 'status', value_type: 'status', control_group: irrgfer_control_group, default_unit: 'Closed/Open',  default_chart_type: 'step', default_color: '#8B4513', icon_key: 'curtain', position: 7 },
-        { name: 'Window',              data_category: 'status', value_type: 'status', control_group: irrgfer_control_group, default_unit: 'Closed/Open',  default_chart_type: 'step', default_color: '#39A0CA', icon_key: 'window', position: 8 },
-        { name: 'Light',               data_category: 'status', value_type: 'status', control_group: irrgfer_control_group, default_unit: 'Off/On',       default_chart_type: 'step', default_color: '#F0E68C', icon_key: 'light', position: 9 },
-        { name: 'Humidifier',          data_category: 'status', value_type: 'status', control_group: irrgfer_control_group, default_unit: 'Off/On',       default_chart_type: 'step', default_color: '#39AFCA', icon_key: 'humidifier', position: 10 },
-        { name: 'Door',                data_category: 'status', value_type: 'status', control_group: irrgfer_control_group, default_unit: 'Closed/Open',  default_chart_type: 'step', default_color: '#0D6EFD', position: 11 },
-        { name: 'Compressor',          data_category: 'status', value_type: 'status', control_group: irrgfer_control_group, default_unit: 'Off/On',       default_chart_type: 'step', default_color: '#6C757D', position: 12 },
-        { name: 'Motor',               data_category: 'status', value_type: 'status', control_group: irrgfer_control_group, default_unit: 'Off/On',       default_chart_type: 'step', default_color: '#495057', position: 13 },
-        { name: 'Alarm',               data_category: 'status', value_type: 'status', control_group: irrgfer_control_group, default_unit: 'OK/Fault',     default_chart_type: 'step', default_color: '#DC3545', position: 14 }
+        { name: 'Fan',                 data_category: 'status', value_type: 'status', control_group: climate_control_group, default_unit: 'Off/On',       default_chart_type: 'step', default_color: '#5C6267', icon_key: 'fan', position: 5 },
+        { name: 'Heater',              data_category: 'status', value_type: 'status', control_group: climate_control_group, default_unit: 'Off/On',       default_chart_type: 'step', default_color: '#FF8C00', icon_key: 'heater', position: 6 },
+        { name: 'Curtain',             data_category: 'status', value_type: 'status', control_group: climate_control_group, default_unit: 'Closed/Open',  default_chart_type: 'step', default_color: '#8B4513', icon_key: 'curtain', position: 7 },
+        { name: 'Window',              data_category: 'status', value_type: 'status', control_group: climate_control_group, default_unit: 'Closed/Open',  default_chart_type: 'step', default_color: '#39A0CA', icon_key: 'window', position: 8 },
+        { name: 'Light',               data_category: 'status', value_type: 'status', control_group: climate_control_group, default_unit: 'Off/On',       default_chart_type: 'step', default_color: '#F0E68C', icon_key: 'light', position: 9 },
+        { name: 'Humidifier',          data_category: 'status', value_type: 'status', control_group: climate_control_group, default_unit: 'Off/On',       default_chart_type: 'step', default_color: '#39AFCA', icon_key: 'humidifier', position: 10 },
+        { name: 'Door',                data_category: 'status', value_type: 'status', control_group: climate_control_group, default_unit: 'Closed/Open',  default_chart_type: 'step', default_color: '#0D6EFD', position: 11 },
+        { name: 'Compressor',          data_category: 'status', value_type: 'status', control_group: climate_control_group, default_unit: 'Off/On',       default_chart_type: 'step', default_color: '#6C757D', position: 12 },
+        { name: 'Motor',               data_category: 'status', value_type: 'status', control_group: climate_control_group, default_unit: 'Off/On',       default_chart_type: 'step', default_color: '#495057', position: 13 },
+        { name: 'Alarm',               data_category: 'status', value_type: 'status', control_group: climate_control_group, default_unit: 'OK/Fault',     default_chart_type: 'step', default_color: '#DC3545', position: 14 }
       ]
     },
     {
@@ -236,6 +236,10 @@ ActiveRecord::Base.transaction do
 
   semtech_manufacturer = Manufacturer.create!(
     name: 'Semtech',
-    models_attributes: [{ name: 'LX40 EMEA', device_type: 'gateway' }]
+    models_attributes: [{
+      name: 'LX40 EMEA',
+      device_type: 'gateway',
+      display_type: 'Gateway'
+    }]
   )
 end

@@ -39,20 +39,47 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: true,
       destroy: true
     },
+    devices: {
+      index: true
+    },
     gateways: {
-      index: true,
-      update: true,
-      destroy: true
+      update: true
     },
     plcs: {
       refresh_interfaces: true,
       show: true,
       update: true
     },
+    modbus_devices: {
+      refresh_values: true,
+      create: true,
+      show: true,
+      update: true,
+      destroy: true
+    },
     measurement_points: {
+      bulk_write: true,
       write: true,
       operation_mode_config: true,
       update: true
+    },
+    alerts: {
+      index: true,
+      show: true
+    },
+    alert_rules: {
+      index: true,
+      create: true,
+      new: true,
+      edit: true,
+      update: true,
+      destroy: true
+    },
+    alert_subscriptions: {
+      index: true,
+      create: true,
+      update: true,
+      destroy: true
     },
     analytics: {
       show: true,
@@ -60,6 +87,11 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       raw: true,
       weather_hourly: true,
       weather_raw: true
+    },
+    programs: {
+      index: true,
+      show_plc: true,
+      show_modbus_device: true
     },
     dashboard: {
       show: true
@@ -101,20 +133,47 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: true,
       destroy: false
     },
+    devices: {
+      index: true
+    },
     gateways: {
-      index: true,
-      update: true,
-      destroy: true
+      update: true
     },
     plcs: {
       refresh_interfaces: true,
       show: true,
       update: true
     },
+    modbus_devices: {
+      refresh_values: true,
+      create: true,
+      show: true,
+      update: true,
+      destroy: true
+    },
     measurement_points: {
+      bulk_write: true,
       write: true,
       operation_mode_config: true,
       update: true
+    },
+    alerts: {
+      index: true,
+      show: true
+    },
+    alert_rules: {
+      index: true,
+      create: true,
+      new: true,
+      edit: true,
+      update: true,
+      destroy: true
+    },
+    alert_subscriptions: {
+      index: true,
+      create: true,
+      update: true,
+      destroy: true
     },
     analytics: {
       show: true,
@@ -122,6 +181,11 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       raw: true,
       weather_hourly: true,
       weather_raw: true
+    },
+    programs: {
+      index: true,
+      show_plc: true,
+      show_modbus_device: true
     },
     dashboard: {
       show: true
@@ -163,20 +227,47 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: false,
       destroy: false
     },
+    devices: {
+      index: true
+    },
     gateways: {
-      index: true,
-      update: false,
-      destroy: false
+      update: false
     },
     plcs: {
       refresh_interfaces: true,
       show: true,
       update: false
     },
+    modbus_devices: {
+      refresh_values: true,
+      create: false,
+      show: true,
+      update: false,
+      destroy: false
+    },
     measurement_points: {
+      bulk_write: true,
       write: true,
       operation_mode_config: true,
       update: false
+    },
+    alerts: {
+      index: true,
+      show: true
+    },
+    alert_rules: {
+      index: true,
+      create: true,
+      new: true,
+      edit: true,
+      update: true,
+      destroy: true
+    },
+    alert_subscriptions: {
+      index: true,
+      create: true,
+      update: true,
+      destroy: true
     },
     analytics: {
       show: true,
@@ -184,6 +275,11 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       raw: true,
       weather_hourly: true,
       weather_raw: true
+    },
+    programs: {
+      index: true,
+      show_plc: true,
+      show_modbus_device: true
     },
     dashboard: {
       show: true
@@ -225,20 +321,47 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: false,
       destroy: false
     },
+    devices: {
+      index: true
+    },
     gateways: {
-      index: true,
-      update: false,
-      destroy: false
+      update: false
     },
     plcs: {
-      refresh_interfaces: true,
+      refresh_interfaces: false,
       show: true,
       update: false
     },
+    modbus_devices: {
+      refresh_values: false,
+      create: false,
+      show: true,
+      update: false,
+      destroy: false
+    },
     measurement_points: {
+      bulk_write: false,
       write: false,
       operation_mode_config: true,
       update: false
+    },
+    alerts: {
+      index: true,
+      show: true
+    },
+    alert_rules: {
+      index: true,
+      create: true,
+      new: true,
+      edit: true,
+      update: true,
+      destroy: true
+    },
+    alert_subscriptions: {
+      index: true,
+      create: true,
+      update: true,
+      destroy: true
     },
     analytics: {
       show: true,
@@ -246,6 +369,11 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       raw: true,
       weather_hourly: true,
       weather_raw: true
+    },
+    programs: {
+      index: true,
+      show_plc: true,
+      show_modbus_device: true
     },
     dashboard: {
       show: true

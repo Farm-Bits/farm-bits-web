@@ -1,7 +1,6 @@
 <template>
   <div
     class="mp-card"
-    :class="{ 'mp-card--alarm': isAlarm, 'mp-card--warning': isWarning }"
     role="button"
     @click="emit('click', measurementPoint)">
     <div class="d-flex align-items-start justify-content-between">
@@ -41,7 +40,6 @@
         :valueFormat="measurementPoint.register_template.value_format"
         :unit="measurementPoint.effective_unit"
         :enumValues="measurementPoint.register_template.enum_values"
-        :alarmState="measurementPoint.alarm_state"
         placeholder="No data"
         size="default" />
     </div>
@@ -63,14 +61,6 @@
     (e: 'click', mp: LiveMeasurementPoint): void;
   }>();
 
-  const isAlarm = computed(() => {
-    return measurementPoint.alarm_state === 'alarm_low' || measurementPoint.alarm_state === 'alarm_high';
-  });
-
-  const isWarning = computed(() => {
-    return measurementPoint.alarm_state === 'warning_low' || measurementPoint.alarm_state === 'warning_high';
-  });
-
   const statusDotClass = computed(() => {
     if (!measurementPoint.last_value_at)
       return 'status-dot--unknown';
@@ -79,12 +69,6 @@
     const diffMs = Date.now() - lastAt.getTime();
     const fiveMinutes = 5 * 60 * 1000;
 
-    if (isAlarm.value)
-      return 'status-dot--alarm';
-
-    if (isWarning.value)
-      return 'status-dot--warning';
-
     if (diffMs > fiveMinutes)
       return 'status-dot--stale';
 
@@ -92,26 +76,11 @@
   });
 
   const statusTooltip = computed(() => {
-    const state = measurementPoint.alarm_state;
-    if (!state || state === 'normal')
-      return 'Normal';
-
-    return state.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    return 'Normal';
   });
 
   const alarmBadge = computed<{ color: string; label: string } | null>(() => {
-    const state = measurementPoint.alarm_state;
-    if (!state || state === 'normal')
-      return null;
-
-    const badges: Record<string, { color: string; label: string }> = {
-      alarm_low: { color: 'danger', label: 'Alarm Low' },
-      alarm_high: { color: 'danger', label: 'Alarm High' },
-      warning_low: { color: 'warning', label: 'Warning Low' },
-      warning_high: { color: 'warning', label: 'Warning High' },
-    };
-
-    return badges[state] ?? null;
+    return null;
   });
 </script>
 

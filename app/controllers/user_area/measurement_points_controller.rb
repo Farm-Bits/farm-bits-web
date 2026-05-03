@@ -14,7 +14,7 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
       end
 
       if params[:configuration_updates].present?
-        process_configuration_updates!
+        process_configuration_updates_for_anchor!
       end
     end
 
@@ -106,6 +106,58 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
     }, status: :ok
   end
 
+  def bulk_write
+    updates = bulk_write_updates_params
+    if updates.empty?
+      render json: { error: 'No configuration updates provided' }, status: :unprocessable_entity
+      return
+    end
+
+    mp_ids = updates.map { |u| u[:measurement_point_id].to_i }.uniq
+
+    allowed_points = policy_scope(MeasurementPoint)
+      .where(id: mp_ids)
+      .joins(:register_template)
+      .where(register_templates: {
+        user_visibility: 'visible',
+        category: ConfigurationUpdatesWriter::WRITABLE_CONFIG_CATEGORIES,
+        read_only: false
+      })
+      .includes(:register_template, plc: [:gateway], modbus_device: [:gateway, plc: [:gateway]])
+      .index_by(&:id)
+
+    if allowed_points.size != mp_ids.size
+      render json: { error: 'One or more measurement points are not accessible or not writable' },
+             status: :forbidden
+      return
+    end
+
+    allowed_points.each_value { |mp| authorize mp, :write? }
+
+    begin
+      ConfigurationUpdatesWriter.new(
+        allowed_points: allowed_points,
+        updates:        updates,
+        context:        ModbusWriteContext.user_action(current_user)
+      ).call
+
+      reloaded = MeasurementPoint
+        .where(id: mp_ids)
+        .includes(:register_template, :measurement_subtype)
+
+      render json: {
+        measurement_points: MeasurementPointSerializer.render_as_json(reloaded)
+      }, status: :ok
+    rescue ConfigurationUpdatesWriter::ValidationError => e
+      render json: { error: e.message }, status: :unprocessable_entity
+    rescue ConfigurationUpdatesWriter::ConnectionError => e
+      render json: { error: e.message }, status: :service_unavailable
+    rescue ConfigurationUpdatesWriter::WriteError => e
+      Rails.logger.error "Bulk write error: #{e.message}"
+      render json: { error: 'Failed to write values' }, status: :internal_server_error
+    end
+  end
+
   private
     # For update: the anchor must be a data-category register on an interface.
     # This ensures we can find sibling config registers on the same interface.
@@ -176,10 +228,6 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
         # :polling_interval_seconds,
         :factor_override,
         :offset_override,
-        :alarm_low,
-        :alarm_high,
-        :warning_low,
-        :warning_high,
         :active,
         :measurement_subtype_id,
         :segment_id
@@ -203,58 +251,31 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
       operation_mode_configuration
     ].freeze
 
-    def process_configuration_updates!
+    def process_configuration_updates_for_anchor!
       updates = configuration_updates_params
       if updates.empty?
         return
       end
 
-      # Load allowed config points for this interface
-      allowed_config_points = @measurement_point.sibling_measurement_points
+      allowed_points = @measurement_point.sibling_measurement_points
         .joins(:register_template)
-        .where(register_templates: { user_visibility: 'visible', category: WRITABLE_CONFIG_CATEGORIES })
-        .where(register_templates: { read_only: false })
+        .where(register_templates: {
+          user_visibility: 'visible',
+          category: ConfigurationUpdatesWriter::WRITABLE_CONFIG_CATEGORIES,
+          read_only: false
+        })
         .includes(:register_template, plc: [:gateway])
         .index_by(&:id)
 
-      # Validate all measurement point IDs are allowed
-      updates.each do |update|
-        if !allowed_config_points.key?(update[:measurement_point_id].to_i)
-          @measurement_point.errors.add(:base, "Invalid configuration: #{update[:measurement_point_id]}")
-          raise ActiveRecord::Rollback
-        end
-      end
-
-      # Build pending values for group validation
-      pending_values = updates.each_with_object({}) do |update, hash|
-        config_point = allowed_config_points[update[:measurement_point_id].to_i]
-        hash[config_point.register_template_id] = update[:value]
-      end
-
-      validator = RegisterGroupValidator.new(allowed_config_points.values, pending_values)
-      if !validator.valid?
-        @measurement_point.errors.add(:base, validator.errors.join('; '))
-        raise ActiveRecord::Rollback
-      end
-
-      # Build payload for the write service
-      config_points_with_values = updates.map do |update|
-        {
-          measurement_point: allowed_config_points[update[:measurement_point_id].to_i],
-          value: update[:value]
-        }
-      end
-
-      context = PlcWriteContext.user_action(current_user)
-      service = PlcWriteService.new(@measurement_point)
-      service.bulk_write!(config_points_with_values, context: context)
-    rescue PlcWriteService::ValidationError => e
+      ConfigurationUpdatesWriter.new(
+        allowed_points: allowed_points,
+        updates:        updates,
+        context:        ModbusWriteContext.user_action(current_user)
+      ).call
+    rescue ConfigurationUpdatesWriter::ValidationError, ConfigurationUpdatesWriter::ConnectionError => e
       @measurement_point.errors.add(:base, e.message)
       raise ActiveRecord::Rollback
-    rescue PlcWriteService::ConnectionError => e
-      @measurement_point.errors.add(:base, e.message)
-      raise ActiveRecord::Rollback
-    rescue PlcWriteService::WriteError => e
+    rescue ConfigurationUpdatesWriter::WriteError => e
       Rails.logger.error "Configuration write error: #{e.message}"
       @measurement_point.errors.add(:base, e.message)
       raise ActiveRecord::Rollback
@@ -300,5 +321,14 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
       end
 
       sources
+    end
+
+    def bulk_write_updates_params
+      raw = params[:configuration_updates]
+      if !raw.is_a?(Array)
+        return []
+      end
+
+      raw.map { |update| update.permit(:measurement_point_id, :value) }
     end
 end

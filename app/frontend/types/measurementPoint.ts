@@ -57,8 +57,6 @@ export type MeasurementSubtype = {
   control_group: ControlGroup | null;
 };
 
-export type AlarmState = 'normal' | 'warning_low' | 'warning_high' | 'alarm_low' | 'alarm_high';
-
 export type MeasurementPoint = {
   id: number;
   name: string;
@@ -70,11 +68,6 @@ export type MeasurementPoint = {
   // polling_interval_seconds: number | null;
   factor_override: number | null;
   offset_override: number | null;
-  alarm_low: number | null;
-  alarm_high: number | null;
-  warning_low: number | null;
-  warning_high: number | null;
-  alarm_state: AlarmState | null;
   last_value: number | string | null;
   last_value_at: string | null;
   position: number;

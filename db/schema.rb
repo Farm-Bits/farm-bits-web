@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_29_144747) do
+ActiveRecord::Schema[7.2].define(version: 2026_05_03_184206) do
   create_table "action_mailbox_inbound_emails", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "status", default: 0, null: false
     t.string "message_id", null: false
@@ -74,6 +74,74 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_29_144747) do
     t.index ["email"], name: "index_admin_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_admin_users_on_reset_password_token", unique: true
     t.index ["unlock_token"], name: "index_admin_users_on_unlock_token", unique: true
+  end
+
+  create_table "alert_candidates", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "alert_rule_id", null: false
+    t.datetime "predicate_first_true_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["alert_rule_id"], name: "index_alert_candidates_on_alert_rule_id", unique: true
+  end
+
+  create_table "alert_rules", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "severity", null: false
+    t.string "condition_type", null: false
+    t.string "direction"
+    t.decimal "threshold_value", precision: 15, scale: 6
+    t.integer "inactivity_seconds"
+    t.integer "min_duration_seconds"
+    t.boolean "active", default: true, null: false
+    t.bigint "measurement_point_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["condition_type"], name: "index_alert_rules_on_condition_type"
+    t.index ["measurement_point_id", "active"], name: "index_alert_rules_on_measurement_point_id_and_active"
+    t.index ["measurement_point_id"], name: "index_alert_rules_on_measurement_point_id"
+  end
+
+  create_table "alert_subscriptions", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "scope_type", null: false
+    t.bigint "scope_id", null: false
+    t.bigint "user_id", null: false
+    t.json "channels"
+    t.string "min_severity", null: false
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["scope_type", "scope_id"], name: "index_alert_subscriptions_on_scope"
+    t.index ["user_id", "scope_type", "scope_id"], name: "idx_on_user_id_scope_type_scope_id_8cadbd77a1", unique: true
+    t.index ["user_id"], name: "index_alert_subscriptions_on_user_id"
+  end
+
+  create_table "alerts", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "rule_name", null: false
+    t.string "severity", null: false
+    t.string "condition_type", null: false
+    t.string "direction"
+    t.decimal "threshold_value", precision: 15, scale: 6
+    t.integer "inactivity_seconds"
+    t.integer "min_duration_seconds"
+    t.string "measurement_point_name", null: false
+    t.string "unit"
+    t.string "site_name", null: false
+    t.datetime "started_at", null: false
+    t.datetime "ended_at"
+    t.string "started_value"
+    t.string "ended_value"
+    t.bigint "measurement_point_id"
+    t.bigint "alert_rule_id"
+    t.bigint "site_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["alert_rule_id", "ended_at"], name: "index_alerts_on_alert_rule_id_and_ended_at"
+    t.index ["alert_rule_id"], name: "index_alerts_on_alert_rule_id"
+    t.index ["ended_at", "started_at"], name: "index_alerts_on_ended_at_and_started_at"
+    t.index ["measurement_point_id", "ended_at"], name: "index_alerts_on_measurement_point_id_and_ended_at"
+    t.index ["measurement_point_id"], name: "index_alerts_on_measurement_point_id"
+    t.index ["severity"], name: "index_alerts_on_severity"
+    t.index ["site_id"], name: "index_alerts_on_site_id"
   end
 
   create_table "archived_hourly_aggregations", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -347,10 +415,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_29_144747) do
     t.integer "polling_interval_seconds"
     t.decimal "factor_override", precision: 15, scale: 10
     t.decimal "offset_override", precision: 15, scale: 6
-    t.decimal "alarm_low", precision: 15, scale: 6
-    t.decimal "alarm_high", precision: 15, scale: 6
-    t.decimal "warning_low", precision: 15, scale: 6
-    t.decimal "warning_high", precision: 15, scale: 6
     t.string "last_decoded_value"
     t.datetime "last_decoded_value_at"
     t.integer "position", default: 0, null: false
@@ -505,6 +569,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_29_144747) do
   create_table "models", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "device_type", null: false
+    t.string "display_type"
+    t.boolean "supports_modbus_tcp", default: false, null: false
+    t.boolean "supports_modbus_rtu", default: false, null: false
     t.bigint "manufacturer_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -589,13 +656,13 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_29_144747) do
     t.datetime "updated_at", null: false
     t.index ["category"], name: "index_register_templates_on_category"
     t.index ["default_measurement_subtype_id"], name: "index_register_templates_on_default_measurement_subtype_id"
-    t.index ["modbus_firmware_version_id", "address"], name: "idx_on_modbus_firmware_version_id_address_3be5d60660", unique: true
     t.index ["modbus_firmware_version_id", "bulk_read_group"], name: "idx_on_modbus_firmware_version_id_bulk_read_group_fec5f958f2"
     t.index ["modbus_firmware_version_id", "category"], name: "idx_on_modbus_firmware_version_id_category_fb2ebbd4fe"
     t.index ["modbus_firmware_version_id", "group_name"], name: "idx_on_modbus_firmware_version_id_group_name_444938a547"
     t.index ["modbus_firmware_version_id", "label"], name: "idx_on_modbus_firmware_version_id_label_1c522bb600", unique: true
     t.index ["modbus_firmware_version_id", "name"], name: "idx_on_modbus_firmware_version_id_name_cb822f8b8e"
     t.index ["modbus_firmware_version_id", "position"], name: "idx_on_modbus_firmware_version_id_position_06de66e444"
+    t.index ["modbus_firmware_version_id", "register_type", "address"], name: "idx_on_modbus_firmware_version_id_register_type_add_eaaf00ae90", unique: true
     t.index ["modbus_firmware_version_id"], name: "index_register_templates_on_modbus_firmware_version_id"
   end
 
@@ -730,6 +797,12 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_29_144747) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "alert_candidates", "alert_rules", on_delete: :cascade
+  add_foreign_key "alert_rules", "measurement_points", on_delete: :cascade
+  add_foreign_key "alert_subscriptions", "users", on_delete: :cascade
+  add_foreign_key "alerts", "alert_rules", on_delete: :nullify
+  add_foreign_key "alerts", "measurement_points", on_delete: :nullify
+  add_foreign_key "alerts", "sites", on_delete: :nullify
   add_foreign_key "archived_hourly_aggregations", "measurement_points", on_delete: :cascade
   add_foreign_key "archived_plc_write_logs", "measurement_points", on_delete: :cascade
   add_foreign_key "archived_plc_write_logs", "plcs", on_delete: :cascade

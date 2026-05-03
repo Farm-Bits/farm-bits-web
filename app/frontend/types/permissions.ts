@@ -1,5 +1,5 @@
 // Auto-generated file - Do not edit manually
-// Generated at: 2026-04-15 18:42:16 UTC
+// Generated at: 2026-05-03 19:52:48 UTC
 
 import type { Method } from '@inertiajs/core';
 
@@ -34,7 +34,7 @@ export const ROLES: Record<Role, { name: string; description: string; level: num
 } as const;
 
 // Valid controller keys
-export type ControllerKey = 'live' | 'my_account' | 'company_setup' | 'company_users' | 'invitations' | 'sites' | 'gateways' | 'plcs' | 'measurement_points' | 'analytics' | 'dashboard';
+export type ControllerKey = 'live' | 'my_account' | 'company_setup' | 'company_users' | 'invitations' | 'sites' | 'devices' | 'gateways' | 'plcs' | 'modbus_devices' | 'measurement_points' | 'alerts' | 'alert_rules' | 'alert_subscriptions' | 'analytics' | 'programs' | 'dashboard';
 
 // Route permissions mapping
 export type RoutePermissions = {
@@ -73,20 +73,47 @@ export type RoutePermissions = {
     update: boolean;
     destroy: boolean;
   };
-  gateways: {
+  devices: {
     index: boolean;
+  };
+  gateways: {
     update: boolean;
-    destroy: boolean;
   };
   plcs: {
     refresh_interfaces: boolean;
     show: boolean;
     update: boolean;
   };
+  modbus_devices: {
+    refresh_values: boolean;
+    create: boolean;
+    show: boolean;
+    update: boolean;
+    destroy: boolean;
+  };
   measurement_points: {
+    bulk_write: boolean;
     write: boolean;
     operation_mode_config: boolean;
     update: boolean;
+  };
+  alerts: {
+    index: boolean;
+    show: boolean;
+  };
+  alert_rules: {
+    index: boolean;
+    create: boolean;
+    new: boolean;
+    edit: boolean;
+    update: boolean;
+    destroy: boolean;
+  };
+  alert_subscriptions: {
+    index: boolean;
+    create: boolean;
+    update: boolean;
+    destroy: boolean;
   };
   analytics: {
     show: boolean;
@@ -94,6 +121,11 @@ export type RoutePermissions = {
     raw: boolean;
     weather_hourly: boolean;
     weather_raw: boolean;
+  };
+  programs: {
+    index: boolean;
+    show_plc: boolean;
+    show_modbus_device: boolean;
   };
   dashboard: {
     show: boolean;
@@ -241,10 +273,10 @@ export const ROUTES: Record<string, RouteInfo> = {
     path: '/user/sites/:id',
     verb: 'delete'
   },
-  gateways_index: {
-    controller: 'gateways',
+  devices_index: {
+    controller: 'devices',
     action: 'index',
-    path: '/user/gateways',
+    path: '/user/devices',
     verb: 'get'
   },
   gateways_update: {
@@ -252,12 +284,6 @@ export const ROUTES: Record<string, RouteInfo> = {
     action: 'update',
     path: '/user/gateways/:id',
     verb: 'patch'
-  },
-  gateways_destroy: {
-    controller: 'gateways',
-    action: 'destroy',
-    path: '/user/gateways/:id',
-    verb: 'delete'
   },
   plcs_refresh_interfaces: {
     controller: 'plcs',
@@ -277,6 +303,42 @@ export const ROUTES: Record<string, RouteInfo> = {
     path: '/user/plcs/:id',
     verb: 'patch'
   },
+  modbus_devices_refresh_values: {
+    controller: 'modbus_devices',
+    action: 'refresh_values',
+    path: '/user/modbus_devices/:id/refresh_values',
+    verb: 'post'
+  },
+  modbus_devices_create: {
+    controller: 'modbus_devices',
+    action: 'create',
+    path: '/user/modbus_devices',
+    verb: 'post'
+  },
+  modbus_devices_show: {
+    controller: 'modbus_devices',
+    action: 'show',
+    path: '/user/modbus_devices/:id',
+    verb: 'get'
+  },
+  modbus_devices_update: {
+    controller: 'modbus_devices',
+    action: 'update',
+    path: '/user/modbus_devices/:id',
+    verb: 'patch'
+  },
+  modbus_devices_destroy: {
+    controller: 'modbus_devices',
+    action: 'destroy',
+    path: '/user/modbus_devices/:id',
+    verb: 'delete'
+  },
+  measurement_points_bulk_write: {
+    controller: 'measurement_points',
+    action: 'bulk_write',
+    path: '/user/measurement_points/bulk_write',
+    verb: 'post'
+  },
   measurement_points_write: {
     controller: 'measurement_points',
     action: 'write',
@@ -294,6 +356,78 @@ export const ROUTES: Record<string, RouteInfo> = {
     action: 'update',
     path: '/user/measurement_points/:id',
     verb: 'patch'
+  },
+  alerts_index: {
+    controller: 'alerts',
+    action: 'index',
+    path: '/user/alerts',
+    verb: 'get'
+  },
+  alerts_show: {
+    controller: 'alerts',
+    action: 'show',
+    path: '/user/alerts/:id',
+    verb: 'get'
+  },
+  alert_rules_index: {
+    controller: 'alert_rules',
+    action: 'index',
+    path: '/user/alert_rules',
+    verb: 'get'
+  },
+  alert_rules_create: {
+    controller: 'alert_rules',
+    action: 'create',
+    path: '/user/alert_rules',
+    verb: 'post'
+  },
+  alert_rules_new: {
+    controller: 'alert_rules',
+    action: 'new',
+    path: '/user/alert_rules/new',
+    verb: 'get'
+  },
+  alert_rules_edit: {
+    controller: 'alert_rules',
+    action: 'edit',
+    path: '/user/alert_rules/:id/edit',
+    verb: 'get'
+  },
+  alert_rules_update: {
+    controller: 'alert_rules',
+    action: 'update',
+    path: '/user/alert_rules/:id',
+    verb: 'patch'
+  },
+  alert_rules_destroy: {
+    controller: 'alert_rules',
+    action: 'destroy',
+    path: '/user/alert_rules/:id',
+    verb: 'delete'
+  },
+  alert_subscriptions_index: {
+    controller: 'alert_subscriptions',
+    action: 'index',
+    path: '/user/notification_settings',
+    verb: 'get'
+  },
+  alert_subscriptions_create: {
+    controller: 'alert_subscriptions',
+    action: 'create',
+    path: '/user/notification_settings',
+    verb: 'post'
+  },
+  alert_subscriptions_update: {
+    controller: 'alert_subscriptions',
+    action: 'update',
+    path: '/user/notification_settings/:id',
+    verb: 'patch'
+  },
+  alert_subscriptions_destroy: {
+    controller: 'alert_subscriptions',
+    action: 'destroy',
+    path: '/user/notification_settings/:id',
+    verb: 'delete'
   },
   live_poll: {
     controller: 'live',
@@ -335,6 +469,24 @@ export const ROUTES: Record<string, RouteInfo> = {
     controller: 'analytics',
     action: 'weather_raw',
     path: '/user/analytics/weather_raw',
+    verb: 'get'
+  },
+  programs_index: {
+    controller: 'programs',
+    action: 'index',
+    path: '/user/programs',
+    verb: 'get'
+  },
+  programs_show_plc: {
+    controller: 'programs',
+    action: 'show_plc',
+    path: '/user/programs/plc/:id',
+    verb: 'get'
+  },
+  programs_show_modbus_device: {
+    controller: 'programs',
+    action: 'show_modbus_device',
+    path: '/user/programs/modbus_device/:id',
     verb: 'get'
   },
   dashboard_show: {

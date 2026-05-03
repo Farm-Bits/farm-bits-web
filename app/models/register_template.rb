@@ -9,7 +9,12 @@ class RegisterTemplate < ApplicationRecord
 
   has_many :measurement_points, dependent: :destroy
 
-  CATEGORIES = (Interface::CATEGORIES + %w[configuration diagnostic]).freeze
+  CATEGORIES = (Interface::CATEGORIES + %w[
+    configuration
+    diagnostic
+    program_status
+    program_configuration
+  ]).freeze
   REGISTER_TYPES = %w[holding input coil discrete].freeze
   DATA_TYPES = %w[
     int8 uint8 int16 uint16 int32 uint32 int64 uint64
@@ -42,7 +47,7 @@ class RegisterTemplate < ApplicationRecord
       greater_than_or_equal_to: 0,
       message: 'must be greater than or equal to 0 (Modbus specification)'
     },
-    uniqueness: { scope: :modbus_firmware_version_id }
+    uniqueness: { scope: [:modbus_firmware_version_id, :register_type] }
   validates :address_count, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validates :register_type, presence: true, inclusion: { in: REGISTER_TYPES }
   validates :data_type, presence: true, inclusion: { in: DATA_TYPES }

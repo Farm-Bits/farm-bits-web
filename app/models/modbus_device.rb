@@ -88,19 +88,19 @@ class ModbusDevice < ApplicationRecord
       return nil
     end
 
-    version = plc.modbus_firmware_version
-    if !version&.host_capable?
+    host_version = plc.modbus_firmware_version
+    if !host_version&.host_capable?
       return nil
     end
 
-    mapping = version.relay_mappings.detect do |m|
+    mapping = modbus_firmware_version.relay_mappings.detect do |m|
       m.register_template_id == register_template.id && m.direction == direction
     end
     if mapping.nil?
       return nil
     end
 
-    version.relay_slot_base + (version.relay_slot_size * (slot_number - 1)) + mapping.relay_offset
+    host_version.relay_slot_base + (host_version.relay_slot_size * (slot_number - 1)) + mapping.relay_offset
   end
 
   private
@@ -255,7 +255,6 @@ class ModbusDevice < ApplicationRecord
           active:                !MeasurementSubtype::DATA_CATEGORIES.include?(template.category),
           measurement_subtype:   template.default_measurement_subtype,
           register_template:     template,
-          plc:                   plc,
           site:                  site
         )
       end
