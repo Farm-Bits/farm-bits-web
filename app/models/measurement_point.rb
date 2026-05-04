@@ -291,6 +291,30 @@ class MeasurementPoint < ApplicationRecord
     nil
   end
 
+  def write_target
+    if modbus_device.present?
+      return modbus_device
+    end
+
+    if plc.present?
+      return plc
+    end
+
+    nil
+  end
+
+  def relay_host_plc
+    if !modbus_device.present?
+      return nil
+    end
+
+    if !modbus_device.polled_by_plc?
+      return nil
+    end
+
+    modbus_device.plc
+  end
+
   def sync_read!
     coords = read_coordinates
     if coords.nil?
