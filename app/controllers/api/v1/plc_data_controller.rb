@@ -71,7 +71,7 @@ module Api
 
             sample_time, label, raw_value = row
             {
-              sample_time: sample_time.strip,
+              sample_time: Time.parse(sample_time.strip),
               label: label.strip,
               raw_value: raw_value.strip
             }
@@ -96,7 +96,7 @@ module Api
 
             sample_time, label, raw_value = parts
             {
-              sample_time: sample_time.strip,
+              sample_time: Time.parse(sample_time.strip),
               label: label.strip,
               raw_value: raw_value.strip
             }
