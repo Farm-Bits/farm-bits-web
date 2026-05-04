@@ -32,10 +32,17 @@ class ModbusFirmwareRelayMapping < ApplicationRecord
         return
       end
 
-      if register_template.modbus_firmware_version_id != modbus_firmware_version_id
+      if register_template.modbus_firmware_version_id == modbus_firmware_version_id
+        errors.add(:register_template, 'must belong to a peripheral firmware version, not the host itself')
+        return
+      end
+
+      supported_ids = modbus_firmware_version.supported_peripheral_versions.pluck(:id)
+      if !supported_ids.include?(register_template.modbus_firmware_version_id)
         errors.add(
           :register_template,
-          'must belong to the same firmware version as the relay mapping'
+          "must belong to a firmware version supported as a peripheral by " \
+          "'#{modbus_firmware_version.name}'"
         )
       end
     end

@@ -65,7 +65,8 @@ ActiveRecord::Base.transaction do
     ModbusFirmwareRelayMapping.create!(
       modbus_firmware_version: host_version,
       register_template:       template,
-      relay_offset:            r[:rel]
+      relay_offset:            r[:rel],
+      direction:               'read'
     )
   end
 end
