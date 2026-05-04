@@ -10,7 +10,7 @@
           color="primary"
           @click="router.visit(ROUTES.alert_rules_index.path)">
           <CIcon icon="cilPlus" class="me-2" />
-          Add New Alert Rule
+          Alert Rules
         </CButton>
       </div>
     </div>

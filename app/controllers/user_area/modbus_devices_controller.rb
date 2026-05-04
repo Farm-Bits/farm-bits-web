@@ -38,7 +38,7 @@ class UserArea::ModbusDevicesController < UserArea::ApplicationController
   def create
     authorize ModbusDevice, :create?
 
-    @modbus_device = ModbusDevice.new(modbus_device_params)
+    @modbus_device = ModbusDevice.new(create_params)
     @modbus_device.active = true unless params[:modbus_device].key?(:active)
 
     if @modbus_device.save
@@ -52,7 +52,7 @@ class UserArea::ModbusDevicesController < UserArea::ApplicationController
   def update
     authorize @modbus_device, :update?
 
-    if @modbus_device.update(modbus_device_params)
+    if @modbus_device.update(update_params)
       render json: { id: @modbus_device.id, name: @modbus_device.name }, status: :ok
     else
       render json: { error: @modbus_device.errors.full_messages.to_sentence },
@@ -95,10 +95,17 @@ class UserArea::ModbusDevicesController < UserArea::ApplicationController
         .find(params[:id])
     end
 
-    def modbus_device_params
+    def create_params
       params.require(:modbus_device).permit(
         :name, :slave_id, :private_ip,
-        :model_id, :gateway_id, :plc_id, :active
+        :model_id, :modbus_firmware_version_id,
+        :gateway_id, :plc_id, :active
+      )
+    end
+
+    def update_params
+      params.require(:modbus_device).permit(
+        :name, :slave_id, :private_ip, :gateway_id, :plc_id, :active
       )
     end
 end
