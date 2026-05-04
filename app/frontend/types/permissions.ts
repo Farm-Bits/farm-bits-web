@@ -1,5 +1,5 @@
 // Auto-generated file - Do not edit manually
-// Generated at: 2026-05-03 19:52:48 UTC
+// Generated at: 2026-05-04 21:08:27 UTC
 
 import type { Method } from '@inertiajs/core';
 
@@ -34,7 +34,7 @@ export const ROLES: Record<Role, { name: string; description: string; level: num
 } as const;
 
 // Valid controller keys
-export type ControllerKey = 'live' | 'my_account' | 'company_setup' | 'company_users' | 'invitations' | 'sites' | 'devices' | 'gateways' | 'plcs' | 'modbus_devices' | 'measurement_points' | 'alerts' | 'alert_rules' | 'alert_subscriptions' | 'analytics' | 'programs' | 'dashboard';
+export type ControllerKey = 'live' | 'my_account' | 'sessions' | 'company_setup' | 'company_users' | 'invitations' | 'sites' | 'devices' | 'gateways' | 'plcs' | 'modbus_devices' | 'measurement_points' | 'alerts' | 'alert_rules' | 'alert_subscriptions' | 'analytics' | 'programs' | 'dashboard';
 
 // Route permissions mapping
 export type RoutePermissions = {
@@ -46,6 +46,11 @@ export type RoutePermissions = {
   my_account: {
     show: boolean;
     update: boolean;
+    destroy: boolean;
+  };
+  sessions: {
+    destroy_all: boolean;
+    index: boolean;
     destroy: boolean;
   };
   company_setup: {
@@ -169,6 +174,24 @@ export const ROUTES: Record<string, RouteInfo> = {
     controller: 'my_account',
     action: 'destroy',
     path: '/user/my_account',
+    verb: 'delete'
+  },
+  sessions_destroy_all: {
+    controller: 'sessions',
+    action: 'destroy_all',
+    path: '/user/sessions',
+    verb: 'delete'
+  },
+  sessions_index: {
+    controller: 'sessions',
+    action: 'index',
+    path: '/user/sessions',
+    verb: 'get'
+  },
+  sessions_destroy: {
+    controller: 'sessions',
+    action: 'destroy',
+    path: '/user/sessions/:id',
     verb: 'delete'
   },
   company_setup_new: {

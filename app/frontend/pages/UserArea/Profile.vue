@@ -158,6 +158,23 @@
       </div>
     </div>
 
+    <!-- Security Field -->
+    <div class="row align-items-center py-3 border-bottom">
+      <div class="col-md-3">
+        <label class="form-label mb-0 fw-medium">Security</label>
+      </div>
+      <div class="col-md-6">
+      </div>
+      <div class="col-md-3 text-end">
+        <a
+          href="#"
+          class="row-action-link text-secondary"
+          @click.prevent="router.visit(paths.pages.sessions)">
+          Manage Sessions
+        </a>
+      </div>
+    </div>
+
     <!-- Account Deactivation -->
     <div class="row align-items-center py-3">
       <div class="col-md-3">
@@ -243,7 +260,7 @@
 
 <script lang="ts" setup>
   import { reactive, ref } from 'vue';
-  import { useForm } from '@inertiajs/vue3';
+  import { router, useForm } from '@inertiajs/vue3';
   import { useVuelidate } from '@vuelidate/core';
   import { email, minLength, required, sameAs } from '@vuelidate/validators';
   import useAuth from '@/composables/useAuth';

@@ -3,8 +3,12 @@ class AdminUser < ApplicationRecord
 
   # Include default devise modules. Others available are:
   #  :timeoutable and :omniauthable
-  devise :database_authenticatable, :recoverable, :rememberable, :validatable,
-    :trackable, :confirmable, :lockable
+  devise :database_authenticatable, :recoverable, :validatable, :trackable,
+    :confirmable, :lockable
+
+  encrypts :otp_secret
+
+  has_many :user_sessions, as: :authenticatable, dependent: :destroy
 
   has_many :invitations, as: :inviter, dependent: :nullify
 

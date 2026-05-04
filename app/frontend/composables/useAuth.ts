@@ -40,7 +40,8 @@ export default function useAuth<T extends PageProps>() {
       unlock: `/${userScope.value}/unlock/new`,
       newCompany: `/${rootObjectName.value}/company_setup`,
       editCompany: `/${rootObjectName.value}/company_setup/edit`,
-      myAccount: `/${rootObjectName.value}/my_account`
+      myAccount: `/${rootObjectName.value}/my_account`,
+      sessions: `/${rootObjectName.value}/sessions`
     },
     actions: {
       signIn: `/${userScope.value}/sign_in`,
@@ -49,7 +50,9 @@ export default function useAuth<T extends PageProps>() {
       resetPassword: `/${userScope.value}/password`,
       confirmation: `/${userScope.value}/confirmation`,
       unlock: `/${userScope.value}/unlock`,
-      companySetup: `/${rootObjectName.value}/company_setup`
+      companySetup: `/${rootObjectName.value}/company_setup`,
+      deleteSession: (sessionId: number) => `/${rootObjectName.value}/sessions/${sessionId}`,
+      deleteAllSessions: `/${rootObjectName.value}/sessions/destroy_all`
     },
     api: {
       users: `/${rootObjectName.value}/users`,

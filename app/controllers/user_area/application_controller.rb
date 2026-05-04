@@ -2,6 +2,7 @@ class UserArea::ApplicationController < ApplicationController
   include Pundit::Authorization
 
   before_action :authenticate_user!
+  before_action :touch_user_session
   before_action :ensure_user_has_company_access
   before_action :set_current_company
   before_action :set_current_site
@@ -23,6 +24,19 @@ class UserArea::ApplicationController < ApplicationController
   rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
 
   protected
+    def current_user_session
+      request.env['user_session.current.user']
+    end
+
+    def touch_user_session
+      session = current_user_session
+      if session.nil?
+        return
+      end
+
+      session.touch_seen!(ip: request.remote_ip, user_agent: request.user_agent)
+    end
+
     def ensure_user_has_company_access
       if current_user.active_companies_connections.empty?
         redirect_to user_company_setup_new_path
@@ -39,13 +53,17 @@ class UserArea::ApplicationController < ApplicationController
           redirect_to root_path
           return
         end
-      elsif session[:current_company_id]
-        @current_company = @companies.find_by(id: session[:current_company_id])
+      elsif current_user_session&.current_company_id
+        @current_company = @companies.find_by(id: current_user_session.current_company_id)
       end
 
       @current_company ||= @companies.first
       @current_company_user = current_user.company_user_for(@current_company)
-      session[:current_company_id] = @current_company&.id
+
+      if current_user_session.present? &&
+        current_user_session.current_company_id != @current_company&.id
+        current_user_session.update_column(:current_company_id, @current_company&.id)
+      end
     end
 
     def set_current_site

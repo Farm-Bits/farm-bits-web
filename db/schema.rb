@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_05_03_184206) do
+ActiveRecord::Schema[7.2].define(version: 2026_05_04_165651) do
   create_table "action_mailbox_inbound_emails", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "status", default: 0, null: false
     t.string "message_id", null: false
@@ -52,9 +52,11 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_03_184206) do
     t.string "name", null: false
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
+    t.text "otp_secret"
+    t.datetime "otp_enabled_at"
+    t.json "otp_backup_codes_digests"
     t.string "reset_password_token"
     t.datetime "reset_password_sent_at"
-    t.datetime "remember_created_at"
     t.integer "sign_in_count", default: 0, null: false
     t.datetime "current_sign_in_at"
     t.datetime "last_sign_in_at"
@@ -72,6 +74,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_03_184206) do
     t.datetime "updated_at", null: false
     t.index ["confirmation_token"], name: "index_admin_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_admin_users_on_email", unique: true
+    t.index ["otp_enabled_at"], name: "index_admin_users_on_otp_enabled_at"
     t.index ["reset_password_token"], name: "index_admin_users_on_reset_password_token", unique: true
     t.index ["unlock_token"], name: "index_admin_users_on_unlock_token", unique: true
   end
@@ -708,13 +711,38 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_03_184206) do
     t.index ["weather_station_api_location_id"], name: "index_sites_on_weather_station_api_location_id"
   end
 
+  create_table "user_sessions", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "transport", null: false
+    t.string "remember_token_digest"
+    t.string "jti"
+    t.string "client_name"
+    t.string "user_agent"
+    t.string "ip_address"
+    t.datetime "last_seen_at", null: false
+    t.datetime "expires_at", null: false
+    t.datetime "revoked_at"
+    t.datetime "mfa_verified_at"
+    t.bigint "current_company_id"
+    t.string "authenticatable_type", null: false
+    t.bigint "authenticatable_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["authenticatable_type", "authenticatable_id", "revoked_at"], name: "idx_on_authenticatable_type_authenticatable_id_revo_f71e4a64ee"
+    t.index ["authenticatable_type", "authenticatable_id"], name: "index_user_sessions_on_authenticatable"
+    t.index ["current_company_id"], name: "index_user_sessions_on_current_company_id"
+    t.index ["expires_at"], name: "index_user_sessions_on_expires_at"
+    t.index ["jti"], name: "index_user_sessions_on_jti", unique: true
+  end
+
   create_table "users", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
+    t.text "otp_secret"
+    t.datetime "otp_enabled_at"
+    t.json "otp_backup_codes_digests"
     t.string "reset_password_token"
     t.datetime "reset_password_sent_at"
-    t.datetime "remember_created_at"
     t.integer "sign_in_count", default: 0, null: false
     t.datetime "current_sign_in_at"
     t.datetime "last_sign_in_at"
@@ -732,6 +760,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_03_184206) do
     t.datetime "updated_at", null: false
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["otp_enabled_at"], name: "index_users_on_otp_enabled_at"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["unlock_token"], name: "index_users_on_unlock_token", unique: true
   end
@@ -862,6 +891,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_03_184206) do
   add_foreign_key "site_sun_data", "sites", on_delete: :cascade
   add_foreign_key "sites", "companies", on_delete: :cascade
   add_foreign_key "sites", "weather_station_api_locations", on_delete: :nullify
+  add_foreign_key "user_sessions", "companies", column: "current_company_id"
   add_foreign_key "weather_station_api_hourly_aggregations", "weather_station_api_locations", on_delete: :cascade
   add_foreign_key "weather_station_api_hourly_aggregations", "weather_station_api_metrics", on_delete: :cascade
   add_foreign_key "weather_station_api_metrics", "measurement_subtypes", on_delete: :cascade

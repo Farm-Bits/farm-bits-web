@@ -27,6 +27,12 @@ Rails.application.routes.draw do
     namespace :admin_area, path: 'admin', as: :admin do
       root 'dashboard#show'
 
+      resources :sessions, only: [:index, :destroy] do
+        collection do
+          delete '', to: 'sessions#destroy_all', as: :destroy_all
+        end
+      end
+
       get 'dashboard', to: 'dashboard#show'
     end
   end
@@ -38,6 +44,12 @@ Rails.application.routes.draw do
       get 'my_account' => 'my_account#show'
       put 'my_account' => 'my_account#update'
       delete 'my_account' => 'my_account#destroy'
+
+      resources :sessions, only: [:index, :destroy] do
+        collection do
+          delete '', to: 'sessions#destroy_all', as: :destroy_all
+        end
+      end
 
       get 'company_setup/new' => 'company_setup#new'
       get 'company_setup/edit' => 'company_setup#edit'

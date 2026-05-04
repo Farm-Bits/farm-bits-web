@@ -2,16 +2,20 @@ class User < ApplicationRecord
   audited
   include Roleable
 
+  # Include default devise modules. Others available are:
+  #  :timeoutable and :omniauthable
+  devise :database_authenticatable, :registerable, :recoverable, :validatable,
+    :trackable, :confirmable, :lockable
+
+  encrypts :otp_secret
+
+  has_many :user_sessions, as: :authenticatable, dependent: :destroy
+
   has_many :company_users, dependent: :destroy
 
   has_many :companies, through: :company_users
 
   has_many :invitations, as: :inviter, dependent: :nullify
-
-  # Include default devise modules. Others available are:
-  #  :timeoutable and :omniauthable
-  devise :database_authenticatable, :registerable, :recoverable, :rememberable,
-    :validatable, :trackable, :confirmable, :lockable
 
   validates :name, presence: true
   validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }

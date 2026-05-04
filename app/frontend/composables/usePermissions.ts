@@ -14,6 +14,11 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: true,
       destroy: true
     },
+    sessions: {
+      destroy_all: true,
+      index: true,
+      destroy: true
+    },
     company_setup: {
       new: true,
       edit: true,
@@ -106,6 +111,11 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
     my_account: {
       show: true,
       update: true,
+      destroy: true
+    },
+    sessions: {
+      destroy_all: true,
+      index: true,
       destroy: true
     },
     company_setup: {
@@ -202,6 +212,11 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
       update: true,
       destroy: true
     },
+    sessions: {
+      destroy_all: true,
+      index: true,
+      destroy: true
+    },
     company_setup: {
       new: true,
       edit: true,
@@ -294,6 +309,11 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
     my_account: {
       show: true,
       update: true,
+      destroy: true
+    },
+    sessions: {
+      destroy_all: true,
+      index: true,
       destroy: true
     },
     company_setup: {
