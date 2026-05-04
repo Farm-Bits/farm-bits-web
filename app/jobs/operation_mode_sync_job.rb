@@ -11,9 +11,9 @@ class OperationModeSyncJob
     behavior = PlcBehaviors.for(plc)
     behavior.cleanup_onetime_schedules!
     behavior.sync_io_active!
-  rescue PlcWriteService::ConnectionError => e
+  rescue ModbusWriteService::ConnectionError => e
     Rails.logger.warn("[OperationModeSync] PLC #{plc_id} unreachable: #{e.message}")
-  rescue PlcWriteService::WriteError => e
+  rescue ModbusWriteService::WriteError => e
     Rails.logger.error("[OperationModeSync] PLC #{plc_id} write failed: #{e.message}")
   end
 end

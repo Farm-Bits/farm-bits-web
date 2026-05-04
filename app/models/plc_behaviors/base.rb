@@ -62,7 +62,7 @@ class PlcBehaviors::Base
   def cleanup_onetime_schedules!
   end
 
-  # Pre-write transform: called by PlcWriteService before encoding values.
+  # Pre-write transform: called by ModbusWriteService before reverse_scaled encoding.
   # Receives the array of { measurement_point:, value: } hashes.
   # Returns the (possibly mutated) array.
   # Override in concerns to adjust MPs or values before reverse_scaled runs.
@@ -114,15 +114,13 @@ class PlcBehaviors::Base
         return
       end
 
-      context = PlcWriteContext.system_action(source)
-      service = PlcWriteService.new(writes.first[:measurement_point])
-      service.bulk_write!(writes, context: context)
+      context = ModbusWriteContext.system_action(source)
+      ModbusWriteService.new.bulk_write!(writes, context: context)
     end
 
     def single_write!(measurement_point, value, source:)
-      context = PlcWriteContext.system_action(source)
-      service = PlcWriteService.new(measurement_point)
-      service.write!(value, context: context)
+      context = ModbusWriteContext.system_action(source)
+      ModbusWriteService.write!(measurement_point, value, context: context)
     end
 
     # Resolve communication_type string to source_type integer

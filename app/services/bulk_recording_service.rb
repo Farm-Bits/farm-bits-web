@@ -110,7 +110,7 @@ class BulkRecordingService
           t[:mp_id],
           t[:old_value],
           t[:new_value],
-          t[:sample_time].iso8601
+          t[:sample_time]
         )
       end
     end

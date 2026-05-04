@@ -20,9 +20,9 @@ class SunDataPlcWriteJob
     end
 
     PlcBehaviors.for(plc).sync_sun_data!(sunrise_minutes, sunset_minutes)
-  rescue PlcWriteService::ConnectionError => e
+  rescue ModbusWriteService::ConnectionError => e
     Rails.logger.warn("[SunDataPlcWrite] PLC #{plc_id} unreachable: #{e.message}")
-  rescue PlcWriteService::WriteError => e
+  rescue ModbusWriteService::WriteError => e
     Rails.logger.error("[SunDataPlcWrite] PLC #{plc_id} write failed: #{e.message}")
   end
 end

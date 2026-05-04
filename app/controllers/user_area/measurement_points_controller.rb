@@ -35,16 +35,15 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
     authorize @measurement_point, :write?
 
     begin
-      context = PlcWriteContext.user_action(current_user)
-      service = PlcWriteService.new(@measurement_point)
-      service.write!(params[:value], context: context)
+      context = ModbusWriteContext.user_action(current_user)
+      ModbusWriteService.write!(@measurement_point, params[:value], context: context)
 
       render json: MeasurementPointSerializer.render_as_json(@measurement_point.reload), status: :ok
-    rescue PlcWriteService::ValidationError => e
+    rescue ModbusWriteService::ValidationError => e
       render json: { error: e.message }, status: :unprocessable_entity
-    rescue PlcWriteService::ConnectionError => e
+    rescue ModbusWriteService::ConnectionError => e
       render json: { error: e.message }, status: :service_unavailable
-    rescue PlcWriteService::WriteError => e
+    rescue ModbusWriteService::WriteError => e
       Rails.logger.error "MeasurementPoint write error: #{e.message}"
       render json: { error: 'Failed to write value to PLC' }, status: :internal_server_error
     end

@@ -14,7 +14,7 @@ module PlcBehaviors::Concerns::SensorConditionScaling
 
   SCALING_TARGET_ROLES = %w[threshold hysteresis].freeze
 
-  # Pre-write transform: called by PlcWriteService before reverse_scaled encoding.
+  # Pre-write transform: called by ModbusWriteService before reverse_scaled encoding.
   #
   # Scans the batch for source_type/source_io_number changes in om_sensor_cond_*
   # groups, resolves the source IO's scaling, and patches threshold/hysteresis MPs.
