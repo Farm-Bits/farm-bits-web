@@ -56,8 +56,8 @@ class Site < ApplicationRecord
   private
     def country_must_be_valid
       if country.present?
-        service = GoogleMapsService.new
-        if !service.valid_country?(country)
+        client = GoogleMapsClient.new
+        if !client.valid_country?(country)
           errors.add(:country, 'is not a valid country')
         end
       end
@@ -65,8 +65,8 @@ class Site < ApplicationRecord
 
     def city_must_be_valid_if_present
       if city.present? && country.present?
-        service = GoogleMapsService.new
-        if !service.valid_city?(city, country)
+        client = GoogleMapsClient.new
+        if !client.valid_city?(city, country)
           errors.add(:city, 'is not a valid city in the specified country')
         end
       end
@@ -88,23 +88,23 @@ class Site < ApplicationRecord
     end
 
     def infer_time_zone
-      service = GoogleMapsService.new
+      client = GoogleMapsClient.new
 
       if latitude.present? && longitude.present?
-        return service.time_zone_for_coordinates(latitude, longitude)
+        return client.time_zone_for_coordinates(latitude, longitude)
       end
 
       if city.present? && country.present?
-        coords = service.geocode_country("#{city}, #{country}")
+        coords = client.geocode_country("#{city}, #{country}")
         if coords
-          return service.time_zone_for_coordinates(coords[:latitude], coords[:longitude])
+          return client.time_zone_for_coordinates(coords[:latitude], coords[:longitude])
         end
       end
 
       if country.present?
-        coords = service.geocode_country(country)
+        coords = client.geocode_country(country)
         if coords
-          return service.time_zone_for_coordinates(coords[:latitude], coords[:longitude])
+          return client.time_zone_for_coordinates(coords[:latitude], coords[:longitude])
         end
       end
 

@@ -61,7 +61,7 @@ class ConfigurationUpdatesWriter
         hash[mp.register_template_id] = update[:value]
       end
 
-      validator = RegisterGroupValidator.new(@allowed_points.values, pending_values)
+      validator = Validators::RegisterGroupValidator.new(@allowed_points.values, pending_values)
       if !validator.valid?
         raise ValidationError, validator.errors.join('; ')
       end

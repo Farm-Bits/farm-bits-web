@@ -15,7 +15,7 @@ class SiteSunDataSyncService
       else
         results[:skipped] += 1
       end
-    rescue SunriseSunsetApiService::ApiError, SyncError => e
+    rescue SunriseSunsetClient::ApiError, SyncError => e
       results[:failed] += 1
       Rails.logger.error("[SiteSunDataSync] Failed for site #{site.id} (#{site.name}): #{e.message}")
     end
@@ -37,7 +37,7 @@ class SiteSunDataSyncService
       return 0
     end
 
-    api = SunriseSunsetApiService.new(@site)
+    api = SunriseSunsetClient.new(@site)
     records = []
 
     missing_dates.each do |date|
@@ -45,7 +45,7 @@ class SiteSunDataSyncService
         data = api.fetch(date)
         records << data.merge(site_id: @site.id, created_at: Time.current, updated_at: Time.current)
         sleep(0.2)
-      rescue SunriseSunsetApiService::ApiError => e
+      rescue SunriseSunsetClient::ApiError => e
         Rails.logger.error("[SiteSunDataSync] Failed for site #{@site.id} on #{date}: #{e.message}")
       end
     end

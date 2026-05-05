@@ -166,7 +166,7 @@ class MeasurementPoint < ApplicationRecord
     group_points = fetch_group_points
     simulated_states = build_simulated_states(group_points, value)
 
-    RegisterGroupValidator.new(simulated_states).validate
+    Validators::RegisterGroupValidator.new(simulated_states).validate
   end
 
   def sibling_measurement_points

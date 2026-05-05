@@ -1,4 +1,4 @@
-class GoogleMapsService
+class GoogleMapsClient
   include HTTParty
   base_uri 'https://maps.googleapis.com/maps/api'
 

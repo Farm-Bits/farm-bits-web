@@ -1,4 +1,4 @@
-class SunriseSunsetApiService
+class SunriseSunsetClient
   include HTTParty
   base_uri 'https://api.sunrise-sunset.org'
 
@@ -71,18 +71,18 @@ class SunriseSunsetApiService
     end
 
     def geocode_site
-      service = GoogleMapsService.new
+      client = GoogleMapsClient.new
 
       if @site.city.present? && @site.country.present?
         source = "#{@site.city}, #{@site.country}"
-        coords = service.geocode_country(source)
+        coords = client.geocode_country(source)
         if coords
           return [coords, source]
         end
       end
 
       if @site.country.present?
-        coords = service.geocode_country(@site.country)
+        coords = client.geocode_country(@site.country)
         if coords
           return [coords, @site.country]
         end
