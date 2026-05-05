@@ -1,6 +1,4 @@
 class AlertMailer < ApplicationMailer
-  self.delivery_method = :onesignal
-
   def alert_opened(alert_id, user_id)
     @alert = Alert.find_by(id: alert_id)
     @user  = User.find_by(id: user_id)

@@ -1,7 +1,11 @@
 class OnesignalDeliveryMethod
   include HTTParty
 
-  ONESIGNAL_API_URL = 'https://api.onesignal.com/notifications'
+  base_uri 'https://api.onesignal.com'
+  default_timeout 10
+  open_timeout 5
+
+  class DeliveryError < StandardError; end
 
   attr_accessor :settings
 
@@ -19,7 +23,7 @@ class OnesignalDeliveryMethod
     }
 
     response = self.class.post(
-      ONESIGNAL_API_URL,
+      '/notifications',
       headers: {
         'Content-Type'  => 'application/json',
         'Authorization' => "Bearer #{Rails.application.credentials[:onesignal][:api_key]}"
@@ -30,10 +34,17 @@ class OnesignalDeliveryMethod
     parsed = response.parsed_response
     errors = parsed['errors']
 
-    if !response.success? || (errors && errors.any?)
-      error_message = errors.is_a?(Array) ? errors.join(', ') : errors.to_s
-      Bugsnag.notify("OneSignal delivery failed: #{error_message}")
+    if !response.success? || (errors.present?)
+      message = errors.is_a?(Array) ? errors.join(', ') : errors.to_s
+      message = message.presence || "HTTP #{response.code}"
+      Rails.logger.error("[OneSignal] delivery failed for #{mail.to.first}: #{message}")
+      raise DeliveryError, "OneSignal delivery failed: #{message}"
     end
+
+    parsed
+  rescue Net::OpenTimeout, Net::ReadTimeout, SocketError, Errno::ECONNREFUSED, HTTParty::Error => e
+    Rails.logger.error("[OneSignal] network error for #{mail.to.first}: #{e.class} - #{e.message}")
+    raise DeliveryError, "OneSignal network error: #{e.message}"
   end
 
   private

@@ -86,6 +86,49 @@
         </div>
       </div>
     </div>
+
+    <!-- Require 2FA -->
+    <div class="row align-items-center py-3 border-bottom">
+      <div class="col-md-3">
+        <label class="form-label mb-0 fw-medium">Require Two-Factor Authentication</label>
+      </div>
+      <div class="col-md-6">
+        <div v-if="!editingFields.company.require_2fa" class="d-flex align-items-center">
+          <CBadge :color="formData.company.require_2fa ? 'success' : 'secondary'">
+            {{ formData.company.require_2fa ? 'Required' : 'Optional' }}
+          </CBadge>
+        </div>
+        <div v-else>
+          <CFormSwitch
+            v-model="formData.company.require_2fa"
+            :label="formData.company.require_2fa ? 'Required for all users' : 'Optional for users'" />
+        </div>
+        <small class="text-muted d-block mt-2">
+          When required, every user in this company must have 2FA enabled.
+          Users with 2FA off won't be able to disable it.
+        </small>
+      </div>
+      <div v-if="permissions?.company_setup.update" class="col-md-3 text-end">
+        <div v-if="!editingFields.company.require_2fa">
+          <CButton @click="startEditing('require_2fa')">
+            <CIcon name="cilPencil" class="me-1" />
+            Edit
+          </CButton>
+        </div>
+        <div v-else class="d-flex gap-2 justify-content-end">
+          <CButton
+            :disabled="!hasChanges('require_2fa')"
+            @click="saveField('require_2fa')">
+            <CIcon name="cilCheck" class="me-1" />
+            Update
+          </CButton>
+          <CButton color="secondary" @click="cancelEditing('require_2fa')">
+            <CIcon name="cilX" class="me-1" />
+            Cancel
+          </CButton>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -99,8 +142,7 @@
   import usePermissions from '@/composables/usePermissions';
   import { type Company } from '@/types/inertia';
 
-  const { pageProps, paths, currentCompany } = useAuth();
-
+  const { paths, currentCompany } = useAuth();
   const { permissions } = usePermissions();
 
   type CompanyField = Exclude<keyof Company, 'id'>;
@@ -109,6 +151,7 @@
     company: {
       name: '',
       color: '',
+      require_2fa: false,
       ...currentCompany.value
     }
   });
@@ -116,13 +159,15 @@
     company: {
       name: '',
       color: '',
+      require_2fa: false,
       ...currentCompany.value
     }
   });
   const editingFields = reactive({
     company: {
       name: false,
-      color: false
+      color: false,
+      require_2fa: false
     }
   });
 
@@ -142,34 +187,29 @@
             $validator: isValidHexColor,
             $message: 'Please enter a valid hex color (e.g., #FF0000)'
           }
-        }
+        },
+        require_2fa: {}
       }
     };
   }
 
   const v$ = useVuelidate(rules, formData);
 
-  function startEditing(field: CompanyField) {
+  function startEditing<K extends CompanyField>(field: K) {
     editingFields.company[field] = true;
   }
 
-  function cancelEditing(field: CompanyField) {
+  function cancelEditing<K extends CompanyField>(field: K) {
     formData.company[field] = originalData.company[field];
     editingFields.company[field] = false;
     v$.value.company[field].$reset();
   }
 
-  function hasChanges(field: CompanyField) {
+  function hasChanges<K extends CompanyField>(field: K) {
     return formData.company[field] !== originalData.company[field];
   }
 
-  async function saveField(field: CompanyField) {
-    // if (!features.value.canManageCompanySettings)
-    //   return;
-
-    const fieldValidation = v$.value.company[field];
-    await fieldValidation.$validate();
-
+  async function saveField<K extends CompanyField>(field: K) {
     const isValid = await v$.value.company[field].$validate();
     if (!isValid)
       return;
@@ -179,7 +219,7 @@
     }).put(paths.value.actions.companySetup, {
       onSuccess: () => {
         originalData.company[field] = formData.company[field];
-        editingFields.company  [field] = false;
+        editingFields.company[field] = false;
       }
     });
   }
@@ -192,6 +232,12 @@
     border-radius: 4px;
     border: 1px solid #dee2e6;
     display: inline-block;
+  }
+
+  .form-error {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
   }
 
   @media (max-width: 768px) {

@@ -52,7 +52,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_04_165651) do
     t.string "name", null: false
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
-    t.text "otp_secret"
     t.datetime "otp_enabled_at"
     t.json "otp_backup_codes_digests"
     t.string "reset_password_token"
@@ -260,6 +259,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_04_165651) do
   create_table "companies", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "color", null: false
+    t.boolean "require_2fa", default: false, null: false
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -718,6 +718,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_04_165651) do
     t.string "client_name"
     t.string "user_agent"
     t.string "ip_address"
+    t.string "pending_otp_digest"
+    t.integer "pending_otp_attempts", default: 0, null: false
+    t.datetime "pending_otp_expires_at"
     t.datetime "last_seen_at", null: false
     t.datetime "expires_at", null: false
     t.datetime "revoked_at"
@@ -738,7 +741,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_04_165651) do
     t.string "name", null: false
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
-    t.text "otp_secret"
     t.datetime "otp_enabled_at"
     t.json "otp_backup_codes_digests"
     t.string "reset_password_token"

@@ -27,7 +27,7 @@ Devise.setup do |config|
   # config.mailer_sender = 'please-change-me-at-config-initializers-devise@example.com'
 
   # Configure the class responsible to send e-mails.
-  config.mailer = 'DeviseOnesignalMailer'
+  config.mailer = 'DeviseMailer'
 
   # Configure the parent class responsible to send e-mails.
   # config.parent_mailer = 'ActionMailer::Base'
@@ -123,7 +123,7 @@ Devise.setup do |config|
   # a value less than 10 in other environments. Note that, for bcrypt (the default
   # algorithm), the cost increases exponentially with the number of stretches (e.g.
   # a value of 20 is already extremely slow: approx. 60 seconds for 1 calculation).
-  config.stretches = Rails.env.test? ? 1 : 12
+  config.stretches = Rails.env.test? ? 1 : 4
 
   # Set up a pepper to generate the hashed password.
   # config.pepper = 'b6e577744445f41bb7ff80fd94c0078eac055beb786a7813c512b7012570a0394497280530f807e242a1ba9644d2d56cd26076309503052d45477a0c1c7c9479'

@@ -1,0 +1,18 @@
+<!-- app/views/user_session_mailer/otp_code.html.erb -->
+<p>Hi,</p>
+
+<p>Your sign-in code is:</p>
+
+<p style="font-size: 24px; font-family: monospace; letter-spacing: 4px;">
+  <%= @code %>
+</p>
+
+<p>This code expires in <%= time_ago_in_words(@expires_in.from_now) %>.</p>
+
+<p>
+  This code was requested for sign-in from
+  <strong><%= @client_name %></strong>
+  (IP <%= @ip_address %>).
+</p>
+
+<p>If you didn't try to sign in, ignore this email and your account stays safe.</p>

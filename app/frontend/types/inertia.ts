@@ -8,12 +8,14 @@ export type Company = {
   id: number;
   name: string;
   color: string;
+  require_2fa: boolean;
 };
 
 export type User = {
   id: number;
   name: string;
   email: string;
+  otp_enabled_at: string | null;
 };
 
 export type SiteWithSegments = Site & {

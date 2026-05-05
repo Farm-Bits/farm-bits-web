@@ -13,6 +13,12 @@ Rails.application.routes.draw do
     confirmations: 'login/admin_users/confirmations',
     unlocks: 'login/admin_users/unlocks'
   }
+  devise_scope :admin_user do
+    get  'admin_users/otp',        to: 'login/admin_users/sessions#otp_challenge', as: :admin_user_otp_challenge
+    post 'admin_users/otp/verify', to: 'login/admin_users/sessions#verify_otp',    as: :verify_admin_user_otp
+    post 'admin_users/otp/resend', to: 'login/admin_users/sessions#resend_otp',    as: :resend_admin_user_otp
+  end
+
   devise_for :users, controllers: {
     sessions: 'login/users/sessions',
     passwords: 'login/users/passwords',
@@ -20,6 +26,11 @@ Rails.application.routes.draw do
     unlocks: 'login/users/unlocks',
     registrations: 'login/users/registrations'
   }
+  devise_scope :user do
+    get  'users/otp',        to: 'login/users/sessions#otp_challenge', as: :user_otp_challenge
+    post 'users/otp/verify', to: 'login/users/sessions#verify_otp',    as: :verify_user_otp
+    post 'users/otp/resend', to: 'login/users/sessions#resend_otp',    as: :resend_user_otp
+  end
 
   authenticate :admin_user do
     mount Sidekiq::Web => '/sidekiq'
@@ -27,7 +38,7 @@ Rails.application.routes.draw do
     namespace :admin_area, path: 'admin', as: :admin do
       root 'dashboard#show'
 
-      resources :sessions, only: [:index, :destroy] do
+      resources :sessions, only: [:destroy] do
         collection do
           delete '', to: 'sessions#destroy_all', as: :destroy_all
         end
@@ -45,11 +56,13 @@ Rails.application.routes.draw do
       put 'my_account' => 'my_account#update'
       delete 'my_account' => 'my_account#destroy'
 
-      resources :sessions, only: [:index, :destroy] do
+      resources :sessions, only: [:destroy] do
         collection do
           delete '', to: 'sessions#destroy_all', as: :destroy_all
         end
       end
+
+      resource :two_factors, only: [:update]
 
       get 'company_setup/new' => 'company_setup#new'
       get 'company_setup/edit' => 'company_setup#edit'
@@ -114,6 +127,17 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       resources :plc_data, only: [:create]
+    end
+
+    namespace :mobile do
+      namespace :v1 do
+        post   'sign_in', to: 'sessions#create'
+        delete 'sign_out', to: 'sessions#destroy_current'
+        resources :sessions, only: [:index, :destroy]
+
+        post 'otp/verify', to: 'otp#verify'
+        post 'otp/resend', to: 'otp#resend'
+      end
     end
   end
 

@@ -52,7 +52,10 @@ export default function useAuth<T extends PageProps>() {
       unlock: `/${userScope.value}/unlock`,
       companySetup: `/${rootObjectName.value}/company_setup`,
       deleteSession: (sessionId: number) => `/${rootObjectName.value}/sessions/${sessionId}`,
-      deleteAllSessions: `/${rootObjectName.value}/sessions/destroy_all`
+      deleteAllSessions: `/${rootObjectName.value}/sessions/destroy_all`,
+      twoFactor: `/${rootObjectName.value}/two_factors`,
+      verifyOtp: `/${userScope.value}/otp/verify`,
+      resendOtp: `/${userScope.value}/otp/resend`
     },
     api: {
       users: `/${rootObjectName.value}/users`,

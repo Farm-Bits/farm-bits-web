@@ -1,37 +1,44 @@
 class UserArea::SessionsController < UserArea::ApplicationController
   skip_after_action :verify_pundit_authorization
 
-  # GET /user/sessions
-  def index
-    sessions = current_user.user_sessions.active.order(last_seen_at: :desc)
-
-    render inertia: 'Login/Sessions/Index', props: {
-      sessions: UserSessionSerializer.render_as_json(
-        sessions,
-        current_session_id: current_user_session&.id
-      )
-    }
-  end
-
-  # DELETE /user/sessions/:id
   def destroy
     user_session = current_user.user_sessions.active.find(params[:id])
     user_session.revoke!
 
-    if user_session.id == current_user_session&.id
+    if current_session?(user_session)
       sign_out current_user
       redirect_to new_user_session_path, notice: 'Signed out.'
       return
     end
 
-    redirect_to user_sessions_path, notice: 'Session revoked.'
+    redirect_to user_my_account_path(tab: 'security'), notice: 'Session revoked.'
   end
 
-  # DELETE /user/sessions
   def destroy_all
-    others = current_user.user_sessions.active.where.not(id: current_user_session&.id)
-    others.find_each(&:revoke!)
+    current_id = current_user_session&.id
+    scope = current_user.user_sessions.active
+    if current_id.present?
+      scope = scope.where.not(id: current_id)
+    end
 
-    redirect_to user_sessions_path, notice: 'Signed out of all other sessions.'
+    revoked_count = 0
+    scope.find_each do |session|
+      session.revoke!
+      revoked_count += 1
+    end
+
+    if revoked_count == 0
+      redirect_to user_my_account_path(tab: 'security'),
+        notice: 'No other sessions to sign out.'
+      return
+    end
+
+    redirect_to user_my_account_path(tab: 'security'),
+      notice: "Signed out of #{revoked_count} other #{'session'.pluralize(revoked_count)}."
   end
+
+  private
+    def current_session?(user_session)
+      user_session.id == current_user_session&.id
+    end
 end

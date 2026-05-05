@@ -42,8 +42,7 @@ class MobileJwt
   end
 
   def self.secret
-    Rails.application.credentials.dig(:mobile_jwt, :secret) ||
-      raise('mobile_jwt.secret not configured in credentials')
+    Rails.application.credentials[:devise_jwt_secret_key]
   end
 
   def self.sign(data)

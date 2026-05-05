@@ -1,3 +1,5 @@
+require 'bcrypt'
+
 class UserSession < ApplicationRecord
   TRANSPORTS = %w[web mobile].freeze
 
@@ -6,6 +8,9 @@ class UserSession < ApplicationRecord
   MOBILE_EXPIRY         = 60.days
   REMEMBER_TOKEN_LENGTH = 32
   LAST_SEEN_THROTTLE    = 1.minute
+  OTP_CODE_LENGTH    = 6
+  OTP_VALIDITY       = 10.minutes
+  OTP_MAX_ATTEMPTS   = 5
 
   belongs_to :authenticatable, polymorphic: true
   belongs_to :current_company, class_name: 'Company', optional: true
@@ -75,6 +80,43 @@ class UserSession < ApplicationRecord
     [session, remember_token]
   end
 
+  def self.create_mobile!(authenticatable:, request:, client_name: nil)
+    jti = SecureRandom.uuid
+
+    session = create!(
+      authenticatable: authenticatable,
+      transport:       'mobile',
+      jti:             jti,
+      last_seen_at:    Time.current,
+      expires_at:      MOBILE_EXPIRY.from_now,
+      user_agent:      truncate_user_agent(request.user_agent),
+      ip_address:      request.remote_ip,
+      client_name:     client_name.presence || derive_client_name(request.user_agent)
+    )
+
+    token = MobileJwt.encode(
+      session_id: session.id,
+      jti:        jti,
+      user_id:    authenticatable.id,
+      user_type:  authenticatable.class.name
+    )
+
+    [session, token]
+  end
+
+  def mobile_token
+    if !mobile?
+      return nil
+    end
+
+    MobileJwt.encode(
+      session_id: id,
+      jti:        jti,
+      user_id:    authenticatable_id,
+      user_type:  authenticatable_type
+    )
+  end
+
   def self.truncate_user_agent(user_agent)
     user_agent.to_s.first(500)
   end
@@ -128,6 +170,66 @@ class UserSession < ApplicationRecord
     false
   end
 
+  def issue_otp!
+    begin
+      if !active?
+        return false
+      end
+
+      code = self.class.generate_otp_code
+      update!(
+        pending_otp_digest:     BCrypt::Password.create(code, cost: Devise.stretches),
+        pending_otp_expires_at: OTP_VALIDITY.from_now,
+        pending_otp_attempts:   0
+      )
+
+      UserSessionMailer.otp_code(self, code).deliver_now
+      true
+    rescue OnesignalDeliveryMethod::DeliveryError => e
+      Rails.logger.warn("[OTP] delivery failed for session #{id}: #{e.message}")
+      false
+    end
+  end
+
+  def verify_otp!(submitted_code)
+    if pending_otp_digest.blank?
+      return :no_pending_code
+    end
+
+    if pending_otp_expires_at.blank? || pending_otp_expires_at < Time.current
+      return :expired
+    end
+
+    if pending_otp_attempts >= OTP_MAX_ATTEMPTS
+      revoke!
+      return :too_many_attempts
+    end
+
+    matches = begin
+      BCrypt::Password.new(pending_otp_digest).is_password?(submitted_code.to_s)
+    rescue BCrypt::Errors::InvalidHash
+      false
+    end
+
+    if !matches
+      increment!(:pending_otp_attempts)
+      return :invalid
+    end
+
+    update!(
+      mfa_verified_at:        Time.current,
+      pending_otp_digest:     nil,
+      pending_otp_expires_at: nil,
+      pending_otp_attempts:   0
+    )
+    :ok
+  end
+
+  def self.generate_otp_code
+    # 6-digit numeric, zero-padded. Cryptographically random.
+    SecureRandom.random_number(10 ** OTP_CODE_LENGTH).to_s.rjust(OTP_CODE_LENGTH, '0')
+  end
+
   def fully_authorized?
     if !active?
       return false
@@ -141,8 +243,15 @@ class UserSession < ApplicationRecord
   end
 
   def requires_otp?
-    authenticatable.respond_to?(:otp_enabled_at) &&
-      authenticatable.otp_enabled_at.present?
+    if authenticatable.respond_to?(:otp_enabled_at) && authenticatable.otp_enabled_at.present?
+      return true
+    end
+
+    if current_company.present? && current_company.require_2fa?
+      return true
+    end
+
+    false
   end
 
   private
