@@ -23,7 +23,9 @@ class UserArea::CompanySetupController < UserArea::ApplicationController
     company.company_users_attributes = [{ user: current_user, role: Roleable::ROLE_IDS[:admin] }]
 
     if company.save
-      session[:current_company_id] = company.id
+      if current_user_session.present?
+        current_user_session.update_column(:current_company_id, company.id)
+      end
       redirect_to root_path
     else
       render inertia: 'UserArea/CompanySetupForm', props: {

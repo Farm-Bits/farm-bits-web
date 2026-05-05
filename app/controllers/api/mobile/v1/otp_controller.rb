@@ -26,7 +26,7 @@ class Api::Mobile::V1::OtpController < Api::Mobile::V1::BaseController
         render json: { error: 'code_expired_send_failed' }, status: :service_unavailable
         return
       end
-      render json: { error: 'code_expired' }, status: :unauthorized
+      render json: { error: 'code_expired', session_id: user_session.id }, status: :unauthorized
     when :too_many_attempts
       render json: { error: 'too_many_attempts' }, status: :unauthorized
     end

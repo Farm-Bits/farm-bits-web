@@ -185,10 +185,20 @@ class UserSession < ApplicationRecord
 
       UserSessionMailer.otp_code(self, code).deliver_now
       true
-    rescue OnesignalDeliveryMethod::DeliveryError => e
+    rescue Net::SMTPError, IOError, Errno::ECONNREFUSED, Timeout::Error => e
       Rails.logger.warn("[OTP] delivery failed for session #{id}: #{e.message}")
+      Bugsnag.notify(e) { |r| r.severity = 'warning'; r.add_metadata(:otp, { session_id: id }) }
       false
     end
+  end
+
+  def mark_otp_verified!
+    update!(
+      mfa_verified_at:        Time.current,
+      pending_otp_digest:     nil,
+      pending_otp_expires_at: nil,
+      pending_otp_attempts:   0
+    )
   end
 
   def verify_otp!(submitted_code)
@@ -216,12 +226,7 @@ class UserSession < ApplicationRecord
       return :invalid
     end
 
-    update!(
-      mfa_verified_at:        Time.current,
-      pending_otp_digest:     nil,
-      pending_otp_expires_at: nil,
-      pending_otp_attempts:   0
-    )
+    mark_otp_verified!
     :ok
   end
 
