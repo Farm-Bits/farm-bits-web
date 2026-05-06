@@ -1,5 +1,5 @@
 class UserArea::SessionsController < UserArea::ApplicationController
-  skip_after_action :verify_pundit_authorization
+  skip_after_action :verify_pundit
 
   def destroy
     user_session = current_user.user_sessions.active.find(params[:id])

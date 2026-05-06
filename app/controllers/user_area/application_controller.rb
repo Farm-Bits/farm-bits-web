@@ -6,7 +6,7 @@ class UserArea::ApplicationController < ApplicationController
   before_action :ensure_user_has_company_access
   before_action :set_current_company
   before_action :set_current_site
-  after_action :verify_pundit_authorization
+  after_action  :verify_pundit
   inertia_share do
     {
       userScope: 'users',
@@ -112,9 +112,12 @@ class UserArea::ApplicationController < ApplicationController
     end
 
   private
-    def verify_pundit_authorization
-      if action_name == "index"
-        verify_authorized
+    def verify_pundit
+      if response.redirect?
+        return
+      end
+
+      if action_name == 'index'
         verify_policy_scoped
       else
         verify_authorized
