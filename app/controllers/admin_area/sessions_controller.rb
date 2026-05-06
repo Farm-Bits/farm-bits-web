@@ -1,6 +1,4 @@
 class AdminArea::SessionsController < AdminArea::ApplicationController
-  skip_after_action :verify_pundit_authorization
-
   def destroy
     user_session = current_admin_user.user_sessions.active.find(params[:id])
     user_session.revoke!
