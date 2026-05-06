@@ -1,5 +1,5 @@
 class UserArea::TwoFactorsController < UserArea::ApplicationController
-  skip_after_action :verify_pundit_authorization
+  skip_after_action :verify_pundit
 
   def update
     if !current_user.valid_password?(params[:current_password])
