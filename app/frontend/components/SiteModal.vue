@@ -77,33 +77,70 @@
           </CButton>
         </div>
 
-        <div v-if="formData.site.segments_attributes.length === 0" class="text-muted small">
+        <div v-if="visibleSegments.length === 0" class="text-muted small">
           No segments configured for this site
         </div>
 
-        <CListGroup v-else>
-          <CListGroupItem
-            v-for="(segment, index) in formData.site.segments_attributes"
-            :key="segment.id || `new-${index}`"
-            class="d-flex justify-content-between align-items-center">
-            <div class="flex-grow-1 me-2">
-              <CFormInput
-                v-model="segment.name"
-                placeholder="Segment name"
-                :invalid="segment.name !== '' && !segment.name?.trim()"
-                size="sm" />
+        <draggable
+          v-else
+          v-model="formData.site.segments_attributes"
+          :item-key="segmentKey"
+          handle=".segment-drag-handle"
+          ghost-class="segment-ghost"
+          drag-class="segment-drag"
+          tag="div"
+          class="list-group">
+          <template #item="{ element: segment, index }">
+            <div
+              v-if="!segment._destroy"
+              class="list-group-item d-flex align-items-center">
+              <div class="segment-drag-handle me-2" title="Drag to reorder">
+                <CIcon name="cilMenu" />
+              </div>
+
+              <div class="d-flex flex-column me-2">
+                <CButton
+                  color="secondary"
+                  size="sm"
+                  variant="ghost"
+                  class="segment-order-btn"
+                  :disabled="!canMoveUp(index)"
+                  @click="moveSegmentUp(index)"
+                  title="Move up">
+                  <CIcon name="cilArrowThickTop" size="sm" />
+                </CButton>
+                <CButton
+                  color="secondary"
+                  size="sm"
+                  variant="ghost"
+                  class="segment-order-btn"
+                  :disabled="!canMoveDown(index)"
+                  @click="moveSegmentDown(index)"
+                  title="Move down">
+                  <CIcon name="cilArrowThickBottom" size="sm" />
+                </CButton>
+              </div>
+
+              <div class="flex-grow-1 me-2">
+                <CFormInput
+                  v-model="segment.name"
+                  placeholder="Segment name"
+                  :invalid="segment.name !== '' && !segment.name?.trim()"
+                  size="sm" />
+              </div>
+              <CButton
+                color="danger"
+                size="sm"
+                variant="ghost"
+                @click="removeSegment(index)">
+                <CIcon name="cilTrash" />
+              </CButton>
             </div>
-            <CButton
-              color="danger"
-              size="sm"
-              variant="ghost"
-              @click="removeSegment(index)">
-              <CIcon name="cilTrash" />
-            </CButton>
-          </CListGroupItem>
-        </CListGroup>
+          </template>
+        </draggable>
+
         <div class="form-text mt-2">
-          Segments help organize different areas or zones within your farm site
+          Segments help organize different areas or zones within your farm site. Drag or use the arrows to reorder.
         </div>
       </div>
     </CModalBody>
@@ -130,6 +167,7 @@
   import axios from 'axios';
   import { useVuelidate } from '@vuelidate/core';
   import { between, decimal, required, requiredIf } from '@vuelidate/validators';
+  import draggable from 'vuedraggable';
   import LocationSelector from '@/components/LocationSelector.vue';
   import { useApiCall } from '@/composables/useApi';
   import type { SiteWithSegments } from '@/types/inertia';
@@ -198,6 +236,10 @@
 
   const isEditMode = computed(() => !!props.site?.id);
 
+  const visibleSegments = computed(() =>
+    formData.value.site.segments_attributes.filter((s) => !s._destroy)
+  );
+
   const timeZonesByRegion = computed(() => {
     const regions: { [key: string]: string[] } = {};
 
@@ -220,12 +262,17 @@
     return timeZone.replace(/_/g, ' ');
   }
 
+  function segmentKey(segment: SegmentAttributes) {
+    return segment.id ?? `new-${formData.value.site.segments_attributes.indexOf(segment)}`;
+  }
+
   function addSegment() {
     if (!props.site || !props.site.id)
       return;
 
     formData.value.site.segments_attributes.push({
-      name: ''
+      name: '',
+      position: formData.value.site.segments_attributes.length + 1
     });
   }
 
@@ -237,6 +284,46 @@
       formData.value.site.segments_attributes.splice(index, 1);
   }
 
+  function canMoveUp(index: number) {
+    const list = formData.value.site.segments_attributes;
+    for (let i = index - 1; i >= 0; i--) {
+      if (!list[i]._destroy)
+        return true;
+    }
+    return false;
+  }
+
+  function canMoveDown(index: number) {
+    const list = formData.value.site.segments_attributes;
+    for (let i = index + 1; i < list.length; i++) {
+      if (!list[i]._destroy)
+        return true;
+    }
+    return false;
+  }
+
+  function moveSegmentUp(index: number) {
+    const list = formData.value.site.segments_attributes;
+    for (let i = index - 1; i >= 0; i--) {
+      if (!list[i]._destroy) {
+        const [moved] = list.splice(index, 1);
+        list.splice(i, 0, moved);
+        return;
+      }
+    }
+  }
+
+  function moveSegmentDown(index: number) {
+    const list = formData.value.site.segments_attributes;
+    for (let i = index + 1; i < list.length; i++) {
+      if (!list[i]._destroy) {
+        const [moved] = list.splice(index, 1);
+        list.splice(i, 0, moved);
+        return;
+      }
+    }
+  }
+
   const hasSiteChanged = computed(() => {
     if (!isEditMode.value)
       return true;
@@ -245,12 +332,24 @@
       return false;
 
     const siteChanged = Object.keys(formData.value.site).some((key) => {
+      if (key === 'segments_attributes')
+        return false;
+
       const formValue = formData.value.site[key as keyof typeof formData.value.site];
       const propValue = props.site![key as keyof Site];
       return formValue !== propValue;
     });
 
-    const segmentsChanged = formData.value.site.segments_attributes.some((s) => !s.id || s._destroy);
+    const segmentsChanged = formData.value.site.segments_attributes.some((s, index) => {
+      if (!s.id || s._destroy)
+        return true;
+
+      const original = props.site!.segments?.find((o) => o.id === s.id);
+      if (!original)
+        return true;
+
+      return original.name !== s.name || original.position !== (index + 1);
+    });
 
     return siteChanged || segmentsChanged;
   });
@@ -279,6 +378,10 @@
     () => props.site,
     (newSite) => {
       if (newSite) {
+        const sortedSegments = newSite.segments
+          ? [...newSite.segments].sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+          : [];
+
         formData.value.site = {
           name: newSite.name,
           country: newSite.country,
@@ -286,10 +389,11 @@
           latitude: newSite.latitude,
           longitude: newSite.longitude,
           time_zone: newSite.time_zone,
-          segments_attributes: newSite.segments ? newSite.segments.map(s => ({
+          segments_attributes: sortedSegments.map((s) => ({
             id: s.id,
-            name: s.name
-          })) : []
+            name: s.name,
+            position: s.position
+          }))
         };
       } else
         resetForm();
@@ -328,6 +432,7 @@
 
     isLoading.value = true;
 
+    let positionCounter = 1;
     const body = {
       site: formData.value.site,
       segments_attributes: formData.value.site.segments_attributes
@@ -335,6 +440,7 @@
         .map((s) => ({
           id: s.id,
           name: s.name,
+          position: s._destroy ? s.position : positionCounter++,
           _destroy: s._destroy || false
         }))
     };
@@ -370,5 +476,31 @@
     color: var(--cui-danger);
     font-size: 0.875rem;
     margin-top: 0.25rem;
+  }
+
+  .segment-drag-handle {
+    cursor: grab;
+    color: var(--cui-secondary);
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+  }
+
+  .segment-drag-handle:active {
+    cursor: grabbing;
+  }
+
+  .segment-order-btn {
+    padding: 0.125rem 0.375rem;
+    line-height: 1;
+  }
+
+  .segment-ghost {
+    opacity: 0.5;
+    background: var(--cui-tertiary-bg);
+  }
+
+  .segment-drag {
+    opacity: 0.9;
   }
 </style>

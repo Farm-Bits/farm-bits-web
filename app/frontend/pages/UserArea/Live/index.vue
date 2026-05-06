@@ -346,13 +346,13 @@
           controlMpCount: controlMps.length,
         };
       })
-      // .sort((a, b) => {
-      //   const segA = segments.find((s) => String(s.id) === a.key);
-      //   const segB = segments.find((s) => String(s.id) === b.key);
-      //   const posA = segA?.position ?? Infinity;
-      //   const posB = segB?.position ?? Infinity;
-      //   return posA - posB;
-      // });
+      .sort((a, b) => {
+        const segA = segments.find((s) => String(s.id) === a.key);
+        const segB = segments.find((s) => String(s.id) === b.key);
+        const posA = segA?.position ?? Infinity;
+        const posB = segB?.position ?? Infinity;
+        return posA - posB;
+      });
   });
 
   // ── Polling ─────────────────────────────────────

@@ -20,10 +20,13 @@
         </Link>
       </CNavItem>
 
-      <CNavItem v-if="permissions?.analytics.show">
-        <Link :href="ROUTES.analytics_show.path" class="nav-link">
-          <CIcon customClassName="nav-icon" name="cilBarChart" />
-          Analytics
+      <CNavItem v-if="permissions?.alerts.show">
+        <Link :href="ROUTES.alerts_index.path" class="nav-link">
+          <CIcon customClassName="nav-icon" name="cilBellExclamation" />
+          Alerts
+          <CBadge v-if="openAlertCount > 0" color="danger" class="ms-auto">
+            {{ openAlertCount }}
+          </CBadge>
         </Link>
       </CNavItem>
 
@@ -34,13 +37,10 @@
         </Link>
       </CNavItem>
 
-      <CNavItem v-if="permissions?.alerts.show">
-        <Link :href="ROUTES.alerts_index.path" class="nav-link">
-          <CIcon customClassName="nav-icon" name="cilBellExclamation" />
-          Alerts
-          <CBadge v-if="openAlertCount > 0" color="danger" class="ms-auto">
-            {{ openAlertCount }}
-          </CBadge>
+      <CNavItem v-if="permissions?.analytics.show">
+        <Link :href="ROUTES.analytics_show.path" class="nav-link">
+          <CIcon customClassName="nav-icon" name="cilBarChart" />
+          Analytics
         </Link>
       </CNavItem>
 

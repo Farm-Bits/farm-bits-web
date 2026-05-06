@@ -104,7 +104,7 @@ ActiveRecord::Base.transaction do
   ].freeze
 
   OM_MANUAL_STATUS_REGISTERS = [
-    { name: 'Command',  group_role: 'command',  data_type: 'uint16', value_format: 'enum',             addr_count: 1, is_status: true, default_value: 0, enum_values: { '0' => 'Idle', '1' => 'On', '2' => 'On (Timed)', '3' => 'Off', '4' => 'Auto' }, description: 'Manual command. PLC resets to None after executing' }
+    { name: 'Command',  group_role: 'command',  data_type: 'uint16', value_format: 'enum',             addr_count: 1, is_status: true, default_value: 0, enum_values: { '0' => 'Idle', '1' => 'On', '2' => 'Timed', '3' => 'Off', '4' => 'Auto' }, description: 'Manual command. PLC resets to None after executing' }
   ].freeze
 
   MODBUS_FIRMWARE_VERSION_ID = ModbusFirmwareVersion.first.id

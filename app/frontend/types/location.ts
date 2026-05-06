@@ -1,6 +1,7 @@
 export type Segment = {
   id: number;
   name: string;
+  position: number;
 };
 
 export type Site = {

@@ -97,6 +97,8 @@ import { CIcon } from '@coreui/icons-vue';
 import {
   cilAccountLogout,
   cilArrowRight,
+  cilArrowThickBottom,
+  cilArrowThickTop,
   cilArrowLeft,
   cilBan,
   cilBarChart,
@@ -211,6 +213,8 @@ export default function () {
       app.provide('icons', {
         cilAccountLogout,
         cilArrowRight,
+        cilArrowThickBottom,
+        cilArrowThickTop,
         cilArrowLeft,
         cilBan,
         cilBarChart,
