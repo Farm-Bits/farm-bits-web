@@ -116,21 +116,15 @@ ActiveRecord::Base.transaction do
 
     label = "DO#{interface.io_number}_OM_#{group_label}_#{reg[:name].split(' ').join('')}"
     read_only = reg[:read_only] || false
+    is_status = reg[:is_status] || false
 
     bulk_read_group = nil
     bulk_read_offset = nil
     bulk_read_address = nil
-    if read_only
+    if read_only || is_status
       bulk_read_group = 'om_status'
       bulk_read_address = OM_STATUS_BASE_ADDRESS
       bulk_read_offset = address - OM_STATUS_BASE_ADDRESS
-    else
-      is_status = reg[:is_status] || false
-      if is_status
-        bulk_read_group = "do#{interface.io_number}_om_config"
-        bulk_read_address = OM_BASE_ADDRESS
-        bulk_read_offset = address - OM_BASE_ADDRESS
-      end
     end
 
     register_template = RegisterTemplate.create!(

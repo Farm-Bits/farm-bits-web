@@ -27,7 +27,6 @@ ActiveRecord::Base.transaction do
   eliwell_model = eliwell_manufacturer.models.find_by!(
     name: 'FreeAdvance AVC12600/C/L/U/I (AVC126006I500)'
   )
-  eliwell_v1 = eliwell_model.modbus_firmware_versions.find_by!(version_code: '1.0')
 
   # ── Eliwell V2 with Fatek hosting capability ──────────────────────────
 
@@ -44,20 +43,6 @@ ActiveRecord::Base.transaction do
     is_supported:        true,
     model:               eliwell_model
   )
-
-  # Inherit V1's interfaces and register templates by cloning.
-  # The Eliwell hardware is unchanged; only the host-relay capability is added.
-  eliwell_v1.interfaces.find_each do |v1_iface|
-    Interface.create!(
-      name:                      v1_iface.name,
-      communication_type:        v1_iface.communication_type,
-      description:               v1_iface.description,
-      io_number:                 v1_iface.io_number,
-      modbus_firmware_version:   eliwell_v2
-    )
-  end
-
-  eliwell_v2.copy_registers_from(eliwell_v1)
 
   # ── FATEK manufacturer and model ──────────────────────────────────────
 
