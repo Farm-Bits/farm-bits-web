@@ -1,4 +1,4 @@
-module PlcBehaviors
+module ModbusBehaviors
   module GroupSchemas
     DEFINITIONS = {
       # ── System groups ──────────────────────────
@@ -47,45 +47,6 @@ module PlcBehaviors
       'om_safety' => {
         label: 'Safety',
         required_roles: %w[emergency_stop]
-      },
-
-      # ── Programs (generic, used by any firmware with program/phase blocks) ──
-      'program_*_phase_*' => {
-        label: 'Phase',
-        required_roles: [],
-        structure: { kind: :item, container_index: 0, item_index: 1 }
-      },
-      'program_*_meta' => {
-        label: 'Program',
-        required_roles: [],
-        structure: { kind: :container, container_index: 0 }
-      },
-
-      # ── System config (device-level, non-interface) ─────────────────────────
-      'system_hysteresis' => {
-        label: 'Hysteresis',
-        required_roles: %w[
-          humidity_work_hysteresis humidity_alarm_hysteresis
-          temp_work_hysteresis temp_alarm_hysteresis
-        ]
-      },
-      'system_delays' => {
-        label: 'Delays & Timers',
-        required_roles: %w[
-          heating_on_delay cooling_on_delay
-          wetting_on_delay wetting_off_delay
-          temp_low_alarm_delay temp_high_alarm_delay
-          humidity_low_alarm_delay
-          wetting_timer_seconds
-        ]
-      },
-      'system_offsets' => {
-        label: 'Sensor Offsets',
-        required_roles: %w[humidity_sensor_offset temp_sensor_offset]
-      },
-      'system_commands' => {
-        label: 'Commands',
-        required_roles: %w[start reset confirm stop copy_setpoints_to_file]
       }
     }.freeze
 
@@ -129,41 +90,6 @@ module PlcBehaviors
       DEFINITIONS
         .select { |_, schema| schema[:label].present? }
         .transform_values { |schema| schema[:label] }
-    end
-
-    def self.parse_indices(group_name)
-      match = DEFINITIONS.lazy.filter_map do |pattern, schema|
-        if !pattern.include?('*')
-          next nil
-        end
-
-        regex = Regexp.new('\A' + pattern.gsub('*', '(\d+)') + '\z')
-        m = regex.match(group_name)
-        if !m
-          next nil
-        end
-
-        [pattern, schema, m.captures.map(&:to_i)]
-      end.first
-
-      if !match
-        return nil
-      end
-
-      pattern, schema, captures = match
-      structure = schema[:structure]
-      if !structure
-        return { pattern: pattern, captures: captures }
-      end
-
-      result = { pattern: pattern, kind: structure[:kind], captures: captures }
-      if structure[:container_index]
-        result[:container] = captures[structure[:container_index]]
-      end
-      if structure[:item_index]
-        result[:item] = captures[structure[:item_index]]
-      end
-      result
     end
   end
 end

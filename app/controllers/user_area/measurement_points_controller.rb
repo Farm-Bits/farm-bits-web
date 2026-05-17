@@ -92,7 +92,7 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
       .compact
       .uniq
       .each_with_object({}) do |name, hash|
-        label = PlcBehaviors::GroupSchemas.label_for(name)
+        label = ModbusBehaviors::GroupSchemas.label_for(name)
         if label.present?
           hash[name] = label
         end
@@ -281,6 +281,8 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
     end
 
     def build_available_sources(plc)
+      behavior = ModbusBehaviors.for(plc)
+
       data_mps = plc.measurement_points
         .joins(:register_template)
         .where(active: true)
@@ -300,7 +302,7 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
 
       sources = []
       plc.modbus_firmware_version.interfaces.each do |iface|
-        source_type = PlcBehaviors::Base::SOURCE_TYPE_MAP[iface.communication_type]
+        source_type = behavior.source_type_for(iface.communication_type)
         if !source_type
           next
         end

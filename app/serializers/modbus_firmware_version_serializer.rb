@@ -12,7 +12,7 @@ class ModbusFirmwareVersionSerializer < Blueprinter::Base
       end
 
     group_names.each_with_object({}) do |name, hash|
-      label = PlcBehaviors::GroupSchemas.label_for(name)
+      label = ModbusBehaviors::GroupSchemas.label_for(name)
       if label.present?
         hash[name] = label
       end

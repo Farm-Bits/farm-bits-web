@@ -8,7 +8,7 @@ class OperationModeSyncJob
       return
     end
 
-    behavior = PlcBehaviors.for(plc)
+    behavior = ModbusBehaviors.for(plc)
     behavior.cleanup_onetime_schedules!
     behavior.sync_io_active!
   rescue ModbusWriteService::ConnectionError => e

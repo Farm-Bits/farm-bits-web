@@ -2,12 +2,7 @@ class UserArea::ProgramsController < UserArea::ApplicationController
   def index
     authorize :program, :index?
 
-    sources = ProgramsTreeBuilder.new(
-      plcs:           plcs_with_programs,
-      modbus_devices: modbus_devices_with_programs
-    ).build
-
-    data = { sources: sources }
+    data = { sources: [] }
 
     respond_to do |format|
       format.html { render inertia: 'UserArea/Programs/index', props: data }
@@ -37,7 +32,7 @@ class UserArea::ProgramsController < UserArea::ApplicationController
 
   private
     def render_show(source)
-      data = ProgramsDataBuilder.new(source).build
+      data = {}
 
       if data[:programs].empty?
         if request.format.json?
@@ -52,23 +47,5 @@ class UserArea::ProgramsController < UserArea::ApplicationController
         format.html { render inertia: 'UserArea/Programs/show', props: data }
         format.json { render json: data, status: :ok }
       end
-    end
-
-    PROGRAM_CATEGORIES = %w[program_status program_configuration].freeze
-
-    def plcs_with_programs
-      policy_scope(Plc)
-        .joins(modbus_firmware_version: :register_templates)
-        .where(register_templates: { category: PROGRAM_CATEGORIES })
-        .distinct
-        .includes(:model, :modbus_firmware_version)
-    end
-
-    def modbus_devices_with_programs
-      policy_scope(ModbusDevice)
-        .joins(modbus_firmware_version: :register_templates)
-        .where(register_templates: { category: PROGRAM_CATEGORIES })
-        .distinct
-        .includes(:model, :modbus_firmware_version, plc: [:gateway])
     end
 end

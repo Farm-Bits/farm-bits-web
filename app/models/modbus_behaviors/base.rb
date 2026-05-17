@@ -1,4 +1,4 @@
-# Abstract base class for PLC behaviors.
+# Abstract base class for Modbus device behaviors.
 #
 # Defines every hook the system can call. All are no-ops by default.
 # Behavior classes include concerns to override the hooks they support.
@@ -11,22 +11,33 @@
 #   cascade_sensor_deactivation!(communication_type, io_number) - Clear sensor refs
 #   cleanup_onetime_schedules!                       - Clear expired one-time slots
 #
-class PlcBehaviors::Base
+class ModbusBehaviors::Base
   SYSTEM_GROUPS = {}.freeze
 
-  SOURCE_TYPE_MAP = {
-    'analog_input'   => 1,
-    'digital_input'  => 2,
-    'digital_output' => 3,
-    'analog_output'  => 4
-  }.freeze
-
-  attr_reader :plc
+  attr_reader :device
 
   class_attribute :mp_triggers, default: []
 
-  def initialize(plc)
-    @plc = plc
+  # @param device [Plc, ModbusDevice] the entity this behavior governs.
+  def initialize(device)
+    @device = device
+  end
+
+  # The host PLC for this behavior, if any.
+  #
+  # - For a Plc: returns itself (it IS the host).
+  # - For a PLC-relayed ModbusDevice: returns the host Plc.
+  # - For a gateway-direct ModbusDevice: returns nil (no PLC orchestration).
+  #
+  # Concerns that need to write to host-only registers (e.g., a peripheral's
+  # refresh trigger that lives on the host) reach through here.
+  def host_plc
+    case device
+    when Plc
+      device
+    when ModbusDevice
+      device.plc
+    end
   end
 
   def self.register_mp_trigger(fields:, method:)
@@ -70,10 +81,25 @@ class PlcBehaviors::Base
     entries
   end
 
+  # ── Source-type encoding (firmware-specific; default no-op) ─────────
+  #
+  # Some host firmwares encode interface communication_type as a small
+  # integer (e.g., Eliwell uses 1=AI, 2=DI, 3=DO, 4=AO in om_sensor_cond_*
+  # groups). Behaviors that use such an encoding override these two
+  # methods; Base returns nil to make callers safe regardless of profile.
+
+  def source_type_for(communication_type)
+    nil
+  end
+
+  def communication_type_for(source_type)
+    nil
+  end
+
   # ── Introspection ───────────────────────────────────
 
   def supports?(hook_name)
-    method(hook_name).owner != PlcBehaviors::Base
+    method(hook_name).owner != ModbusBehaviors::Base
   rescue NameError
     false
   end
@@ -91,7 +117,7 @@ class PlcBehaviors::Base
 
   protected
     def find_group(group_name)
-      plc.measurement_points
+      device.measurement_points
         .joins(:register_template)
         .where(register_templates: { group_name: group_name })
         .includes(:register_template)
@@ -103,7 +129,7 @@ class PlcBehaviors::Base
 
     def find_group_pattern(pattern)
       sql_pattern = pattern.gsub('*', '%')
-      plc.measurement_points
+      device.measurement_points
         .joins(:register_template)
         .where('register_templates.group_name LIKE ?', sql_pattern)
         .includes(:register_template)
@@ -121,10 +147,5 @@ class PlcBehaviors::Base
     def single_write!(measurement_point, value, source:)
       context = ModbusWriteContext.system_action(source)
       ModbusWriteService.write!(measurement_point, value, context: context)
-    end
-
-    # Resolve communication_type string to source_type integer
-    def source_type_for(communication_type)
-      SOURCE_TYPE_MAP[communication_type]
     end
 end

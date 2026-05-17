@@ -1,20 +1,20 @@
 # Diagnostic tool for inspecting Modbus Device version capabilities.
-# Reads from PlcBehaviors behavior classes.
+# Reads from ModbusBehaviors behavior classes.
 # Not used at runtime — for debugging and console inspection only.
 #
 # Usage:
-#   PlcCapability.print_diagnostic(modbus_firmware_version)
-#   PlcCapability.validate(modbus_firmware_version)
+#   ModbusCapability.print_diagnostic(modbus_firmware_version)
+#   ModbusCapability.validate(modbus_firmware_version)
 #
-class PlcCapability
+class ModbusCapability
   class << self
     def behavior_class(modbus_firmware_version)
       profile = modbus_firmware_version.behavior_profile
       if !profile.present?
-        return PlcBehaviors::Base
+        return ModbusBehaviors::Base
       end
 
-      PlcBehaviors.class_for(profile) || PlcBehaviors::Base
+      ModbusBehaviors.class_for(profile) || ModbusBehaviors::Base
     end
 
     def supported_hooks(modbus_firmware_version)
@@ -52,7 +52,7 @@ class PlcCapability
 
       puts "\nConcerns:"
       klass.ancestors
-        .select { |a| a.name&.start_with?('PlcBehaviors::Concerns::') }
+        .select { |a| a.name&.start_with?('ModbusBehaviors::Concerns::') }
         .each { |c| puts "  • #{c.name.demodulize}" }
 
       puts "\nHooks:"

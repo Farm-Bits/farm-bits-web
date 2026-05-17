@@ -8,7 +8,7 @@ class PlcClockWriteJob
       return
     end
 
-    behavior = PlcBehaviors.for(plc)
+    behavior = ModbusBehaviors.for(plc)
     behavior.sync_clock!
     behavior.sync_utc_offset!
   rescue ModbusWriteService::ConnectionError => e

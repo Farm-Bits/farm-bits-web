@@ -9,7 +9,7 @@
 #     threshold        - comparison value (needs source IO scaling)
 #     hysteresis       - deadband value (needs source IO scaling)
 #
-module PlcBehaviors::Concerns::SensorConditionScaling
+module ModbusBehaviors::Concerns::SensorConditionScaling
   extend ActiveSupport::Concern
 
   SCALING_TARGET_ROLES = %w[threshold hysteresis].freeze
@@ -85,7 +85,7 @@ module PlcBehaviors::Concerns::SensorConditionScaling
       end
 
       # Not in batch — read current stored value
-      mp = plc.measurement_points
+      mp = device.measurement_points
         .joins(:register_template)
         .where(register_templates: { group_name: group_name, group_role: role })
         .first
@@ -119,13 +119,13 @@ module PlcBehaviors::Concerns::SensorConditionScaling
         return [1.0, 0.0]
       end
 
-      communication_type = PlcBehaviors::Base::SOURCE_TYPE_MAP.key(source_type)
+      communication_type = communication_type_for(source_type)
       if !communication_type
         return [1.0, 0.0]
       end
 
       # Find the active data-category measurement point on the source interface
-      source_mp = plc.measurement_points
+      source_mp = device.measurement_points
         .joins(register_template: { interface_register_mappings: :interface })
         .where(active: true)
         .where(register_templates: { category: MeasurementSubtype::DATA_CATEGORIES })
@@ -153,7 +153,7 @@ module PlcBehaviors::Concerns::SensorConditionScaling
       end
 
       # Not in batch — load from DB (needed so future reads decode correctly)
-      plc.measurement_points
+      device.measurement_points
         .joins(:register_template)
         .where(register_templates: { group_name: group_name, group_role: role })
         .first

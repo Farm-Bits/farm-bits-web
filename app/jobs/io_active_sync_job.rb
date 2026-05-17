@@ -8,7 +8,7 @@ class IoActiveSyncJob
       return
     end
 
-    PlcBehaviors.for(plc).sync_io_active!
+    ModbusBehaviors.for(plc).sync_io_active!
   rescue ModbusWriteService::ConnectionError => e
     Rails.logger.warn("[IoActiveSync] PLC #{plc_id} unreachable: #{e.message}")
   rescue ModbusWriteService::WriteError => e

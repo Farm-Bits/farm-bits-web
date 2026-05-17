@@ -3,7 +3,7 @@
 # Register group:
 #   sun_data - sunrise and sunset in local minutes-since-midnight
 #
-module PlcBehaviors::Concerns::SunDataSync
+module ModbusBehaviors::Concerns::SunDataSync
   extend ActiveSupport::Concern
 
   def sync_sun_data!(sunrise_minutes, sunset_minutes)

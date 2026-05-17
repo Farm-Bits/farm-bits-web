@@ -47,22 +47,23 @@ class ModbusWriteService
   end
 
   private
-    # Behavior transforms are PLC-firmware-scoped; we apply them per host
-    # PLC (which is either the MP's plc directly, or its modbus_device's
-    # plc for relay writes). Gateway-direct ModbusDevice writes have no
-    # host PLC and pass through unchanged.
+    # Behavior transforms are scoped to the register's *owning* entity:
+    #   - MP on a Plc:           PLC's behavior owns the transform.
+    #   - MP on a ModbusDevice:  the peripheral's own behavior owns it
+    #                            (relay encoding is handled at the
+    #                            coordinate layer, not here).
+    # MPs without a governing behavior (no owner at all, or a behavior
+    # that returns Base) pass through with no transformation.
     def apply_behavior_transforms(entries)
-      grouped = entries.group_by do |e|
-        behavior_host_plc_for(e[:measurement_point])&.id
-      end
+      grouped = entries.group_by { |e| e[:measurement_point].governing_behavior&.device }
 
-      grouped.flat_map do |host_plc_id, group|
-        if host_plc_id.nil?
+      grouped.flat_map do |device, group|
+        if device.nil?
           next group
         end
 
-        host = behavior_host_plc_for(group.first[:measurement_point])
-        PlcBehaviors.for(host).pre_write_transforms(group)
+        behavior = group.first[:measurement_point].governing_behavior
+        behavior.pre_write_transforms(group)
       end
     end
 
@@ -243,14 +244,6 @@ class ModbusWriteService
       if device_target_ids.any?
         ModbusDevice.where(id: device_target_ids.to_a).update_all(last_seen_at: now)
       end
-    end
-
-    # Behavior orchestration uses the host PLC (the one running the
-    # firmware whose behavior governs writes). For relay writes that's
-    # the host Eliwell; for direct PLC writes that's the PLC itself; for
-    # gateway-direct ModbusDevice writes there's no PLC (returns nil).
-    def behavior_host_plc_for(mp)
-      mp.relay_host_plc || mp.plc
     end
 
     def validate_writable!(mp)

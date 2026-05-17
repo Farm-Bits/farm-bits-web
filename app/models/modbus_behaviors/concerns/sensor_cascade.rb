@@ -11,7 +11,7 @@
 #   Find all conditions where source_type=1 AND source_io_number=3
 #   Write 0 to both source_type and source_io_number on those conditions
 #
-module PlcBehaviors::Concerns::SensorCascade
+module ModbusBehaviors::Concerns::SensorCascade
   extend ActiveSupport::Concern
 
   def cascade_sensor_deactivation!(communication_type, io_number)
@@ -25,7 +25,7 @@ module PlcBehaviors::Concerns::SensorCascade
     #
     # Strategy: find source_type measurement points with the matching value,
     # then check the sibling source_io_number in the same group.
-    source_type_points = plc.measurement_points
+    source_type_points = device.measurement_points
       .joins(:register_template)
       .where(register_templates: {
         category: 'operation_mode_configuration',
@@ -43,7 +43,7 @@ module PlcBehaviors::Concerns::SensorCascade
     source_type_points.each do |type_mp|
       group_name = type_mp.register_template.group_name
       # Find the sibling source_io_number in the same group
-      io_number_mp = plc.measurement_points
+      io_number_mp = device.measurement_points
         .joins(:register_template)
         .where(register_templates: {
           group_name: group_name,

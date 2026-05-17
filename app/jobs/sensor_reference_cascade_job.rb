@@ -8,7 +8,7 @@ class SensorReferenceCascadeJob
       return
     end
 
-    PlcBehaviors.for(plc).cascade_sensor_deactivation!(communication_type, io_number)
+    ModbusBehaviors.for(plc).cascade_sensor_deactivation!(communication_type, io_number)
   rescue ModbusWriteService::ConnectionError => e
     Rails.logger.warn("[SensorCascade] PLC #{plc_id} unreachable: #{e.message}")
   rescue ModbusWriteService::WriteError => e

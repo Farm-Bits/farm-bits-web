@@ -1,10 +1,20 @@
-class PlcBehaviors::StandardV1 < PlcBehaviors::Base
-  include PlcBehaviors::Concerns::ClockSyncUtc             # sync_clock!, sync_utc_offset!
-  include PlcBehaviors::Concerns::IoActive                 # sync_io_active!
-  include PlcBehaviors::Concerns::SunDataSync              # sync_sun_data!
-  include PlcBehaviors::Concerns::SensorCascade            # cascade_sensor_deactivation!
-  include PlcBehaviors::Concerns::OnetimeScheduleCleanup   # cleanup_onetime_schedules!
-  include PlcBehaviors::Concerns::SensorConditionScaling   # pre_write_transforms
+class ModbusBehaviors::StandardV1 < ModbusBehaviors::Base
+  include ModbusBehaviors::Concerns::ClockSyncUtc             # sync_clock!, sync_utc_offset!
+  include ModbusBehaviors::Concerns::IoActive                 # sync_io_active!
+  include ModbusBehaviors::Concerns::SunDataSync              # sync_sun_data!
+  include ModbusBehaviors::Concerns::SensorCascade            # cascade_sensor_deactivation!
+  include ModbusBehaviors::Concerns::OnetimeScheduleCleanup   # cleanup_onetime_schedules!
+  include ModbusBehaviors::Concerns::SensorConditionScaling   # pre_write_transforms
+
+  # Maps the Eliwell-side source_type integer (used by om_sensor_cond_* groups)
+  # to the system's communication_type string. Lives on this host behavior
+  # because the integer encoding is firmware-specific.
+  SOURCE_TYPE_MAP = {
+    'analog_input'   => 1,
+    'digital_input'  => 2,
+    'digital_output' => 3,
+    'analog_output'  => 4
+  }.freeze
 
   SYSTEM_GROUPS = {
 
@@ -78,4 +88,14 @@ class PlcBehaviors::StandardV1 < PlcBehaviors::Base
       roles: %w[emergency_stop max_on_enabled max_on min_off_enabled min_off min_on_enabled min_on]
     }
   }.freeze
+
+  # Resolve communication_type string → source_type integer (firmware encoding).
+  def source_type_for(communication_type)
+    SOURCE_TYPE_MAP[communication_type]
+  end
+
+  # Inverse of source_type_for: integer → communication_type string, or nil.
+  def communication_type_for(source_type)
+    SOURCE_TYPE_MAP.key(source_type)
+  end
 end

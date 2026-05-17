@@ -16,7 +16,7 @@
 #   These don't have a year register — the PLC handles expiry by
 #   clearing onetime_date after the window passes.
 #
-module PlcBehaviors::Concerns::OnetimeScheduleCleanup
+module ModbusBehaviors::Concerns::OnetimeScheduleCleanup
   extend ActiveSupport::Concern
 
   def cleanup_onetime_schedules!

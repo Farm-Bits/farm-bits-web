@@ -4,7 +4,7 @@
 #   io_active - One boolean per interface. Role pattern: active_{type_prefix}_{io_number}
 #               e.g., active_ai_1, active_di_3, active_do_7
 #
-module PlcBehaviors::Concerns::IoActive
+module ModbusBehaviors::Concerns::IoActive
   extend ActiveSupport::Concern
 
   included do
@@ -67,7 +67,7 @@ module PlcBehaviors::Concerns::IoActive
     def compute_active_io_numbers
       io_numbers = Hash.new { |h, k| h[k] = Set.new }
 
-      plc.measurement_points
+      device.measurement_points
         .joins(register_template: { interface_register_mappings: :interface })
         .where(active: true)
         .where(register_templates: { category: MeasurementSubtype::DATA_CATEGORIES })

@@ -315,6 +315,22 @@ class MeasurementPoint < ApplicationRecord
     modbus_device.plc
   end
 
+  # The behavior whose register-level logic governs this measurement point.
+  #
+  # For an MP on a Plc, it's the PLC's behavior. For an MP on a ModbusDevice
+  # (either gateway-direct or PLC-relayed), it's the *peripheral's* own
+  # behavior — not the host's. Relay encoding is a coordinate-level concern
+  # (see #read_coordinates / #write_coordinates) and stays out of behaviors.
+  #
+  # Returns nil only if the MP has no owner at all (shouldn't happen in
+  # valid data).
+  def governing_behavior
+    @governing_behavior ||= begin
+      owner = modbus_device || plc
+      owner ? ModbusBehaviors.for(owner) : nil
+    end
+  end
+
   def sync_read!
     coords = read_coordinates
     if coords.nil?
@@ -470,18 +486,37 @@ class MeasurementPoint < ApplicationRecord
       self.polling_interval_seconds ||= 270
     end
 
+    def behavior_reachable_via_gateway?
+      # Direct topology: the entity holds its own gateway_id
+      # (a Plc, or a gateway-direct ModbusDevice).
+      owner = modbus_device || plc
+      if owner&.gateway_id.present?
+        return true
+      end
+
+      # Relay topology: the ModbusDevice routes through a host PLC
+      # that needs its own gateway.
+      if modbus_device&.polled_by_plc?
+        return modbus_device.plc&.gateway_id.present?
+      end
+
+      false
+    end
+
     def trigger_behavior_sync
-      if !plc || !plc.gateway_id
+      behavior = governing_behavior
+      if !behavior || behavior.mp_triggers.empty?
         return
       end
 
-      behavior = PlcBehaviors.for(plc)
-      if behavior.mp_triggers.empty?
+      # Cheap reachability gate: don't fire background syncs for entities
+      # that have no wire path yet (e.g., a half-configured PLC without a
+      # gateway, or a ModbusDevice whose host isn't on a gateway).
+      if !behavior_reachable_via_gateway?
         return
       end
 
-      changed_fields = saved_changes.keys
-      behavior.trigger_from_mp_update(changed_fields)
+      behavior.trigger_from_mp_update(saved_changes.keys)
     end
 
     def sync_read_after_enable

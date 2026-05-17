@@ -12,8 +12,6 @@ class RegisterTemplate < ApplicationRecord
   CATEGORIES = (Interface::CATEGORIES + %w[
     configuration
     diagnostic
-    program_status
-    program_configuration
   ]).freeze
   REGISTER_TYPES = %w[holding input coil discrete].freeze
   DATA_TYPES = %w[

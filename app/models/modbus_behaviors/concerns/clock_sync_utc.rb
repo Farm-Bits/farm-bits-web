@@ -4,7 +4,7 @@
 #   set_system_clock - Time components (seconds, minutes, hours, etc.)
 #   time_config      - UTC offset for local time derivation
 #
-module PlcBehaviors::Concerns::ClockSyncUtc
+module ModbusBehaviors::Concerns::ClockSyncUtc
   extend ActiveSupport::Concern
 
   TIME_COMPONENT_MAP = {
@@ -23,7 +23,7 @@ module PlcBehaviors::Concerns::ClockSyncUtc
     clock_points = find_group_by_role('set_system_clock')
     if !REQUIRED_CLOCK_ROLES.all? { |role| clock_points.key?(role) }
       Rails.logger.warn(
-        "[PlcBehaviors] PLC #{plc.id} missing clock registers, " \
+        "[ModbusBehaviors] #{device.class.name}##{device.id} missing clock registers, " \
         "found: #{clock_points.keys.sort.join(', ')}"
       )
       return
@@ -46,7 +46,7 @@ module PlcBehaviors::Concerns::ClockSyncUtc
       return
     end
 
-    utc_offset = plc&.site&.utc_offset || 0
+    utc_offset = device&.site&.utc_offset || 0
     offset_minutes = utc_offset / 60
 
     single_write!(offset_mp, offset_minutes, source: 'utc_offset_sync')
