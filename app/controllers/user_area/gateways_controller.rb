@@ -1,5 +1,5 @@
 class UserArea::GatewaysController < UserArea::ApplicationController
-  before_action :set_gateway, only: [:update, :destroy]
+  before_action :set_gateway, only: [:update]
 
   def update
     authorize @gateway, :update?

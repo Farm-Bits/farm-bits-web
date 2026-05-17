@@ -110,15 +110,15 @@ module ReadStrategies
           return { status: 'error', values: nil, error: "No response for #{label}" }
         end
 
-        if chunk_result['status'] != 'ok' || chunk_result['values'].blank?
+        if chunk_result[:status] != 'ok' || chunk_result[:values].blank?
           return {
-            status: chunk_result['status'] || 'error',
+            status: chunk_result[:status] || 'error',
             values: nil,
-            error:  chunk_result['error']  || "No response for #{label}"
+            error:  chunk_result[:error]  || "No response for #{label}"
           }
         end
 
-        slice = chunk_result['values'][offset_in_chunk, count]
+        slice = chunk_result[:values][offset_in_chunk, count]
         if slice.nil? || slice.length != count
           return {
             status: 'error',

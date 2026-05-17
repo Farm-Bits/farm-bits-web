@@ -27,6 +27,7 @@ class ModbusFirmwareVersion < ApplicationRecord
 
   validates :name, presence: true, uniqueness: { scope: :model_id }
   validates :version_code, presence: true, uniqueness: { scope: :model_id }
+  validates :address_offset, presence: true, numericality: { only_integer: true }
   validates :relay_slot_base, :relay_slot_size, :relay_max_slots, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
   validates :relay_register_type, inclusion: { in: RegisterTemplate::REGISTER_TYPES }, allow_nil: true
   validates :relay_read_strategy, inclusion: { in: RelayReadStrategyRegistry::STRATEGIES }, allow_nil: true

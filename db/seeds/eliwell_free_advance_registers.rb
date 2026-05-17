@@ -18,6 +18,7 @@ ActiveRecord::Base.transaction do
   free_advance_first_version = ModbusFirmwareVersion.create!(
     name: 'V1',
     version_code: '1.0',
+    address_offset: -1,
     behavior_profile: 'standard_v1',
     relay_slot_base: 12_008,
     relay_slot_size: 33,

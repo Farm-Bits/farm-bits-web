@@ -58,6 +58,26 @@ class ModbusDevice < ApplicationRecord
     gateway_id.present? && plc_id.nil?
   end
 
+  def operational?
+    if !active?
+      return false
+    end
+
+    if !site&.company&.active?
+      return false
+    end
+
+    if polled_by_gateway?
+      return gateway&.active? == true
+    end
+
+    if polled_by_plc?
+      return plc&.active? == true && plc.gateway&.active? == true
+    end
+
+    false
+  end
+
   def firmware_code
     if !plc.present? || !plc.modbus_firmware_version.present?
       return nil
@@ -93,7 +113,7 @@ class ModbusDevice < ApplicationRecord
       return nil
     end
 
-    mapping = modbus_firmware_version.relay_mappings.detect do |m|
+    mapping = host_version.relay_mappings.detect do |m|
       m.register_template_id == register_template.id && m.direction == direction
     end
     if mapping.nil?
@@ -215,7 +235,7 @@ class ModbusDevice < ApplicationRecord
 
       max   = plc.modbus_firmware_version.relay_max_slots
       taken = ModbusDevice.where(plc_id: plc_id).where.not(id: id).pluck(:slot_number).compact.to_set
-      free  = (1...max).find { |s| !taken.include?(s) }
+      free  = (1..max).find { |s| !taken.include?(s) }
 
       if free.nil?
         errors.add(:plc, "has no free slots (limit: #{max})")

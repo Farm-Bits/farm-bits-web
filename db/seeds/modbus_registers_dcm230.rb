@@ -15,6 +15,7 @@ ActiveRecord::Base.transaction do
   version = ModbusFirmwareVersion.create!(
     name: 'v1.5',
     version_code: '1.5',
+    address_offset: 0,
     is_latest: true,
     is_supported: true,
     model: model

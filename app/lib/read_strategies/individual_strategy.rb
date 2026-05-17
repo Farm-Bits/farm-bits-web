@@ -28,11 +28,7 @@ module ReadStrategies
           next
         end
 
-        results[mp.id] = {
-          status: result['status'],
-          values: result['values'],
-          error:  result['error']
-        }
+        results[mp.id] = result
       end
 
       results

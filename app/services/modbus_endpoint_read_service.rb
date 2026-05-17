@@ -52,8 +52,15 @@ class ModbusEndpointReadService
         end
 
         if result[:status] == 'ok' && result[:values].present?
-          decoded = mp.register_template.decode_data(result[:values])
-          readings << { measurement_point: mp, value: decoded, sample_time: sample_time }
+          begin
+            decoded = mp.register_template.decode_data(result[:values])
+            readings << { measurement_point: mp, value: decoded, sample_time: sample_time }
+          rescue => e
+            failures << { mp_id: mp.id, mp_name: mp.name, error: "decode: #{e.class} - #{e.message}" }
+            Rails.logger.warn(
+              "ModbusEndpointReadService: decode failed for MP #{mp.id} (#{mp.name}): #{e.class} - #{e.message}"
+            )
+          end
         else
           failures << { mp_id: mp.id, mp_name: mp.name, error: result[:error] }
           Rails.logger.warn(
@@ -100,7 +107,8 @@ class ModbusEndpointReadService
       end
 
       Time.parse(value)
-    rescue ArgumentError
+    rescue ArgumentError => e
+      Rails.logger.warn("ModbusEndpointReadService: bad sample_time '#{value}': #{e.message}")
       Time.current
     end
 

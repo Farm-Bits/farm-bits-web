@@ -22,18 +22,28 @@ class ModbusWriteService
 
     entries  = apply_behavior_transforms(entries)
     prepared = prepare_entries(entries)
-
     old_values = capture_old_values(prepared)
 
-    merged_results = dispatch_by_endpoint(prepared)
+    by_endpoint = prepared.group_by { |e| e[:write_coordinates].endpoint_key }
+    succeeded_results = {}
 
-    verify_all_succeeded!(prepared, merged_results)
+    by_endpoint.each_value do |group|
+      # Wire write for this endpoint. Raises before touching any DB state if
+      # the wire call fails - previous endpoints in this batch remain
+      # persisted (Option B: per-endpoint atomicity, batch level "first-N
+      # endpoints succeed; subsequent endpoint failure raises and aborts").
+      response = call_endpoint(group)
+      verify_endpoint_succeeded!(group, response[:results])
 
-    bulk_store_written_values(prepared)
-    bulk_log_writes(prepared, old_values, context)
-    touch_endpoints!(prepared)
+      # Persist this endpoint's writes immediately so DB matches the wire.
+      bulk_store_written_values(group)
+      bulk_log_writes(group, old_values, context)
+      touch_endpoints!(group)
 
-    { success: true, results: merged_results }
+      succeeded_results.merge!(response[:results])
+    end
+
+    { success: true, results: succeeded_results }
   end
 
   private
@@ -90,48 +100,38 @@ class ModbusWriteService
       end
     end
 
-    # Group by Modbus endpoint, fire one VPN request per endpoint. If any
-    # endpoint fails with a connection error, abort the whole batch
-    # before any persistence.
-    def dispatch_by_endpoint(prepared)
-      by_endpoint = prepared.group_by { |e| e[:write_coordinates].endpoint_key }
-      merged_results = {}
+    def call_endpoint(group)
+      coords = group.first[:write_coordinates]
 
-      by_endpoint.each_value do |group|
-        coords = group.first[:write_coordinates]
-
-        response = nil
-        begin
-          response = ModbusEndpointWriteService.new(
-            gateway:   coords.gateway,
-            target_ip: coords.target_ip,
-            slave_id:  coords.slave_id,
-            entries:   group
-          ).call
-        rescue VpnManagerClient::ConnectionError => e
-          raise ConnectionError, "PLC unreachable: #{e.message}"
-        rescue VpnManagerClient::Error => e
-          raise WriteError, "Failed to write to PLC: #{e.message}"
-        end
-
-        if !response[:success] && response[:error_type] == 'connection'
-          raise ConnectionError, response[:error] || 'PLC unreachable'
-        end
-
-        if !response[:success]
-          raise WriteError, response[:error] || 'Bulk write to PLC failed'
-        end
-
-        merged_results.merge!(response[:results] || {})
+      response = nil
+      begin
+        response = ModbusEndpointWriteService.new(
+          gateway:   coords.gateway,
+          target_ip: coords.target_ip,
+          slave_id:  coords.slave_id,
+          entries:   group
+        ).call
+      rescue VpnManagerClient::ConnectionError => e
+        raise ConnectionError, "PLC unreachable: #{e.message}"
+      rescue VpnManagerClient::Error => e
+        raise WriteError, "Failed to write to PLC: #{e.message}"
       end
 
-      merged_results
+      if !response[:success] && response[:error_type] == 'connection'
+        raise ConnectionError, response[:error] || 'PLC unreachable'
+      end
+
+      if !response[:success]
+        raise WriteError, response[:error] || 'Bulk write to PLC failed'
+      end
+
+      response
     end
 
-    def verify_all_succeeded!(prepared, merged_results)
-      prepared.each do |entry|
+    def verify_endpoint_succeeded!(group, results)
+      group.each do |entry|
         mp     = entry[:measurement_point]
-        result = merged_results[mp.id]
+        result = results[mp.id]
 
         if result.nil? || result[:status] != 'ok'
           error_msg = result&.dig(:error) || 'No response from PLC'

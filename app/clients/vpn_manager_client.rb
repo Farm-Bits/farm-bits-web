@@ -50,7 +50,11 @@ class VpnManagerClient
       }
 
       response['results']&.each do |result|
-        merged_results[result['id']] = result
+        merged_results[result['id']] = {
+          status: result['status'],
+          values: result['values'],
+          error:  result['error']
+        }
       end
 
       if response['status'] != 'ok' && response['error_type'] == 'connection'

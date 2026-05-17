@@ -17,6 +17,7 @@ class ModbusFirmwareRelayMapping < ApplicationRecord
   }
   validate :register_template_belongs_to_same_firmware_version
   validate :write_direction_requires_writable_template
+  validate :fits_within_slot
 
   def read_direction?
     direction == 'read'
@@ -56,6 +57,26 @@ class ModbusFirmwareRelayMapping < ApplicationRecord
         errors.add(
           :direction,
           "cannot be 'write' for a read-only register template"
+        )
+      end
+    end
+
+    def fits_within_slot
+      if !register_template.present? || !modbus_firmware_version.present?
+        return
+      end
+
+      slot_size = modbus_firmware_version.relay_slot_size
+      if slot_size.blank?
+        return
+      end
+
+      span_end = relay_offset.to_i + register_template.address_count.to_i
+      if span_end > slot_size
+        errors.add(
+          :relay_offset,
+          "+ register address_count (#{relay_offset} + #{register_template.address_count} = #{span_end}) " \
+          "exceeds relay_slot_size (#{slot_size}) for '#{modbus_firmware_version.name}'"
         )
       end
     end

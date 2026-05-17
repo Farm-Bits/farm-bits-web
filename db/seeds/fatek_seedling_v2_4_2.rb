@@ -1,40 +1,56 @@
 # Usage:
 #   rails runner db/seeds/fatek_seedling_v2_4_2.rb
 #
-# Seeds:
-#   - A new Eliwell FreeAdvance firmware version "V2 with Fatek capability"
-#     (relay-host enabled, 4 slots × 1200 holding registers each).
-#   - FATEK manufacturer + FBs-20MC model + Fatek peripheral firmware version
-#     "Seedling Program v2.4.2".
-#   - All ~600 Fatek register templates per the supplier's Registers_242 doc.
-#   - Relay mappings on the new Eliwell V2 firmware version pointing to every
-#     Fatek register template (read-direction for all, write-direction for
-#     writable ones).
-#   - ModbusFirmwareCompatibility row linking V2 (host) -> Fatek (peripheral).
-#
-# Prerequisites:
-#   - The existing Eliwell FreeAdvance model and V1 firmware version must
-#     already exist (created by db/seeds/eliwell_free_advance_registers.rb).
-#   - RegisterTemplate.address uniqueness validation must be scoped by
-#     [:modbus_firmware_version_id, :register_type] - see the migration note.
-#   - PlcBehaviors::GroupSchemas's program_*_phase_* and program_*_meta
-#     entries must have empty required_roles (structural markers only).
 
 ActiveRecord::Base.transaction do
-  # ── Find prerequisites ────────────────────────────────────────────────
+
+  # ╭──────────────────────────────────────────────────────────────────────╮
+  # │ Eliwell V2 (Fatek bridge) + Fatek FBs-20MC Seedling Program v2.4.2   │
+  # │                                                                      │
+  # │ Eliwell V2 is a bridge-only firmware — no behavior_profile, no       │
+  # │ system groups beyond what's needed to host Fatek peripherals.        │
+  # │                                                                      │
+  # │ Slot layout (1200 holding registers per slot):                       │
+  # │   READ MIRROR  (offsets 0..649)                                      │
+  # │     0..7    R0..R7         active phase set points (RO)              │
+  # │     8..15   R3000..R3007   live data x10sec (RO)                     │
+  # │     16..33  system status mix (R10, R12, R15-R17, R44, R60, R61,     │
+  # │                              R3010, R5512, R5124, R5252, R5380,      │
+  # │                              R5508, D0, R5254, R5382, R5510)         │
+  # │     40..56  R25..R41       parameters (gaps at R29/R39 preserved)    │
+  # │     60..179   R5000..R5119  program 0 phases                         │
+  # │     180..299  R5128..R5247  program 1 phases                         │
+  # │     300..419  R5256..R5375  program 2 phases                         │
+  # │     420..539  R5384..R5503  program 3 phases                         │
+  # │     540..556  T50..C0       timers + counter                         │
+  # │     560..568  Y0..Y8        coil outputs (mirrored)                  │
+  # │     570..614  M-bits        memory bits (RO + RW reads)              │
+  # │     620..626  X0..X7        physical inputs (discrete mirrored)      │
+  # │                                                                      │
+  # │   WRITE BUFFER (offsets 650..1199)                                   │
+  # │     650..664  R25..R41      parameters writes (packed)               │
+  # │     665..669  R45..R49      command buttons (write-only)             │
+  # │     670..677  system status RW writes                                │
+  # │     680..799  R5000..R5119  program 0 writes                         │
+  # │     800..919  R5128..R5247  program 1 writes                         │
+  # │     920..1039 R5256..R5375  program 2 writes                         │
+  # │     1040..1159 R5384..R5503 program 3 writes                         │
+  # │     1160..1176 T50..C0      timer writes                             │
+  # │     1177..1191 M-bits RW    command bit writes                       │
+  # ╰──────────────────────────────────────────────────────────────────────╯
 
   eliwell_manufacturer = Manufacturer.find_by!(name: 'Eliwell')
   eliwell_model = eliwell_manufacturer.models.find_by!(
     name: 'FreeAdvance AVC12600/C/L/U/I (AVC126006I500)'
   )
 
-  # ── Eliwell V2 with Fatek hosting capability ──────────────────────────
+  # ── Eliwell V2 — bridge-only firmware for hosting Fatek peripherals ────
 
   eliwell_v2 = ModbusFirmwareVersion.create!(
     name:                'V2 with Fatek capability',
     version_code:        '2.0',
-    behavior_profile:    'standard_v1',
-    relay_slot_base:     8964,
+    address_offset:      -1,
+    relay_slot_base:     8968,
     relay_slot_size:     1200,
     relay_max_slots:     4,
     relay_register_type: 'holding',
@@ -44,7 +60,199 @@ ActiveRecord::Base.transaction do
     model:               eliwell_model
   )
 
-  # ── FATEK manufacturer and model ──────────────────────────────────────
+  EEPROM_BASE      = 16384
+  COMM_STATUS_BASE = 8960
+
+  # ── SMTP push data registers (EEPROM_BASE + 0..) ───────────────────────
+
+  smtp_push_data_registers = [
+    {
+      name: 'SMTP Hostname',
+      label: 'SMTP_Hostname',
+      description: 'SMTP server hostname for push data notifications',
+      address_count: 16,
+      data_type: 'string',
+      value_format: 'ascii_string',
+      group_role: 'hostname',
+      default_value: 'plc.farm-bits.com'
+    },
+    {
+      name: 'SMTP Port',
+      label: 'SMTP_Port',
+      description: 'SMTP server port for push data notifications',
+      address_count: 1,
+      data_type: 'uint16',
+      value_format: 'numeric',
+      group_role: 'port',
+      default_value: 25
+    },
+    {
+      name: 'SMTP Username',
+      label: 'SMTP_Username',
+      description: 'SMTP server username for push data notifications',
+      address_count: 16,
+      data_type: 'string',
+      value_format: 'ascii_string',
+      group_role: 'username'
+    },
+    {
+      name: 'SMTP Password',
+      label: 'SMTP_Password',
+      description: 'SMTP server password for push data notifications',
+      address_count: 16,
+      data_type: 'string',
+      value_format: 'ascii_string',
+      group_role: 'password'
+    },
+    {
+      name: 'SMTP To Email',
+      label: 'SMTP_To_Email',
+      description: 'Destination email address for push data notifications',
+      address_count: 16,
+      data_type: 'string',
+      value_format: 'ascii_string',
+      group_role: 'to_email',
+      default_value: 'data@plc.farm-bits.com'
+    }
+  ]
+
+  smtp_offset = 0
+  eliwell_v2_register_position = 1
+
+  smtp_push_data_registers.each do |attrs|
+    RegisterTemplate.create!(attrs.merge(
+      modbus_firmware_version:  eliwell_v2,
+      register_type:            'holding',
+      byte_order:               'big_endian',
+      factor:                   1.0,
+      offset:                   0.0,
+      category:                 'configuration',
+      group_name:               'smtp_push_data',
+      read_only:                false,
+      user_visibility:          'hidden',
+      address:                  EEPROM_BASE + smtp_offset,
+      bulk_read_group:          'smtp_push_data',
+      bulk_read_address:        EEPROM_BASE,
+      bulk_read_offset:         smtp_offset,
+      position:                 eliwell_v2_register_position
+    ))
+
+    smtp_offset += attrs[:address_count]
+    eliwell_v2_register_position += 1
+  end
+
+  # ── Per-slot slave_id config (EEPROM_BASE + 65..) ──────────────────────
+
+  slot_config_offset_base = smtp_offset
+
+  eliwell_v2.relay_max_slots.times do |slot|
+    group_name  = "ext_device_#{slot + 1}"
+    slot_offset = slot_config_offset_base + slot
+
+    RegisterTemplate.create!(
+      name:                    "Slot #{slot + 1} Slave ID",
+      label:                   "FatekSlot#{slot + 1}_SlaveId",
+      description:             "Peripheral Modbus slave_id for slot #{slot + 1}.",
+      address:                 EEPROM_BASE + slot_offset,
+      address_count:           1,
+      register_type:           'holding',
+      data_type:               'uint16',
+      byte_order:              'big_endian',
+      value_format:            'numeric',
+      factor:                  1.0,
+      offset:                  0.0,
+      category:                'configuration',
+      group_name:              group_name,
+      group_role:              'slave_id',
+      bulk_read_group:         'ext_device_config',
+      bulk_read_address:       EEPROM_BASE,
+      bulk_read_offset:        slot_offset,
+      read_only:               false,
+      user_visibility:         'hidden',
+      min_value:               0,
+      max_value:               247,
+      default_value:           0,
+      position:                eliwell_v2_register_position,
+      modbus_firmware_version: eliwell_v2
+    )
+    eliwell_v2_register_position += 1
+  end
+
+  # ── Per-slot comm status diagnostics (COMM_STATUS_BASE + 0..) ──────────
+
+  eliwell_v2.relay_max_slots.times do |slot|
+    group_name = "ext_device_#{slot + 1}"
+
+    RegisterTemplate.create!(
+      name:                    "Slot #{slot + 1} Comm Status",
+      label:                   "FatekSlot#{slot + 1}_CommStatus",
+      description:             "Host-synthesized communication status for slot #{slot + 1}.",
+      address:                 COMM_STATUS_BASE + slot,
+      address_count:           1,
+      register_type:           'holding',
+      data_type:               'uint16',
+      byte_order:              'big_endian',
+      value_format:            'enum',
+      factor:                  1.0,
+      offset:                  0.0,
+      category:                'diagnostic',
+      group_name:              group_name,
+      group_role:              'comm_status',
+      bulk_read_group:         'ext_device_status',
+      bulk_read_address:       COMM_STATUS_BASE,
+      bulk_read_offset:        slot,
+      read_only:               true,
+      user_visibility:         'visible',
+      enum_values: {
+        '0' => 'OK',
+        '1' => 'Timeout reached',
+        '2' => 'Modbus exception'
+      },
+      position:                eliwell_v2_register_position,
+      modbus_firmware_version: eliwell_v2
+    )
+    eliwell_v2_register_position += 1
+  end
+
+  # ── Per-slot refresh programs ─────────────────────────
+
+  eliwell_v2.relay_max_slots.times do |slot|
+    group_name = "ext_device_#{slot + 1}"
+
+    RegisterTemplate.create!(
+      name:                    "Slot #{slot + 1} Refresh Programs",
+      label:                   "FatekSlot#{slot + 1}_RefreshPrograms",
+      description:             "Bitmask trigger: set bit N to refresh program N from peripheral.",
+      address:                 8964 + slot,
+      address_count:           1,
+      register_type:           'holding',
+      data_type:               'uint16',
+      byte_order:              'big_endian',
+      value_format:            'bitmask',
+      factor:                  1.0,
+      offset:                  0.0,
+      category:                'configuration',
+      group_name:              group_name,
+      group_role:              'refresh_programs',
+      bulk_read_group:         'ext_device_refresh_triggers',
+      bulk_read_address:       8964,
+      bulk_read_offset:        slot,
+      read_only:               false,
+      user_visibility:         'hidden',
+      enum_values: {
+        '0' => 'Program 1',
+        '1' => 'Program 2',
+        '2' => 'Program 3',
+        '3' => 'Program 4'
+      },
+      default_value:           0,
+      position:                eliwell_v2_register_position,
+      modbus_firmware_version: eliwell_v2
+    )
+    eliwell_v2_register_position += 1
+  end
+
+  # ── FATEK manufacturer + model ─────────────────────────────────────────
 
   fatek_manufacturer = Manufacturer.find_or_create_by!(name: 'FATEK')
 
@@ -57,605 +265,18 @@ ActiveRecord::Base.transaction do
     supports_modbus_rtu: true
   )
 
-  # ── Fatek peripheral firmware version ─────────────────────────────────
+  # ── Fatek peripheral firmware version ──────────────────────────────────
 
   fatek_firmware = ModbusFirmwareVersion.create!(
-    name:         'Seedling Program v2.4.2',
-    version_code: '2.4.2',
-    is_latest:    true,
-    is_supported: true,
-    model:        fatek_model
+    name:           'Seedling Program v2.4.2',
+    version_code:   '2.4.2',
+    address_offset: 1,
+    is_latest:      true,
+    is_supported:   true,
+    model:          fatek_model
   )
 
-  # ── Default measurement subtype lookups ───────────────────────────────
-
-  ambient_humidity_subtype     = MeasurementSubtype.joins(:measurement_type)
-    .find_by!(measurement_types: { name: 'Ambient' }, name: 'Humidity')
-  ambient_temperature_subtype  = MeasurementSubtype.joins(:measurement_type)
-    .find_by!(measurement_types: { name: 'Ambient' }, name: 'Temperature')
-  switch_alarm_subtype         = MeasurementSubtype.joins(:measurement_type)
-    .find_by!(measurement_types: { name: 'Switch' }, name: 'Alarm')
-  switch_heater_subtype        = MeasurementSubtype.joins(:measurement_type)
-    .find_by!(measurement_types: { name: 'Switch' }, name: 'Heater')
-  switch_compressor_subtype    = MeasurementSubtype.joins(:measurement_type)
-    .find_by!(measurement_types: { name: 'Switch' }, name: 'Compressor')
-  switch_pump_subtype          = MeasurementSubtype.joins(:measurement_type)
-    .find_by!(measurement_types: { name: 'Switch' }, name: 'Pump')
-
-  # ── Helper for building register template attribute hashes ────────────
-
-  position_counter = 0
-  next_position = -> { position_counter += 1 }
-
-  build_register = ->(attrs) {
-    {
-      register_type:           'holding',
-      data_type:               'int16',
-      byte_order:              'big_endian',
-      value_format:            'numeric',
-      address_count:           1,
-      factor:                  1.0,
-      offset:                  0.0,
-      read_only:               false,
-      user_visibility:         'visible',
-      modbus_firmware_version: fatek_firmware,
-      position:                next_position.call
-    }.merge(attrs)
-  }
-
-  registers = []
-
-  # ── R0–R7: currently active phase setpoints (read-only mirrors) ───────
-
-  current_phase_fields = [
-    { addr: 0, name: 'Current phase: Temperature low work limit',  factor: 0.01, unit: '°C' },
-    { addr: 1, name: 'Current phase: Temperature high work limit', factor: 0.01, unit: '°C' },
-    { addr: 2, name: 'Current phase: Temperature low alarm limit', factor: 0.01, unit: '°C' },
-    { addr: 3, name: 'Current phase: Temperature high alarm limit', factor: 0.01, unit: '°C' },
-    { addr: 4, name: 'Current phase: Humidity work limit',          factor: 0.01, unit: '%' },
-    { addr: 5, name: 'Current phase: Humidity alarm limit',         factor: 0.01, unit: '%' },
-    { addr: 6, name: 'Current phase: Total duration',               factor: 1.0,  unit: 'min' },
-    { addr: 7, name: 'Current phase: Last phase mark',              factor: 1.0,  unit: nil, value_format: 'boolean' }
-  ]
-  current_phase_fields.each do |f|
-    registers << build_register.call(
-      name: f[:name], label: "current_phase_#{f[:addr]}",
-      address: f[:addr], factor: f[:factor],
-      value_format: f[:value_format] || 'numeric',
-      category: 'program_status', read_only: true
-    )
-  end
-
-  # ── R10: active phase number (writable, runtime control) ──────────────
-
-  registers << build_register.call(
-    name: 'Active phase number', label: 'active_phase_number',
-    address: 10, category: 'configuration',
-    group_name: 'program_runtime', group_role: 'active_phase',
-    min_value: 0, max_value: 14
-  )
-
-  # ── R12: displaying phase number (read-only) ──────────────────────────
-
-  registers << build_register.call(
-    name: 'Displaying phase number', label: 'displaying_phase_number',
-    address: 12, category: 'program_status', read_only: true
-  )
-
-  # ── R15–R17: program version (read-only firmware metadata) ────────────
-
-  [
-    [15, 'major', 'Program major version'],
-    [16, 'minor', 'Program minor version'],
-    [17, 'sub',   'Program subversion']
-  ].each do |addr, role, name|
-    registers << build_register.call(
-      name: name, label: "program_version_#{role}",
-      address: addr, category: 'diagnostic', read_only: true
-    )
-  end
-
-  # ── R25–R28: hysteresis values ────────────────────────────────────────
-
-  hysteresis_fields = [
-    { addr: 25, role: 'humidity_work_hysteresis',  name: 'Humidity work limit hysteresis',   factor: 0.01, unit: '%' },
-    { addr: 26, role: 'humidity_alarm_hysteresis', name: 'Humidity alarm limit hysteresis',  factor: 0.01, unit: '%' },
-    { addr: 27, role: 'temp_work_hysteresis',      name: 'Temperature work limits hysteresis', factor: 0.01, unit: '°C' },
-    { addr: 28, role: 'temp_alarm_hysteresis',     name: 'Temperature alarm limits hysteresis', factor: 0.01, unit: '°C' }
-  ]
-  hysteresis_fields.each do |f|
-    registers << build_register.call(
-      name: f[:name], label: f[:role],
-      address: f[:addr], factor: f[:factor],
-      category: 'configuration',
-      group_name: 'system_hysteresis', group_role: f[:role]
-    )
-  end
-
-  # ── R30–R37: delays and timer setpoints ───────────────────────────────
-
-  delay_fields = [
-    { addr: 30, role: 'heating_on_delay',         name: 'Heating ON delay',         factor: 0.1, unit: 's' },
-    { addr: 31, role: 'cooling_on_delay',         name: 'Cooling ON delay',         factor: 0.1, unit: 's' },
-    { addr: 32, role: 'wetting_on_delay',         name: 'Wetting ON delay',         factor: 0.1, unit: 's' },
-    { addr: 33, role: 'wetting_off_delay',        name: 'Wetting OFF delay',        factor: 0.1, unit: 's' },
-    { addr: 34, role: 'temp_low_alarm_delay',     name: 'Low temperature alarm delay',  factor: 0.1, unit: 's' },
-    { addr: 35, role: 'temp_high_alarm_delay',    name: 'High temperature alarm delay', factor: 0.1, unit: 's' },
-    { addr: 36, role: 'humidity_low_alarm_delay', name: 'Low humidity alarm delay',     factor: 0.1, unit: 's' },
-    { addr: 37, role: 'wetting_timer_seconds',    name: 'Wetting time in timer mode',   factor: 1.0, unit: 's' }
-  ]
-  delay_fields.each do |f|
-    registers << build_register.call(
-      name: f[:name], label: f[:role],
-      address: f[:addr], factor: f[:factor],
-      category: 'configuration',
-      group_name: 'system_delays', group_role: f[:role]
-    )
-  end
-
-  # ── R38: misc constant ────────────────────────────────────────────────
-
-  registers << build_register.call(
-    name: 'Constant 1 (MT6050i)', label: 'constant_1',
-    address: 38, category: 'configuration',
-    group_name: 'system_misc', group_role: 'constant_1'
-  )
-
-  # ── R40–R41: sensor offsets ───────────────────────────────────────────
-
-  registers << build_register.call(
-    name: 'Humidity sensor offset', label: 'humidity_sensor_offset',
-    address: 40, factor: 0.01,
-    category: 'configuration',
-    group_name: 'system_offsets', group_role: 'humidity_sensor_offset'
-  )
-  registers << build_register.call(
-    name: 'Temperature sensor offset', label: 'temp_sensor_offset',
-    address: 41, factor: 0.01,
-    category: 'configuration',
-    group_name: 'system_offsets', group_role: 'temp_sensor_offset'
-  )
-
-  # ── R44–R49: command codes (R44 read-only mark, R45–R49 codes) ────────
-
-  registers << build_register.call(
-    name: 'Command codes loaded mark', label: 'command_codes_loaded_mark',
-    address: 44, category: 'diagnostic', read_only: true
-  )
-
-  command_code_fields = [
-    [45, 'start_code',            'Start command code'],
-    [46, 'reset_code',            'Reset command code'],
-    [47, 'confirm_code',          'Confirm command code'],
-    [48, 'stop_code',             'Stop command code'],
-    [49, 'copy_setpoints_code',   'Copy setpoints to file area command code']
-  ]
-  command_code_fields.each do |addr, role, name|
-    registers << build_register.call(
-      name: name, label: role,
-      address: addr, category: 'configuration',
-      group_name: 'system_commands', group_role: role
-    )
-  end
-
-  # ── R50–R55: reference points (internal, hidden) ──────────────────────
-
-  reference_point_fields = [
-    [50, 'twl', 'Reference point TWL'],
-    [51, 'twh', 'Reference point TWH'],
-    [52, 'tal', 'Reference point TAL'],
-    [53, 'tah', 'Reference point TAH'],
-    [54, 'hw',  'Reference point HW'],
-    [55, 'ha',  'Reference point HA']
-  ]
-  reference_point_fields.each do |addr, suffix, name|
-    registers << build_register.call(
-      name: name, label: "reference_point_#{suffix}",
-      address: addr, category: 'diagnostic',
-      read_only: true, user_visibility: 'hidden'
-    )
-  end
-
-  # ── R60–R61: program runtime state ────────────────────────────────────
-
-  registers << build_register.call(
-    name: 'Active program number', label: 'active_program_number',
-    address: 60, category: 'configuration',
-    group_name: 'program_runtime', group_role: 'active_program',
-    min_value: 0, max_value: 3
-  )
-  registers << build_register.call(
-    name: 'Adjusted record number', label: 'adjusted_record_number',
-    address: 61, category: 'diagnostic', read_only: true
-  )
-
-  # ── R3000–R3007: scaled measurements + runtime copies ─────────────────
-
-  registers << build_register.call(
-    name: 'Scaled humidity', label: 'scaled_humidity',
-    address: 3000, factor: 0.1,
-    category: 'analog', read_only: true,
-    default_measurement_subtype: ambient_humidity_subtype
-  )
-  registers << build_register.call(
-    name: 'Scaled temperature', label: 'scaled_temperature',
-    address: 3001, factor: 0.1,
-    category: 'analog', read_only: true,
-    default_measurement_subtype: ambient_temperature_subtype
-  )
-
-  runtime_copy_fields = [
-    [3002, 'elapsed_time_copy',          'Copy of elapsed phase time'],
-    [3003, 'phase_duration_copy',        'Copy of total current phase duration'],
-    [3004, 'current_phase_number_copy',  'Copy of current phase number'],
-    [3005, 'alarm_code_copy',            'Copy of alarm code'],
-    [3006, 'current_program_number_copy', 'Copy of current program number'],
-    [3007, 'process_finished_mark',      'Process finished mark']
-  ]
-  runtime_copy_fields.each do |addr, role, name|
-    registers << build_register.call(
-      name: name, label: role,
-      address: addr, category: 'program_status', read_only: true
-    )
-  end
-
-  # ── R3010: external command code (writable trigger) ───────────────────
-
-  registers << build_register.call(
-    name: 'External command code', label: 'external_command_code',
-    address: 3010, category: 'configuration',
-    group_name: 'system_commands', group_role: 'external_command'
-  )
-
-  # ── D0 (addr 6000): alarm code ────────────────────────────────────────
-
-  registers << build_register.call(
-    name: 'Alarm code', label: 'alarm_code',
-    address: 6000, category: 'diagnostic', read_only: true
-  )
-
-  # ── T50–T70: internal timers (read-only diagnostics) ──────────────────
-
-  internal_timer_fields = [
-    [9050, 'timer_reset_delay',          'Reset delay timer'],
-    [9051, 'timer_minute',               'Minute timer'],
-    [9052, 'timer_heating_delay',        'Heating delay timer'],
-    [9053, 'timer_cooling_delay',        'Cooling delay timer'],
-    [9054, 'timer_temp_low_alarm',       'Low temperature alarm delay timer'],
-    [9055, 'timer_temp_high_alarm',      'High temperature alarm delay timer'],
-    [9056, 'timer_wetting_on',           'Wetting ON delay timer'],
-    [9057, 'timer_wetting_alarm',        'Wetting alarm delay timer'],
-    [9058, 'timer_wetting_off',          'Wetting OFF delay timer'],
-    [9060, 'timer_start_delay',          'Start delay timer'],
-    [9061, 'timer_blink_period',         'Blink period timer'],
-    [9062, 'timer_humidity_control',     'Humidity control ON/OFF delay timer'],
-    [9070, 'timer_external_command_reset', 'External command reset delay timer']
-  ]
-  internal_timer_fields.each do |addr, role, name|
-    registers << build_register.call(
-      name: name, label: role,
-      address: addr, category: 'diagnostic',
-      read_only: true, user_visibility: 'hidden'
-    )
-  end
-
-  # ── T200–T201: wetting timer mode (writable config) ──────────────────
-
-  registers << build_register.call(
-    name: 'Wetting ON timer (timer mode)', label: 'wetting_on_timer',
-    address: 9200, category: 'configuration',
-    group_name: 'system_delays', group_role: 'wetting_on_timer_mode'
-  )
-  registers << build_register.call(
-    name: 'Wetting OFF timer (timer mode)', label: 'wetting_off_timer',
-    address: 9201, category: 'configuration',
-    group_name: 'system_delays', group_role: 'wetting_off_timer_mode'
-  )
-
-  # ── C0: current phase elapsed time counter ────────────────────────────
-
-  registers << build_register.call(
-    name: 'Current phase elapsed time', label: 'current_phase_elapsed_time',
-    address: 9500, category: 'program_status', read_only: true
-  )
-
-  # ── Programs block (R5000–R5510): 4 programs × 15 phases × 8 fields ───
-  #
-  # Address layout:
-  #   Program 0: phase N starts at 5000 + (N-1)*8
-  #   Program M (M≥1): phase N starts at 5128 + (M-1)*128 + (N-1)*8
-  #   Program meta: humidity_control_mode at base+124, loaded_mark at base+126
-  #   Program 0 has no loaded_mark register.
-
-  PROGRAM_BASES = {
-    0 => 5000,
-    1 => 5128,
-    2 => 5256,
-    3 => 5384
-  }.freeze
-
-  PHASE_FIELD_DEFS = [
-    { offset: 0, role: 'temp_low_work',     name: 'Temperature Low Work Limit',   factor: 0.01, unit: '°C' },
-    { offset: 1, role: 'temp_high_work',    name: 'Temperature High Work Limit',  factor: 0.01, unit: '°C' },
-    { offset: 2, role: 'temp_low_alarm',    name: 'Temperature Low Alarm Limit',  factor: 0.01, unit: '°C' },
-    { offset: 3, role: 'temp_high_alarm',   name: 'Temperature High Alarm Limit', factor: 0.01, unit: '°C' },
-    { offset: 4, role: 'humidity_work',     name: 'Humidity Work Limit',          factor: 0.01, unit: '%' },
-    { offset: 5, role: 'humidity_alarm',    name: 'Humidity Alarm Limit',         factor: 0.01, unit: '%' },
-    { offset: 6, role: 'duration_minutes',  name: 'Duration',                     factor: 1.0,  unit: 'min', value_format: 'numeric' },
-    { offset: 7, role: 'is_last_phase',     name: 'Last Phase Mark',              factor: 1.0,  unit: nil,   value_format: 'boolean' }
-  ].freeze
-
-  PROGRAM_BASES.each do |program_idx, base_addr|
-    (1..15).each do |phase_idx|
-      phase_base = if program_idx == 0
-        base_addr + (phase_idx - 1) * 8
-      else
-        base_addr + (phase_idx - 1) * 8
-      end
-
-      PHASE_FIELD_DEFS.each do |fd|
-        registers << build_register.call(
-          name:         fd[:name],
-          label:        "program_#{program_idx}_phase_#{phase_idx}_#{fd[:role]}",
-          address:      phase_base + fd[:offset],
-          factor:       fd[:factor],
-          value_format: fd[:value_format] || 'numeric',
-          category:     'program_configuration',
-          group_name:   "program_#{program_idx}_phase_#{phase_idx}",
-          group_role:   fd[:role]
-        )
-      end
-    end
-
-    # Program meta: humidity_control_mode for all 4, loaded_mark for 1-3
-    humidity_addr = base_addr + 124
-    registers << build_register.call(
-      name:         "Humidity Control Mode",
-      label:        "program_#{program_idx}_humidity_control_mode",
-      address:      humidity_addr,
-      value_format: 'boolean',
-      category:     'program_configuration',
-      group_name:   "program_#{program_idx}_meta",
-      group_role:   'humidity_control_mode'
-    )
-
-    if program_idx > 0
-      loaded_mark_addr = base_addr + 126
-      registers << build_register.call(
-        name:        "Loaded Mark",
-        label:       "program_#{program_idx}_loaded_mark",
-        address:     loaded_mark_addr,
-        category:    'program_status',
-        group_name:  "program_#{program_idx}_meta",
-        group_role:  'loaded_mark',
-        read_only:   true
-      )
-    end
-  end
-
-  # ── R5512: local program selecting allowed/denied ─────────────────────
-
-  registers << build_register.call(
-    name: 'Local program selecting allowed', label: 'local_program_selecting_allowed',
-    address: 5512, value_format: 'boolean',
-    category: 'configuration',
-    group_name: 'system_misc', group_role: 'local_program_selecting_allowed'
-  )
-
-  # ── Y0–Y8: digital outputs (status data, read-only from FarmBits) ─────
-  #
-  # Driven by Fatek's program engine. read_only=true so users monitor
-  # without competing with the program logic.
-
-  y_outputs = [
-    { addr: 0, name: 'Process lamp',                    subtype: nil },
-    { addr: 1, name: 'Alarm lamp',                      subtype: switch_alarm_subtype },
-    { addr: 2, name: 'Heating output',                  subtype: switch_heater_subtype },
-    { addr: 3, name: 'Cooling output',                  subtype: switch_compressor_subtype },
-    { addr: 4, name: 'Wetting output',                  subtype: switch_pump_subtype },
-    { addr: 5, name: 'Buzzer',                          subtype: nil },
-    { addr: 6, name: 'Finish lamp',                     subtype: nil },
-    { addr: 7, name: 'Humidity control by timer lamp',  subtype: nil },
-    { addr: 8, name: 'Humidity control disabled',       subtype: nil }
-  ]
-  y_outputs.each do |y|
-    registers << build_register.call(
-      name:                        y[:name],
-      label:                       "y#{y[:addr]}_#{y[:name].downcase.gsub(/[^a-z0-9]+/, '_').gsub(/^_|_$/, '')}",
-      address:                     y[:addr],
-      register_type:               'coil',
-      data_type:                   'boolean',
-      value_format:                'boolean',
-      category:                    'status',
-      read_only:                   true,
-      default_measurement_subtype: y[:subtype]
-    )
-  end
-
-  # ── X0–X7: physical button inputs (diagnostic, read-only) ─────────────
-
-  x_inputs = [
-    { addr: 1000, name: 'Start button (physical)' },
-    { addr: 1001, name: 'Reset button (physical)' },
-    { addr: 1002, name: 'Confirm button (physical)' },
-    { addr: 1003, name: 'Stop button (physical)' },
-    { addr: 1004, name: 'Humidity control switch (physical)' },
-    { addr: 1005, name: 'Manual sprinkling button (physical)' },
-    { addr: 1007, name: 'Operating voltage present' }
-  ]
-  x_inputs.each_with_index do |x, idx|
-    label_addr = x[:addr] - 1000
-    registers << build_register.call(
-      name:            x[:name],
-      label:           "x#{label_addr}_#{x[:name].downcase.gsub(/[^a-z0-9]+/, '_').gsub(/^_|_$/, '')}",
-      address:         x[:addr],
-      register_type:   'coil',
-      data_type:       'boolean',
-      value_format:    'boolean',
-      category:        'diagnostic',
-      read_only:       true,
-      user_visibility: 'hidden'
-    )
-  end
-
-  # ── M-bits: memory bits (state flags + writable command bits) ─────────
-
-  # State flags - read-only from FarmBits perspective
-  m_state_flags = [
-    [2000, 'Process'],
-    [2001, 'Confirmed'],
-    [2010, 'No operating voltage'],
-    [2011, 'Error copying setpoints to file'],
-    [2012, 'Setpoints copied to file'],
-    [2013, 'Program changing allowed'],
-    [2014, 'Program 0 selected'],
-    [2015, 'All programs loaded'],
-    [2016, 'Program does not exist'],
-    [2017, 'Incorrect humidity data'],
-    [2018, 'Incorrect temperature data'],
-    [2020, 'Current phase finished'],
-    [2049, 'Manual sprinkling activated'],
-    [2050, 'Reset executing command'],
-    [2051, 'One more minute'],
-    [2052, 'Heating executing command'],
-    [2053, 'Cooling executing command'],
-    [2054, 'Low temperature alarm'],
-    [2055, 'High temperature alarm'],
-    [2056, 'Wetting ON executing command'],
-    [2057, 'Low humidity alarm'],
-    [2058, 'Wetting OFF executing command'],
-    [2059, 'Humidity control ON/OFF executing command'],
-    [2060, 'Start executing command'],
-    [2061, 'Blink bit'],
-    [2062, 'Auxiliary blink bit'],
-    [2063, 'Alarm conditions'],
-    [2064, 'Prepare data for new phase'],
-    [2065, 'Process finished'],
-    [2800, 'Process memorization']
-  ]
-  m_state_flags.each do |addr, name|
-    label_addr = addr - 2000
-    registers << build_register.call(
-      name:            name,
-      label:           "m#{label_addr}_#{name.downcase.gsub(/[^a-z0-9]+/, '_').gsub(/^_|_$/, '')}",
-      address:         addr,
-      register_type:   'coil',
-      data_type:       'boolean',
-      value_format:    'boolean',
-      category:        'diagnostic',
-      read_only:       true,
-      user_visibility: 'hidden'
-    )
-  end
-
-  # Writable command bits - on-screen and external command triggers
-  m_command_bits = [
-    [2030, 'cmd_start_screen',           'Start (on-screen)'],
-    [2031, 'cmd_reset_screen',           'Reset (on-screen)'],
-    [2032, 'cmd_confirm_screen',         'Confirm (on-screen)'],
-    [2033, 'cmd_stop_screen',            'Stop (on-screen)'],
-    [2036, 'cmd_manual_heating',         'Manual heating (on-screen)'],
-    [2037, 'cmd_manual_cooling',         'Manual cooling (on-screen)'],
-    [2038, 'cmd_manual_sprinkling',      'Manual sprinkling (on-screen)'],
-    [2040, 'cmd_start_external',         'Start (external)'],
-    [2041, 'cmd_reset_external',         'Reset (external)'],
-    [2042, 'cmd_confirm_external',       'Confirm (external)'],
-    [2043, 'cmd_stop_external',          'Stop (external)'],
-    [2044, 'cmd_copy_setpoints_external', 'Copy setpoints (external)'],
-    [2045, 'cmd_read_phase_sp',          'Read phase SP (external)'],
-    [2046, 'cmd_humidity_control_mode',  'Humidity control mode'],
-    [2047, 'cmd_humidity_control_off',   'Humidity control OFF']
-  ]
-  m_command_bits.each do |addr, role, name|
-    label_addr = addr - 2000
-    registers << build_register.call(
-      name:          name,
-      label:         "m#{label_addr}_#{role}",
-      address:       addr,
-      register_type: 'coil',
-      data_type:     'boolean',
-      value_format:  'boolean',
-      category:      'configuration',
-      group_name:    'system_commands',
-      group_role:    role
-    )
-  end
-
-  # ── Bulk insert all register templates ────────────────────────────────
-
-  RegisterTemplate.create!(registers)
-
-  # ── Relay mappings on Eliwell V2 pointing at every Fatek register ─────
-  #
-  # Layout (within each 1200-register slot):
-  #   Reads:  offsets 0..N-1, sequential by register address ascending
-  #   Writes: offsets 600..600+M-1, sequential by register address ascending
-  #
-  # Adjust this layout if your Eliwell V2 firmware has a different
-  # mirroring scheme.
-
-  # Layout: reads at offsets 0..N-1, writes at WRITE_BASE_OFFSET..M.
-  # Fatek currently has 617 read mappings and 525 write mappings;
-  # WRITE_BASE_OFFSET=650 leaves a small gap above reads and fits both
-  # blocks in the 1200-register slot. Tune if your Eliwell V2 firmware
-  # uses a different mirror scheme.
-  READ_BASE_OFFSET  = 0
-  WRITE_BASE_OFFSET = 650
-
-  fatek_registers = fatek_firmware.register_templates.order(:address)
-  read_mappings = []
-  write_mappings = []
-
-  fatek_registers.each_with_index do |rt, read_index|
-    read_mappings << {
-      modbus_firmware_version_id: eliwell_v2.id,
-      register_template_id:       rt.id,
-      relay_offset:               READ_BASE_OFFSET + read_index,
-      direction:                  'read'
-    }
-  end
-
-  writable_index = 0
-  fatek_registers.each do |rt|
-    if rt.read_only?
-      next
-    end
-
-    write_mappings << {
-      modbus_firmware_version_id: eliwell_v2.id,
-      register_template_id:       rt.id,
-      relay_offset:               WRITE_BASE_OFFSET + writable_index,
-      direction:                  'write'
-    }
-    writable_index += 1
-  end
-
-  ModbusFirmwareRelayMapping.insert_all!(
-    read_mappings.map { |m| m.merge(created_at: Time.current, updated_at: Time.current) }
-  )
-  ModbusFirmwareRelayMapping.insert_all!(
-    write_mappings.map { |m| m.merge(created_at: Time.current, updated_at: Time.current) }
-  )
-
-  # ── Validate slot capacity ────────────────────────────────────────────
-
-  total_read_offsets  = read_mappings.size
-  total_write_offsets = write_mappings.size
-  max_read_offset     = READ_BASE_OFFSET + total_read_offsets - 1
-  max_write_offset    = WRITE_BASE_OFFSET + total_write_offsets - 1
-  highest_offset      = [max_read_offset, max_write_offset].max
-
-  if highest_offset >= eliwell_v2.relay_slot_size
-    raise "Relay layout exceeds slot size (#{eliwell_v2.relay_slot_size}): " \
-          "highest offset is #{highest_offset}"
-  end
-
-  if WRITE_BASE_OFFSET < total_read_offsets
-    raise "Read block (#{total_read_offsets} offsets) overlaps write base " \
-          "(#{WRITE_BASE_OFFSET}); choose a higher WRITE_BASE_OFFSET"
-  end
-
-  # ── Compatibility row: Eliwell V2 (host) ↔ Fatek (peripheral) ─────────
+  # ── Compatibility: Eliwell V2 hosts Fatek Seedling Program v2.4.2 ──────
 
   ModbusFirmwareCompatibility.create!(
     host_version:       eliwell_v2,
@@ -663,13 +284,692 @@ ActiveRecord::Base.transaction do
     firmware_code:      1
   )
 
-  Rails.logger.info <<~SUMMARY
-    [Fatek seed] Done.
-      Eliwell V2 firmware version id: #{eliwell_v2.id}
-      Fatek peripheral firmware version id: #{fatek_firmware.id}
-      Register templates: #{fatek_registers.count}
-      Read relay mappings: #{total_read_offsets}
-      Write relay mappings: #{total_write_offsets}
-      Highest relay offset: #{highest_offset} / #{eliwell_v2.relay_slot_size}
-  SUMMARY
+  # ── Measurement subtype lookup (tolerant of missing names) ─────────────
+  #
+  # Adjust the names in `subtype_names` below to match the subtypes you
+  # already have seeded. Anything not found logs a warning and skips the
+  # default_measurement_subtype assignment — the seed continues either way.
+
+  subtype_names = {
+    humidity:    'Humidity > Ambient',
+    temperature: 'Temperature > Ambient'
+  }
+
+  find_subtype = ->(key) do
+    name = subtype_names[key]
+    if name.nil?
+      return nil
+    end
+    st = MeasurementSubtype.find_by(name: name)
+    if st.nil?
+      Rails.logger.warn(
+        "[Fatek seed] MeasurementSubtype '#{name}' (#{key}) not found; " \
+        "default_measurement_subtype will be nil on matching templates"
+      )
+    end
+    st
+  end
+
+  humidity_subtype    = find_subtype.call(:humidity)
+  temperature_subtype = find_subtype.call(:temperature)
+
+  # ── Helper procs ───────────────────────────────────────────────────────
+
+  fatek_position = 0
+
+  create_fatek_template = ->(attrs) do
+    fatek_position += 1
+    RegisterTemplate.create!({
+      modbus_firmware_version: fatek_firmware,
+      byte_order:              'big_endian',
+      address_count:           1,
+      factor:                  1.0,
+      offset:                  0.0,
+      user_visibility:         'visible',
+      position:                fatek_position
+    }.merge(attrs))
+  end
+
+  create_relay_mapping = ->(template, direction, offset) do
+    ModbusFirmwareRelayMapping.create!(
+      modbus_firmware_version: eliwell_v2,
+      register_template:       template,
+      direction:               direction,
+      relay_offset:            offset
+    )
+  end
+
+  create_fatek_register = ->(attrs, read_offset: nil, write_offset: nil) do
+    template = create_fatek_template.call(attrs)
+    if read_offset
+      create_relay_mapping.call(template, 'read', read_offset)
+    end
+    if write_offset && !template.read_only?
+      create_relay_mapping.call(template, 'write', write_offset)
+    end
+    template
+  end
+
+  # ════════════════════════════════════════════════════════════════════════
+  # Block 1: Active phase set points (R0..R7) — RO mirror
+  # ════════════════════════════════════════════════════════════════════════
+
+  active_phase_specs = [
+    { addr: 0, name: 'Active phase temperature low work limit',   role: 'temp_low_work',   factor: 0.01 },
+    { addr: 1, name: 'Active phase temperature high work limit',  role: 'temp_high_work',  factor: 0.01 },
+    { addr: 2, name: 'Active phase temperature low alarm limit',  role: 'temp_low_alarm',  factor: 0.01 },
+    { addr: 3, name: 'Active phase temperature high alarm limit', role: 'temp_high_alarm', factor: 0.01 },
+    { addr: 4, name: 'Active phase humidity work limit',          role: 'humidity_work',   factor: 0.01 },
+    { addr: 5, name: 'Active phase humidity alarm limit',         role: 'humidity_alarm',  factor: 0.01 },
+    { addr: 6, name: 'Active phase total duration',               role: 'duration',        factor: 1.0  },
+    { addr: 7, name: 'Active phase last phase mark',              role: 'last_phase_mark', factor: 1.0  }
+  ]
+
+  active_phase_specs.each do |spec|
+    create_fatek_register.call(
+      {
+        name:              spec[:name],
+        label:             "ActivePhase_#{spec[:role].split('_').map(&:capitalize).join}",
+        address:           spec[:addr],
+        register_type:     'holding',
+        data_type:         'int16',
+        value_format:      'numeric',
+        factor:            spec[:factor],
+        category:          'diagnostic',
+        read_only:         true,
+        group_name:        'active_phase',
+        group_role:        spec[:role],
+        bulk_read_group:   'active_phase',
+        bulk_read_address: 0,
+        bulk_read_offset:  spec[:addr]
+      },
+      read_offset: spec[:addr]
+    )
+  end
+
+  # ════════════════════════════════════════════════════════════════════════
+  # Block 2: Live data x10sec (R3000..R3007) — RO measurements
+  # ════════════════════════════════════════════════════════════════════════
+
+  live_data_specs = [
+    { addr: 3000, name: 'Humidity',                        role: 'humidity',       category: 'analog',     factor: 0.1, data_type: 'int16',  subtype: humidity_subtype },
+    { addr: 3001, name: 'Temperature',                     role: 'temperature',    category: 'analog',     factor: 0.1, data_type: 'int16',  subtype: temperature_subtype },
+    { addr: 3002, name: 'Elapsed time in current phase',   role: 'elapsed_time',   category: 'diagnostic', factor: 1.0, data_type: 'uint16', subtype: nil },
+    { addr: 3003, name: 'Total duration of current phase', role: 'phase_duration', category: 'diagnostic', factor: 1.0, data_type: 'uint16', subtype: nil },
+    { addr: 3004, name: 'Current phase number',            role: 'phase_number',   category: 'diagnostic', factor: 1.0, data_type: 'uint16', subtype: nil },
+    { addr: 3005, name: 'Alarm code (live copy)',          role: 'alarm_code',     category: 'diagnostic', factor: 1.0, data_type: 'uint16', subtype: nil },
+    { addr: 3006, name: 'Current program number',          role: 'program_number', category: 'diagnostic', factor: 1.0, data_type: 'uint16', subtype: nil },
+    { addr: 3007, name: 'Status bitmask',                  role: 'status_bits',    category: 'diagnostic', factor: 1.0, data_type: 'uint16', subtype: nil }
+  ]
+
+  live_data_specs.each_with_index do |spec, i|
+    create_fatek_register.call(
+      {
+        name:                         spec[:name],
+        label:                        "LiveData_#{spec[:role].split('_').map(&:capitalize).join}",
+        address:                      spec[:addr],
+        register_type:                'holding',
+        data_type:                    spec[:data_type],
+        value_format:                 'numeric',
+        factor:                       spec[:factor],
+        category:                     spec[:category],
+        read_only:                    true,
+        group_name:                   'live_data',
+        group_role:                   spec[:role],
+        bulk_read_group:              'live_data',
+        bulk_read_address:            3000,
+        bulk_read_offset:             spec[:addr] - 3000,
+        default_measurement_subtype:  spec[:subtype]
+      },
+      read_offset: 8 + i
+    )
+  end
+
+  # ════════════════════════════════════════════════════════════════════════
+  # Block 3: System status RW (writable controls scattered across address
+  # space). All share group_name 'system_status' but have distinct
+  # bulk_read_groups by address proximity.
+  # ════════════════════════════════════════════════════════════════════════
+
+  # R10 — Operating phase number (low-address holding block)
+  create_fatek_register.call(
+    {
+      name:              'Operating phase number (0-indexed)',
+      label:             'SystemStatus_OperatingPhase',
+      address:           10,
+      register_type:     'holding',
+      data_type:         'uint16',
+      value_format:      'numeric',
+      category:          'configuration',
+      read_only:         false,
+      group_name:        'system_status',
+      group_role:        'operating_phase',
+      bulk_read_group:   'system_status_low',
+      bulk_read_address: 10,
+      bulk_read_offset:  0,
+      min_value:         0,
+      max_value:         14
+    },
+    read_offset:  16,
+    write_offset: 670
+  )
+
+  # R60 — Program number
+  create_fatek_register.call(
+    {
+      name:              'Program number',
+      label:             'SystemStatus_ProgramSelect',
+      address:           60,
+      register_type:     'holding',
+      data_type:         'uint16',
+      value_format:      'numeric',
+      category:          'configuration',
+      read_only:         false,
+      group_name:        'system_status',
+      group_role:        'program_select',
+      bulk_read_group:   'system_status_low',
+      bulk_read_address: 10,
+      bulk_read_offset:  50,
+      min_value:         0,
+      max_value:         3
+    },
+    read_offset:  22,
+    write_offset: 671
+  )
+
+  # R3010 — External command code
+  create_fatek_register.call(
+    {
+      name:              'External command code',
+      label:             'SystemStatus_ExternalCommand',
+      address:           3010,
+      register_type:     'holding',
+      data_type:         'uint16',
+      value_format:      'numeric',
+      category:          'configuration',
+      read_only:         false,
+      group_name:        'system_status',
+      group_role:        'external_command',
+      bulk_read_group:   'external_command',
+      bulk_read_address: 3010,
+      bulk_read_offset:  0
+    },
+    read_offset:  24,
+    write_offset: 672
+  )
+
+  # R5512 — Local program selecting allowed/denied
+  create_fatek_register.call(
+    {
+      name:              'Local program selecting allowed/denied',
+      label:             'SystemStatus_LocalSelectAllow',
+      address:           5512,
+      register_type:     'holding',
+      data_type:         'uint16',
+      value_format:      'numeric',
+      category:          'configuration',
+      read_only:         false,
+      group_name:        'system_status',
+      group_role:        'local_select_allow',
+      bulk_read_group:   'local_select',
+      bulk_read_address: 5512,
+      bulk_read_offset:  0
+    },
+    read_offset:  25,
+    write_offset: 673
+  )
+
+  # Humidity control modes per program (R5124, R5252, R5380, R5508)
+  # Each lives within its program's bulk_read_group.
+  humidity_mode_specs = [
+    { addr: 5124, prog: 0, role: 'humidity_mode_0', read_offset: 26, write_offset: 674, bulk_group: 'program_0', bulk_base: 5000 },
+    { addr: 5252, prog: 1, role: 'humidity_mode_1', read_offset: 27, write_offset: 675, bulk_group: 'program_1', bulk_base: 5128 },
+    { addr: 5380, prog: 2, role: 'humidity_mode_2', read_offset: 28, write_offset: 676, bulk_group: 'program_2', bulk_base: 5256 },
+    { addr: 5508, prog: 3, role: 'humidity_mode_3', read_offset: 29, write_offset: 677, bulk_group: 'program_3', bulk_base: 5384 }
+  ]
+
+  humidity_mode_specs.each do |spec|
+    create_fatek_register.call(
+      {
+        name:              "Humidity control mode for program #{spec[:prog]}",
+        label:             "SystemStatus_#{spec[:role].split('_').map(&:capitalize).join}",
+        address:           spec[:addr],
+        register_type:     'holding',
+        data_type:         'uint16',
+        value_format:      'numeric',
+        category:          'configuration',
+        read_only:         false,
+        group_name:        'system_status',
+        group_role:        spec[:role],
+        bulk_read_group:   spec[:bulk_group],
+        bulk_read_address: spec[:bulk_base],
+        bulk_read_offset:  spec[:addr] - spec[:bulk_base]
+      },
+      read_offset:  spec[:read_offset],
+      write_offset: spec[:write_offset]
+    )
+  end
+
+  # ════════════════════════════════════════════════════════════════════════
+  # Block 4: System status RO (read-only diagnostic registers)
+  # ════════════════════════════════════════════════════════════════════════
+
+  ro_system_status_specs = [
+    { addr: 12,   name: 'Displaying phase number',          role: 'displaying_phase', read_offset: 17, bulk_group: 'system_status_low', bulk_base: 10,   visibility: 'visible' },
+    { addr: 15,   name: 'Program major version',            role: 'version_major',    read_offset: 18, bulk_group: 'system_status_low', bulk_base: 10,   visibility: 'hidden'  },
+    { addr: 16,   name: 'Program minor version',            role: 'version_minor',    read_offset: 19, bulk_group: 'system_status_low', bulk_base: 10,   visibility: 'hidden'  },
+    { addr: 17,   name: 'Program subversion',               role: 'version_sub',      read_offset: 20, bulk_group: 'system_status_low', bulk_base: 10,   visibility: 'hidden'  },
+    { addr: 44,   name: 'Command codes loaded mark',        role: 'cmd_loaded_mark',  read_offset: 21, bulk_group: 'system_status_low', bulk_base: 10,   visibility: 'hidden'  },
+    { addr: 61,   name: 'Adjusted record number',           role: 'adjusted_record',  read_offset: 23, bulk_group: 'system_status_low', bulk_base: 10,   visibility: 'hidden'  },
+    { addr: 6000, name: 'Alarm code (D0)',                  role: 'alarm_code_d0',    read_offset: 30, bulk_group: 'alarm_code_d0',     bulk_base: 6000, visibility: 'visible' },
+    { addr: 5254, name: 'Program 1 loaded mark',            role: 'prog1_loaded',     read_offset: 31, bulk_group: 'program_1',         bulk_base: 5128, visibility: 'hidden'  },
+    { addr: 5382, name: 'Program 2 loaded mark',            role: 'prog2_loaded',     read_offset: 32, bulk_group: 'program_2',         bulk_base: 5256, visibility: 'hidden'  },
+    { addr: 5510, name: 'Program 3 loaded mark',            role: 'prog3_loaded',     read_offset: 33, bulk_group: 'program_3',         bulk_base: 5384, visibility: 'hidden'  }
+  ]
+
+  ro_system_status_specs.each do |spec|
+    create_fatek_register.call(
+      {
+        name:              spec[:name],
+        label:             "SystemStatus_#{spec[:role].split('_').map(&:capitalize).join}",
+        address:           spec[:addr],
+        register_type:     'holding',
+        data_type:         'uint16',
+        value_format:      'numeric',
+        category:          'diagnostic',
+        read_only:         true,
+        group_name:        'system_status',
+        group_role:        spec[:role],
+        bulk_read_group:   spec[:bulk_group],
+        bulk_read_address: spec[:bulk_base],
+        bulk_read_offset:  spec[:addr] - spec[:bulk_base],
+        user_visibility:   spec[:visibility]
+      },
+      read_offset: spec[:read_offset]
+    )
+  end
+
+  # ════════════════════════════════════════════════════════════════════════
+  # Block 5: Parameters (R25..R41) — RW, gaps at R29 and R39
+  # Read mirror preserves addr-relative offsets (R25→40, R41→56);
+  # write buffer packs contiguously (650..664).
+  # ════════════════════════════════════════════════════════════════════════
+
+  parameter_specs = [
+    { addr: 25, name: 'Humidity work limit hysteresis',    role: 'hum_work_hyst',         factor: 0.01 },
+    { addr: 26, name: 'Humidity alarm limit hysteresis',   role: 'hum_alarm_hyst',        factor: 0.01 },
+    { addr: 27, name: 'Temperature work limit hysteresis', role: 'temp_work_hyst',        factor: 0.01 },
+    { addr: 28, name: 'Temperature alarm limit hysteresis',role: 'temp_alarm_hyst',       factor: 0.01 },
+    { addr: 30, name: 'Heating ON delay',                  role: 'heating_on_delay',      factor: 0.1  },
+    { addr: 31, name: 'Cooling ON delay',                  role: 'cooling_on_delay',      factor: 0.1  },
+    { addr: 32, name: 'Wetting ON delay',                  role: 'wetting_on_delay',      factor: 0.1  },
+    { addr: 33, name: 'Wetting OFF delay',                 role: 'wetting_off_delay',     factor: 0.1  },
+    { addr: 34, name: 'Low temperature alarm delay',       role: 'low_temp_alarm_delay',  factor: 0.1  },
+    { addr: 35, name: 'High temperature alarm delay',      role: 'high_temp_alarm_delay', factor: 0.1  },
+    { addr: 36, name: 'Low humidity alarm delay',          role: 'low_hum_alarm_delay',   factor: 0.1  },
+    { addr: 37, name: 'Wetting time in timer mode',        role: 'wetting_time_timer',    factor: 1.0  },
+    { addr: 38, name: 'Constant 1 (MT6050i)',              role: 'mt6050i_const',         factor: 1.0  },
+    { addr: 40, name: 'Humidity sensor offset',            role: 'humidity_sensor_offset',factor: 0.01 },
+    { addr: 41, name: 'Temperature sensor offset',         role: 'temp_sensor_offset',    factor: 0.01 }
+  ]
+
+  parameter_specs.each_with_index do |spec, i|
+    create_fatek_register.call(
+      {
+        name:              spec[:name],
+        label:             "Parameter_#{spec[:role].split('_').map(&:capitalize).join}",
+        address:           spec[:addr],
+        register_type:     'holding',
+        data_type:         'int16',
+        value_format:      'numeric',
+        factor:            spec[:factor],
+        category:          'configuration',
+        read_only:         false,
+        group_name:        'parameters',
+        group_role:        spec[:role],
+        bulk_read_group:   'parameters',
+        bulk_read_address: 25,
+        bulk_read_offset:  spec[:addr] - 25
+      },
+      read_offset:  40 + (spec[:addr] - 25),
+      write_offset: 650 + i
+    )
+  end
+
+  # ════════════════════════════════════════════════════════════════════════
+  # Block 6: Command buttons (R45..R49) — write-only triggers
+  # ════════════════════════════════════════════════════════════════════════
+
+  command_button_specs = [
+    { addr: 45, name: 'Start command code',      role: 'start_cmd'   },
+    { addr: 46, name: 'Reset command code',      role: 'reset_cmd'   },
+    { addr: 47, name: 'Confirm command code',    role: 'confirm_cmd' },
+    { addr: 48, name: 'Stop command code',       role: 'stop_cmd'    },
+    { addr: 49, name: 'Copy set points to file', role: 'copy_sp_cmd' }
+  ]
+
+  command_button_specs.each_with_index do |spec, i|
+    create_fatek_register.call(
+      {
+        name:              spec[:name],
+        label:             "Command_#{spec[:role].sub(/_cmd\z/, '').split('_').map(&:capitalize).join}",
+        address:           spec[:addr],
+        register_type:     'holding',
+        data_type:         'uint16',
+        value_format:      'numeric',
+        category:          'configuration',
+        read_only:         false,
+        group_name:        'command_buttons',
+        group_role:        spec[:role],
+        bulk_read_group:   'command_buttons',
+        bulk_read_address: 45,
+        bulk_read_offset:  spec[:addr] - 45
+      },
+      write_offset: 665 + i
+    )
+  end
+
+  # ════════════════════════════════════════════════════════════════════════
+  # Block 7: Programs 0..3 (R5000..R5503) — 15 phases × 8 fields each
+  # ════════════════════════════════════════════════════════════════════════
+
+  PHASE_FIELDS = [
+    { offset: 0, name: 'Temperature low work limit',   role: 'temp_low_work',    factor: 0.01, data_type: 'int16'  },
+    { offset: 1, name: 'Temperature high work limit',  role: 'temp_high_work',   factor: 0.01, data_type: 'int16'  },
+    { offset: 2, name: 'Temperature low alarm limit',  role: 'temp_low_alarm',   factor: 0.01, data_type: 'int16'  },
+    { offset: 3, name: 'Temperature high alarm limit', role: 'temp_high_alarm',  factor: 0.01, data_type: 'int16'  },
+    { offset: 4, name: 'Humidity work limit',          role: 'humidity_work',    factor: 0.01, data_type: 'int16'  },
+    { offset: 5, name: 'Humidity alarm limit',         role: 'humidity_alarm',   factor: 0.01, data_type: 'int16'  },
+    { offset: 6, name: 'Phase duration',               role: 'duration',         factor: 1.0,  data_type: 'uint16' },
+    { offset: 7, name: 'Last phase mark',              role: 'last_phase_mark',  factor: 1.0,  data_type: 'uint16' }
+  ].freeze
+
+  PROGRAM_BASES = [5000, 5128, 5256, 5384].freeze
+
+  PROGRAM_BASES.each_with_index do |prog_base, prog_idx|
+    bulk_group       = "program_#{prog_idx}"
+    read_block_base  = 60  + (prog_idx * 120)
+    write_block_base = 680 + (prog_idx * 120)
+
+    15.times do |phase_idx|
+      PHASE_FIELDS.each do |field|
+        relative_offset = (phase_idx * 8) + field[:offset]
+        addr            = prog_base + relative_offset
+
+        create_fatek_register.call(
+          {
+            name:              "Program #{prog_idx} phase #{phase_idx + 1} #{field[:name].downcase}",
+            label:             "Program#{prog_idx}Phase#{phase_idx + 1}_#{field[:role].split('_').map(&:capitalize).join}",
+            address:           addr,
+            register_type:     'holding',
+            data_type:         field[:data_type],
+            value_format:      'numeric',
+            factor:            field[:factor],
+            category:          'configuration',
+            read_only:         false,
+            group_name:        "program_#{prog_idx}_phase_#{phase_idx + 1}",
+            group_role:        field[:role],
+            bulk_read_group:   bulk_group,
+            bulk_read_address: prog_base,
+            bulk_read_offset:  relative_offset
+          },
+          read_offset:  read_block_base  + relative_offset,
+          write_offset: write_block_base + relative_offset
+        )
+      end
+    end
+  end
+
+  # ════════════════════════════════════════════════════════════════════════
+  # Block 8: Timers + counter (T50..T62, T70, T200..T201, C0)
+  # ════════════════════════════════════════════════════════════════════════
+
+  timer_specs = [
+    { addr: 9050, name: 'Reset delay timer (T50)',                   role: 't50',  read_offset: 540, write_offset: 1160, bulk_group: 'timers_main',    bulk_base: 9050 },
+    { addr: 9051, name: 'Minute timer (T51)',                        role: 't51',  read_offset: 541, write_offset: 1161, bulk_group: 'timers_main',    bulk_base: 9050 },
+    { addr: 9052, name: 'Heating delay timer (T52)',                 role: 't52',  read_offset: 542, write_offset: 1162, bulk_group: 'timers_main',    bulk_base: 9050 },
+    { addr: 9053, name: 'Cooling delay timer (T53)',                 role: 't53',  read_offset: 543, write_offset: 1163, bulk_group: 'timers_main',    bulk_base: 9050 },
+    { addr: 9054, name: 'Low temperature alarm delay timer (T54)',   role: 't54',  read_offset: 544, write_offset: 1164, bulk_group: 'timers_main',    bulk_base: 9050 },
+    { addr: 9055, name: 'High temperature alarm delay timer (T55)',  role: 't55',  read_offset: 545, write_offset: 1165, bulk_group: 'timers_main',    bulk_base: 9050 },
+    { addr: 9056, name: 'Wetting ON delay timer (T56)',              role: 't56',  read_offset: 546, write_offset: 1166, bulk_group: 'timers_main',    bulk_base: 9050 },
+    { addr: 9057, name: 'Wetting alarm delay timer (T57)',           role: 't57',  read_offset: 547, write_offset: 1167, bulk_group: 'timers_main',    bulk_base: 9050 },
+    { addr: 9058, name: 'Wetting OFF delay timer (T58)',             role: 't58',  read_offset: 548, write_offset: 1168, bulk_group: 'timers_main',    bulk_base: 9050 },
+    { addr: 9060, name: 'Start delay timer (T60)',                   role: 't60',  read_offset: 549, write_offset: 1169, bulk_group: 'timers_main',    bulk_base: 9050 },
+    { addr: 9061, name: 'Blink period timer (T61)',                  role: 't61',  read_offset: 550, write_offset: 1170, bulk_group: 'timers_main',    bulk_base: 9050 },
+    { addr: 9062, name: 'Humidity control ON/OFF delay timer (T62)', role: 't62',  read_offset: 551, write_offset: 1171, bulk_group: 'timers_main',    bulk_base: 9050 },
+    { addr: 9070, name: 'External command reset delay timer (T70)',  role: 't70',  read_offset: 553, write_offset: 1173, bulk_group: 'timers_main',    bulk_base: 9050 },
+    { addr: 9200, name: 'Wetting ON timer in timer mode (T200)',     role: 't200', read_offset: 554, write_offset: 1174, bulk_group: 'timers_wetting', bulk_base: 9200 },
+    { addr: 9201, name: 'Wetting OFF time in timer mode (T201)',     role: 't201', read_offset: 555, write_offset: 1175, bulk_group: 'timers_wetting', bulk_base: 9200 },
+    { addr: 9500, name: 'Current phase time counter (C0)',           role: 'c0',   read_offset: 556, write_offset: 1176, bulk_group: 'counter_c0',     bulk_base: 9500 }
+  ]
+
+  timer_specs.each do |spec|
+    create_fatek_register.call(
+      {
+        name:              spec[:name],
+        label:             "Timer_#{spec[:role].upcase}",
+        address:           spec[:addr],
+        register_type:     'holding',
+        data_type:         'uint16',
+        value_format:      'numeric',
+        category:          'configuration',
+        read_only:         false,
+        group_name:        'timers',
+        group_role:        spec[:role],
+        bulk_read_group:   spec[:bulk_group],
+        bulk_read_address: spec[:bulk_base],
+        bulk_read_offset:  spec[:addr] - spec[:bulk_base],
+        user_visibility:   'hidden'
+      },
+      read_offset:  spec[:read_offset],
+      write_offset: spec[:write_offset]
+    )
+  end
+
+  # ════════════════════════════════════════════════════════════════════════
+  # Block 9: Coil outputs Y0..Y8 — RO (ladder-driven physical outputs)
+  # Mirrored into slot holding register space via host ST code.
+  # ════════════════════════════════════════════════════════════════════════
+
+  output_specs = [
+    { addr: 0, name: 'Lamp: Process',                   role: 'lamp_process'        },
+    { addr: 1, name: 'Lamp: Alarm',                     role: 'lamp_alarm'          },
+    { addr: 2, name: 'Heating output',                  role: 'heating'             },
+    { addr: 3, name: 'Cooling output',                  role: 'cooling'             },
+    { addr: 4, name: 'Wetting output',                  role: 'wetting'             },
+    { addr: 5, name: 'Buzzer',                          role: 'buzzer'              },
+    { addr: 6, name: 'Lamp: Finish',                    role: 'lamp_finish'         },
+    { addr: 7, name: 'Lamp: Humidity control by timer', role: 'lamp_humidity_timer' },
+    { addr: 8, name: 'Humidity control disabled',       role: 'humidity_disabled'   }
+  ]
+
+  output_specs.each_with_index do |spec, i|
+    create_fatek_register.call(
+      {
+        name:              spec[:name],
+        label:             "Output_#{spec[:role].split('_').map(&:capitalize).join}",
+        address:           spec[:addr],
+        register_type:     'coil',
+        data_type:         'boolean',
+        value_format:      'boolean',
+        category:          'status',
+        read_only:         true,
+        group_name:        'outputs',
+        group_role:        spec[:role],
+        bulk_read_group:   'outputs_y',
+        bulk_read_address: 0,
+        bulk_read_offset:  spec[:addr]
+      },
+      read_offset: 560 + i
+    )
+  end
+
+  # ════════════════════════════════════════════════════════════════════════
+  # Block 10: Memory bits M0..M65 + M800 (mixed RO state + RW commands)
+  # All M0..M65 share bulk_read_group 'memory_bits' for read optimization.
+  # group_name distinguishes 'memory_bits_state' (RO) from
+  # 'memory_bits_command' (RW) for UI grouping.
+  # ════════════════════════════════════════════════════════════════════════
+
+  ro_memory_bits = [
+    { addr: 2000, name: 'Process state',                          role: 'process_state',         offset: 570, visibility: 'visible' },
+    { addr: 2001, name: 'Confirmed state',                        role: 'confirmed_state',       offset: 571, visibility: 'visible' },
+    { addr: 2010, name: 'No operating voltage',                   role: 'no_voltage',            offset: 572, visibility: 'hidden'  },
+    { addr: 2011, name: 'Error copying set points to file',       role: 'copy_sp_error',         offset: 573, visibility: 'hidden'  },
+    { addr: 2012, name: 'Set points copied to file successfully', role: 'copy_sp_ok',            offset: 574, visibility: 'hidden'  },
+    { addr: 2013, name: 'Program changing allowed',               role: 'prog_change_allowed',   offset: 575, visibility: 'visible' },
+    { addr: 2014, name: 'Program 0 selected',                     role: 'prog0_selected',        offset: 576, visibility: 'visible' },
+    { addr: 2015, name: 'All programs loaded',                    role: 'all_progs_loaded',      offset: 577, visibility: 'hidden'  },
+    { addr: 2016, name: 'Program not exists',                     role: 'prog_not_exists',       offset: 578, visibility: 'visible' },
+    { addr: 2017, name: 'Incorrect humidity data',                role: 'bad_humidity_data',     offset: 579, visibility: 'visible' },
+    { addr: 2018, name: 'Incorrect temperature data',             role: 'bad_temp_data',         offset: 580, visibility: 'visible' },
+    { addr: 2020, name: 'Current phase finished',                 role: 'phase_finished',        offset: 581, visibility: 'visible' },
+    { addr: 2049, name: 'Manual sprinkling activated',            role: 'manual_sprinkling',     offset: 597, visibility: 'visible' },
+    { addr: 2050, name: 'Reset executing command',                role: 'exec_reset',            offset: 598, visibility: 'hidden'  },
+    { addr: 2051, name: 'One more minute',                        role: 'one_more_minute',       offset: 599, visibility: 'hidden'  },
+    { addr: 2052, name: 'Heating executing command',              role: 'exec_heating',          offset: 600, visibility: 'visible' },
+    { addr: 2053, name: 'Cooling executing command',              role: 'exec_cooling',          offset: 601, visibility: 'visible' },
+    { addr: 2054, name: 'Low temperature alarm',                  role: 'alarm_low_temp',        offset: 602, visibility: 'visible' },
+    { addr: 2055, name: 'High temperature alarm',                 role: 'alarm_high_temp',       offset: 603, visibility: 'visible' },
+    { addr: 2056, name: 'Wetting ON executing command',           role: 'exec_wetting_on',       offset: 604, visibility: 'visible' },
+    { addr: 2057, name: 'Low humidity alarm',                     role: 'alarm_low_humidity',    offset: 605, visibility: 'visible' },
+    { addr: 2058, name: 'Wetting OFF executing command',          role: 'exec_wetting_off',      offset: 606, visibility: 'hidden'  },
+    { addr: 2059, name: 'Humidity control toggle executing',      role: 'exec_humidity_toggle',  offset: 607, visibility: 'hidden'  },
+    { addr: 2060, name: 'Start executing command',                role: 'exec_start',            offset: 608, visibility: 'hidden'  },
+    { addr: 2061, name: 'Blink bit',                              role: 'blink',                 offset: 609, visibility: 'hidden'  },
+    { addr: 2062, name: 'Auxiliary blink bit',                    role: 'blink_aux',             offset: 610, visibility: 'hidden'  },
+    { addr: 2063, name: 'Alarm conditions',                       role: 'alarm_conditions',      offset: 611, visibility: 'visible' },
+    { addr: 2064, name: 'Prepare data for new phase',             role: 'prep_new_phase',        offset: 612, visibility: 'hidden'  },
+    { addr: 2065, name: 'Process finished',                       role: 'process_finished',      offset: 613, visibility: 'visible' }
+  ]
+
+  ro_memory_bits.each do |spec|
+    create_fatek_register.call(
+      {
+        name:              spec[:name],
+        label:             "MemoryBit_#{spec[:role].split('_').map(&:capitalize).join}",
+        address:           spec[:addr],
+        register_type:     'coil',
+        data_type:         'boolean',
+        value_format:      'boolean',
+        category:          'status',
+        read_only:         true,
+        group_name:        'memory_bits_state',
+        group_role:        spec[:role],
+        bulk_read_group:   'memory_bits',
+        bulk_read_address: 2000,
+        bulk_read_offset:  spec[:addr] - 2000,
+        user_visibility:   spec[:visibility]
+      },
+      read_offset: spec[:offset]
+    )
+  end
+
+  # M800 — Process memorization (separate bulk group: address 2800 is too
+  # far from the M0..M65 block to fit in a single bulk read).
+  create_fatek_register.call(
+    {
+      name:              'Process memorization',
+      label:             'MemoryBit_ProcessMemorization',
+      address:           2800,
+      register_type:     'coil',
+      data_type:         'boolean',
+      value_format:      'boolean',
+      category:          'status',
+      read_only:         true,
+      group_name:        'memory_bits_state',
+      group_role:        'process_memorization',
+      bulk_read_group:   'memory_bit_800',
+      bulk_read_address: 2800,
+      bulk_read_offset:  0,
+      user_visibility:   'hidden'
+    },
+    read_offset: 614
+  )
+
+  # Writable command bits (on-screen buttons + external command bits).
+  # Read offsets sit in the M30..M47 range of the read mirror (582..596);
+  # write offsets are packed in 1177..1191.
+  rw_memory_bits = [
+    { addr: 2030, name: 'Start (on-screen button)',           role: 'start_screen',      read_offset: 582, write_offset: 1177 },
+    { addr: 2031, name: 'Reset (on-screen button)',           role: 'reset_screen',      read_offset: 583, write_offset: 1178 },
+    { addr: 2032, name: 'Confirm (on-screen button)',         role: 'confirm_screen',    read_offset: 584, write_offset: 1179 },
+    { addr: 2033, name: 'Stop (on-screen button)',            role: 'stop_screen',       read_offset: 585, write_offset: 1180 },
+    { addr: 2036, name: 'Manual heating (on-screen)',         role: 'manual_heating',    read_offset: 586, write_offset: 1181 },
+    { addr: 2037, name: 'Manual cooling (on-screen)',         role: 'manual_cooling',    read_offset: 587, write_offset: 1182 },
+    { addr: 2038, name: 'Manual sprinkling (on-screen)',      role: 'manual_sprink',     read_offset: 588, write_offset: 1183 },
+    { addr: 2040, name: 'Start (external command)',           role: 'start_external',    read_offset: 589, write_offset: 1184 },
+    { addr: 2041, name: 'Reset (external command)',           role: 'reset_external',    read_offset: 590, write_offset: 1185 },
+    { addr: 2042, name: 'Confirm (external command)',         role: 'confirm_external',  read_offset: 591, write_offset: 1186 },
+    { addr: 2043, name: 'Stop (external command)',            role: 'stop_external',     read_offset: 592, write_offset: 1187 },
+    { addr: 2044, name: 'Copy SPs to file (external)',        role: 'copy_sp_external',  read_offset: 593, write_offset: 1188 },
+    { addr: 2045, name: 'Read phase SP (external)',           role: 'read_sp_external',  read_offset: 594, write_offset: 1189 },
+    { addr: 2046, name: 'Humidity control mode (external)',   role: 'hum_mode_external', read_offset: 595, write_offset: 1190 },
+    { addr: 2047, name: 'Humidity control OFF (external)',    role: 'hum_off_external',  read_offset: 596, write_offset: 1191 }
+  ]
+
+  rw_memory_bits.each do |spec|
+    create_fatek_register.call(
+      {
+        name:              spec[:name],
+        label:             "MemoryBit_#{spec[:role].split('_').map(&:capitalize).join}",
+        address:           spec[:addr],
+        register_type:     'coil',
+        data_type:         'boolean',
+        value_format:      'boolean',
+        category:          'configuration',
+        read_only:         false,
+        group_name:        'memory_bits_command',
+        group_role:        spec[:role],
+        bulk_read_group:   'memory_bits',
+        bulk_read_address: 2000,
+        bulk_read_offset:  spec[:addr] - 2000
+      },
+      read_offset:  spec[:read_offset],
+      write_offset: spec[:write_offset]
+    )
+  end
+
+  # ════════════════════════════════════════════════════════════════════════
+  # Block 11: Physical input buttons X0..X7 — RO discretes
+  # ════════════════════════════════════════════════════════════════════════
+
+  physical_input_specs = [
+    { addr: 1000, name: 'Start (physical button)',     role: 'start_button',    offset: 620 },
+    { addr: 1001, name: 'Reset (physical button)',     role: 'reset_button',    offset: 621 },
+    { addr: 1002, name: 'Confirm (physical button)',   role: 'confirm_button',  offset: 622 },
+    { addr: 1003, name: 'Stop (physical button)',      role: 'stop_button',     offset: 623 },
+    { addr: 1004, name: 'Humidity timer-mode toggle',  role: 'humidity_toggle', offset: 624 },
+    { addr: 1005, name: 'Manual sprinkling button',    role: 'sprink_button',   offset: 625 },
+    { addr: 1007, name: 'Operating voltage exists',    role: 'voltage_ok',      offset: 626 }
+  ]
+
+  physical_input_specs.each do |spec|
+    create_fatek_register.call(
+      {
+        name:              spec[:name],
+        label:             "Input_#{spec[:role].split('_').map(&:capitalize).join}",
+        address:           spec[:addr],
+        register_type:     'coil',
+        data_type:         'boolean',
+        value_format:      'boolean',
+        category:          'status',
+        read_only:         true,
+        group_name:        'physical_inputs',
+        group_role:        spec[:role],
+        bulk_read_group:   'physical_inputs',
+        bulk_read_address: 1000,
+        bulk_read_offset:  spec[:addr] - 1000,
+        user_visibility:   'hidden'
+      },
+      read_offset: spec[:offset]
+    )
+  end
+
+  # ────────────────────────────────────────────────────────────────────────
+
+  puts "[seed] Eliwell V2 templates: #{eliwell_v2.register_templates.count}"
+  puts "[seed] Fatek templates:      #{fatek_firmware.register_templates.count}"
+  puts "[seed] Eliwell V2 relay mappings: #{eliwell_v2.relay_mappings.count}"
+
 end

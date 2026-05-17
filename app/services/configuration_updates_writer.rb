@@ -57,8 +57,7 @@ class ConfigurationUpdatesWriter
 
     def validate_register_groups!
       pending_values = @updates.each_with_object({}) do |update, hash|
-        mp = @allowed_points[update[:measurement_point_id].to_i]
-        hash[mp.register_template_id] = update[:value]
+        hash[update[:measurement_point_id].to_i] = update[:value]
       end
 
       validator = Validators::RegisterGroupValidator.new(@allowed_points.values, pending_values)

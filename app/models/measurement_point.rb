@@ -349,16 +349,18 @@ class MeasurementPoint < ApplicationRecord
 
   private
     def register_template_matches_modbus_firmware_version
-      if !plc.present? || !register_template.present?
+      if !register_template.present?
         return
       end
 
-      if register_template.modbus_firmware_version_id != plc.modbus_firmware_version_id
-        errors.add(:register_template, "must belong to the PLC's firmware version")
+      owner = modbus_device || plc
+      if !owner.present?
+        return
       end
 
-      if modbus_device.present? && register_template.modbus_firmware_version_id != modbus_device.modbus_firmware_version_id
-        errors.add(:register_template, "must belong to the device's firmware version")
+      if register_template.modbus_firmware_version_id != owner.modbus_firmware_version_id
+        owner_label = modbus_device ? "device's" : "PLC's"
+        errors.add(:register_template, "must belong to the #{owner_label} firmware version")
       end
     end
 
@@ -580,17 +582,18 @@ class MeasurementPoint < ApplicationRecord
 
       modbus_entity = plc ? plc : modbus_device
       rt = register_template
+      offset = modbus_entity.modbus_firmware_version.address_offset
 
       ModbusReadCoordinates.new(
         gateway:              modbus_entity.gateway,
         target_ip:            modbus_entity.private_ip,
         slave_id:             modbus_entity.slave_id,
         register_type:        rt.register_type,
-        address:              rt.address + MODBUS_ADDRESS_OFFSET,
+        address:              rt.address + offset,
         count:                rt.address_count,
         bulk_strategy:        :bulk,
         template_bulk_group:  rt.bulk_read_group.presence,
-        template_bulk_base:   rt.bulk_read_address.present? ? rt.bulk_read_address + MODBUS_ADDRESS_OFFSET : nil,
+        template_bulk_base:   rt.bulk_read_address.present? ? rt.bulk_read_address + offset : nil,
         template_bulk_offset: rt.bulk_read_offset
       )
     end
@@ -625,7 +628,7 @@ class MeasurementPoint < ApplicationRecord
         target_ip:              host_plc.private_ip,
         slave_id:               host_plc.slave_id,
         register_type:          host.relay_register_type,
-        address:                relay_address + MODBUS_ADDRESS_OFFSET,
+        address:                relay_address + host.address_offset,
         count:                  register_template.address_count,
         bulk_strategy:          strategy.to_sym,
         relay_slot_number:      modbus_device.slot_number,
@@ -637,13 +640,14 @@ class MeasurementPoint < ApplicationRecord
       if !entity.gateway.present?
         return nil
       end
+      offset = entity.modbus_firmware_version.address_offset
 
       ModbusWriteCoordinates.new(
         gateway:       entity.gateway,
         target_ip:     entity.private_ip,
         slave_id:      entity.slave_id,
         register_type: register_template.register_type,
-        address:       register_template.address + MODBUS_ADDRESS_OFFSET
+        address:       register_template.address + offset
       )
     end
 
@@ -672,7 +676,7 @@ class MeasurementPoint < ApplicationRecord
         target_ip:     host.private_ip,
         slave_id:      host.slave_id,
         register_type: host_version.relay_register_type,
-        address:       relay_address + MODBUS_ADDRESS_OFFSET
+        address:       relay_address + host_version.address_offset
       )
     end
 end

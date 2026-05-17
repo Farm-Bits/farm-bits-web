@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_05_06_150135) do
+ActiveRecord::Schema[7.2].define(version: 2026_05_12_160924) do
   create_table "action_mailbox_inbound_emails", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "status", default: 0, null: false
     t.string "message_id", null: false
@@ -524,6 +524,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_06_150135) do
   create_table "modbus_firmware_versions", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "version_code", null: false
+    t.integer "address_offset", null: false
     t.string "behavior_profile"
     t.integer "relay_slot_base"
     t.integer "relay_slot_size"
