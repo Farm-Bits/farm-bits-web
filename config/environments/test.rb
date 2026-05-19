@@ -44,6 +44,8 @@ Rails.application.configure do
   # incoming request so you'll need to provide the :host parameter yourself.
   config.action_mailer.default_url_options = { host: "www.example.com" }
 
+  config.action_mailer.default_options = { from: 'app@example.com' }
+
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr
 
@@ -61,4 +63,12 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
+
+  # Active Record Encryption test-only keys.
+  # These are NOT secrets — they exist solely so Plc/Gateway records that use
+  # `encrypts :password` can be saved in tests. Production uses real
+  # credentials from config/credentials.
+  config.active_record.encryption.primary_key         = 'a' * 32
+  config.active_record.encryption.deterministic_key   = 'b' * 32
+  config.active_record.encryption.key_derivation_salt = 'c' * 32
 end

@@ -59,7 +59,7 @@ ActiveRecord::Base.transaction do
   ].freeze
 
   OM_STATUS_REGISTERS = [
-    { name: 'Active Source',  group_role: 'active_source',    data_type: 'uint16', value_format: 'enum',             addr_count: 1, read_only: true, is_status: true, enum_values: ACTIVE_SOURCE_ENUM, read_only_enum_keys: ['0'], description: 'What is currently controlling this output' },
+    { name: 'Active Source',  group_role: 'active_source',    data_type: 'uint16', value_format: 'enum',             addr_count: 1, read_only: true, is_status: true, enum_values: ACTIVE_SOURCE_ENUM, description: 'What is currently controlling this output' },
     { name: 'Error Flags',    group_role: 'error_flags',      data_type: 'uint16', value_format: 'bitmask',          addr_count: 1, read_only: true, is_status: true, enum_values: { '0' => 'Max ON exceeded', '1' => 'Min OFF active', '2' => 'Sensor error', '3' => 'Blackout active' }, description: 'Active safety or error conditions' },
     { name: 'Next Change In', group_role: 'next_change_time', data_type: 'uint32', value_format: 'duration_seconds', addr_count: 2, read_only: true, is_status: true, visibility_conditions: { 'active_source' => ['2', '4', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17'] }, description: 'Seconds until next predicted state change' }
   ].freeze
@@ -104,7 +104,7 @@ ActiveRecord::Base.transaction do
   ].freeze
 
   OM_MANUAL_STATUS_REGISTERS = [
-    { name: 'Command',  group_role: 'command',  data_type: 'uint16', value_format: 'enum',             addr_count: 1, is_status: true, default_value: 0, enum_values: { '0' => 'Idle', '1' => 'On', '2' => 'Timed', '3' => 'Off', '4' => 'Auto' }, description: 'Manual command. PLC resets to None after executing' }
+    { name: 'Command',  group_role: 'command',  data_type: 'uint16', value_format: 'enum',             addr_count: 1, is_status: true, default_value: 0, enum_values: { '0' => 'Idle', '1' => 'On', '2' => 'Timed', '3' => 'Off', '4' => 'Auto' }, read_only_enum_keys: ['0'], description: 'Manual command. PLC resets to None after executing' }
   ].freeze
 
   MODBUS_FIRMWARE_VERSION_ID = ModbusFirmwareVersion.first.id

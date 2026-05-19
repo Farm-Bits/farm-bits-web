@@ -93,7 +93,7 @@ class User < ApplicationRecord
         company_attrs = company_attributes.merge(
           company_users_attributes: [{ user: self, role: Roleable::ROLE_IDS[:admin] }],
         )
-        company = Company.create!(company_attrs)
+        Company.create!(company_attrs)
       rescue ActiveRecord::RecordInvalid => e
         if e.record != self
           if e.record.is_a?(Company)

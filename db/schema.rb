@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_05_12_160924) do
+ActiveRecord::Schema[7.2].define(version: 2026_05_18_115941) do
   create_table "action_mailbox_inbound_emails", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "status", default: 0, null: false
     t.string "message_id", null: false
@@ -299,8 +299,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_12_160924) do
     t.string "name", null: false
     t.string "imei", null: false
     t.string "serial_number", null: false
-    t.string "iccid", null: false
-    t.string "phone_number", null: false
+    t.string "iccid"
+    t.string "phone_number"
     t.string "private_ip", null: false
     t.string "username", null: false
     t.text "password", null: false

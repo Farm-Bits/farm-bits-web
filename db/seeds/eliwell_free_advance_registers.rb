@@ -346,7 +346,7 @@ ActiveRecord::Base.transaction do
       interface_register_mappings_attributes: interface_register_mappings_attributes
     )
   end
-  register_templates = RegisterTemplate.create!(registers)
+  RegisterTemplate.create!(registers)
 
   # Example: Setting up visibility conditions for Analog Input configuration registers
   #

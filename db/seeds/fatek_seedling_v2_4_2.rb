@@ -965,11 +965,4 @@ ActiveRecord::Base.transaction do
       read_offset: spec[:offset]
     )
   end
-
-  # ────────────────────────────────────────────────────────────────────────
-
-  puts "[seed] Eliwell V2 templates: #{eliwell_v2.register_templates.count}"
-  puts "[seed] Fatek templates:      #{fatek_firmware.register_templates.count}"
-  puts "[seed] Eliwell V2 relay mappings: #{eliwell_v2.relay_mappings.count}"
-
 end

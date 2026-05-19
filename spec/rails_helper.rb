@@ -66,4 +66,14 @@ RSpec.configure do |config|
   config.filter_rails_from_backtrace!
   # arbitrary gems may also be filtered via:
   # config.filter_gems_from_backtrace("gem name")
+
+  config.include FactoryBot::Syntax::Methods
+
+  # Load everything in spec/support/
+  Dir[Rails.root.join('spec', 'support', '**', '*.rb')].sort.each { |f| require f }
+
+  # Fresh DB per test
+  config.use_transactional_fixtures = true
+
+  config.filter_run_excluding :smoke
 end

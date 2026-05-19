@@ -7,7 +7,7 @@ ActiveRecord::Base.transaction do
 
   modbus_firmware_version_id = ModbusFirmwareVersion.first.id
   position = RegisterTemplate.where(modbus_firmware_version_id: modbus_firmware_version_id).maximum(:position).to_i + 1
-  register = RegisterTemplate.create!(
+  RegisterTemplate.create!(
     name: 'UTC Offset Minutes',
     label: 'UtcOffsetMinutes',
     description: 'Current UTC offset for site timezone in minutes',

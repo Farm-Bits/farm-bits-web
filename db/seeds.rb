@@ -234,7 +234,7 @@ ActiveRecord::Base.transaction do
     )
   end
 
-  semtech_manufacturer = Manufacturer.create!(
+  Manufacturer.create!(
     name: 'Semtech',
     models_attributes: [{
       name: 'LX40 EMEA',

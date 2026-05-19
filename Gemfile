@@ -33,6 +33,12 @@ group :development, :test do
 
   # Faker is a library for generating fake data such as names, addresses, and phone numbers. It is useful for testing and seeding databases.
   gem 'faker'
+
+  # factory_bot is a fixtures replacement with a straightforward definition syntax.
+  gem 'factory_bot_rails'
+
+  # A gem providing "time travel" and "time freezing" capabilities
+  gem 'timecop'
 end
 
 group :development do
