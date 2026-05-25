@@ -7,10 +7,10 @@
 #   3. Implement the strategy under app/services/read_strategies/
 #
 module RelayReadStrategyRegistry
-  STRATEGIES = %w[contiguous].freeze
+  STRATEGIES = %w[relay_contiguous].freeze
 
   REGISTRY = {
-    contiguous: 'ReadStrategies::RelayContiguousStrategy'
+    relay_contiguous: 'ReadStrategies::RelayContiguousStrategy'
   }.freeze
 
   def self.strategy_for(strategy)

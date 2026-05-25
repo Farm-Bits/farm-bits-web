@@ -24,7 +24,7 @@ ActiveRecord::Base.transaction do
     relay_slot_size: 33,
     relay_max_slots: 8,
     relay_register_type: 'holding',
-    relay_read_strategy: 'contiguous',
+    relay_read_strategy: 'relay_contiguous',
     is_latest: true,
     is_supported: true,
     model: free_advance_model

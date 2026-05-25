@@ -54,7 +54,7 @@ ActiveRecord::Base.transaction do
     relay_slot_size:     1200,
     relay_max_slots:     4,
     relay_register_type: 'holding',
-    relay_read_strategy: 'contiguous',
+    relay_read_strategy: 'relay_contiguous',
     is_latest:           false,
     is_supported:        true,
     model:               eliwell_model
