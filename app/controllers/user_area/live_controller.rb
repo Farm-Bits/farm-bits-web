@@ -11,7 +11,10 @@ class UserArea::LiveController < UserArea::ApplicationController
         register_template: { interface_register_mappings: :interface }
       )
 
-    om_statuses = om_status_scope(includes: [:plc, register_template: { interface_register_mappings: :interface }])
+    om_includes = [:plc, register_template: { interface_register_mappings: :interface }]
+    om_statuses = om_registers_scope(['operation_mode_status'], includes: om_includes)
+    om_configurations = om_registers_scope(['operation_mode_configuration'], includes: om_includes)
+    om_group_labels = build_om_group_labels(om_statuses + om_configurations)
 
     measurement_subtypes = MeasurementSubtype
       .joins(:measurement_type)
@@ -22,6 +25,8 @@ class UserArea::LiveController < UserArea::ApplicationController
     render inertia: 'UserArea/Live/index', props: {
       measurement_points: MeasurementPointSerializer.render_as_hash(measurement_points, view: :with_details_live),
       operation_mode_statuses: MeasurementPointSerializer.render_as_hash(om_statuses, view: :with_details),
+      operation_mode_configurations: MeasurementPointSerializer.render_as_hash(om_configurations, view: :with_details),
+      operation_mode_group_labels: om_group_labels,
       measurement_subtypes: MeasurementSubtypeSerializer.render_as_hash(measurement_subtypes)
     }
   end
@@ -32,7 +37,7 @@ class UserArea::LiveController < UserArea::ApplicationController
     measurement_points = AnalyticsQueryService.eligible_scope(current_site)
       .includes(:register_template, :measurement_subtype)
 
-    om_statuses = om_status_scope(includes: :register_template)
+    om_statuses = om_registers_scope(['operation_mode_status'], includes: :register_template)
 
     render json: {
       measurement_points: MeasurementPointSerializer.render_as_hash(measurement_points, view: :live_poll),
@@ -52,16 +57,29 @@ class UserArea::LiveController < UserArea::ApplicationController
   end
 
   private
-    def om_status_scope(includes:)
+    def om_registers_scope(categories, includes:)
       MeasurementPoint
         .joins(:register_template, plc: { gateway: { site: :company } })
         .where(active: true)
-        .where(register_templates: { category: 'operation_mode_status', user_visibility: 'visible' })
+        .where(register_templates: { category: categories, user_visibility: 'visible' })
         .where(plcs: { active: true })
         .where(gateways: { active: true })
         .where(sites: { id: current_site.id })
         .where(companies: { active: true })
         .includes(includes)
+    end
+
+    def build_om_group_labels(measurement_points)
+      measurement_points
+        .map { |mp| mp.register_template.group_name }
+        .compact
+        .uniq
+        .each_with_object({}) do |name, hash|
+          label = ModbusBehaviors::GroupSchemas.label_for(name)
+          if label.present?
+            hash[name] = label
+          end
+        end
     end
 
     def weather_data

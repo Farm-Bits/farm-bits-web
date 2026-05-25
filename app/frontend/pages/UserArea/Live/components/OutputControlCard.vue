@@ -72,41 +72,35 @@
       </template>
     </div> -->
 
-    <!-- Quick actions (loaded from OM config endpoint) -->
-    <div v-if="omConfigLoaded" class="mp-card__actions">
+    <!-- Quick actions -->
+    <div v-if="omRegisterMappings.length > 0" class="mp-card__actions">
       <QuickActions
         :mappings="omRegisterMappings"
         :group-labels="omGroupLabels"
         @write="handleWrite"
         @bulk-write="handleBulkWrite" />
     </div>
-
-    <!-- Loading indicator while fetching -->
-    <div v-else-if="omConfigLoading" class="text-center py-2">
-      <CSpinner size="sm" color="secondary" />
-    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-  import { ref, computed, onMounted } from 'vue';
-  import axios from 'axios';
+  import { computed } from 'vue';
   import RelativeTime from '@/components/RelativeTime.vue';
   import ValueDisplay from '@/components/ValueDisplay.vue';
   import StatusDisplay from '@/components/OperationMode/features/StatusDisplay.vue';
   import QuickActions from './QuickActions.vue';
   import usePermissions from '@/composables/usePermissions';
-  import { useApiCall } from '@/composables/useApi';
-  import type { LiveMeasurementPoint, OperationModeConfigResponse } from '@/types/analytics';
+  import type { LiveMeasurementPoint } from '@/types/analytics';
   import type { MeasurementPoint } from '@/types/measurementPoint';
   import type { RegisterMapping } from '@/types/plc';
   import type { OmGroupNameOrSlot } from '@/types/operationMode';
-  import { ROUTES } from '@/types/permissions';
   import { iconMap } from '@/assets/icons/measurement';
 
-  const { measurementPoint, omStatuses } = defineProps<{
+  const { measurementPoint, omStatuses, omRegisterMappings, omGroupLabels } = defineProps<{
     measurementPoint: LiveMeasurementPoint;
     omStatuses: LiveMeasurementPoint[];
+    omRegisterMappings: RegisterMapping[];
+    omGroupLabels: Record<OmGroupNameOrSlot | string, string>;
   }>();
 
   const emit = defineEmits<{
@@ -117,55 +111,6 @@
   }>();
 
   const { permissions } = usePermissions();
-  const { execute } = useApiCall();
-
-  // ── OM config data (fetched on mount) ──
-
-  const omConfigLoading = ref(false);
-  const omConfigLoaded = ref(false);
-  const omRegisterMappings = ref<RegisterMapping[]>([]);
-  const omGroupLabels = ref<Record<OmGroupNameOrSlot | string, string>>({});
-
-  onMounted(async () => {
-    await fetchOmConfig();
-  });
-
-  async function fetchOmConfig() {
-    omConfigLoading.value = true;
-    const configPath = ROUTES.measurement_points_operation_mode_config.path
-      .replace(':id', String(measurementPoint.id));
-
-    const { success, data } = await execute<OperationModeConfigResponse>(
-      () => axios.get(configPath)
-    );
-
-    if (success) {
-      omRegisterMappings.value = data.register_mappings;
-      omGroupLabels.value = data.group_labels;
-      omConfigLoaded.value = true;
-    }
-    omConfigLoading.value = false;
-  }
-
-  // ── Public: patch local mappings after successful writes ──
-  //
-  // Called by parent with updated MP data from write responses.
-  // Patches measurement_point.last_value/last_value_at in-place
-  // so QuickActions sees fresh configValues via its watcher.
-
-  function updateMappings(updates: Pick<MeasurementPoint, 'id' | 'last_value' | 'last_value_at'>[]) {
-    for (const update of updates) {
-      const rm = omRegisterMappings.value.find(
-        (m) => m.measurement_point.id === update.id
-      );
-      if (rm) {
-        rm.measurement_point.last_value = update.last_value;
-        rm.measurement_point.last_value_at = update.last_value_at;
-      }
-    }
-  }
-
-  defineExpose({ updateMappings });
 
   // ── Status display (from omStatuses prop — available immediately) ──
 

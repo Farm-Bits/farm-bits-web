@@ -98,9 +98,10 @@
                   :key="mp.id"
                   class="col-sm-6 col-md-4 col-lg-3">
                   <OutputControlCard
-                    :ref="(el: any) => setOutputCardRef(mp.id, el)"
                     :measurement-point="mp"
                     :om-statuses="omStatusesForInterface(mp)"
+                    :om-register-mappings="omMappingsForInterface(mp)"
+                    :om-group-labels="omGroupLabels"
                     @analytics="handleMpClick"
                     @configure="handleConfigureClick"
                     @write="handleQuickWrite"
@@ -178,7 +179,7 @@
   import OutputControlCard from './components/OutputControlCard.vue';
   import { ROUTES } from '@/types/permissions';
   import type { MeasurementPoint, MeasurementSubtype } from '@/types/measurementPoint';
-  import type { MeasurementPointConfigResponse } from '@/types/plc';
+  import type { MeasurementPointConfigResponse, RegisterMapping } from '@/types/plc';
   import type { LiveMeasurementPoint, OperationModeConfigResponse } from '@/types/analytics';
   import { iconMap } from '@/assets/icons/controlGroup';
 
@@ -217,6 +218,8 @@
   const { currentSite, pageProps } = useAuth<{
     measurement_points: LiveMeasurementPoint[];
     operation_mode_statuses: LiveMeasurementPoint[];
+    operation_mode_configurations: LiveMeasurementPoint[];
+    operation_mode_group_labels: Record<string, string>;
     measurement_subtypes: MeasurementSubtype[];
   }>();
   const segments = currentSite.value?.segments || [];
@@ -224,19 +227,13 @@
   const { execute } = useApiCall();
 
   const openSegments = reactive<Record<string, boolean>>({});
-  const outputCardRefs = new Map<number, InstanceType<typeof OutputControlCard>>();
-
-  function setOutputCardRef(mpId: number, el: InstanceType<typeof OutputControlCard> | null) {
-    if (el)
-      outputCardRefs.set(mpId, el);
-    else
-      outputCardRefs.delete(mpId);
-  }
 
   // ── Reactive data ───────────────────────────────
 
   const measurementPoints = ref<LiveMeasurementPoint[]>([...pageProps.value.measurement_points]);
   const omStatuses = ref<LiveMeasurementPoint[]>([...pageProps.value.operation_mode_statuses]);
+  const omConfigurations = ref<LiveMeasurementPoint[]>([...pageProps.value.operation_mode_configurations]);
+  const omGroupLabels = pageProps.value.operation_mode_group_labels;
 
   // Filters
   const selectedSegmentId = ref<number | null>(null);
@@ -269,6 +266,40 @@
       s.interface_communication_type === mp.interface_communication_type &&
       s.interface_io_number === mp.interface_io_number
     );
+  }
+
+  const omMappingsByInterface = computed(() => {
+    const map = new Map<string, RegisterMapping[]>();
+
+    const allOmMps = [...omStatuses.value, ...omConfigurations.value];
+    for (const mp of allOmMps) {
+      if (!mp.interface_communication_type || !mp.interface_io_number)
+        continue;
+
+      const key = `${mp.interface_communication_type}:${mp.interface_io_number}`;
+      if (!map.has(key))
+        map.set(key, []);
+
+      map.get(key)!.push({
+        register_template: mp.register_template,
+        measurement_point: mp,
+        position: mp.register_template.position,
+      });
+    }
+
+    for (const mappings of map.values()) {
+      mappings.sort((a, b) => a.position - b.position);
+    }
+
+    return map;
+  });
+
+  function omMappingsForInterface(mp: LiveMeasurementPoint): RegisterMapping[] {
+    if (!mp.interface_communication_type || !mp.interface_io_number)
+      return [];
+
+    const key = `${mp.interface_communication_type}:${mp.interface_io_number}`;
+    return omMappingsByInterface.value.get(key) ?? [];
   }
 
   // ── Filtering ───────────────────────────────────
@@ -383,7 +414,7 @@
 
   const polling = useLivePolling(
     fetchPollData,
-    { intervalMs: 30000, immediate: false }
+    { intervalMs: 5000, immediate: false }
   );
 
   polling.start();
@@ -416,12 +447,11 @@
       omExisting.last_value = mp.last_value;
       omExisting.last_value_at = mp.last_value_at;
     }
-  }
 
-  function applyWriteResultToCard(anchorMpId: number, updates: MeasurementPoint[]) {
-    const card = outputCardRefs.get(anchorMpId);
-    if (card) {
-      card.updateMappings(updates);
+    const configExisting = omConfigurations.value.find((m) => m.id === mp.id);
+    if (configExisting) {
+      configExisting.last_value = mp.last_value;
+      configExisting.last_value_at = mp.last_value_at;
     }
   }
 
@@ -453,9 +483,6 @@
 
     if (success) {
       applyWriteResult(data);
-      for (const [cardMpId, card] of outputCardRefs) {
-        card.updateMappings([data]);
-      }
       scheduleDelayedPoll();
     }
   }
@@ -488,7 +515,6 @@
         applyWriteResult(sibling);
       }
 
-      applyWriteResultToCard(anchorMpId, data.sibling_measurement_points);
       scheduleDelayedPoll();
     }
   }
@@ -580,8 +606,6 @@
       for (const sibling of data.sibling_measurement_points) {
         applyWriteResult(sibling);
       }
-
-      applyWriteResultToCard(anchorMpId, data.sibling_measurement_points);
 
       omEditedIds.value = new Set();
       omModalVisible.value = false;
