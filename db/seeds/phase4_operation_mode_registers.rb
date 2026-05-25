@@ -8,24 +8,33 @@ ActiveRecord::Base.transaction do
   OM_STATUS_BASE_ADDRESS = 9018
 
   ACTIVE_SOURCE_ENUM = {
-    '0' => 'Auto',
-    '1' => 'Manual On',
-    '2' => 'Manual On (Timed)',
-    '3' => 'Manual Off',
-    '4' => 'Duty Cycle',
-    '5' => 'Sensor Trigger',
-    '6' => 'Scheduled Manual On',
-    '7' => 'Scheduled Duty Cycle',
-    '8' => 'Scheduled Manual On',
-    '9' => 'Scheduled Duty Cycle',
-    '10' => 'Scheduled Manual On',
-    '11' => 'Scheduled Duty Cycle',
-    '12' => 'Scheduled Manual On',
-    '13' => 'Scheduled Duty Cycle',
-    '14' => 'Scheduled Manual On',
-    '15' => 'Scheduled Duty Cycle',
-    '16' => 'Scheduled Manual On',
-    '17' => 'Scheduled Duty Cycle'
+    '0' => 'IO Not Active',
+    '1' => 'Emergency Stop',
+    '2' => 'Blackout',
+    '3' => 'Auto',
+    '4' => 'Manual On',
+    '5' => 'Manual On (Timed)',
+    '6' => 'Manual Off',
+    '7' => 'Duty Cycle',
+    '8' => 'Sensor Trigger',
+    '9' => 'Scheduled Manual On',
+    '10' => 'Scheduled Duty Cycle',
+    '11' => 'Scheduled Manual On',
+    '12' => 'Scheduled Duty Cycle',
+    '13' => 'Scheduled Manual On',
+    '14' => 'Scheduled Duty Cycle',
+    '15' => 'Scheduled Manual On',
+    '16' => 'Scheduled Duty Cycle',
+    '17' => 'Scheduled Manual On',
+    '18' => 'Scheduled Duty Cycle',
+    '19' => 'Scheduled Manual On',
+    '20' => 'Scheduled Duty Cycle'
+  }.freeze
+
+  OM_ERROR_ENUM = {
+    '0' => 'Max ON Exceeded',
+    '1' => 'Min OFF Active',
+    '2' => 'Sensor Error'
   }.freeze
 
   OPERATOR_ENUM = {
@@ -60,7 +69,7 @@ ActiveRecord::Base.transaction do
 
   OM_STATUS_REGISTERS = [
     { name: 'Active Source',  group_role: 'active_source',    data_type: 'uint16', value_format: 'enum',             addr_count: 1, read_only: true, is_status: true, enum_values: ACTIVE_SOURCE_ENUM, description: 'What is currently controlling this output' },
-    { name: 'Error Flags',    group_role: 'error_flags',      data_type: 'uint16', value_format: 'bitmask',          addr_count: 1, read_only: true, is_status: true, enum_values: { '0' => 'Max ON exceeded', '1' => 'Min OFF active', '2' => 'Sensor error', '3' => 'Blackout active' }, description: 'Active safety or error conditions' },
+    { name: 'Error Flags',    group_role: 'error_flags',      data_type: 'uint16', value_format: 'bitmask',          addr_count: 1, read_only: true, is_status: true, enum_values: OM_ERROR_ENUM, description: 'Active safety or error conditions' },
     { name: 'Next Change In', group_role: 'next_change_time', data_type: 'uint32', value_format: 'duration_seconds', addr_count: 2, read_only: true, is_status: true, visibility_conditions: { 'active_source' => ['2', '4', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17'] }, description: 'Seconds until next predicted state change' }
   ].freeze
 
