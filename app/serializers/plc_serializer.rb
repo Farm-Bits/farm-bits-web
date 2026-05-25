@@ -8,7 +8,7 @@ class PlcSerializer < Blueprinter::Base
   view :with_interfaces do
     field :interfaces do |plc|
       InterfaceSerializer.render_as_json(
-        plc.modbus_firmware_version.interfaces,
+        plc.modbus_firmware_version.interfaces.sort_by(&:io_number),
         view: :with_measurement_points,
         plc: plc
       )
