@@ -61,8 +61,16 @@ class MeasurementPointSerializer < Blueprinter::Base
   view :with_details do
     include_view :default
 
-    field :plc_name do |mp|
-      mp.plc&.name
+    field :plc_id do |mp|
+      mp.plc_id
+    end
+
+    field :modbus_device_id do |mp|
+      mp.modbus_device_id
+    end
+
+    field :device_owner_name do |mp|
+      mp.plc&.name || mp.modbus_device&.name
     end
 
     field :interface_communication_type do |mp|

@@ -1,11 +1,13 @@
 import { type MeasurementPoint, type MeasurementSubtype, type ValueType } from './measurementPoint';
-import type { RegisterMapping, SourceIoInfo } from './plc';
-import type { CommunicationType, RegisterTemplate } from './plc';
+import type { CommunicationType, Plc, RegisterMapping, RegisterTemplate, SourceIoInfo } from './plc';
+import type { ModbusDevice } from './modbusDevice';
 import type { OmGroupNameOrSlot } from './operationMode';
 
 export type LiveMeasurementPoint = MeasurementPoint & {
   measurement_subtype: MeasurementSubtype | null;
-  plc_name: string;
+  plc_id: Plc['id'] | null;
+  modbus_device_id: ModbusDevice['id'] | null;
+  device_owner_name: string | null;
   register_template: RegisterTemplate;
   interface_communication_type: CommunicationType | null;
   interface_io_number: number | null;

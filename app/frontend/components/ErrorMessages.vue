@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="page.props.errors" class="alert">
+    <div v-if="page.props.errors && page.props.errors.length > 0" class="alert">
       <ul class="list-disc pl-5">
         <li v-for="(error, index) in page.props.errors" :key="index">
           {{ error }}

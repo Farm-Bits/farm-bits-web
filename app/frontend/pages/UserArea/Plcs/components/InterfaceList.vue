@@ -80,13 +80,13 @@
   import type { LiveMeasurementPoint } from '@/types/analytics';
 
   const {
-    plcName,
+    plc,
     interfaces,
     communicationType,
     segments,
     measurementSubtypes
   } = defineProps<{
-    plcName: string;
+    plc: Plc;
     interfaces: InterfaceWithMeasurementPoints[];
     communicationType: CommunicationType;
     segments: Segment[];
@@ -129,7 +129,9 @@
     historyMeasurementPoints.value = [{
       ...registerMapping.measurement_point,
       measurement_subtype: measurementSubtype ?? null,
-      plc_name: plcName,
+      plc_id: plc.id,
+      modbus_device_id: null,
+      device_owner_name: plc.name,
       register_template: registerMapping.register_template,
       interface_communication_type: communicationType,
       interface_io_number: ioNumber

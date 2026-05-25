@@ -77,7 +77,7 @@
           :key="tab.key"
           :item-key="tab.key">
           <InterfaceList
-            :plcName="plc.name"
+            :plc="plc"
             :interfaces="getInterfacesByType(tab.key)"
             :communicationType="tab.key"
             :segments="segments"

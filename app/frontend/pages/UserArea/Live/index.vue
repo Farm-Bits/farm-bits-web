@@ -263,6 +263,8 @@
       return [];
 
     return omStatuses.value.filter((s) =>
+      s.plc_id === mp.plc_id &&
+      s.modbus_device_id === mp.modbus_device_id &&
       s.interface_communication_type === mp.interface_communication_type &&
       s.interface_io_number === mp.interface_io_number
     );

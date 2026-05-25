@@ -69,8 +69,8 @@ ActiveRecord::Base.transaction do
 
   OM_STATUS_REGISTERS = [
     { name: 'Active Source',  group_role: 'active_source',    data_type: 'uint16', value_format: 'enum',             addr_count: 1, read_only: true, is_status: true, enum_values: ACTIVE_SOURCE_ENUM, description: 'What is currently controlling this output' },
-    { name: 'Error Flags',    group_role: 'error_flags',      data_type: 'uint16', value_format: 'bitmask',          addr_count: 1, read_only: true, is_status: true, enum_values: OM_ERROR_ENUM, description: 'Active safety or error conditions' },
-    { name: 'Next Change In', group_role: 'next_change_time', data_type: 'uint32', value_format: 'duration_seconds', addr_count: 2, read_only: true, is_status: true, visibility_conditions: { 'active_source' => ['2', '4', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17'] }, description: 'Seconds until next predicted state change' }
+    { name: 'Error Flags',    group_role: 'error_flags',      data_type: 'uint16', value_format: 'bitmask',          addr_count: 1, read_only: true, is_status: true, visibility_conditions: { 'error_flags' => ['1', '2', '3', '4', '5', '6', '7', '8'] }, enum_values: OM_ERROR_ENUM, description: 'Active safety or error conditions' },
+    { name: 'Next Change In', group_role: 'next_change_time', data_type: 'uint32', value_format: 'duration_seconds', addr_count: 2, read_only: true, is_status: true, visibility_conditions: { 'active_source' => ['5', '7', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'] }, description: 'Seconds until next predicted state change' }
   ].freeze
 
   OM_MANUAL_REGISTERS = [

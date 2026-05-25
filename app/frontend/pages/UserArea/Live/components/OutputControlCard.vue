@@ -63,15 +63,6 @@
       <p v-show="statusLabels != ''" class="text-body-secondary small">({{ statusLabels }})</p>
     </div>
 
-    <!-- OM Status: enum statuses from read-only status registers -->
-    <!-- <div
-      v-if="statusBadges.length > 0"
-      class="mp-card__om-status d-flex flex-wrap align-items-center gap-2 mb-2">
-      <template v-for="badge in statusBadges" :key="badge.label">
-        <CBadge :color="badge.color" size="sm">{{ badge.label }}</CBadge>
-      </template>
-    </div> -->
-
     <!-- Quick actions -->
     <div v-if="omRegisterMappings.length > 0" class="mp-card__actions">
       <QuickActions
@@ -84,16 +75,19 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed } from 'vue';
+  import { computed, toRef } from 'vue';
   import RelativeTime from '@/components/RelativeTime.vue';
   import ValueDisplay from '@/components/ValueDisplay.vue';
   import StatusDisplay from '@/components/OperationMode/features/StatusDisplay.vue';
   import QuickActions from './QuickActions.vue';
   import usePermissions from '@/composables/usePermissions';
+  import { useRegisterVisibility } from '@/composables/useRegisterVisibility';
+  import { getDisplayValue } from '@/utils/valueConverters';
   import type { LiveMeasurementPoint } from '@/types/analytics';
   import type { MeasurementPoint } from '@/types/measurementPoint';
   import type { RegisterMapping } from '@/types/plc';
   import type { OmGroupNameOrSlot } from '@/types/operationMode';
+  import type { ConfigValues } from '@/composables/useConfigurationValues';
   import { iconMap } from '@/assets/icons/measurement';
 
   const { measurementPoint, omStatuses, omRegisterMappings, omGroupLabels } = defineProps<{
@@ -111,6 +105,13 @@
   }>();
 
   const { permissions } = usePermissions();
+  const { isVisible } = useRegisterVisibility(
+    toRef(() => omRegisterMappings),
+    toRef(() => omStatuses.reduce((acc: ConfigValues, s) => {
+      acc[s.id] = s.last_value;
+      return acc;
+    }, {}))
+  );
 
   // ── Status display (from omStatuses prop — available immediately) ──
 
@@ -118,15 +119,26 @@
     const badges: { label: string; color: string }[] = [];
 
     for (const s of omStatuses) {
-      // Only show read-only status registers with enum values
       if (s.register_template.read_only !== true)
         continue;
 
       if (s.register_template.category !== 'operation_mode_status')
         continue;
 
-      if (s.register_template.value_format === 'enum' && s.register_template.enum_values && s.last_value !== null) {
-        const label = s.register_template.enum_values[String(s.last_value)];
+      const statusIsVisible = isVisible({
+        register_template: s.register_template,
+        measurement_point: s,
+        position: s.position
+      });
+      if (s.last_value !== null && statusIsVisible) {
+        const label = getDisplayValue(
+          s.last_value,
+          s.register_template.value_format,
+          {
+            unit: s.effective_unit,
+            enumValues: s.register_template.enum_values
+          }
+        );
         if (label)
           badges.push({ label, color: 'info' });
       }

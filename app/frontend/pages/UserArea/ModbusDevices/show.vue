@@ -160,7 +160,9 @@
     historyMeasurementPoints.value = [{
       ...mapping.measurement_point,
       measurement_subtype: measurementSubtype ?? null,
-      plc_name: modbusDevice.name,
+      plc_id: null,
+      modbus_device_id: modbusDevice.id,
+      device_owner_name: modbusDevice.name,
       register_template: mapping.register_template,
       interface_communication_type: null,
       interface_io_number: null
