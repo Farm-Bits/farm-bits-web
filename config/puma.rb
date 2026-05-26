@@ -42,7 +42,7 @@ environment ENV.fetch("RAILS_ENV", "development")
 
 # Production-specific configuration
 if ENV["RAILS_ENV"] == "production"
-  bind "unix://tmp/sockets/puma.sock"
+  bind "unix://#{ENV.fetch('PUMA_SOCKET')}"
 else
   port ENV.fetch("PORT", 3000)
 end

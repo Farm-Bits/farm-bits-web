@@ -20,7 +20,9 @@ set :nvm_type, :user
 set :nvm_node, 'v22.13.0'
 set :nvm_map_bins, %w{node npm yarn rake}
 
-append :puma_service_unit_env_vars, "RAILS_ENV=production"
+append :puma_service_unit_env_vars,
+  "RAILS_ENV=production",
+  "PUMA_SOCKET=#{shared_path}/tmp/sockets/puma.sock"
 
 # role-based syntax
 # ==================
