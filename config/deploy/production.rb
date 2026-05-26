@@ -12,10 +12,6 @@ set :user, "deploy"
 set :deploy_to, "/var/www/#{fetch(:application)}"
 set :branch, "main"
 
-set :puma_service_unit_env_vars, %w[
-  RAILS_ENV=production
-]
-
 set :rvm_type, :user
 set :rvm_ruby_version, "3.3.1"
 set :rvm_custom_path, "/usr/share/rvm"
