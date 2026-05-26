@@ -37,3 +37,13 @@ append :linked_dirs, "log", "tmp/pids", "tmp/cache", "tmp/sockets", "public/syst
 
 # Uncomment the following to require manually verifying the host key before first deploy.
 # set :ssh_options, verify_host_key: :secure
+
+# jemalloc - reduces Ruby memory fragmentation by 30-50%
+# Applies to both Puma and Sidekiq systemd units
+jemalloc_env_vars = [
+  'LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2',
+  'MALLOC_CONF=narenas:2,background_thread:true,dirty_decay_ms:1000,muzzy_decay_ms:0'
+]
+
+set :puma_service_unit_env_vars,    jemalloc_env_vars
+set :sidekiq_service_unit_env_vars, jemalloc_env_vars
