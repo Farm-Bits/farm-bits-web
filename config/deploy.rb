@@ -45,5 +45,5 @@ jemalloc_env_vars = [
   'MALLOC_CONF=narenas:2,background_thread:true,dirty_decay_ms:1000,muzzy_decay_ms:0'
 ]
 
-set :puma_service_unit_env_vars,    jemalloc_env_vars
-set :sidekiq_service_unit_env_vars, jemalloc_env_vars
+append :puma_service_unit_env_vars,    *jemalloc_env_vars
+append :sidekiq_service_unit_env_vars, *jemalloc_env_vars
