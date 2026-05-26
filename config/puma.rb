@@ -25,7 +25,7 @@ min_threads_count = ENV.fetch("RAILS_MIN_THREADS") { max_threads_count }
 threads min_threads_count, max_threads_count
 
 # Specifies the number of `workers` to boot in clustered mode
-workers ENV.fetch("WEB_CONCURRENCY", 2)
+workers ENV.fetch("WEB_CONCURRENCY", 1)
 
 # Use the `preload_app!` method when specifying a `workers` number.
 preload_app!
