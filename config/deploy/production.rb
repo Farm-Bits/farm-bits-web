@@ -20,6 +20,8 @@ set :nvm_type, :user
 set :nvm_node, 'v22.13.0'
 set :nvm_map_bins, %w{node npm yarn rake}
 
+append :puma_service_unit_env_vars, "RAILS_ENV=production"
+
 # role-based syntax
 # ==================
 
