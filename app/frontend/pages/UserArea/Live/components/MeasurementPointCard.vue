@@ -34,7 +34,7 @@
       </span>
     </div> -->
 
-    <div class="mp-card__value">
+    <div class="mp-card__value flex items-center gap-2">
       <ValueDisplay
         :value="measurementPoint.last_value"
         :valueFormat="measurementPoint.register_template.value_format"
@@ -42,24 +42,72 @@
         :enumValues="measurementPoint.register_template.enum_values"
         placeholder="No data"
         size="default" />
+      <p v-show="statusLabels !== ''" class="text-body-secondary small mb-0">({{ statusLabels }})</p>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-  import { computed } from 'vue';
+  import { computed, toRef } from 'vue';
   import RelativeTime from '@/components/RelativeTime.vue';
   import ValueDisplay from '@/components/ValueDisplay.vue';
-  import { type LiveMeasurementPoint } from '@/types/analytics';
+  import { useRegisterVisibility } from '@/composables/useRegisterVisibility';
+  import { getDisplayValue } from '@/utils/valueConverters';
+  import type { LiveMeasurementPoint } from '@/types/analytics';
+  import type { RegisterMapping } from '@/types/plc';
+  import type { ConfigValues } from '@/composables/useConfigurationValues';
   import { iconMap } from '@/assets/icons/measurement';
 
-  const { measurementPoint } = defineProps<{
+  const { measurementPoint, interfaceStatuses, registerMappings } = defineProps<{
     measurementPoint: LiveMeasurementPoint;
+    interfaceStatuses: LiveMeasurementPoint[];
+    registerMappings: RegisterMapping[];
   }>();
 
   const emit = defineEmits<{
     (e: 'click', mp: LiveMeasurementPoint): void;
   }>();
+
+  const { isVisible } = useRegisterVisibility(
+    toRef(() => registerMappings),
+    toRef(() => interfaceStatuses.reduce((acc: ConfigValues, s) => {
+      acc[s.id] = s.last_value;
+      return acc;
+    }, {}))
+  );
+
+  const statusBadges = computed<{ label: string; color: string }[]>(() => {
+    const badges: { label: string; color: string }[] = [];
+
+    for (const s of interfaceStatuses) {
+      if (s.register_template.read_only !== true)
+        continue;
+
+      const statusIsVisible = isVisible({
+        register_template: s.register_template,
+        measurement_point: s,
+        position: s.position
+      });
+      if (s.last_value !== null && statusIsVisible) {
+        const label = getDisplayValue(
+          s.last_value,
+          s.register_template.value_format,
+          {
+            unit: s.effective_unit,
+            enumValues: s.register_template.enum_values
+          }
+        );
+        if (label)
+          badges.push({ label, color: 'info' });
+      }
+    }
+
+    return badges;
+  });
+
+  const statusLabels = computed(() => {
+    return statusBadges.value.map((s) => s.label).join(', ');
+  });
 
   const statusDotClass = computed(() => {
     if (!measurementPoint.last_value_at)

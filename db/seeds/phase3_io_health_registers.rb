@@ -80,7 +80,8 @@ ActiveRecord::Base.transaction do
         '0' => 'OK',
         '1' => 'Error',
         '2' => 'Unknown'
-      }
+      },
+      visibility_conditions: { 'health_status' => [0] }
     }
   ].freeze
 

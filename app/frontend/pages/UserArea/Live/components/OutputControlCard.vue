@@ -64,9 +64,9 @@
     </div>
 
     <!-- Quick actions -->
-    <div v-if="omRegisterMappings.length > 0" class="mp-card__actions">
+    <div v-if="omMappings.length > 0" class="mp-card__actions">
       <QuickActions
-        :mappings="omRegisterMappings"
+        :mappings="omMappings"
         :group-labels="omGroupLabels"
         @write="handleWrite"
         @bulk-write="handleBulkWrite" />
@@ -90,10 +90,11 @@
   import type { ConfigValues } from '@/composables/useConfigurationValues';
   import { iconMap } from '@/assets/icons/measurement';
 
-  const { measurementPoint, omStatuses, omRegisterMappings, omGroupLabels } = defineProps<{
+  const { measurementPoint, interfaceStatuses, omStatuses, registerMappings, omGroupLabels } = defineProps<{
     measurementPoint: LiveMeasurementPoint;
+    interfaceStatuses: LiveMeasurementPoint[];
     omStatuses: LiveMeasurementPoint[];
-    omRegisterMappings: RegisterMapping[];
+    registerMappings: RegisterMapping[];
     omGroupLabels: Record<OmGroupNameOrSlot | string, string>;
   }>();
 
@@ -106,11 +107,18 @@
 
   const { permissions } = usePermissions();
   const { isVisible } = useRegisterVisibility(
-    toRef(() => omRegisterMappings),
-    toRef(() => omStatuses.reduce((acc: ConfigValues, s) => {
+    toRef(() => registerMappings),
+    toRef(() => [...omStatuses, ...interfaceStatuses].reduce((acc: ConfigValues, s) => {
       acc[s.id] = s.last_value;
       return acc;
     }, {}))
+  );
+
+  const omMappings = computed(() =>
+    registerMappings.filter((rm) =>
+      rm.register_template.category === 'operation_mode_status' ||
+      rm.register_template.category === 'operation_mode_configuration'
+    )
   );
 
   // ── Status display (from omStatuses prop — available immediately) ──
@@ -118,11 +126,8 @@
   const statusBadges = computed<{ label: string; color: string }[]>(() => {
     const badges: { label: string; color: string }[] = [];
 
-    for (const s of omStatuses) {
+    for (const s of [ ...interfaceStatuses, ...omStatuses]) {
       if (s.register_template.read_only !== true)
-        continue;
-
-      if (s.register_template.category !== 'operation_mode_status')
         continue;
 
       const statusIsVisible = isVisible({

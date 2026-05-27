@@ -66,6 +66,8 @@
                 class="col-sm-6 col-md-4 col-lg-3">
                 <MeasurementPointCard
                   :measurement-point="mp"
+                  :interface-statuses="interfaceStatusesForInterface(mp)"
+                  :register-mappings="mappingsForInterface(mp)"
                   @click="handleMpClick" />
               </div>
             </div>
@@ -99,8 +101,9 @@
                   class="col-sm-6 col-md-4 col-lg-3">
                   <OutputControlCard
                     :measurement-point="mp"
+                    :register-mappings="mappingsForInterface(mp)"
+                    :interface-statuses="interfaceStatusesForInterface(mp)"
                     :om-statuses="omStatusesForInterface(mp)"
-                    :om-register-mappings="omMappingsForInterface(mp)"
                     :om-group-labels="omGroupLabels"
                     @analytics="handleMpClick"
                     @configure="handleConfigureClick"
@@ -207,6 +210,12 @@
       last_value_at: MeasurementPoint['last_value_at'];
       effective_unit: MeasurementPoint['effective_unit'];
     }[];
+    interface_statuses: {
+      id: MeasurementPoint['id'];
+      last_value: MeasurementPoint['last_value'];
+      last_value_at: MeasurementPoint['last_value_at'];
+      effective_unit: MeasurementPoint['effective_unit'];
+    }[];
     operation_mode_statuses: {
       id: MeasurementPoint['id'];
       last_value: MeasurementPoint['last_value'];
@@ -217,6 +226,7 @@
 
   const { currentSite, pageProps } = useAuth<{
     measurement_points: LiveMeasurementPoint[];
+    interface_statuses: LiveMeasurementPoint[];
     operation_mode_statuses: LiveMeasurementPoint[];
     operation_mode_configurations: LiveMeasurementPoint[];
     operation_mode_group_labels: Record<string, string>;
@@ -231,12 +241,25 @@
   // ── Reactive data ───────────────────────────────
 
   const measurementPoints = ref<LiveMeasurementPoint[]>([...pageProps.value.measurement_points]);
+  const interfaceStatuses = ref<LiveMeasurementPoint[]>([...pageProps.value.interface_statuses]);
   const omStatuses = ref<LiveMeasurementPoint[]>([...pageProps.value.operation_mode_statuses]);
   const omConfigurations = ref<LiveMeasurementPoint[]>([...pageProps.value.operation_mode_configurations]);
   const omGroupLabels = pageProps.value.operation_mode_group_labels;
 
   // Filters
   const selectedSegmentId = ref<number | null>(null);
+
+  function interfaceStatusesForInterface(mp: LiveMeasurementPoint): LiveMeasurementPoint[] {
+    if (!mp.interface_communication_type || !mp.interface_io_number)
+      return [];
+
+    return interfaceStatuses.value.filter((s) =>
+      s.plc_id === mp.plc_id &&
+      s.modbus_device_id === mp.modbus_device_id &&
+      s.interface_communication_type === mp.interface_communication_type &&
+      s.interface_io_number === mp.interface_io_number
+    );
+  }
 
   // ── OM detection ────────────────────────────────
 
@@ -270,11 +293,11 @@
     );
   }
 
-  const omMappingsByInterface = computed(() => {
+  const mappingsByInterface = computed(() => {
     const map = new Map<string, RegisterMapping[]>();
 
-    const allOmMps = [...omStatuses.value, ...omConfigurations.value];
-    for (const mp of allOmMps) {
+    const allMps = [...interfaceStatuses.value, ...omStatuses.value, ...omConfigurations.value];
+    for (const mp of allMps) {
       if (!mp.interface_communication_type || !mp.interface_io_number)
         continue;
 
@@ -296,12 +319,12 @@
     return map;
   });
 
-  function omMappingsForInterface(mp: LiveMeasurementPoint): RegisterMapping[] {
+  function mappingsForInterface(mp: LiveMeasurementPoint): RegisterMapping[] {
     if (!mp.interface_communication_type || !mp.interface_io_number)
       return [];
 
     const key = `${mp.interface_communication_type}:${mp.interface_io_number}`;
-    return omMappingsByInterface.value.get(key) ?? [];
+    return mappingsByInterface.value.get(key) ?? [];
   }
 
   // ── Filtering ───────────────────────────────────
@@ -404,6 +427,14 @@
         }
       }
 
+      for (const update of data.interface_statuses) {
+        const mp = interfaceStatuses.value.find((m) => m.id === update.id);
+        if (mp) {
+          mp.last_value = update.last_value;
+          mp.last_value_at = update.last_value_at;
+        }
+      }
+
       for (const update of data.operation_mode_statuses) {
         const mp = omStatuses.value.find((m) => m.id === update.id);
         if (mp) {
@@ -442,6 +473,12 @@
     if (existing) {
       existing.last_value = mp.last_value;
       existing.last_value_at = mp.last_value_at;
+    }
+
+    const interfaceExisting = interfaceStatuses.value.find((m) => m.id === mp.id);
+    if (interfaceExisting) {
+      interfaceExisting.last_value = mp.last_value;
+      interfaceExisting.last_value_at = mp.last_value_at;
     }
 
     const omExisting = omStatuses.value.find((m) => m.id === mp.id);

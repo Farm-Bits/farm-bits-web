@@ -11,9 +11,10 @@ class UserArea::LiveController < UserArea::ApplicationController
         register_template: { interface_register_mappings: :interface }
       )
 
-    om_includes = [:plc, register_template: { interface_register_mappings: :interface }]
-    om_statuses = om_registers_scope(['operation_mode_status'], includes: om_includes)
-    om_configurations = om_registers_scope(['operation_mode_configuration'], includes: om_includes)
+    live_includes = [:plc, register_template: { interface_register_mappings: :interface }]
+    interface_statuses = live_registers_scope(['interface_status'], includes: live_includes)
+    om_statuses = live_registers_scope(['operation_mode_status'], includes: live_includes)
+    om_configurations = live_registers_scope(['operation_mode_configuration'], includes: live_includes)
     om_group_labels = build_om_group_labels(om_statuses + om_configurations)
 
     measurement_subtypes = MeasurementSubtype
@@ -24,6 +25,7 @@ class UserArea::LiveController < UserArea::ApplicationController
 
     render inertia: 'UserArea/Live/index', props: {
       measurement_points: MeasurementPointSerializer.render_as_hash(measurement_points, view: :with_details_live),
+      interface_statuses: MeasurementPointSerializer.render_as_hash(interface_statuses, view: :with_details),
       operation_mode_statuses: MeasurementPointSerializer.render_as_hash(om_statuses, view: :with_details),
       operation_mode_configurations: MeasurementPointSerializer.render_as_hash(om_configurations, view: :with_details),
       operation_mode_group_labels: om_group_labels,
@@ -37,10 +39,12 @@ class UserArea::LiveController < UserArea::ApplicationController
     measurement_points = AnalyticsQueryService.eligible_scope(current_site)
       .includes(:register_template, :measurement_subtype)
 
-    om_statuses = om_registers_scope(['operation_mode_status'], includes: :register_template)
+      interface_statuses = live_registers_scope(['interface_status'], includes: :register_template)
+    om_statuses = live_registers_scope(['operation_mode_status'], includes: :register_template)
 
     render json: {
       measurement_points: MeasurementPointSerializer.render_as_hash(measurement_points, view: :live_poll),
+      interface_statuses: MeasurementPointSerializer.render_as_hash(interface_statuses, view: :live_poll),
       operation_mode_statuses: MeasurementPointSerializer.render_as_hash(om_statuses, view: :live_poll)
     }
   end
@@ -57,7 +61,7 @@ class UserArea::LiveController < UserArea::ApplicationController
   end
 
   private
-    def om_registers_scope(categories, includes:)
+    def live_registers_scope(categories, includes:)
       MeasurementPoint
         .joins(:register_template, plc: { gateway: { site: :company } })
         .where(active: true)
