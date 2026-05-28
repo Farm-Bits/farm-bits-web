@@ -78,10 +78,13 @@ ActiveRecord::Base.transaction do
       default_value: 0,
       enum_values: {
         '0' => 'OK',
-        '1' => 'Error',
-        '2' => 'Unknown'
+        '1' => 'Device Disconnected',
+        '2' => 'Error Value Detected',
+        '3' => 'Error Value Detected',
+        '4' => 'Error Value Detected',
+        '5' => 'Error Value Detected'
       },
-      visibility_conditions: { 'health_status' => [0] }
+      visibility_conditions: { 'health_status' => ['1', '2', '3', '4', '5'] }
     }
   ].freeze
 

@@ -106,9 +106,9 @@
     measurement_subtypes: MeasurementSubtype[];
     weather_station_api_metrics: WeatherStationApiMetric[];
   }>();
-  const segments = currentSite.value?.segments || [];
-  const allMeasurementPoints = pageProps.value.measurement_points;
-  const weatherStationApiMetrics = pageProps.value.weather_station_api_metrics;
+  const segments = computed(() => currentSite.value?.segments || []);
+  const allMeasurementPoints = computed(() => pageProps.value.measurement_points);
+  const weatherStationApiMetrics = computed(() => pageProps.value.weather_station_api_metrics);
 
   // Filters
   const selectedSegmentId = ref<Segment['id'] | null>(null);
@@ -118,7 +118,7 @@
   const selectedWeatherStationApiMetricIds = ref<WeatherStationApiMetric['id'][]>([]);
 
   const isSingleDay = computed(() => dateRange.value.start === dateRange.value.end);
-  const hasWeatherStationApiMetrics = computed(() => weatherStationApiMetrics.length > 0);
+  const hasWeatherStationApiMetrics = computed(() => weatherStationApiMetrics.value.length > 0);
 
   // Analytics data
   const analytics = useAnalyticsData();
@@ -127,9 +127,9 @@
   // Filtered measurement points
   const filteredMeasurementPoints = computed<LiveMeasurementPoint[]>(() => {
     if (selectedSegmentId.value === null)
-      return allMeasurementPoints;
+      return allMeasurementPoints.value;
 
-    return allMeasurementPoints.filter(
+    return allMeasurementPoints.value.filter(
       (mp) => mp.segment_id === selectedSegmentId.value
     );
   });
@@ -152,7 +152,7 @@
       map.get(key)!.push(mp);
     }
     const groupsResult = Array.from(map.entries()).map(([key, groupMps]) => {
-      const segment = segments.find((s) => String(s.id) === key);
+      const segment = segments.value.find((s) => String(s.id) === key);
       return {
         key,
         label: segment?.name ?? 'Unassigned',
@@ -160,7 +160,7 @@
       };
     });
 
-    const weatherOverlaySerieDefinitions: SerieDefinition[] = weatherStationApiMetrics
+    const weatherOverlaySerieDefinitions: SerieDefinition[] = weatherStationApiMetrics.value
       .filter((metric) => selectedWeatherStationApiMetricIds.value.includes(metric.id))
       .map((metric) => ({
         id: -metric.id, // Negative ID to avoid conflicts with measurement points
@@ -227,7 +227,7 @@
     const mpIds = filteredMeasurementPoints.value.map((mp) => mp.id);
 
     const hasMP = mpIds.length > 0;
-    const hasWeather = weatherStationApiMetrics.length > 0;
+    const hasWeather = weatherStationApiMetrics.value.length > 0;
 
     if (!hasMP && !hasWeather) {
       analytics.clear();

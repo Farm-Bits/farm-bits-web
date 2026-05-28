@@ -111,7 +111,7 @@
     plc: PlcWithInterfaces;
     measurementSubtypes: MeasurementSubtype[];
   }>();
-  const segments = currentSite.value?.segments || [];
+  const segments = computed(() => currentSite.value?.segments || []);
 
   const plc = computed(() => pageProps.value.plc);
   const measurementSubtypes = computed(() => pageProps.value.measurementSubtypes);

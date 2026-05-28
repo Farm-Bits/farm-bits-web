@@ -156,22 +156,8 @@
   }>(), {
     size: 'default'
   });
-  const {
-    modelValue,
-    valueFormat,
-    dataType,
-    unit,
-    enumValues,
-    minValue,
-    maxValue,
-    defaultValue,
-    addressCount,
-    disabled,
-    invalid,
-    size
-  } = props;
 
-  const rootClasses = computed(() => [`value-edit--${size}`]);
+  const rootClasses = computed(() => [`value-edit--${props.size}`]);
 
   const emit = defineEmits<{
     (eventName: 'update:modelValue', value: string | number | null): void;
@@ -179,10 +165,10 @@
 
   const fieldId = `field-${Math.random().toString(36).substring(7)}`;
 
-  const editValue = ref(modelValue);
+  const editValue = ref(props.modelValue);
 
   const numericStep = computed(() => {
-    const dataTypeTmp = dataType ?? '';
+    const dataTypeTmp = props.dataType ?? '';
     if (dataTypeTmp.includes('float') || dataTypeTmp.includes('double'))
       return 'any';
 
@@ -190,15 +176,15 @@
   });
 
   const maxStringLength = computed(() => {
-    if (valueFormat === 'ascii_string' && addressCount)
-      return addressCount * 2;
+    if (props.valueFormat === 'ascii_string' && props.addressCount)
+      return props.addressCount * 2;
 
     return null;
   });
 
   const placeholder = computed(() => {
-    if (defaultValue)
-      return `Default: ${defaultValue}`;
+    if (props.defaultValue)
+      return `Default: ${props.defaultValue}`;
 
     return 'Enter value';
   });
@@ -208,10 +194,10 @@
   });
 
   const booleanLabel = computed(() => {
-    if (!unit)
+    if (!props.unit)
       return booleanEditValue.value ? 'Enabled' : 'Disabled';
 
-    const options = unit.split('/');
+    const options = props.unit.split('/');
     const index = booleanEditValue.value ? 1 : 0;
     return options[index] ?? (booleanEditValue.value ? 'Enabled' : 'Disabled');
   });
@@ -262,13 +248,16 @@
 
   function handleDurationChange(part: 'hours' | 'minutes' | 'seconds', value: string) {
     const currentParts = durationParts.value;
-    const newValue = parseInt(value, 10) || 0;
-    const updated = { ...currentParts, [part]: newValue };
+    const newPartValue = parseInt(value, 10) || 0;
+    const updated = { ...currentParts, [part]: newPartValue };
     const converted = valueConverters.durationSeconds.fromEdit(updated);
+    // ✅ Update local ref immediately so durationParts recomputes before the
+    //    parent round-trip — prevents sibling inputs resetting mid-edit
+    editValue.value = converted;
     emit('update:modelValue', converted);
   }
 
-  watch(() => modelValue, (newValue) => {
+  watch(() => props.modelValue, (newValue) => {
     editValue.value = newValue;
   }, { immediate: true });
 </script>

@@ -89,13 +89,13 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref } from 'vue';
+  import { computed, ref } from 'vue';
   import axios from 'axios';
   import MeasurementRow from '@/components/MeasurementRow.vue';
   // import MeasurementPointSimpleForm from '@/components/MeasurementPointSimpleForm/index.vue';
   import MeasurementPointAnalyticsModal from '@/components/MeasurementPointAnalyticsModal.vue';
   import usePermissions from '@/composables/usePermissions';
-    import useAuth from '@/composables/useAuth';
+  import useAuth from '@/composables/useAuth';
   import { useApiCall } from '@/composables/useApi';
   import type { MeasurementPoint, MeasurementSubtype } from '@/types/measurementPoint';
   import type { Segment } from '@/types/location';
@@ -109,8 +109,10 @@
     segments: Segment[];
     measurementSubtypes: MeasurementSubtype[];
   }>();
-  const segments = currentSite.value?.segments || [];
-  const { modbusDevice, registerMappings, measurementSubtypes } = pageProps.value;
+  const segments = computed(() => currentSite.value?.segments || []);
+  const modbusDevice = computed(() => pageProps.value.modbusDevice);
+  const registerMappings = computed(() => pageProps.value.registerMappings);
+  const measurementSubtypes = computed(() => pageProps.value.measurementSubtypes);
 
   const { permissions } = usePermissions();
   const { execute } = useApiCall();
@@ -138,7 +140,7 @@
     updatedById.set(updatedMeasurementPoint.id, updatedMeasurementPoint);
     siblingMeasurementPoints.forEach((mp) => updatedById.set(mp.id, mp));
 
-    registerMappings.forEach((mapping) => {
+    registerMappings.value.forEach((mapping) => {
       const updated = updatedById.get(mapping.measurement_point.id);
       if (updated) {
         Object.assign(mapping.measurement_point, updated);
@@ -154,15 +156,15 @@
   const historyMeasurementPoints = ref<LiveMeasurementPoint[]>([]);
 
   function openHistoryModal(mapping: RegisterMapping) {
-    const measurementSubtype = measurementSubtypes.find(
+    const measurementSubtype = measurementSubtypes.value.find(
       (subtype) => subtype.id === mapping.measurement_point.measurement_subtype_id
     );
     historyMeasurementPoints.value = [{
       ...mapping.measurement_point,
       measurement_subtype: measurementSubtype ?? null,
       plc_id: null,
-      modbus_device_id: modbusDevice.id,
-      device_owner_name: modbusDevice.name,
+      modbus_device_id: modbusDevice.value.id,
+      device_owner_name: modbusDevice.value.name,
       register_template: mapping.register_template,
       interface_communication_type: null,
       interface_io_number: null
@@ -183,7 +185,7 @@
     isRefreshing.value = true;
 
     await execute(
-      () => axios.post(`/user/modbus_devices/${modbusDevice.id}/refresh_values`),
+      () => axios.post(`/user/modbus_devices/${modbusDevice.value.id}/refresh_values`),
       {
         showSuccessToast: true,
         successMessage: 'Refresh started',

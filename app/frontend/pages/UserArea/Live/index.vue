@@ -232,7 +232,7 @@
     operation_mode_group_labels: Record<string, string>;
     measurement_subtypes: MeasurementSubtype[];
   }>();
-  const segments = currentSite.value?.segments || [];
+  const segments = computed(() => currentSite.value?.segments || []);
 
   const { execute } = useApiCall();
 
@@ -389,7 +389,7 @@
 
     return Array.from(map.entries())
       .map(([key, groupMps]) => {
-        const segment = segments.find((s) => String(s.id) === key);
+        const segment = segments.value.find((s) => String(s.id) === key);
         const sensorMps = groupMps.filter((mp) => !hasOperationMode(mp));
         const controlMps = groupMps.filter((mp) => hasOperationMode(mp));
 
@@ -403,8 +403,8 @@
         };
       })
       .sort((a, b) => {
-        const segA = segments.find((s) => String(s.id) === a.key);
-        const segB = segments.find((s) => String(s.id) === b.key);
+        const segA = segments.value.find((s) => String(s.id) === a.key);
+        const segB = segments.value.find((s) => String(s.id) === b.key);
         const posA = segA?.position ?? Infinity;
         const posB = segB?.position ?? Infinity;
         return posA - posB;
