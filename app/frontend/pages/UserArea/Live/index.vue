@@ -263,22 +263,30 @@
 
   // ── OM detection ────────────────────────────────
 
+  function interfaceKey(mp: LiveMeasurementPoint) {
+    if (!mp.interface_communication_type || !mp.interface_io_number)
+      return null;
+
+    return `${mp.plc_id}:${mp.modbus_device_id}:${mp.interface_communication_type}:${mp.interface_io_number}`;
+  }
+
   const omInterfaceIndex = computed(() => {
     const index = new Set<string>();
     for (const s of omStatuses.value) {
-      if (s.interface_communication_type && s.interface_io_number)
-        index.add(`${s.interface_communication_type}:${s.interface_io_number}`);
+      const key = interfaceKey(s);
+      if (key)
+        index.add(key);
     }
     return index;
   });
 
-  function hasOperationMode(mp: LiveMeasurementPoint): boolean {
-    if (!mp.interface_communication_type || !mp.interface_io_number)
+  function hasOperationMode(mp: LiveMeasurementPoint) {
+    const key = interfaceKey(mp);
+
+    if (!key)
       return false;
 
-    return omInterfaceIndex.value.has(
-      `${mp.interface_communication_type}:${mp.interface_io_number}`
-    );
+    return omInterfaceIndex.value.has(key);
   }
 
   function omStatusesForInterface(mp: LiveMeasurementPoint): LiveMeasurementPoint[] {
@@ -298,10 +306,10 @@
 
     const allMps = [...interfaceStatuses.value, ...omStatuses.value, ...omConfigurations.value];
     for (const mp of allMps) {
-      if (!mp.interface_communication_type || !mp.interface_io_number)
+      const key = interfaceKey(mp);
+      if (!key)
         continue;
 
-      const key = `${mp.interface_communication_type}:${mp.interface_io_number}`;
       if (!map.has(key))
         map.set(key, []);
 
@@ -320,10 +328,10 @@
   });
 
   function mappingsForInterface(mp: LiveMeasurementPoint): RegisterMapping[] {
-    if (!mp.interface_communication_type || !mp.interface_io_number)
+    const key = interfaceKey(mp);
+    if (!key)
       return [];
 
-    const key = `${mp.interface_communication_type}:${mp.interface_io_number}`;
     return mappingsByInterface.value.get(key) ?? [];
   }
 

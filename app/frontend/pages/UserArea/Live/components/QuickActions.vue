@@ -87,7 +87,7 @@
     useQuickActions,
     type CommandGroup,
     type CommandAction,
-    type FeatureToggle,
+    type FeatureToggle
   } from '@/composables/useQuickActions';
   import CommandParamsModal from './CommandParamsModal.vue';
 
