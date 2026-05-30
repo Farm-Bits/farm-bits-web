@@ -6,7 +6,7 @@
 #
 class ModbusPollingJob
   include Sidekiq::Job
-  sidekiq_options queue: 'default'
+  sidekiq_options queue: 'default', retry: false
 
   def perform
     mps = MeasurementPoint

@@ -14,7 +14,7 @@
 #
 class ModbusEndpointReadJob
   include Sidekiq::Job
-  sidekiq_options queue: 'default', retry: 3
+  sidekiq_options queue: 'default', retry: false
 
   def perform(measurement_point_ids)
     mps = MeasurementPoint
