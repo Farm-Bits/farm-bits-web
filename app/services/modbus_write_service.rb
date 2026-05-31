@@ -22,6 +22,7 @@ class ModbusWriteService
 
     entries  = apply_behavior_transforms(entries)
     prepared = prepare_entries(entries)
+    ensure_gateways_addressable!(prepared)
     old_values = capture_old_values(prepared)
 
     by_endpoint = prepared.group_by { |e| e[:write_coordinates].endpoint_key }
@@ -93,6 +94,24 @@ class ModbusWriteService
           write_coordinates: coords
         }
       end
+    end
+
+    # Pre-flight connectivity gate. Raises before any wire activity if any
+    # target gateway is known-down, so a disconnected gateway never produces
+    # a wasted Modbus attempt. ConnectionError < WriteError, so sync_write!
+    # and bulk callers handle it on the existing error path.
+    def ensure_gateways_addressable!(prepared)
+      unaddressable = prepared
+        .map { |e| e[:write_coordinates].gateway }
+        .uniq(&:id)
+        .reject(&:addressable?)
+
+      if unaddressable.empty?
+        return
+      end
+
+      labels = unaddressable.map { |g| "#{g.label} (#{g.connection_status})" }.join(', ')
+      raise ConnectionError, "Gateway not connected, write not attempted: #{labels}"
     end
 
     def capture_old_values(prepared)

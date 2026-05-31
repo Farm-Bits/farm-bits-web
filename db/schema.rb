@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_05_18_115941) do
+ActiveRecord::Schema[7.2].define(version: 2026_05_31_124033) do
   create_table "action_mailbox_inbound_emails", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "status", default: 0, null: false
     t.string "message_id", null: false
@@ -304,6 +304,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_18_115941) do
     t.string "private_ip", null: false
     t.string "username", null: false
     t.text "password", null: false
+    t.string "connection_status", default: "unknown", null: false
+    t.datetime "connection_status_updated_at"
     t.datetime "last_seen_at"
     t.boolean "active", default: true, null: false
     t.bigint "model_id", null: false
@@ -311,6 +313,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_18_115941) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["active"], name: "index_gateways_on_active"
+    t.index ["connection_status"], name: "index_gateways_on_connection_status"
     t.index ["iccid"], name: "index_gateways_on_iccid", unique: true
     t.index ["imei"], name: "index_gateways_on_imei", unique: true
     t.index ["label"], name: "index_gateways_on_label", unique: true

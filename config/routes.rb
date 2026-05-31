@@ -126,6 +126,10 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
+      namespace :hooks do
+        post 'gateway_status', to: 'gateway_status#update'
+      end
+
       resources :plc_data, only: [:create]
     end
 

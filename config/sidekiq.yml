@@ -20,6 +20,11 @@ scheduler:
       class: ModbusPollingJob
       queue: default
 
+    gateway_status_sync:
+      cron: '*/5 * * * *'
+      class: GatewayStatusSyncJob
+      queue: default
+
     site_sun_data_sync:
       cron: '0 2 * * *'
       class: SiteSunDataSyncJob
@@ -31,12 +36,12 @@ scheduler:
       queue: default
 
     hourly_aggregation:
-      cron: '5 * * * *'
+      cron: '1 * * * *'
       class: HourlyAggregationJob
       queue: low
 
     weather_station_api_hourly_aggregation:
-      cron: "5 * * * *"
+      cron: "3 * * * *"
       class: WeatherStationApiHourlyAggregationJob
       queue: low
 

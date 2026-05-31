@@ -18,10 +18,20 @@ module ModbusReadEnqueuer
       .select { |mp| mp.read_coordinates.present? }
       .group_by { |mp| mp.read_coordinates.endpoint_key }
 
+    enqueued = 0
+
     by_endpoint.each_value do |group|
+      gateway = group.first.read_coordinates.gateway
+
+      if !gateway.addressable?
+        Rails.logger.warn "Skipping Modbus read for #{gateway.full_name} (#{gateway.id}) due to connection status '#{gateway.connection_status}'"
+        next
+      end
+
       ModbusEndpointReadJob.perform_async(group.map(&:id))
+      enqueued += 1
     end
 
-    by_endpoint.size
+    enqueued
   end
 end

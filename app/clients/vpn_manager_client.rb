@@ -19,6 +19,27 @@ class VpnManagerClient
     @api_token = ENV['VPN_MANAGER_API_TOKEN']
   end
 
+  # Fetches connection status for every gateway the VPN manager knows about.
+  # Backstop for the status-push webhook; matched locally by label.
+  #
+  # @return [Array<Hash>] [{ label:, connection_status:, last_connected_at: }, ...]
+  def gateway_statuses
+    rows = get('/api/v1/gateways')
+
+    if !rows.is_a?(Array)
+      raise Error, "Unexpected gateways index response: #{rows.class}"
+    end
+
+    rows.map do |row|
+      {
+        label:             row['label'],
+        connection_status: row['connection_status'],
+        last_connected_at: row['last_connected_at'],
+        remote_updated_at: row['updated_at']
+      }
+    end
+  end
+
   # Generic bulk Modbus read at a given endpoint. Reads are pre-built by the
   # caller (typically ModbusEndpointReadService via ReadStrategies).
   #
@@ -127,6 +148,19 @@ class VpnManagerClient
   end
 
   private
+    def get(path)
+      response = self.class.get(path, {
+        headers: {
+          'Content-Type'  => 'application/json',
+          'Authorization' => "Bearer #{@api_token}"
+        },
+        timeout:      30,
+        open_timeout: 10
+      })
+
+      handle_response(response)
+    end
+
     def post(path, body)
       response = self.class.post(path, {
         headers: {

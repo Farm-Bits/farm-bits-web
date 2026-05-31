@@ -9,6 +9,7 @@ test:
   ENABLE_WRITE_VPN_MANAGER: 'false'
   VPN_MANAGER_BASE_URL: http://localhost:5000
   VPN_MANAGER_API_TOKEN: CCC
+  VPN_HOOK_SECRET: DDD
 
 development:
   HOSTNAME: localhost:3000
@@ -21,3 +22,4 @@ development:
   ENABLE_WRITE_VPN_MANAGER: 'false'
   VPN_MANAGER_BASE_URL: http://localhost:5000
   VPN_MANAGER_API_TOKEN: CCC
+  VPN_HOOK_SECRET: DDD
