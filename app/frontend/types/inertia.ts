@@ -25,6 +25,8 @@ export type SiteWithSegments = Site & {
 declare module '@inertiajs/core' {
   interface PageProps {
     userScope?: UserScope;
+    currentController?: string;
+    currentAction?: string;
     currentUser?: User;
     currentCompany?: Company;
     currentRole?: Role;

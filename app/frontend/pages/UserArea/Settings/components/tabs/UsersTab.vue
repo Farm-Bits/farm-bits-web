@@ -222,12 +222,12 @@
   import useAuth from '@/composables/useAuth';
   import usePermissions from '@/composables/usePermissions';
   import { useApiCall } from '@/composables/useApi';
-  import { ROLES, type Role, ROUTES } from '@/types/permissions';
+  import { ROLES, type Role } from '@/types/permissions';
   import InviteUserModal from '../modals/InviteUserModal.vue';
   import ChangeRoleModal from '../modals/ChangeRoleModal.vue';
   import type { CompanyUser, Invitation } from '../types/invitation';
 
-  const { currentUser, currentRole, accessibleSites } = useAuth();
+  const { currentUser, currentRole, accessibleSites, routePath } = useAuth();
   const { permissions } = usePermissions();
   const { execute } = useApiCall();
 
@@ -335,7 +335,7 @@
 
     isDeletingCompanyUser.value = true;
 
-    const url = ROUTES.company_users_destroy.path.replace(':id', String(companyUserToDelete.value.id));
+    const url = routePath('company_users_destroy', { id: companyUserToDelete.value.id });
     const { success } = await execute(
       () => axios.delete(url),
       {
@@ -363,7 +363,7 @@
   }
 
   async function resendInvitation(invitation: Invitation) {
-    const url = ROUTES.invitations_resend.path.replace(':id', String(invitation.id));
+    const url = routePath('invitations_resend', { id: invitation.id });
     await execute(
       () => axios.put(url),
       {
@@ -381,7 +381,7 @@
 
     isDeletingInvitation.value = true;
 
-    const url = ROUTES.invitations_destroy.path.replace(':id', String(invitationToDelete.value.id));
+    const url = routePath('invitations_destroy', { id: invitationToDelete.value.id });
     const { success } = await execute(
       () => axios.delete(url),
       {
@@ -412,7 +412,7 @@
 
   async function loadCompanyUsers() {
     const { success, data } = await execute<CompanyUser[]>(
-      () => axios.get(ROUTES.company_users_index.path),
+      () => axios.get(routePath('company_users_index')),
       { errorTitle: 'Load Users Error',   showErrorToast: true }
     );
 
@@ -425,7 +425,7 @@
       return;
 
     const { success, data } = await execute<Invitation[]>(
-      () => axios.get(ROUTES.invitations_index.path),
+      () => axios.get(routePath('invitations_index')),
       { errorTitle: 'Load Invitations Error', showErrorToast: true }
     );
 

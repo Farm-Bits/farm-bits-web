@@ -96,7 +96,7 @@
   import { useConfigurationValues } from '@/composables/useConfigurationValues';
   import { useApiCall } from '@/composables/useApi';
   import { formatGroupName } from '@/utils/registerUtils';
-  import { ROUTES } from '@/types/permissions';
+  import useAuth from '@/composables/useAuth';
   import type { MeasurementPoint } from '@/types/measurementPoint';
   import type { PlcWithInterfaces, RegisterMapping } from '@/types/plc';
 
@@ -105,6 +105,7 @@
   }>();
 
   const { execute } = useApiCall();
+  const { routePath } = useAuth();
 
   const configurationMappings = computed(() => {
     return plc.register_mappings.filter(registerMapping => {
@@ -201,11 +202,7 @@
 
     isSaving[measurementPointId] = true;
 
-    const url = ROUTES.measurement_points_write.path.replace(
-      ':id',
-      String(measurementPointId)
-    );
-
+    const url = routePath('measurement_points_write', { id: measurementPointId });
     const { success, data } = await execute<MeasurementPoint>(
       () => axios.post(url, { value: editValues[measurementPointId] }),
       {

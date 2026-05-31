@@ -142,7 +142,7 @@
   import usePermissions from '@/composables/usePermissions';
   import { type Company } from '@/types/inertia';
 
-  const { paths, currentCompany } = useAuth();
+  const { paths, currentCompany, routePath } = useAuth();
   const { permissions } = usePermissions();
 
   type CompanyField = Exclude<keyof Company, 'id'>;
@@ -216,7 +216,7 @@
 
     formData.transform((data) => {
       return { company: { [field]: data.company[field] } };
-    }).put(paths.value.actions.companySetup, {
+    }).put(routePath('company_setup_update'), {
       onSuccess: () => {
         originalData.company[field] = formData.company[field];
         editingFields.company[field] = false;

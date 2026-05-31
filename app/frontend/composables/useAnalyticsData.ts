@@ -1,7 +1,7 @@
 import { ref } from 'vue';
 import axios from 'axios';
 import { useApiCall } from '@/composables/useApi';
-import { ROUTES } from '@/types/permissions';
+import useAuth from '@/composables/useAuth';
 import type {
   AnalyticsSummary,
   HourlyAggregation,
@@ -30,6 +30,7 @@ export function useAnalyticsData() {
   const error = ref<string | null>(null);
 
   const { execute } = useApiCall();
+  const { routePath } = useAuth();
 
   async function fetchHourly(
     mpIds: MeasurementPoint['id'][],
@@ -46,7 +47,7 @@ export function useAnalyticsData() {
 
     const { success, error: apiError, data } = await execute<HourlyResponse>(
       () => axios.get(
-        ROUTES.analytics_hourly.path,
+        routePath('analytics_hourly'),
         {
           params: {
             measurement_point_ids: mpIds,
@@ -84,7 +85,7 @@ export function useAnalyticsData() {
 
     const { success, error: apiError, data } = await execute<RawValueResponse>(
       () => axios.get(
-        ROUTES.analytics_raw.path,
+        routePath('analytics_raw'),
         {
           params: {
             measurement_point_ids: mpIds,

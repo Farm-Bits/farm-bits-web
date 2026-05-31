@@ -14,14 +14,14 @@
 
     <CSidebarNav>
       <CNavItem v-if="permissions?.live.show">
-        <Link :href="ROUTES.live_show.path" class="nav-link">
+        <Link :href="routePath('live_show')" :class="['nav-link', { active: isActive(['live']) }]">
           <CIcon customClassName="nav-icon" name="cilRss" />
           Live Data
         </Link>
       </CNavItem>
 
       <CNavItem v-if="permissions?.alerts.show">
-        <Link :href="ROUTES.alerts_index.path" class="nav-link">
+        <Link :href="routePath('alerts_index')" :class="['nav-link', { active: isActive(['alerts', 'alert_rules']) }]">
           <CIcon customClassName="nav-icon" name="cilBellExclamation" />
           Alerts
           <CBadge v-if="openAlertCount > 0" color="danger" class="ms-auto">
@@ -31,35 +31,25 @@
       </CNavItem>
 
       <CNavItem v-if="permissions?.programs.index">
-        <Link :href="ROUTES.programs_index.path" class="nav-link">
+        <Link :href="routePath('programs_index')" :class="['nav-link', { active: isActive(['programs']) }]">
           <CIcon customClassName="nav-icon" name="cilList" />
           Programs
         </Link>
       </CNavItem>
 
       <CNavItem v-if="permissions?.analytics.show">
-        <Link :href="ROUTES.analytics_show.path" class="nav-link">
+        <Link :href="routePath('analytics_show')" :class="['nav-link', { active: isActive(['analytics']) }]">
           <CIcon customClassName="nav-icon" name="cilBarChart" />
           Analytics
         </Link>
       </CNavItem>
 
       <CNavItem v-if="permissions?.devices.index">
-        <Link :href="ROUTES.devices_index.path" class="nav-link">
+        <Link :href="routePath('devices_index')" :class="['nav-link', { active: isActive(['devices', 'plcs', 'modbus_devices', 'gateways', 'measurement_points']) }]">
           <CIcon customClassName="nav-icon" name="cilSpeedometer" />
           Devices
         </Link>
       </CNavItem>
-
-      <!-- <CNavGroup>
-        <template #togglerContent>
-          <CIcon customClassName="nav-icon" name="cilPuzzle" />
-          Components
-        </template>
-        <CNavItem href="#/components/buttons">Buttons</CNavItem>
-        <CNavItem href="#/components/forms">Forms</CNavItem>
-        <CNavItem href="#/components/charts">Charts</CNavItem>
-      </CNavGroup> -->
     </CSidebarNav>
   </CSidebar>
 </template>
@@ -69,14 +59,17 @@
   import useAuth from '@/composables/useAuth';
   import usePermissions from '@/composables/usePermissions';
   import useStore from '@/stores';
-  import { ROUTES } from '@/types/permissions';
 
-  const { openAlertCount } = useAuth();
+  const { openAlertCount, routePath, currentController } = useAuth();
   const { permissions } = usePermissions();
   const store = useStore();
 
   const sidebarNarrow = computed(() => store.$state.sidebarNarrow);
   const sidebarVisible = computed(() => store.$state.sidebarVisible);
+
+  function isActive(controllers: string[]): boolean {
+    return !!currentController.value && controllers.includes(currentController.value);
+  }
 </script>
 
 <style scoped>

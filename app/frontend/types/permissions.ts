@@ -1,5 +1,5 @@
 // Auto-generated file - Do not edit manually
-// Generated at: 2026-05-05 18:12:59 UTC
+// Generated at: 2026-05-31 21:37:07 UTC
 
 import type { Method } from '@inertiajs/core';
 
@@ -34,15 +34,10 @@ export const ROLES: Record<Role, { name: string; description: string; level: num
 } as const;
 
 // Valid controller keys
-export type ControllerKey = 'live' | 'my_account' | 'sessions' | 'two_factors' | 'company_setup' | 'company_users' | 'invitations' | 'sites' | 'devices' | 'gateways' | 'plcs' | 'modbus_devices' | 'measurement_points' | 'alerts' | 'alert_rules' | 'alert_subscriptions' | 'analytics' | 'programs' | 'dashboard';
+export type ControllerKey = 'my_account' | 'sessions' | 'two_factors' | 'company_setup' | 'company_users' | 'invitations' | 'sites' | 'devices' | 'gateways' | 'plcs' | 'modbus_devices' | 'measurement_points' | 'alerts' | 'alert_rules' | 'alert_subscriptions' | 'live' | 'analytics' | 'programs' | 'dashboard';
 
 // Route permissions mapping
 export type RoutePermissions = {
-  live: {
-    show: boolean;
-    poll: boolean;
-    poll_weather: boolean;
-  };
   my_account: {
     show: boolean;
     update: boolean;
@@ -57,8 +52,8 @@ export type RoutePermissions = {
   };
   company_setup: {
     new: boolean;
-    edit: boolean;
     create: boolean;
+    edit: boolean;
     update: boolean;
     destroy: boolean;
   };
@@ -122,6 +117,11 @@ export type RoutePermissions = {
     update: boolean;
     destroy: boolean;
   };
+  live: {
+    show: boolean;
+    poll: boolean;
+    poll_weather: boolean;
+  };
   analytics: {
     show: boolean;
     hourly: boolean;
@@ -154,12 +154,6 @@ export type RouteInfo = {
 };
 
 export const ROUTES: Record<string, RouteInfo> = {
-  live_show: {
-    controller: 'live',
-    action: 'show',
-    path: '/user',
-    verb: 'get'
-  },
   my_account_show: {
     controller: 'my_account',
     action: 'show',
@@ -202,316 +196,322 @@ export const ROUTES: Record<string, RouteInfo> = {
     path: '/user/company_setup/new',
     verb: 'get'
   },
-  company_setup_edit: {
-    controller: 'company_setup',
-    action: 'edit',
-    path: '/user/company_setup/edit',
-    verb: 'get'
-  },
   company_setup_create: {
     controller: 'company_setup',
     action: 'create',
     path: '/user/company_setup',
     verb: 'post'
   },
+  company_setup_edit: {
+    controller: 'company_setup',
+    action: 'edit',
+    path: '/user/companies/:company_id/company_setup/edit',
+    verb: 'get'
+  },
   company_setup_update: {
     controller: 'company_setup',
     action: 'update',
-    path: '/user/company_setup',
+    path: '/user/companies/:company_id/company_setup',
     verb: 'put'
   },
   company_setup_destroy: {
     controller: 'company_setup',
     action: 'destroy',
-    path: '/user/company_setup',
+    path: '/user/companies/:company_id/company_setup',
     verb: 'delete'
   },
   company_users_index: {
     controller: 'company_users',
     action: 'index',
-    path: '/user/company_users',
+    path: '/user/companies/:company_id/company_users',
     verb: 'get'
   },
   company_users_update: {
     controller: 'company_users',
     action: 'update',
-    path: '/user/company_users/:id',
+    path: '/user/companies/:company_id/company_users/:id',
     verb: 'patch'
   },
   company_users_destroy: {
     controller: 'company_users',
     action: 'destroy',
-    path: '/user/company_users/:id',
+    path: '/user/companies/:company_id/company_users/:id',
     verb: 'delete'
   },
   invitations_index: {
     controller: 'invitations',
     action: 'index',
-    path: '/user/invitations',
+    path: '/user/companies/:company_id/invitations',
     verb: 'get'
   },
   invitations_create: {
     controller: 'invitations',
     action: 'create',
-    path: '/user/invitations',
+    path: '/user/companies/:company_id/invitations',
     verb: 'post'
   },
   invitations_destroy: {
     controller: 'invitations',
     action: 'destroy',
-    path: '/user/invitations/:id',
+    path: '/user/companies/:company_id/invitations/:id',
     verb: 'delete'
   },
   invitations_resend: {
     controller: 'invitations',
     action: 'resend',
-    path: '/user/invitations/:id/resend',
+    path: '/user/companies/:company_id/invitations/:id/resend',
     verb: 'put'
   },
   sites_index: {
     controller: 'sites',
     action: 'index',
-    path: '/user/sites',
+    path: '/user/companies/:company_id/sites',
     verb: 'get'
   },
   sites_create: {
     controller: 'sites',
     action: 'create',
-    path: '/user/sites',
+    path: '/user/companies/:company_id/sites',
     verb: 'post'
   },
   sites_show: {
     controller: 'sites',
     action: 'show',
-    path: '/user/sites/:id',
+    path: '/user/companies/:company_id/sites/:id',
     verb: 'get'
   },
   sites_update: {
     controller: 'sites',
     action: 'update',
-    path: '/user/sites/:id',
+    path: '/user/companies/:company_id/sites/:id',
     verb: 'patch'
   },
   sites_destroy: {
     controller: 'sites',
     action: 'destroy',
-    path: '/user/sites/:id',
+    path: '/user/companies/:company_id/sites/:id',
     verb: 'delete'
   },
   devices_index: {
     controller: 'devices',
     action: 'index',
-    path: '/user/devices',
+    path: '/user/sites/:site_id/devices',
     verb: 'get'
   },
   gateways_update: {
     controller: 'gateways',
     action: 'update',
-    path: '/user/gateways/:id',
+    path: '/user/sites/:site_id/gateways/:id',
     verb: 'patch'
   },
   plcs_refresh_interfaces: {
     controller: 'plcs',
     action: 'refresh_interfaces',
-    path: '/user/plcs/:id/refresh_interfaces',
+    path: '/user/sites/:site_id/plcs/:id/refresh_interfaces',
     verb: 'post'
   },
   plcs_show: {
     controller: 'plcs',
     action: 'show',
-    path: '/user/plcs/:id',
+    path: '/user/sites/:site_id/plcs/:id',
     verb: 'get'
   },
   plcs_update: {
     controller: 'plcs',
     action: 'update',
-    path: '/user/plcs/:id',
+    path: '/user/sites/:site_id/plcs/:id',
     verb: 'patch'
   },
   modbus_devices_refresh_values: {
     controller: 'modbus_devices',
     action: 'refresh_values',
-    path: '/user/modbus_devices/:id/refresh_values',
+    path: '/user/sites/:site_id/modbus_devices/:id/refresh_values',
     verb: 'post'
   },
   modbus_devices_create: {
     controller: 'modbus_devices',
     action: 'create',
-    path: '/user/modbus_devices',
+    path: '/user/sites/:site_id/modbus_devices',
     verb: 'post'
   },
   modbus_devices_show: {
     controller: 'modbus_devices',
     action: 'show',
-    path: '/user/modbus_devices/:id',
+    path: '/user/sites/:site_id/modbus_devices/:id',
     verb: 'get'
   },
   modbus_devices_update: {
     controller: 'modbus_devices',
     action: 'update',
-    path: '/user/modbus_devices/:id',
+    path: '/user/sites/:site_id/modbus_devices/:id',
     verb: 'patch'
   },
   modbus_devices_destroy: {
     controller: 'modbus_devices',
     action: 'destroy',
-    path: '/user/modbus_devices/:id',
+    path: '/user/sites/:site_id/modbus_devices/:id',
     verb: 'delete'
   },
   measurement_points_bulk_write: {
     controller: 'measurement_points',
     action: 'bulk_write',
-    path: '/user/measurement_points/bulk_write',
+    path: '/user/sites/:site_id/measurement_points/bulk_write',
     verb: 'post'
   },
   measurement_points_write: {
     controller: 'measurement_points',
     action: 'write',
-    path: '/user/measurement_points/:id/write',
+    path: '/user/sites/:site_id/measurement_points/:id/write',
     verb: 'post'
   },
   measurement_points_operation_mode_config: {
     controller: 'measurement_points',
     action: 'operation_mode_config',
-    path: '/user/measurement_points/:id/operation_mode_config',
+    path: '/user/sites/:site_id/measurement_points/:id/operation_mode_config',
     verb: 'get'
   },
   measurement_points_update: {
     controller: 'measurement_points',
     action: 'update',
-    path: '/user/measurement_points/:id',
+    path: '/user/sites/:site_id/measurement_points/:id',
     verb: 'patch'
   },
   alerts_index: {
     controller: 'alerts',
     action: 'index',
-    path: '/user/alerts',
+    path: '/user/sites/:site_id/alerts',
     verb: 'get'
   },
   alerts_show: {
     controller: 'alerts',
     action: 'show',
-    path: '/user/alerts/:id',
+    path: '/user/sites/:site_id/alerts/:id',
     verb: 'get'
   },
   alert_rules_index: {
     controller: 'alert_rules',
     action: 'index',
-    path: '/user/alert_rules',
+    path: '/user/sites/:site_id/alert_rules',
     verb: 'get'
   },
   alert_rules_create: {
     controller: 'alert_rules',
     action: 'create',
-    path: '/user/alert_rules',
+    path: '/user/sites/:site_id/alert_rules',
     verb: 'post'
   },
   alert_rules_new: {
     controller: 'alert_rules',
     action: 'new',
-    path: '/user/alert_rules/new',
+    path: '/user/sites/:site_id/alert_rules/new',
     verb: 'get'
   },
   alert_rules_edit: {
     controller: 'alert_rules',
     action: 'edit',
-    path: '/user/alert_rules/:id/edit',
+    path: '/user/sites/:site_id/alert_rules/:id/edit',
     verb: 'get'
   },
   alert_rules_update: {
     controller: 'alert_rules',
     action: 'update',
-    path: '/user/alert_rules/:id',
+    path: '/user/sites/:site_id/alert_rules/:id',
     verb: 'patch'
   },
   alert_rules_destroy: {
     controller: 'alert_rules',
     action: 'destroy',
-    path: '/user/alert_rules/:id',
+    path: '/user/sites/:site_id/alert_rules/:id',
     verb: 'delete'
   },
   alert_subscriptions_index: {
     controller: 'alert_subscriptions',
     action: 'index',
-    path: '/user/notification_settings',
+    path: '/user/sites/:site_id/notification_settings',
     verb: 'get'
   },
   alert_subscriptions_create: {
     controller: 'alert_subscriptions',
     action: 'create',
-    path: '/user/notification_settings',
+    path: '/user/sites/:site_id/notification_settings',
     verb: 'post'
   },
   alert_subscriptions_update: {
     controller: 'alert_subscriptions',
     action: 'update',
-    path: '/user/notification_settings/:id',
+    path: '/user/sites/:site_id/notification_settings/:id',
     verb: 'patch'
   },
   alert_subscriptions_destroy: {
     controller: 'alert_subscriptions',
     action: 'destroy',
-    path: '/user/notification_settings/:id',
+    path: '/user/sites/:site_id/notification_settings/:id',
     verb: 'delete'
+  },
+  live_show: {
+    controller: 'live',
+    action: 'show',
+    path: '/user/sites/:site_id/live',
+    verb: 'get'
   },
   live_poll: {
     controller: 'live',
     action: 'poll',
-    path: '/user/live/poll',
+    path: '/user/sites/:site_id/live/poll',
     verb: 'get'
   },
   live_poll_weather: {
     controller: 'live',
     action: 'poll_weather',
-    path: '/user/live/poll_weather',
+    path: '/user/sites/:site_id/live/poll_weather',
     verb: 'get'
   },
   analytics_show: {
     controller: 'analytics',
     action: 'show',
-    path: '/user/analytics',
+    path: '/user/sites/:site_id/analytics',
     verb: 'get'
   },
   analytics_hourly: {
     controller: 'analytics',
     action: 'hourly',
-    path: '/user/analytics/hourly',
+    path: '/user/sites/:site_id/analytics/hourly',
     verb: 'get'
   },
   analytics_raw: {
     controller: 'analytics',
     action: 'raw',
-    path: '/user/analytics/raw',
+    path: '/user/sites/:site_id/analytics/raw',
     verb: 'get'
   },
   analytics_weather_hourly: {
     controller: 'analytics',
     action: 'weather_hourly',
-    path: '/user/analytics/weather_hourly',
+    path: '/user/sites/:site_id/analytics/weather_hourly',
     verb: 'get'
   },
   analytics_weather_raw: {
     controller: 'analytics',
     action: 'weather_raw',
-    path: '/user/analytics/weather_raw',
+    path: '/user/sites/:site_id/analytics/weather_raw',
     verb: 'get'
   },
   programs_index: {
     controller: 'programs',
     action: 'index',
-    path: '/user/programs',
+    path: '/user/sites/:site_id/programs',
     verb: 'get'
   },
   programs_show_plc: {
     controller: 'programs',
     action: 'show_plc',
-    path: '/user/programs/plc/:id',
+    path: '/user/sites/:site_id/programs/plc/:id',
     verb: 'get'
   },
   programs_show_modbus_device: {
     controller: 'programs',
     action: 'show_modbus_device',
-    path: '/user/programs/modbus_device/:id',
+    path: '/user/sites/:site_id/programs/modbus_device/:id',
     verb: 'get'
   },
   dashboard_show: {

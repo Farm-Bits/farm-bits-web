@@ -101,13 +101,12 @@
   import useAuth from '@/composables/useAuth';
   import usePermissions from '@/composables/usePermissions';
   import { useApiCall } from '@/composables/useApi';
-  import { ROUTES } from '@/types/permissions';
   import type { Segment } from '@/types/location';
   import type { CommunicationType, PlcWithInterfaces } from '@/types/plc';
   import type { MeasurementPoint, MeasurementSubtype } from '@/types/measurementPoint';
   import { COMMUNICATION_TYPE_TABS } from './types';
 
-  const { currentSite, pageProps } = useAuth<{
+  const { currentSite, pageProps, routePath } = useAuth<{
     plc: PlcWithInterfaces;
     measurementSubtypes: MeasurementSubtype[];
   }>();
@@ -137,7 +136,7 @@
   async function refreshValues() {
     refreshing.value = true;
 
-    const url = ROUTES.plcs_refresh_interfaces.path.replace(':id', String(plc.value.id));
+    const url = routePath('plcs_refresh_interfaces', { id: plc.value.id });
     const { success } = await execute(
       () => axios.post(url),
       {

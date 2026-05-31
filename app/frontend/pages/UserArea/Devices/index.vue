@@ -203,7 +203,6 @@
   import useDeviceModals from './composables/useDeviceModals';
   import useAuth from '@/composables/useAuth';
   import usePermissions from '@/composables/usePermissions';
-  import { ROUTES } from '@/types/permissions';
   import type {
     DeviceRow,
     DeviceKind,
@@ -213,7 +212,7 @@
   } from './types';
 
   const { permissions } = usePermissions();
-  const { pageProps } = useAuth<{
+  const { pageProps, routePath } = useAuth<{
     tree: DeviceRow[];
     add_device_options: AddDeviceOptions;
   }>();
@@ -322,12 +321,12 @@
 
   function handleConfigure(row: FlatDeviceRow) {
     if (row.kind === 'plc' && permissions.value?.plcs?.show) {
-      router.visit(ROUTES.plcs_show.path.replace(':id', String(row.id)));
+      router.visit(routePath('plcs_show', { id: row.id }));
       return;
     }
 
     if (row.kind === 'modbus_device' && permissions.value?.modbus_devices?.show) {
-      router.visit(ROUTES.modbus_devices_show.path.replace(':id', String(row.id)));
+      router.visit(routePath('modbus_devices_show', { id: row.id }));
       return;
     }
 

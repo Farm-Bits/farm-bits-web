@@ -133,7 +133,7 @@
   import { computed, reactive, ref, watch } from 'vue';
   import axios from 'axios';
   import { useApiCall } from '@/composables/useApi';
-  import { ROUTES } from '@/types/permissions';
+  import useAuth from '@/composables/useAuth';
   import type { AddDeviceOptions, EligibleHost, AddDeviceModelOption } from '../types';
 
   const props = defineProps<{ options: AddDeviceOptions }>();
@@ -143,6 +143,7 @@
   }>();
 
   const { execute } = useApiCall();
+  const { routePath } = useAuth();
 
   type HostKind = 'gateway' | 'plc';
 
@@ -305,7 +306,7 @@
       payload.plc_id = Number(form.plc_id);
 
     const result = await execute(
-      () => axios.post(ROUTES.modbus_devices_create.path, { modbus_device: payload }),
+      () => axios.post(routePath('modbus_devices_create'), { modbus_device: payload }),
       { showSuccessToast: true, successMessage: 'Device added', showErrorToast: false }
     );
 

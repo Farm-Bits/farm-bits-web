@@ -1,7 +1,7 @@
 import { ref } from 'vue';
 import axios from 'axios';
 import { useApiCall } from '@/composables/useApi';
-import { ROUTES } from '@/types/permissions';
+import useAuth from '@/composables/useAuth';
 import type {
   WeatherStationApiHourlyAggregation,
   WeatherStationApiMetric,
@@ -30,6 +30,7 @@ export function useWeatherAnalyticsData() {
   const error = ref<string | null>(null);
 
   const { execute } = useApiCall();
+  const { routePath } = useAuth();
 
   async function fetchHourly(dateRange: { start: string; end: string }) {
     error.value = null;
@@ -37,7 +38,7 @@ export function useWeatherAnalyticsData() {
 
     const { success, error: apiError, data } = await execute<HourlyResponse>(
       () => axios.get(
-        ROUTES.analytics_weather_hourly.path,
+        routePath('analytics_weather_hourly'),
         {
           params: {
             start_date: dateRange.start,
@@ -65,7 +66,7 @@ export function useWeatherAnalyticsData() {
 
     const { success, error: apiError, data } = await execute<RawValueResponse>(
       () => axios.get(
-        ROUTES.analytics_weather_raw.path,
+        routePath('analytics_weather_raw'),
         {
           params: {
             start_time: startTime,

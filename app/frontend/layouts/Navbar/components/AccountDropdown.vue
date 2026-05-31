@@ -103,7 +103,7 @@
                 v-for="otherCompany in otherCompanies"
                 :key="otherCompany.id"
                 class="d-flex align-items-center"
-                @click="visit(pathname, { data: { company_id: otherCompany.id } })">
+                @click="visit(paths.pages.companyEntry(otherCompany.id))">
                 <div
                   class="company-avatar me-2"
                   :style="{ backgroundColor: otherCompany.color }">
@@ -133,8 +133,6 @@
 
   const { userScope, paths, currentUser, currentCompany, accessibleCompanies } = useAuth();
   const { permissions } = usePermissions();
-
-  const pathname = window.location.pathname;
 
   const isOpen = ref(false);
   const currentPanel = ref<'default' | 'companies'>('default');

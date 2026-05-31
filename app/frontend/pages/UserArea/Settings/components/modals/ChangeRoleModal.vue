@@ -112,7 +112,6 @@
   import type { CompanyUser } from '../types/invitation';
   import useAuth from '@/composables/useAuth';
   import { useApiCall } from '@/composables/useApi';
-  import { ROUTES } from '@/types/permissions';
   import type { Site } from '@/types/location';
 
   const props = defineProps<{
@@ -125,7 +124,7 @@
     (e: 'update', updatedCompanyUser: CompanyUser): void;
   }>();
 
-  const { currentRole, accessibleSites } = useAuth();
+  const { currentRole, accessibleSites, routePath } = useAuth();
   const { execute } = useApiCall();
 
   const formData = reactive({
@@ -240,7 +239,7 @@
         site_ids: selectedRoleNeedsSites.value ? formData.site_ids : undefined
       }
     };
-    const url = ROUTES.company_users_update.path.replace(':id', String(props.companyUser.id));
+    const url = routePath('company_users_update', { id: props.companyUser.id });
     const { success, data, error } = await execute<CompanyUser>(
       () => axios.patch(url, body),
       {

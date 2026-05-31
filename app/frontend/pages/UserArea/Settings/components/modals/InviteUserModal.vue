@@ -98,7 +98,6 @@
   import { ROLES, type Role } from '@/types/permissions';
   import useAuth from '@/composables/useAuth';
   import { useApiCall } from '@/composables/useApi';
-  import { ROUTES } from '@/types/permissions';
   import type { Invitation } from '../types/invitation';
 
   const props = defineProps<{
@@ -110,7 +109,7 @@
     (e: 'invite', data: Invitation): void;
   }>();
 
-  const { currentRole, accessibleSites } = useAuth();
+  const { currentRole, accessibleSites, routePath } = useAuth();
   const { execute } = useApiCall();
 
   const formData = reactive({
@@ -227,7 +226,7 @@
       }
     };
     const { success, data, error } = await execute<Invitation>(
-      () => axios.post(ROUTES.invitations_create.path, body),
+      () => axios.post(routePath('invitations_create'), body),
       {
         showSuccessToast: true,
         successMessage: 'Invitation sent successfully'

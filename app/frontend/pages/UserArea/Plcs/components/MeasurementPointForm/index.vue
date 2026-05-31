@@ -76,7 +76,7 @@
   import { useConfigurationValues } from '@/composables/useConfigurationValues';
   import { useRegisterVisibility } from '@/composables/useRegisterVisibility';
   import { useRegisterValidation } from '@/composables/useRegisterValidation';
-  import { ROUTES } from '@/types/permissions';
+  import useAuth from '@/composables/useAuth';
   import type { Segment } from '@/types/location';
   import { isDataCategory, isChartType, isValidChartTypeForValueType, type MeasurementPoint, type MeasurementSubtype, type ChartType } from '@/types/measurementPoint';
   import { isConfigurationCategory, type InterfaceWithMeasurementPoints, type MeasurementPointConfigResponse } from '@/types/plc';
@@ -97,6 +97,8 @@
   }>();
 
   const { execute } = useApiCall();
+  const { routePath } = useAuth();
+
   const activeTab = ref<string>('measurement');
   const processing = ref(false);
 
@@ -281,11 +283,7 @@
 
     processing.value = true;
 
-    const url = ROUTES.measurement_points_update.path.replace(
-      ':id',
-      String(editRegisterMapping.value.measurement_point.id)
-    );
-
+    const url = routePath('measurement_points_update', { id: editRegisterMapping.value.measurement_point.id });
     const { success, data } = await execute<MeasurementPointConfigResponse>(
       () => axios.put(url, {
         ...formData.value,

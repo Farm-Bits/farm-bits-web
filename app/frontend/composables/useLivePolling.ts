@@ -3,9 +3,10 @@ import { ref, onUnmounted } from 'vue';
 export function useLivePolling(
   fetchFn: () => Promise<void>,
   options: {
-  intervalMs?: number;
-  immediate?: boolean;
-} = {}) {
+    intervalMs?: number;
+    immediate?: boolean;
+  } = {}
+) {
   const { intervalMs = 30000, immediate = true } = options;
 
   const isPolling = ref(false);
@@ -68,6 +69,6 @@ export function useLivePolling(
     stop,
     pause,
     resume,
-    pollNow,
+    pollNow
   };
 }

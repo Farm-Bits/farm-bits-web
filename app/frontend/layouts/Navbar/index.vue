@@ -85,7 +85,7 @@
   import useStore from '@/stores';
   import type { Site } from '@/types/location';
 
-  const { isAdminUser, isSignedIn, paths, features, currentSite, accessibleSites } = useAuth();
+  const { isAdminUser, isSignedIn, paths, features, currentSite, accessibleSites, siteSwitchPath } = useAuth();
   const store = useStore();
   const { width } = useWindowSize();
 
@@ -97,7 +97,7 @@
   }
 
   function onSelectSite(siteId: Site['id']) {
-    router.visit(window.location.pathname, { data: { site_id: siteId } });
+    router.visit(siteSwitchPath(siteId));
   }
 </script>
 

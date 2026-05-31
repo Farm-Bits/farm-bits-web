@@ -5,7 +5,7 @@
 
       <Link
         v-if="permissions?.alert_rules.new"
-        :href="ROUTES.alert_rules_new.path"
+        :href="routePath('alert_rules_new')"
         class="btn btn-primary">
         <CIcon name="cilPlus" class="me-1" />
         New Rule
@@ -19,7 +19,7 @@
           <p class="mb-0">No alert rules defined yet.</p>
           <Link
             v-if="permissions?.alert_rules.new"
-            :href="ROUTES.alert_rules_new.path"
+            :href="routePath('alert_rules_new')"
             class="btn btn-link">
             Create your first rule
           </Link>
@@ -83,7 +83,7 @@
 
               <CTableDataCell v-if="permissions?.alert_rules.edit">
                 <Link
-                  :href="ROUTES.alert_rules_edit.path.replace(':id', String(rule.id))"
+                  :href="routePath('alert_rules_edit', { id: rule.id })"
                   class="btn btn-sm btn-outline-secondary me-1">
                   <CIcon name="cilPencil" size="sm" />
                 </Link>
@@ -128,11 +128,11 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, reactive } from 'vue';
+import { ref, reactive } from 'vue';
   import { Link, router } from '@inertiajs/vue3';
   import axios from 'axios';
   import usePermissions from '@/composables/usePermissions';
-  import { ROUTES } from '@/types/permissions';
+  import useAuth from '@/composables/useAuth';
   import {
     severityColor,
     conditionSummary,
@@ -145,6 +145,7 @@
   }>();
 
   const { permissions } = usePermissions();
+  const { routePath } = useAuth();
 
   const togglingIds = reactive(new Set<number>());
   const destroyingIds = reactive(new Set<number>());
@@ -157,9 +158,10 @@
     togglingIds.add(rule.id);
 
     try {
-      await axios.patch(ROUTES.alert_rules_update.path.replace(':id', String(rule.id)), {
-        alert_rule: { active: !rule.active }
-      });
+      await axios.patch(
+        routePath('alert_rules_update', { id: rule.id }),
+        { alert_rule: { active: !rule.active } }
+      );
       router.reload({ only: ['alertRules'] });
     } catch (err: any) {
       const message = err?.response?.data?.error ?? 'Failed to update rule.';
@@ -181,7 +183,7 @@
     destroyingIds.add(rule.id);
 
     try {
-      const url = ROUTES.alert_rules_destroy.path.replace(':id', String(rule.id));
+      const url = routePath('alert_rules_destroy', { id: rule.id });
       await axios.delete(url);
       ruleToDestroy.value = null;
       router.reload({ only: ['alertRules'] });

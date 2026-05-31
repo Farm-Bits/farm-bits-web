@@ -117,7 +117,7 @@
   import RelativeTime from '@/components/RelativeTime.vue';
   import usePermissions from '@/composables/usePermissions';
   import { useApiCall } from '@/composables/useApi';
-  import { ROUTES } from '@/types/permissions';
+  import useAuth from '@/composables/useAuth';
   import type { Segment } from '@/types/location';
   import type { DataCategory, MeasurementPoint, MeasurementSubtype } from '@/types/measurementPoint';
   import type { RegisterMapping } from '@/types/plc';
@@ -146,6 +146,7 @@
 
   const { permissions } = usePermissions();
   const { execute } = useApiCall();
+  const { routePath } = useAuth();
 
   const measurementSubtype = computed(() => {
     if (!registerMapping.measurement_point.measurement_subtype_id) {
@@ -182,10 +183,9 @@
   }
 
   async function toggleActive() {
-    const url = ROUTES.measurement_points_update.path.replace(
-      ':id',
-      String(registerMapping.measurement_point.id)
-    );
+    const url = routePath('measurement_points_update', {
+      id: registerMapping.measurement_point.id
+    });
     const willEnable = !registerMapping.measurement_point.active;
 
     const { success, data } = await execute<{

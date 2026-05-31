@@ -170,9 +170,9 @@
   import draggable from 'vuedraggable';
   import LocationSelector from '@/components/LocationSelector.vue';
   import { useApiCall } from '@/composables/useApi';
+  import useAuth from '@/composables/useAuth';
   import type { SiteWithSegments } from '@/types/inertia';
   import type { Segment, Site } from '@/types/location';
-  import { ROUTES } from '@/types/permissions';
 
   type SegmentAttributes = Omit<Segment, 'id' | 'site_id'> & {
     id?: Segment['id'];
@@ -196,6 +196,7 @@
   }>();
 
   const { execute } = useApiCall();
+  const { routePath } = useAuth();
 
   const isLoading = ref(false);
 
@@ -444,11 +445,10 @@
           _destroy: s._destroy || false
         }))
     };
-    const route = isEditMode.value ? ROUTES.sites_update : ROUTES.sites_create;
-    const url = isEditMode.value
-      ? route.path.replace(':id', String(props.site!.id))
-      : route.path;
 
+    const url = isEditMode.value
+      ? routePath('sites_update', { id: props.site!.id })
+      : routePath('sites_create');
     const { success, data, error } = await execute<SiteWithSegments>(
       () => isEditMode.value ? axios.put(url, body) : axios.post(url, body),
       {

@@ -38,7 +38,7 @@ class UserArea::CompanySetupController < UserArea::ApplicationController
     authorize current_company, :update?
 
     if current_company.update(company_params)
-      redirect_to user_company_setup_edit_path
+      redirect_to user_company_setup_edit_path(company_id: current_company.id)
     else
       render inertia: 'UserArea/Settings/index', props: {
         errors: current_company.errors.full_messages

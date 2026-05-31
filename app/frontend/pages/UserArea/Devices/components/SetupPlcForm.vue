@@ -71,7 +71,7 @@
   import { computed, reactive, ref } from 'vue';
   import axios from 'axios';
   import { useApiCall } from '@/composables/useApi';
-  import { ROUTES } from '@/types/permissions';
+  import useAuth from '@/composables/useAuth';
   import type { FlatPlcRow, EligibleHost } from '../types';
 
   const props = defineProps<{
@@ -84,6 +84,7 @@
   }>();
 
   const { execute } = useApiCall();
+  const { routePath } = useAuth();
 
   const form = reactive<{ name: string; gateway_id: string }>({
     name: props.row.name || '',
@@ -104,7 +105,7 @@
     submitting.value = true;
     error.value = null;
 
-    const url = ROUTES.plcs_update.path.replace(':id', String(props.row.id));
+    const url = routePath('plcs_update', { id: props.row.id });
     const result = await execute(
       () => axios.put(url, {
         plc: {

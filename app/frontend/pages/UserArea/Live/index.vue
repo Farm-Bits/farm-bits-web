@@ -224,7 +224,7 @@
     }[];
   };
 
-  const { currentSite, pageProps } = useAuth<{
+  const { currentSite, pageProps, routePath } = useAuth<{
     measurement_points: LiveMeasurementPoint[];
     interface_statuses: LiveMeasurementPoint[];
     operation_mode_statuses: LiveMeasurementPoint[];
@@ -423,7 +423,7 @@
 
   async function fetchPollData() {
     const { success, data } = await execute<PollResponse>(
-      () => axios.get(ROUTES.live_poll.path)
+      () => axios.get(routePath('live_poll'))
     );
 
     if (success) {
@@ -523,7 +523,7 @@
     measurementPointId: MeasurementPoint['id'],
     value: NonNullable<MeasurementPoint['last_value']>
   ) {
-    const writePath = ROUTES.measurement_points_write.path.replace(':id', String(measurementPointId));
+    const writePath = routePath('measurement_points_write', { id: measurementPointId });
     const { success, data } = await execute<MeasurementPoint>(
       () => axios.post(writePath, { value })
     );
@@ -543,8 +543,7 @@
     if (updates.length === 0)
       return;
 
-    const updatePath = ROUTES.measurement_points_update.path
-      .replace(':id', String(anchorMpId));
+    const updatePath = routePath('measurement_points_update', { id: anchorMpId });
 
     const configurationUpdates = updates.map((u) => ({
       measurement_point_id: u.measurement_point_id,
@@ -584,8 +583,7 @@
     omModalLoading.value = true;
     omEditedIds.value = new Set();
 
-    const configPath = ROUTES.measurement_points_operation_mode_config.path
-      .replace(':id', String(mp.id));
+    const configPath = routePath('measurement_points_operation_mode_config', { id: mp.id });
 
     const { success, data } = await execute<OperationModeConfigResponse>(
       () => axios.get(configPath)
@@ -617,7 +615,7 @@
     measurementPointId: MeasurementPoint['id'],
     value: NonNullable<MeasurementPoint['last_value']>
   ) {
-    const writePath = ROUTES.measurement_points_write.path.replace(':id', String(measurementPointId));
+    const writePath = routePath('measurement_points_write', { id: measurementPointId });
     const { success, data } = await execute<MeasurementPoint>(
       () => axios.post(writePath, { value })
     );
@@ -636,7 +634,7 @@
     omSaving.value = true;
 
     const anchorMpId = omModalMp.value.id;
-    const updatePath = ROUTES.measurement_points_update.path.replace(':id', String(anchorMpId));
+    const updatePath = routePath('measurement_points_update', { id: anchorMpId });
     const configurationUpdates = Array.from(omEditedIds.value).map(mpId => ({
       measurement_point_id: mpId,
       value: omConfigValues[mpId],

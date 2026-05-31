@@ -8,7 +8,7 @@
       <div class="d-flex gap-2">
         <CButton
           color="primary"
-          @click="router.visit(ROUTES.alert_rules_index.path)">
+          @click="router.visit(routePath('alert_rules_index'))">
           <CIcon icon="cilPlus" class="me-2" />
           Alert Rules
         </CButton>
@@ -113,7 +113,7 @@
 <script lang="ts" setup>
   import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
   import { router } from '@inertiajs/vue3';
-  import { ROUTES } from '@/types/permissions';
+  import useAuth from '@/composables/useAuth';
   import {
     formatRelativeTime,
     formatAbsoluteTime,
@@ -126,6 +126,8 @@
   const props = defineProps<{
     alerts: Alert[];
   }>();
+
+  const { routePath } = useAuth();
 
   const currentTab = ref<'active' | 'history'>('active');
 

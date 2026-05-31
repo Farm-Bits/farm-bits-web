@@ -119,7 +119,7 @@
   import RelativeTime from '@/components/RelativeTime.vue';
   import usePermissions from '@/composables/usePermissions';
   import { useApiCall } from '@/composables/useApi';
-  import { ROUTES } from '@/types/permissions';
+  import useAuth from '@/composables/useAuth';
   import type { Segment } from '@/types/location';
   import { isDataCategory, type DataCategory, type MeasurementPoint, type MeasurementSubtype } from '@/types/measurementPoint';
   import type { InterfaceWithMeasurementPoints, RegisterMapping } from '@/types/plc';
@@ -146,6 +146,7 @@
 
   const { permissions } = usePermissions();
   const { execute } = useApiCall();
+  const { routePath } = useAuth();
 
   const measurementRegisterMappings = computed(() => {
     return iface.register_mappings.filter((mapping) => {
@@ -211,7 +212,7 @@
   }
 
   async function toggleActive(measurementPoint: MeasurementPoint) {
-    const url = ROUTES.measurement_points_update.path.replace(':id', String(measurementPoint.id));
+    const url = routePath('measurement_points_update', { id: measurementPoint.id });
     const willEnable = !measurementPoint.active;
     const measurementPointData = {
       // data_collection_enabled: willEnable,

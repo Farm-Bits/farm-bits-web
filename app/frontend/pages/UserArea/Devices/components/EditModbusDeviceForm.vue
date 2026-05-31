@@ -72,7 +72,7 @@
   import { computed, reactive, ref } from 'vue';
   import axios from 'axios';
   import { useApiCall } from '@/composables/useApi';
-  import { ROUTES } from '@/types/permissions';
+  import useAuth from '@/composables/useAuth';
   import type { FlatModbusDeviceRow } from '../types';
 
   const props = defineProps<{ row: FlatModbusDeviceRow }>();
@@ -82,6 +82,7 @@
   }>();
 
   const { execute } = useApiCall();
+  const { routePath } = useAuth();
 
   const form = reactive<{
     name: string;
@@ -121,7 +122,7 @@
       payload.private_ip = form.private_ip.trim();
     }
 
-    const url = ROUTES.modbus_devices_update.path.replace(':id', String(props.row.id));
+    const url = routePath('modbus_devices_update', { id: props.row.id });
     const result = await execute(
       () => axios.put(url, { modbus_device: payload }),
       { showSuccessToast: true, successMessage: 'Device updated', showErrorToast: false }

@@ -143,9 +143,8 @@
   import { useApiCall } from '@/composables/useApi';
   import type { SiteWithSegments } from '@/types/inertia';
   import type { Site } from '@/types/location';
-  import { ROUTES } from '@/types/permissions';
 
-  const { currentSite, accessibleSites } = useAuth();
+  const { currentSite, accessibleSites, routePath } = useAuth();
   const { permissions } = usePermissions();
   const { execute } = useApiCall();
 
@@ -226,7 +225,7 @@
 
     isDeleting.value = true;
 
-    const url = ROUTES.sites_destroy.path.replace(':id', String(siteToDelete.value.id));
+    const url = routePath('sites_destroy', { id: siteToDelete.value.id });
     const { success } = await execute(
       () => axios.delete(url),
       {
@@ -262,7 +261,7 @@
       return;
 
     const { success, data } = await execute<SiteWithSegments[]>(
-      () => axios.get(ROUTES.sites_index.path),
+      () => axios.get(routePath('sites_index')),
       { errorTitle: 'Load Sites Error', showErrorToast: true }
     );
 

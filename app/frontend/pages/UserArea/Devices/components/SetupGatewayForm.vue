@@ -56,7 +56,7 @@
   import { reactive, ref } from 'vue';
   import axios from 'axios';
   import { useApiCall } from '@/composables/useApi';
-  import { ROUTES } from '@/types/permissions';
+  import useAuth from '@/composables/useAuth';
   import type { FlatGatewayRow } from '../types';
 
   const props = defineProps<{ row: FlatGatewayRow }>();
@@ -66,6 +66,7 @@
   }>();
 
   const { execute } = useApiCall();
+  const { routePath } = useAuth();
 
   const form = reactive({
     name: props.row.name || '',
@@ -81,7 +82,7 @@
     submitting.value = true;
     error.value = null;
 
-    const url = ROUTES.gateways_update.path.replace(':id', String(props.row.id));
+    const url = routePath('gateways_update', { id: props.row.id });
     const result = await execute(
       () => axios.put(url, {
         gateway: {

@@ -116,6 +116,7 @@
 
   const { permissions } = usePermissions();
   const { execute } = useApiCall();
+  const { routePath } = useAuth();
 
   // ── Edit modal ──
 
@@ -185,7 +186,7 @@
     isRefreshing.value = true;
 
     await execute(
-      () => axios.post(`/user/modbus_devices/${modbusDevice.value.id}/refresh_values`),
+      () => axios.post(routePath('modbus_devices_refresh_values', { id: modbusDevice.value.id })),
       {
         showSuccessToast: true,
         successMessage: 'Refresh started',

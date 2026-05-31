@@ -25,7 +25,7 @@
   import { computed, ref } from 'vue';
   import axios from 'axios';
   import { useApiCall } from '@/composables/useApi';
-  import { ROUTES } from '@/types/permissions';
+  import useAuth from '@/composables/useAuth';
   import type { FlatDeviceRow } from '../types';
 
   const props = defineProps<{ row: FlatDeviceRow }>();
@@ -35,6 +35,7 @@
   }>();
 
   const { execute } = useApiCall();
+  const { routePath } = useAuth();
 
   const submitting = ref(false);
   const error = ref<string | null>(null);
@@ -60,10 +61,10 @@
 
   function urlForRow(): string | null {
     if (props.row.kind === 'gateway')
-      return ROUTES.gateways_destroy.path.replace(':id', String(props.row.id));
+      return routePath('gateways_destroy', { id: props.row.id });
 
     if (props.row.kind === 'modbus_device')
-      return ROUTES.modbus_devices_destroy.path.replace(':id', String(props.row.id));
+      return routePath('modbus_devices_destroy', { id: props.row.id });
 
     return null;
   }

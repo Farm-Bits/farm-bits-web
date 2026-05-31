@@ -35,7 +35,7 @@
   import axios from 'axios';
   import { useApiCall } from '@/composables/useApi';
   import { useLivePolling } from '@/composables/useLivePolling';
-  import { ROUTES } from '@/types/permissions';
+  import useAuth from '@/composables/useAuth';
   import type { SunData } from '@/types/weather';
 
   type WeatherReading = {
@@ -52,6 +52,7 @@
   };
 
   const { execute } = useApiCall();
+  const { routePath } = useAuth();
 
   const weatherData = ref<WeatherReading[] | null>(null);
   const sunData = ref<SunData | null>(null);
@@ -77,7 +78,7 @@
   // Polling
   async function fetchPollData() {
     const { success, data } = await execute<PollResponse>(
-      () => axios.get(ROUTES.live_poll_weather.path)
+      () => axios.get(routePath('live_poll_weather'))
     );
 
     if (success) {
