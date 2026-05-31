@@ -24,7 +24,7 @@ module ModbusReadEnqueuer
       gateway = group.first.read_coordinates.gateway
 
       if !gateway.addressable?
-        Rails.logger.warn "Skipping Modbus read for #{gateway.full_name} (#{gateway.id}) due to connection status '#{gateway.connection_status}'"
+        Rails.logger.warn "Skipping Modbus read for #{gateway.label} (#{gateway.id}) due to connection status '#{gateway.connection_status}'"
         next
       end
 

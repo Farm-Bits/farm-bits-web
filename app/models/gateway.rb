@@ -29,14 +29,6 @@ class Gateway < ApplicationRecord
 
   scope :addressable, -> { where.not(connection_status: UNADDRESSABLE_STATUSES) }
 
-  def full_name
-    parts = []
-    parts << manufacturer_name if model.present?
-    parts << model_name if model.present?
-    parts << "(#{display_identifier})"
-    parts.join(' ')
-  end
-
   def apply_status!(new_status, status_updated_at: Time.current)
     new_status = new_status.to_s
 
