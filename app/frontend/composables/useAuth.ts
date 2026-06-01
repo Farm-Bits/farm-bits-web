@@ -77,7 +77,7 @@ export default function useAuth<T extends PageProps>() {
       forgotPassword: `/${userScope.value}/password/new`,
       confirmation: `/${userScope.value}/confirmation/new`,
       unlock: `/${userScope.value}/unlock/new`,
-      newCompany: `/${rootObjectName.value}/company_setup`,
+      newCompany: `/${rootObjectName.value}/company_setup/new`,
       editCompany: currentCompany.value
         ? `/${rootObjectName.value}/companies/${currentCompany.value.id}/company_setup/edit`
         : '',

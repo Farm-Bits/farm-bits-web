@@ -4,7 +4,7 @@ class UserArea::CompanySetupController < UserArea::ApplicationController
   def new
     authorize Company, :new?
 
-    errors = current_user.active_companies_connections.empty? ? nil : ['You do not have access to any company. Create one now.']
+    errors = current_user.active_companies_connections.any? ? nil : ['You do not have access to any company. Create one now.']
     render inertia: 'UserArea/CompanySetupForm', props: {
       errors: errors
     }
