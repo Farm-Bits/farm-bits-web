@@ -9,7 +9,7 @@ export default function useAuth<T extends PageProps>() {
   const page = usePage<T>();
 
   const pageProps = computed(() => page.props);
-  const userScope = computed(() => page.props.userScope);
+  const userScope = computed(() => page.props.userScope || 'users');
   const currentController = computed(() => page.props.currentController);
   const currentAction = computed(() => page.props.currentAction);
   const isSignedIn = computed(() => !!page.props.currentUser);
@@ -32,7 +32,7 @@ export default function useAuth<T extends PageProps>() {
       case 'admin_users':
         return 'admin_user';
       default:
-        throw new Error(`Unknown user scope: ${userScope.value}`);
+        return 'user';
     }
   });
 
