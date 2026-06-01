@@ -141,6 +141,14 @@ Rails.application.routes.draw do
 
         post 'otp/verify', to: 'otp#verify'
         post 'otp/resend', to: 'otp#resend'
+
+        get 'me', to: 'me#show'
+
+        scope path: 'sites/:site_id' do
+          get 'live', to: 'live#show'
+          get 'live/poll', to: 'live#poll'
+          resources :alerts, only: [:index, :show]
+        end
       end
     end
   end

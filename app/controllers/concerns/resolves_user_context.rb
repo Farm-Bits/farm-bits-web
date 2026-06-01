@@ -15,7 +15,7 @@ module ResolvesUserContext
         companies.first
     end
 
-    def resolve_site_for(company, site_id_hint = session[:current_site_id])
+    def resolve_site_for(company, site_id_hint = nil)
       if company.nil?
         return nil
       end

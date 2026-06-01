@@ -1,6 +1,8 @@
 class Api::Mobile::V1::OtpController < Api::Mobile::V1::BaseController
   skip_before_action :authenticate_mobile_request!, only: [:verify, :resend]
-  skip_before_action :touch_user_session,           only: [:verify, :resend]
+  skip_before_action :touch_user_session, only: [:verify, :resend]
+  skip_before_action :ensure_user_has_company_access!, only: [:verify, :resend]
+  skip_before_action :resolve_company_and_site_from_url, only: [:verify, :resend]
 
   # POST /api/mobile/v1/otp/verify
   def verify
@@ -11,13 +13,9 @@ class Api::Mobile::V1::OtpController < Api::Mobile::V1::BaseController
 
     case user_session.verify_otp!(params[:code])
     when :ok
-      render json: {
-        token: user_session.mobile_token,
-        session: UserSessionSerializer.render_as_json(
-          user_session,
-          current_session_id: user_session.id
-        )
-      }, status: :ok
+      @current_user_session = user_session
+      @current_user = user_session.authenticatable
+      render json: authenticated_payload(user_session, user_session.mobile_token), status: :ok
     when :invalid
       render json: { error: 'invalid_code' }, status: :unauthorized
     when :expired

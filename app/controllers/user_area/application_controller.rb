@@ -42,40 +42,6 @@ class UserArea::ApplicationController < ApplicationController
       end
     end
 
-    def resolve_from_site
-      site    = Site.includes(:company).find_by(id: params[:site_id])
-      company = @companies.find_by(id: site&.company_id)
-
-      if company.nil?
-        return reject_context("You don't have access to that site.")
-      end
-
-      if !site_scope_for(company).exists?(id: site.id)
-        return reject_context("You don't have access to that site.")
-      end
-
-      @current_company      = company
-      @current_company_user = current_user.company_user_for(company)
-      @current_site         = site
-    end
-
-    def resolve_from_company
-      @current_company = @companies.find_by(id: params[:company_id])
-
-      if @current_company.nil?
-        return reject_context("You don't have access to that company.")
-      end
-
-      @current_company_user = current_user.company_user_for(@current_company)
-      @current_site         = resolve_site_for(@current_company)
-    end
-
-    def resolve_from_session_defaults
-      @current_company      = resolve_company
-      @current_company_user = current_user.company_user_for(@current_company)
-      @current_site         = resolve_site_for(@current_company)
-    end
-
     def resolve_company_and_site
       @companies = current_user.active_companies_connections
 
@@ -141,13 +107,13 @@ class UserArea::ApplicationController < ApplicationController
       end
 
       @current_company_user = current_user.company_user_for(@current_company)
-      @current_site         = resolve_site_for(@current_company)
+      @current_site         = resolve_site_for(@current_company, session[:current_site_id])
     end
 
     def resolve_from_session_defaults
       @current_company      = resolve_company
       @current_company_user = current_user.company_user_for(@current_company)
-      @current_site         = resolve_site_for(@current_company)
+      @current_site         = resolve_site_for(@current_company, session[:current_site_id])
     end
 
     def persist_context

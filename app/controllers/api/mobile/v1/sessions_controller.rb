@@ -1,6 +1,8 @@
 class Api::Mobile::V1::SessionsController < Api::Mobile::V1::BaseController
   skip_before_action :authenticate_mobile_request!, only: [:create]
-  skip_before_action :touch_user_session,           only: [:create]
+  skip_before_action :touch_user_session, only: [:create]
+  skip_before_action :ensure_user_has_company_access!, only: [:create]
+  skip_before_action :resolve_company_and_site_from_url, only: [:create]
 
   # POST /api/mobile/v1/sign_in
   def create
@@ -10,28 +12,37 @@ class Api::Mobile::V1::SessionsController < Api::Mobile::V1::BaseController
       return
     end
 
+    companies = user.active_companies_connections
+    if companies.empty?
+      render json: { error: 'no_company_access' }, status: :forbidden
+      return
+    end
+
     user_session, token = UserSession.create_mobile!(
       authenticatable: user,
-      request:         request,
-      client_name:     params[:client_name]
+      request: request,
+      current_company: companies.first,
+      client_name: params[:client_name]
     )
 
     if user_session.requires_otp?
+      if !user_session.issue_otp!
+        user_session.revoke!
+        render json: { error: 'otp_send_failed' }, status: :service_unavailable
+        return
+      end
+
       render json: {
-        token:      token,
+        token: token,
         otp_required: true,
         session_id: user_session.id
       }, status: :ok
       return
     end
 
-    render json: {
-      token:   token,
-      session: UserSessionSerializer.render_as_json(
-        user_session,
-        current_session_id: user_session.id
-      )
-    }, status: :created
+    @current_user_session = user_session
+    @current_user = user
+    render json: authenticated_payload(user_session, token), status: :created
   end
 
   # DELETE /api/mobile/v1/sign_out
@@ -62,9 +73,9 @@ class Api::Mobile::V1::SessionsController < Api::Mobile::V1::BaseController
 
   private
     def authenticate_credentials
-      email    = params[:email].to_s.downcase.strip
+      email = params[:email].to_s.downcase.strip
       password = params[:password].to_s
-      scope    = params[:scope].to_s
+      scope = params[:scope].to_s
 
       if email.blank? || password.blank?
         return nil

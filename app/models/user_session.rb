@@ -80,13 +80,14 @@ class UserSession < ApplicationRecord
     [session, remember_token]
   end
 
-  def self.create_mobile!(authenticatable:, request:, client_name: nil)
+  def self.create_mobile!(authenticatable:, request:, current_company: nil, client_name: nil)
     jti = SecureRandom.uuid
 
     session = create!(
       authenticatable: authenticatable,
       transport:       'mobile',
       jti:             jti,
+      current_company: current_company,
       last_seen_at:    Time.current,
       expires_at:      MOBILE_EXPIRY.from_now,
       user_agent:      truncate_user_agent(request.user_agent),
