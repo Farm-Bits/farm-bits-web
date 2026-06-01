@@ -4,7 +4,9 @@ class AdminArea::ApplicationController < ApplicationController
   inertia_share do
     {
       userScope: 'admin_users',
-      user: current_admin_user
+      currentController: controller_name,
+      currentAction: action_name,
+      currentUser: current_admin_user
     }
   end
 
