@@ -109,8 +109,8 @@ class Api::Mobile::BaseController < ActionController::API
 
     def authenticated_payload(user_session, token)
       user = user_session.authenticatable
-      company  = resolve_company(nil)
-      site = company ? resolve_site_for(company, nil) : nil
+      company = @current_company || resolve_company(nil)
+      site = @current_site || (company ? resolve_site_for(company, nil) : nil)
       role = company ? user.company_user_for(company)&.role : nil
       companies = user.active_companies_connections
       sites = company ? site_scope_for(company) : Site.none

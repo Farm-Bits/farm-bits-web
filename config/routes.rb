@@ -147,6 +147,8 @@ Rails.application.routes.draw do
         scope path: 'sites/:site_id' do
           get 'live', to: 'live#show'
           get 'live/poll', to: 'live#poll'
+          get 'live/poll_weather', to: 'live#poll_weather'
+
           resources :alerts, only: [:index, :show]
         end
       end

@@ -23,6 +23,11 @@ class Api::Mobile::V1::AlertsController < Api::Mobile::V1::BaseController
       scope = scope.closed
     end
 
+    if params[:segment_id].present?
+      scope = scope.joins(:measurement_point)
+        .where(measurement_points: { segment_id: params[:segment_id].to_i })
+    end
+
     page = [params[:page].to_i, 1].max
     per_page = (params[:per_page].presence || DEFAULT_PER_PAGE).to_i.clamp(1, MAX_PER_PAGE)
     offset = (page - 1) * per_page

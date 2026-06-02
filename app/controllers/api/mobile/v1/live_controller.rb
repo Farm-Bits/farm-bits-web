@@ -33,4 +33,37 @@ class Api::Mobile::V1::LiveController < Api::Mobile::V1::BaseController
       measurement_points: MeasurementPointSerializer.render_as_hash(measurement_points, view: :live_poll)
     }
   end
+
+  def poll_weather
+    authorize :live, :poll?
+
+    site_sun_data = SiteSunData.find_by(site: current_site, date: Date.current)
+
+    render json: {
+      weather_data: weather_data,
+      sun_data: site_sun_data ? SiteSunDataSerializer.render_as_hash(site_sun_data) : nil
+    }
+  end
+
+  private
+    def weather_data
+      weather_station_api_location = current_site.weather_station_api_location
+      if weather_station_api_location.nil? || !weather_station_api_location.active?
+        return nil
+      end
+
+      latest = WeatherStationApiAnalyticsQueryService.latest(weather_station_api_location.id)
+      readings = latest.map do |reading|
+        metric = reading.weather_station_api_metric
+        {
+          key: metric.key,
+          label: metric.label,
+          value: reading.scaled_value&.to_f,
+          unit: metric.effective_unit,
+          sample_time: reading.sample_time
+        }
+      end
+
+      readings
+    end
 end
