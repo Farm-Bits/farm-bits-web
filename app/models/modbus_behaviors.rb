@@ -14,7 +14,8 @@
 #
 module ModbusBehaviors
   REGISTRY = {
-    'standard_v1' => 'ModbusBehaviors::StandardV1'
+    'standard_v1' => 'ModbusBehaviors::StandardV1',
+    'fatek_seedling_v1' => 'ModbusBehaviors::FatekSeedlingV1'
   }.freeze
 
   def self.for(device)

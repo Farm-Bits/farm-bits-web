@@ -1,18 +1,24 @@
 import type { RegisterMapping } from '@/types/plc';
 
-type Phase = {
+export type ProgramPhase = {
   index: number;
   group_name: string;
   registers: RegisterMapping[];
 };
 
-type ProgramMeta = {
-  group_name: string;
+export type ProgramMeta = {
   registers: RegisterMapping[];
 };
 
 export type Program = {
   index: number;
-  phases: Phase[];
+  phases: ProgramPhase[];
   meta: ProgramMeta | null;
+};
+
+export type ProgramSource = {
+  kind: 'plc' | 'modbus_device';
+  id: number;
+  name: string;
+  firmware: string | null;
 };

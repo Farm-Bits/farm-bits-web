@@ -1,56 +1,76 @@
 <template>
-  <CContainer fluid class="px-4 py-4">
-    <!-- Header with Breadcrumb -->
-    <CRow class="mb-3 align-items-center">
-      <div class="col d-flex justify-content-between align-items-start">
-        <h1 class="h3 mb-1">Programs — {{ source.name }}</h1>
-      </div>
-    </CRow>
+  <CContainer fluid class="py-3">
+    <div class="d-flex align-items-center mb-3">
+      <Link :href="routePath('programs_index')" class="btn btn-link p-0 me-3">
+        <CIcon name="cilArrowLeft" />
+      </Link>
+      <h1 class="h3 mb-0">{{ source.name }}</h1>
+    </div>
 
-    <CCardBody>
-      <CNav variant="tabs" class="mb-3">
-        <CNavItem v-for="program in programs" :key="program.index">
-          <CNavLink
-            :active="activeProgramIndex === program.index"
-            href="javascript:void(0)"
-            @click="activeProgramIndex = program.index">
-            Program {{ program.index }}
-          </CNavLink>
-        </CNavItem>
-      </CNav>
+    <CCard>
+      <CCardBody>
+        <div v-if="programs.length === 0" class="text-center text-muted py-5">
+          No programs found on this device.
+        </div>
 
-      <ProgramTab
-        v-if="activeProgram"
-        :key="activeProgram.index"
-        :program="activeProgram"
-        :group-labels="group_labels" />
-    </CCardBody>
+        <template v-else>
+          <CButtonGroup role="group" aria-label="Select program" class="mb-3 flex-wrap">
+            <CButton
+              v-for="program in programs"
+              :key="program.index"
+              :color="program.index === selectedIndex ? 'primary' : 'secondary'"
+              :variant="program.index === selectedIndex ? undefined : 'outline'"
+              :aria-pressed="program.index === selectedIndex"
+              @click="selectProgram(program.index)">
+              Program {{ program.index + 1 }}
+            </CButton>
+          </CButtonGroup>
+
+          <ProgramTab
+            v-if="selectedProgram"
+            :key="selectedProgram.index"
+            :program="selectedProgram"
+            @update:has-pending-changes="activeHasPending = $event" />
+        </template>
+      </CCardBody>
+    </CCard>
   </CContainer>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
   import { ref, computed } from 'vue';
-  import ProgramTab from './components/ProgramTab.vue';
-  import type { Program } from './types';
+  import ProgramTab from './ProgramTab.vue';
+  import useAuth from '@/composables/useAuth';
+  import type { Program, ProgramSource } from './types';
 
-  type SourceKind = 'plc' | 'modbus_device';
-
-  type SourceSummary = {
-    kind: SourceKind;
-    id: number;
-    name: string;
-    firmware: string | null;
-  };
-
-  const props = defineProps<{
-    source: SourceSummary;
+  const { pageProps, routePath } = useAuth<{
+    source: ProgramSource;
     programs: Program[];
-    group_labels: Record<string, string>;
   }>();
 
-  const activeProgramIndex = ref<number>(props.programs[0]?.index ?? 0);
+  const source = computed(() => pageProps.value.source);
+  const programs = computed(() => pageProps.value.programs);
 
-  const activeProgram = computed<Program | undefined>(() =>
-    props.programs.find((p) => p.index === activeProgramIndex.value)
+  const selectedIndex = ref<number>(programs.value[0]?.index ?? 0);
+  const selectedProgram = computed(() =>
+    programs.value.find((program) => program.index === selectedIndex.value) ?? null
   );
+
+  // Tracks whether the currently shown program has unsaved edits, so switching
+  // programs (which remounts ProgramTab and drops its pending state) can warn.
+  const activeHasPending = ref(false);
+
+  function selectProgram(index: number) {
+    if (index === selectedIndex.value)
+      return;
+
+    if (activeHasPending.value && !window.confirm('Discard unsaved changes to this program?'))
+      return;
+
+    activeHasPending.value = false;
+    selectedIndex.value = index;
+  }
 </script>
+
+<style scoped>
+</style>

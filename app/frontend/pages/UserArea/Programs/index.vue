@@ -1,48 +1,42 @@
-
 <template>
-  <CContainer fluid class="px-4 py-4">
-    <!-- Header with Breadcrumb -->
-    <CRow class="mb-3 align-items-center">
-      <div class="col d-flex justify-content-between align-items-start">
-        <h1 class="h3 mb-1">Programs</h1>
-      </div>
-    </CRow>
-
+  <CContainer fluid class="p-4">
     <CCardBody>
-      <div v-if="!hasSources" class="text-medium-emphasis text-center py-4">
-        No devices with programs are available on this site.
+      <div v-if="sources.length === 0" class="text-center text-muted py-5">
+        <CIcon icon="cilList" size="3xl" class="mb-3" />
+        <p class="mb-0">No devices with programs on this site.</p>
       </div>
 
-      <CTable v-else hover responsive>
+      <CTable v-else hover responsive class="align-middle mb-0">
         <CTableHead>
-          <CTableRow>
+          <CTableRow class="bg-light">
+            <CTableHeaderCell style="width: 50px">Status</CTableHeaderCell>
             <CTableHeaderCell>Name</CTableHeaderCell>
             <CTableHeaderCell>Type</CTableHeaderCell>
             <CTableHeaderCell>Firmware</CTableHeaderCell>
-            <CTableHeaderCell>Host</CTableHeaderCell>
-            <CTableHeaderCell>Status</CTableHeaderCell>
-            <CTableHeaderCell>Last seen</CTableHeaderCell>
           </CTableRow>
         </CTableHead>
-
         <CTableBody>
           <CTableRow
             v-for="source in sources"
-            :key="source.row_key"
-            class="cursor-pointer"
-            @click="navigateToSource(source)">
+            :key="`${source.kind}-${source.id}`"
+            class="programs-row"
+            @click="open(source)">
             <CTableDataCell>
-              <strong>{{ source.name }}</strong>
+              <ConnectionStatusIndicator :measurementPoint="{
+                ...source,
+                last_value_at: source.last_seen_at
+              }" />
             </CTableDataCell>
-            <CTableDataCell>{{ source.display_type }}</CTableDataCell>
-            <CTableDataCell>{{ source.firmware ?? '—' }}</CTableDataCell>
-            <CTableDataCell>{{ source.host ?? '—' }}</CTableDataCell>
             <CTableDataCell>
-              <CBadge :color="STATUS_VARIANTS[source.status]">
-                {{ STATUS_LABELS[source.status] }}
-              </CBadge>
+              <div class="fw-semibold">{{ source.name }}</div>
             </CTableDataCell>
-            <CTableDataCell>{{ formatLastSeen(source.last_seen_at) }}</CTableDataCell>
+            <CTableDataCell>
+              <span>{{ source.display_type || defaultTypeLabel(source) }}</span>
+            </CTableDataCell>
+            <CTableDataCell>
+              <span v-if="source.firmware" class="text-muted small">{{ source.firmware }}</span>
+              <span v-else class="text-muted">—</span>
+            </CTableDataCell>
           </CTableRow>
         </CTableBody>
       </CTable>
@@ -50,65 +44,39 @@
   </CContainer>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
   import { computed } from 'vue';
   import { router } from '@inertiajs/vue3';
+  import ConnectionStatusIndicator from '@/components/ConnectionStatusIndicator.vue';
+  import useAuth from '@/composables/useAuth';
 
-  type SourceKind = 'plc' | 'modbus_device';
-  type Status = 'online' | 'offline' | 'awaiting_setup' | 'disabled';
-
-  type ProgramSource = {
-    row_key: string;
-    kind: SourceKind;
+  type ProgramSourceRow = {
+    kind: 'plc' | 'modbus_device';
     id: number;
     name: string;
-    display_type: string;
+    display_type: string | null;
     firmware: string | null;
     host: string | null;
-    status: Status;
-    last_seen_at: string | null;
     active: boolean;
+    last_seen_at: string | null;
   };
 
-  const props = defineProps<{
-    sources: ProgramSource[]
-  }>();
+  const { pageProps, routePath } = useAuth<{ sources: ProgramSourceRow[] }>();
 
-  const hasSources = computed(() => props.sources.length > 0);
+  const sources = computed(() => pageProps.value.sources);
 
-  const STATUS_VARIANTS: Record<Status, string> = {
-    online:          'success',
-    offline:         'danger',
-    awaiting_setup:  'warning',
-    disabled:        'secondary'
-  };
-
-  const STATUS_LABELS: Record<Status, string> = {
-    online:          'Online',
-    offline:         'Offline',
-    awaiting_setup:  'Awaiting setup',
-    disabled:        'Disabled'
-  };
-
-  function formatLastSeen(iso: string | null) {
-    if (!iso)
-      return '—';
-
-    const date = new Date(iso);
-    return date.toLocaleString();
+  function defaultTypeLabel(source: ProgramSourceRow) {
+    return source.kind === 'plc' ? 'Controller' : 'Device';
   }
 
-  function navigateToSource(source: ProgramSource) {
-    const path = source.kind === 'plc'
-      ? `/user/programs/plc/${source.id}`
-      : `/user/programs/modbus_device/${source.id}`;
-
-    router.visit(path);
+  function open(source: ProgramSourceRow) {
+    const key = source.kind === 'plc' ? 'programs_show_plc' : 'programs_show_modbus_device';
+    router.visit(routePath(key, { id: source.id }));
   }
 </script>
 
 <style scoped>
-  .cursor-pointer {
+  .programs-row {
     cursor: pointer;
   }
 </style>

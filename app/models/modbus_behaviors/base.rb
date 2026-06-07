@@ -73,6 +73,33 @@ class ModbusBehaviors::Base
   def cleanup_onetime_schedules!
   end
 
+  # ── Programs (firmware-specific; default: no programs) ──────────────
+  #
+  # A "programs" firmware exposes editable program/phase register groups
+  # (e.g. FATEK's program_{n}_phase_{m}). Behaviors that support programs
+  # override program_group_pattern with a Regexp capturing the 0-based
+  # program index and the phase number. The generic builder/controller/UI
+  # key off these declarations, never role names.
+
+  def programs?
+    program_group_pattern.present?
+  end
+
+  def program_group_pattern
+    nil
+  end
+
+  # Registers belonging to a program but living outside its phase groups.
+  # Array of { group_name:, group_role: } for the given 0-based program index.
+  def program_meta_bindings(program_index)
+    []
+  end
+
+  # Trigger a host-side refresh of the given 0-based programs from the
+  # peripheral. No-op unless the firmware supports it.
+  def refresh_programs!(program_indices)
+  end
+
   # Pre-write transform: called by ModbusWriteService before reverse_scaled encoding.
   # Receives the array of { measurement_point:, value: } hashes.
   # Returns the (possibly mutated) array.

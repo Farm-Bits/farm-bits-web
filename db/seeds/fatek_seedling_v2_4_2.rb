@@ -271,6 +271,7 @@ ActiveRecord::Base.transaction do
     name:           'Seedling Program v2.4.2',
     version_code:   '2.4.2',
     address_offset: 1,
+    behavior_profile: 'fatek_seedling_v1',
     is_latest:      true,
     is_supported:   true,
     model:          fatek_model
@@ -291,8 +292,8 @@ ActiveRecord::Base.transaction do
   # default_measurement_subtype assignment — the seed continues either way.
 
   subtype_names = {
-    humidity:    'Humidity > Ambient',
-    temperature: 'Temperature > Ambient'
+    humidity:    { type: 'Ambient', subtype: 'Humidity'},
+    temperature: { type: 'Ambient', subtype: 'Temperature'}
   }
 
   find_subtype = ->(key) do
@@ -300,7 +301,11 @@ ActiveRecord::Base.transaction do
     if name.nil?
       return nil
     end
-    st = MeasurementSubtype.find_by(name: name)
+    t = MeasurementType.find_by(name: name[:type])
+    st = MeasurementSubtype.find_by(
+      name: name[:subtype],
+      measurement_type: t
+    )
     if st.nil?
       Rails.logger.warn(
         "[Fatek seed] MeasurementSubtype '#{name}' (#{key}) not found; " \
@@ -562,9 +567,9 @@ ActiveRecord::Base.transaction do
     { addr: 44,   name: 'Command codes loaded mark',        role: 'cmd_loaded_mark',  read_offset: 21, bulk_group: 'system_status_low', bulk_base: 10,   visibility: 'hidden'  },
     { addr: 61,   name: 'Adjusted record number',           role: 'adjusted_record',  read_offset: 23, bulk_group: 'system_status_low', bulk_base: 10,   visibility: 'hidden'  },
     { addr: 6000, name: 'Alarm code (D0)',                  role: 'alarm_code_d0',    read_offset: 30, bulk_group: 'alarm_code_d0',     bulk_base: 6000, visibility: 'visible' },
-    { addr: 5254, name: 'Program 1 loaded mark',            role: 'prog1_loaded',     read_offset: 31, bulk_group: 'program_1',         bulk_base: 5128, visibility: 'hidden'  },
-    { addr: 5382, name: 'Program 2 loaded mark',            role: 'prog2_loaded',     read_offset: 32, bulk_group: 'program_2',         bulk_base: 5256, visibility: 'hidden'  },
-    { addr: 5510, name: 'Program 3 loaded mark',            role: 'prog3_loaded',     read_offset: 33, bulk_group: 'program_3',         bulk_base: 5384, visibility: 'hidden'  }
+    { addr: 5254, name: 'Program 1 loaded mark',            role: 'prog1_loaded',     read_offset: 31, bulk_group: 'program_1',         bulk_base: 5128, visibility: 'visible'  },
+    { addr: 5382, name: 'Program 2 loaded mark',            role: 'prog2_loaded',     read_offset: 32, bulk_group: 'program_2',         bulk_base: 5256, visibility: 'visible'  },
+    { addr: 5510, name: 'Program 3 loaded mark',            role: 'prog3_loaded',     read_offset: 33, bulk_group: 'program_3',         bulk_base: 5384, visibility: 'visible'  }
   ]
 
   ro_system_status_specs.each do |spec|
