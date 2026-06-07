@@ -19,6 +19,10 @@ class ModbusBehaviors::FatekSeedlingV1 < ModbusBehaviors::Base
     PROGRAM_GROUP_PATTERN
   end
 
+  def active_program_binding
+    { group_name: 'system_status', group_role: 'program_select' }
+  end
+
   # Per-program registers that live in the shared 'system_status' group (so
   # they share group_name and differ only by group_role). Bound: the humidity
   # control mode (operator-editable) and the program's "loaded" mark

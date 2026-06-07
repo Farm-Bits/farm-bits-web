@@ -44,8 +44,9 @@ class ProgramsBuilder
     measurement_points = load_measurement_points
 
     {
-      source:   source_summary,
-      programs: build_programs(index_phases(measurement_points), measurement_points)
+      source:          source_summary,
+      programs:        build_programs(index_phases(measurement_points), measurement_points),
+      active_selector: build_active_selector(measurement_points)
     }
   end
 
@@ -132,6 +133,27 @@ class ProgramsBuilder
           position:          mp.register_template.position
         }
       end
+    end
+
+    # The register mapping for the device's active-program selector, or nil.
+    # The frontend reads its measurement_point.last_value as the active index
+    # and writes to it (via the existing measurement_points#write endpoint) to
+    # change which program runs.
+    def build_active_selector(measurement_points)
+      binding = @behavior.active_program_binding
+      if binding.nil?
+        return nil
+      end
+
+      mp = measurement_points.find do |point|
+        template = point.register_template
+        template.group_name == binding[:group_name] && template.group_role == binding[:group_role]
+      end
+      if mp.nil?
+        return nil
+      end
+
+      serialize([mp]).first
     end
 
     def source_summary

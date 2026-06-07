@@ -89,6 +89,13 @@ class ModbusBehaviors::Base
     nil
   end
 
+  # The register that reports/sets which program the device currently runs,
+  # as { group_name:, group_role: }. nil when the firmware has no active-program
+  # concept.
+  def active_program_binding
+    nil
+  end
+
   # Registers belonging to a program but living outside its phase groups.
   # Array of { group_name:, group_role: } for the given 0-based program index.
   def program_meta_bindings(program_index)
