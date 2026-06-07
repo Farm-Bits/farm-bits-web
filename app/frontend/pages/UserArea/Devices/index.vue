@@ -1,17 +1,19 @@
 <template>
-  <CContainer fluid class="px-4 py-4">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-end mb-4">
-      <h1 class="h3 mb-1">Devices</h1>
-      <div class="d-flex gap-2">
-        <CButton
-          v-if="canAddDevice"
-          color="primary"
-          @click="openAddDeviceModal">
-          <CIcon icon="cilPlus" class="me-2" />
-          Add Device
-        </CButton>
+  <CContainer fluid class="p-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div>
+        <h5 class="mb-1">Device Management</h5>
+        <p class="text-medium-emphasis small mb-0">
+          Manage devices
+        </p>
       </div>
+      <CButton
+        v-if="canAddDevice"
+        color="primary"
+        @click="openAddDeviceModal">
+        <CIcon icon="cilPlus" class="me-2" />
+        Add Device
+      </CButton>
     </div>
 
     <!-- Empty State -->

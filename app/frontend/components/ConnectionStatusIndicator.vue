@@ -14,7 +14,7 @@
   import type { MeasurementPoint } from '@/types/measurementPoint';
 
   const props = withDefaults(defineProps<{
-    measurementPoint: MeasurementPoint;
+    measurementPoint: Pick<MeasurementPoint, 'active' | 'last_value_at'>;
     size?: 'sm' | 'md' | 'lg';
   }>(), {
     size: 'md'

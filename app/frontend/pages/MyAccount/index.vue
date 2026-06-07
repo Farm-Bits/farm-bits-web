@@ -7,61 +7,59 @@
       </CCol>
     </CRow>
 
-    <CCardHeader>
-      <CTabs v-model:active-item-key="activeTab" variant="tabs">
-        <CTabList variant="tabs">
-          <CTab
-            v-if="permissions?.my_account.show"
-            item-key="profile"
-            class="tab-item">
-            <CIcon name="cilUser" class="me-2" />
-            Profile
-          </CTab>
+    <CTabs v-model:active-item-key="activeTab" variant="tabs">
+      <CTabList variant="tabs">
+        <CTab
+          v-if="permissions?.my_account.show"
+          item-key="profile"
+          class="tab-item">
+          <CIcon name="cilUser" class="me-2" />
+          Profile
+        </CTab>
 
-          <CTab
-            v-if="permissions?.my_account.update"
-            item-key="password"
-            class="tab-item">
-            <CIcon name="cilLockLocked" class="me-2" />
-            Password
-          </CTab>
+        <CTab
+          v-if="permissions?.my_account.update"
+          item-key="password"
+          class="tab-item">
+          <CIcon name="cilLockLocked" class="me-2" />
+          Password
+        </CTab>
 
-          <CTab
-            v-if="permissions?.two_factors.update"
-            item-key="security"
-            class="tab-item">
-            <CIcon name="cilShieldAlt" class="me-2" />
-            Security
-          </CTab>
+        <CTab
+          v-if="permissions?.two_factors.update"
+          item-key="security"
+          class="tab-item">
+          <CIcon name="cilShieldAlt" class="me-2" />
+          Security
+        </CTab>
 
-          <CTab
-            v-if="permissions?.my_account.destroy"
-            item-key="danger"
-            class="tab-item tab-danger">
-            <CIcon name="cilWarning" class="me-2" />
-            Danger Zone
-          </CTab>
-        </CTabList>
+        <CTab
+          v-if="permissions?.my_account.destroy"
+          item-key="danger"
+          class="tab-item tab-danger">
+          <CIcon name="cilWarning" class="me-2" />
+          Danger Zone
+        </CTab>
+      </CTabList>
 
-        <CTabContent>
-          <CTabPanel v-if="permissions?.my_account.show" item-key="profile">
-            <ProfileTab />
-          </CTabPanel>
+      <CTabContent>
+        <CTabPanel v-if="permissions?.my_account.show" item-key="profile">
+          <ProfileTab />
+        </CTabPanel>
 
-          <CTabPanel v-if="permissions?.my_account.update" item-key="password">
-            <PasswordTab />
-          </CTabPanel>
+        <CTabPanel v-if="permissions?.my_account.update" item-key="password">
+          <PasswordTab />
+        </CTabPanel>
 
-          <CTabPanel v-if="permissions?.two_factors.update" item-key="security">
-            <SecurityTab />
-          </CTabPanel>
+        <CTabPanel v-if="permissions?.two_factors.update" item-key="security">
+          <SecurityTab />
+        </CTabPanel>
 
-          <CTabPanel v-if="permissions?.my_account.destroy" item-key="danger">
-            <DangerTab />
-          </CTabPanel>
-        </CTabContent>
-      </CTabs>
-    </CCardHeader>
+        <CTabPanel v-if="permissions?.my_account.destroy" item-key="danger">
+          <DangerTab />
+        </CTabPanel>
+      </CTabContent>
+    </CTabs>
   </CContainer>
 </template>
 

@@ -1,5 +1,7 @@
 <template>
-  <div class="p-4">
+  <div class="px-4">
+    <ErrorMessages class="mb-2" />
+
     <CAlert color="danger" class="d-flex align-items-start">
       <CIcon name="cilWarning" class="me-2 mt-1" />
       <p class="mb-0">Actions in this section will deactivate your account.</p>

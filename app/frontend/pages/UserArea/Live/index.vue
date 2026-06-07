@@ -2,19 +2,13 @@
   <CContainer fluid class="px-4 py-2">
     <!-- Header -->
     <div class="d-flex align-items-center justify-content-between mb-2">
-      <h2>Live Data</h2>
+      <SegmentFilter
+        v-model="selectedSegmentId"
+        :segments="segments" />
       <div class="d-flex align-items-center gap-2">
         <span v-if="polling.lastPollAt.value" class="small text-body-secondary">
           Updated <RelativeTime :datetime="polling.lastPollAt.value.toISOString()" />
         </span>
-      </div>
-    </div>
-
-    <div class="row g-3 align-items-end mb-4">
-      <div class="col-auto">
-        <SegmentFilter
-          v-model="selectedSegmentId"
-          :segments="segments" />
       </div>
     </div>
 

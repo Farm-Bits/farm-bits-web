@@ -1,112 +1,102 @@
 <template>
   <CContainer fluid class="py-3">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h1 class="h3 mb-0">Alerts</h1>
-      <CBadge :color="activeBadgeColor" class="px-3 py-2">
-        {{ activeAlerts.length }} active
-      </CBadge>
-      <div class="d-flex gap-2">
-        <CButton
-          color="primary"
-          @click="router.visit(routePath('alert_rules_index'))">
-          <CIcon icon="cilPlus" class="me-2" />
+    <CCardBody class="p-0">
+      <CNav variant="tabs" class="px-0 pt-2">
+        <CNavItem>
+          <CNavLink
+            :active="currentTab === 'active'"
+            @click="currentTab = 'active'"
+            role="button">
+            Active
+            <CBadge v-if="activeAlerts.length > 0" color="danger" class="ms-2">
+              {{ activeAlerts.length }}
+            </CBadge>
+          </CNavLink>
+        </CNavItem>
+
+        <CNavItem>
+          <CNavLink
+            :active="currentTab === 'history'"
+            @click="currentTab = 'history'"
+            role="button">
+            History
+            <CBadge v-if="closedAlerts.length > 0" color="secondary" class="ms-2">
+              {{ closedAlerts.length }}
+            </CBadge>
+          </CNavLink>
+        </CNavItem>
+
+        <a
+          href="#"
+          class="row-action-link text-secondary align-self-center ms-auto"
+          @click.prevent="router.visit(routePath('alert_rules_index'))">
           Alert Rules
-        </CButton>
+        </a>
+      </CNav>
+
+      <div v-if="visibleAlerts.length === 0" class="text-center py-5 text-muted">
+        <CIcon name="cilCheckCircle" size="xl" class="mb-2 text-success" />
+        <p class="mb-0">
+          {{ currentTab === 'active' ? 'No active alerts.' : 'No alerts in history.' }}
+        </p>
       </div>
-    </div>
 
-    <CCard>
-      <CCardBody class="p-0">
-        <CNav variant="tabs" class="px-3 pt-2">
-          <CNavItem>
-            <CNavLink
-              :active="currentTab === 'active'"
-              @click="currentTab = 'active'"
-              role="button">
-              Active
-              <CBadge v-if="activeAlerts.length > 0" color="danger" class="ms-2">
-                {{ activeAlerts.length }}
+      <CTable v-else hover responsive class="mb-0">
+        <CTableHead>
+          <CTableRow>
+            <CTableHeaderCell style="width: 110px;">Severity</CTableHeaderCell>
+            <CTableHeaderCell>Rule</CTableHeaderCell>
+            <CTableHeaderCell>Measurement Point</CTableHeaderCell>
+            <CTableHeaderCell>Site</CTableHeaderCell>
+            <CTableHeaderCell>Condition</CTableHeaderCell>
+            <CTableHeaderCell>Started</CTableHeaderCell>
+            <CTableHeaderCell>{{ currentTab === 'active' ? 'Open for' : 'Duration' }}</CTableHeaderCell>
+          </CTableRow>
+        </CTableHead>
+
+        <CTableBody>
+          <CTableRow
+            v-for="alert in visibleAlerts"
+            :key="alert.id"
+            @click="openAlert(alert)"
+            class="alert-row"
+            :class="rowClass(alert)">
+            <CTableDataCell>
+              <CBadge :color="severityColor(alert.severity)">
+                {{ alert.severity.toUpperCase() }}
               </CBadge>
-            </CNavLink>
-          </CNavItem>
+            </CTableDataCell>
 
-          <CNavItem>
-            <CNavLink
-              :active="currentTab === 'history'"
-              @click="currentTab = 'history'"
-              role="button">
-              History
-              <CBadge v-if="closedAlerts.length > 0" color="secondary" class="ms-2">
-                {{ closedAlerts.length }}
-              </CBadge>
-            </CNavLink>
-          </CNavItem>
-        </CNav>
+            <CTableDataCell>
+              <strong>{{ alert.rule_name }}</strong>
+            </CTableDataCell>
 
-        <div v-if="visibleAlerts.length === 0" class="text-center py-5 text-muted">
-          <CIcon name="cilCheckCircle" size="xl" class="mb-2 text-success" />
-          <p class="mb-0">
-            {{ currentTab === 'active' ? 'No active alerts.' : 'No alerts in history.' }}
-          </p>
-        </div>
+            <CTableDataCell>{{ alert.measurement_point_name }}</CTableDataCell>
 
-        <CTable v-else hover responsive class="mb-0">
-          <CTableHead>
-            <CTableRow>
-              <CTableHeaderCell style="width: 110px;">Severity</CTableHeaderCell>
-              <CTableHeaderCell>Rule</CTableHeaderCell>
-              <CTableHeaderCell>Measurement Point</CTableHeaderCell>
-              <CTableHeaderCell>Site</CTableHeaderCell>
-              <CTableHeaderCell>Condition</CTableHeaderCell>
-              <CTableHeaderCell>Started</CTableHeaderCell>
-              <CTableHeaderCell>{{ currentTab === 'active' ? 'Open for' : 'Duration' }}</CTableHeaderCell>
-            </CTableRow>
-          </CTableHead>
+            <CTableDataCell>{{ alert.segment_name }}</CTableDataCell>
 
-          <CTableBody>
-            <CTableRow
-              v-for="alert in visibleAlerts"
-              :key="alert.id"
-              @click="openAlert(alert)"
-              class="alert-row"
-              :class="rowClass(alert)">
-              <CTableDataCell>
-                <CBadge :color="severityColor(alert.severity)">
-                  {{ alert.severity.toUpperCase() }}
-                </CBadge>
-              </CTableDataCell>
+            <CTableDataCell>
+              <span class="text-muted small">{{ conditionSummary(alert) }}</span>
+            </CTableDataCell>
 
-              <CTableDataCell>
-                <strong>{{ alert.rule_name }}</strong>
-              </CTableDataCell>
+            <CTableDataCell>
+              <span :title="formatAbsoluteTime(alert.started_at)">
+                {{ formatRelativeTime(alert.started_at) }}
+              </span>
+            </CTableDataCell>
 
-              <CTableDataCell>{{ alert.measurement_point_name }}</CTableDataCell>
-
-              <CTableDataCell>{{ alert.segment_name }}</CTableDataCell>
-
-              <CTableDataCell>
-                <span class="text-muted small">{{ conditionSummary(alert) }}</span>
-              </CTableDataCell>
-
-              <CTableDataCell>
-                <span :title="formatAbsoluteTime(alert.started_at)">
-                  {{ formatRelativeTime(alert.started_at) }}
-                </span>
-              </CTableDataCell>
-
-              <CTableDataCell>
-                <strong v-if="alert.open" class="text-danger">
-                  {{ formatDuration(liveDuration(alert)) }}
-                </strong>
-                <span v-else class="text-muted">
-                  {{ formatDuration(alert.duration_seconds) }}
-                </span>
-              </CTableDataCell>
-            </CTableRow>
-          </CTableBody>
-        </CTable>
-      </CCardBody>
-    </CCard>
+            <CTableDataCell>
+              <strong v-if="alert.open" class="text-danger">
+                {{ formatDuration(liveDuration(alert)) }}
+              </strong>
+              <span v-else class="text-muted">
+                {{ formatDuration(alert.duration_seconds) }}
+              </span>
+            </CTableDataCell>
+          </CTableRow>
+        </CTableBody>
+      </CTable>
+    </CCardBody>
   </CContainer>
 </template>
 
@@ -158,24 +148,6 @@
 
   const visibleAlerts = computed<Alert[]>(() => {
     return currentTab.value === 'active' ? activeAlerts.value : closedAlerts.value;
-  });
-
-  const activeBadgeColor = computed<string>(() => {
-    if (activeAlerts.value.length === 0) {
-      return 'success';
-    }
-
-    const hasCritical = activeAlerts.value.some(a => a.severity === 'critical');
-    if (hasCritical) {
-      return 'danger';
-    }
-
-    const hasWarning = activeAlerts.value.some(a => a.severity === 'warning');
-    if (hasWarning) {
-      return 'warning';
-    }
-
-    return 'info';
   });
 
   function liveDuration(alert: Alert): number {

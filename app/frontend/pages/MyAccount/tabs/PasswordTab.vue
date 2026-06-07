@@ -1,6 +1,6 @@
 <template>
-  <div class="p-4">
-    <ErrorMessages class="mb-4" />
+  <div class="px-4">
+    <ErrorMessages class="mb-2" />
 
     <div class="row align-items-center py-3 border-bottom">
       <div class="col-md-3">

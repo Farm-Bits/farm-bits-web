@@ -1,10 +1,5 @@
 <template>
   <CContainer fluid class="px-4 py-2">
-    <!-- Header -->
-    <div class="d-flex align-items-center justify-content-between mb-2">
-      <h2>Analytics</h2>
-    </div>
-
     <div class="row g-3 align-items-end mb-4">
       <div class="col-auto">
         <SegmentFilter

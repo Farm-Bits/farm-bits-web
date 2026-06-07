@@ -7,62 +7,60 @@
       </CCol>
     </CRow>
 
-    <CCardHeader>
-      <CTabs v-model:active-item-key="activeTab" variant="tabs">
-        <CTabList variant="tabs">
-          <CTab
-            v-if="permissions?.company_setup.edit"
-            item-key="company"
-            class="tab-item">
-            <CIcon name="cilBuilding" class="me-2" />
-            Company Information
-          </CTab>
+    <CTabs v-model:active-item-key="activeTab" variant="tabs">
+      <CTabList variant="tabs">
+        <CTab
+          v-if="permissions?.company_setup.edit"
+          item-key="company"
+          class="tab-item">
+          <CIcon name="cilBuilding" class="me-2" />
+          Company Information
+        </CTab>
 
-          <CTab
-            v-if="permissions?.company_users.index"
-            item-key="users"
-            class="tab-item">
-            <CIcon name="cilPeople" class="me-2" />
-            Users
-          </CTab>
+        <CTab
+          v-if="permissions?.company_users.index"
+          item-key="users"
+          class="tab-item">
+          <CIcon name="cilPeople" class="me-2" />
+          Users
+        </CTab>
 
-          <CTab
-            v-if="permissions?.sites.index"
-            item-key="sites"
-            class="tab-item">
-            <CIcon name="cilLocationPin" class="me-2" />
-            Sites
-          </CTab>
+        <CTab
+          v-if="permissions?.sites.index"
+          item-key="sites"
+          class="tab-item">
+          <CIcon name="cilLocationPin" class="me-2" />
+          Sites
+        </CTab>
 
-          <CTab
-            v-if="permissions?.company_setup.destroy"
-            item-key="danger"
-            class="tab-item tab-danger">
-            <CIcon name="cilWarning" class="me-2" />
-            Danger Zone
-          </CTab>
-        </CTabList>
+        <CTab
+          v-if="permissions?.company_setup.destroy"
+          item-key="danger"
+          class="tab-item tab-danger">
+          <CIcon name="cilWarning" class="me-2" />
+          Danger Zone
+        </CTab>
+      </CTabList>
 
-        <!-- Tab Content -->
-        <CTabContent>
-          <CTabPanel v-if="permissions?.company_setup.edit" item-key="company">
-            <CompanyTab />
-          </CTabPanel>
+      <!-- Tab Content -->
+      <CTabContent>
+        <CTabPanel v-if="permissions?.company_setup.edit" item-key="company">
+          <CompanyTab />
+        </CTabPanel>
 
-          <CTabPanel v-if="permissions?.company_users.index" item-key="users">
-            <UsersTab />
-          </CTabPanel>
+        <CTabPanel v-if="permissions?.company_users.index" item-key="users">
+          <UsersTab />
+        </CTabPanel>
 
-          <CTabPanel v-if="permissions?.sites.index" item-key="sites">
-            <SitesTab />
-          </CTabPanel>
+        <CTabPanel v-if="permissions?.sites.index" item-key="sites">
+          <SitesTab />
+        </CTabPanel>
 
-          <CTabPanel v-if="permissions?.company_setup.destroy" item-key="danger">
-            <DangerTab />
-          </CTabPanel>
-        </CTabContent>
-      </CTabs>
-    </CCardHeader>
+        <CTabPanel v-if="permissions?.company_setup.destroy" item-key="danger">
+          <DangerTab />
+        </CTabPanel>
+      </CTabContent>
+    </CTabs>
   </CContainer>
 </template>
 

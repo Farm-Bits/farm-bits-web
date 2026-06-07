@@ -1,15 +1,20 @@
 <template>
-  <CContainer fluid class="py-3">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h1 class="h3 mb-0">Alert Rules</h1>
-
-      <Link
+  <CContainer fluid class="p-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div>
+        <h5 class="mb-1">Alert Rules</h5>
+        <p class="text-medium-emphasis small mb-0">
+          Manage your alert rules and notifications
+        </p>
+      </div>
+      <CButton
         v-if="permissions?.alert_rules.new"
-        :href="routePath('alert_rules_new')"
-        class="btn btn-primary">
-        <CIcon name="cilPlus" class="me-1" />
-        New Rule
-      </Link>
+        color="primary"
+        size="sm"
+        @click="router.visit(routePath('alert_rules_new'))">
+        <CIcon name="cilPlus" class="me-2" />
+        Add Rule
+      </CButton>
     </div>
 
     <CCard>
