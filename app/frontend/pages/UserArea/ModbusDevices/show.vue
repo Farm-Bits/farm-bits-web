@@ -71,13 +71,13 @@
         <CModalTitle>Configure Device</CModalTitle>
       </CModalHeader>
       <CModalBody>
-        <!-- <MeasurementPointSimpleForm
+        <MeasurementPointSimpleForm
           v-if="selectedMapping"
           :registerMapping="selectedMapping"
           :segments="segments"
           :measurementSubtypes="measurementSubtypes"
           @submit="handleMeasurementPointUpdate"
-          @cancel="closeEditModal" /> -->
+          @cancel="closeEditModal" />
       </CModalBody>
     </CModal>
 
@@ -92,7 +92,7 @@
   import { computed, ref } from 'vue';
   import axios from 'axios';
   import MeasurementRow from '@/components/MeasurementRow.vue';
-  // import MeasurementPointSimpleForm from '@/components/MeasurementPointSimpleForm/index.vue';
+  import MeasurementPointSimpleForm from '@/components/MeasurementPointSimpleForm/index.vue';
   import MeasurementPointAnalyticsModal from '@/components/MeasurementPointAnalyticsModal.vue';
   import usePermissions from '@/composables/usePermissions';
   import useAuth from '@/composables/useAuth';

@@ -66,7 +66,7 @@
 <script lang="ts" setup>
   import { ref, computed } from 'vue';
   import InterfaceRow from './InterfaceRow.vue';
-  import MeasurementPointForm from './MeasurementPointForm/index.vue';
+  import MeasurementPointForm from '@/components/MeasurementPointForm/index.vue';
   import MeasurementPointAnalyticsModal from '@/components/MeasurementPointAnalyticsModal.vue';
   import type { Segment } from '@/types/location';
   import type { MeasurementPoint, MeasurementSubtype } from '@/types/measurementPoint';

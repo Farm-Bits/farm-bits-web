@@ -8,10 +8,7 @@
     <!-- Header: status dot + name + alarm badge -->
     <div class="d-flex align-items-start justify-content-between">
       <div class="d-flex align-items-center gap-2 mb-1">
-        <span
-          class="status-dot"
-          :class="statusDotClass"
-          :title="statusTooltip" />
+        <ConnectionStatusIndicator size="sm" :measurementPoint="measurementPoint" />
         <img
           v-if="measurementPoint.measurement_subtype && measurementPoint.measurement_subtype.icon_key"
           class="w-5 h-5"
@@ -76,7 +73,7 @@
 
 <script lang="ts" setup>
   import { computed, toRef } from 'vue';
-  import RelativeTime from '@/components/RelativeTime.vue';
+  import ConnectionStatusIndicator from '@/components/ConnectionStatusIndicator.vue';
   import ValueDisplay from '@/components/ValueDisplay.vue';
   import StatusDisplay from '@/components/OperationMode/features/StatusDisplay.vue';
   import QuickActions from './QuickActions.vue';
@@ -166,23 +163,6 @@
 
   // ── Card styling ──
 
-  const statusDotClass = computed(() => {
-    if (hasActiveEstop.value)
-      return 'status-dot--alarm';
-
-    if (!measurementPoint.last_value_at)
-      return 'status-dot--unknown';
-
-    const lastAt = new Date(measurementPoint.last_value_at);
-    const diffMs = Date.now() - lastAt.getTime();
-    const fiveMinutes = 5 * 60 * 1000;
-
-    if (diffMs > fiveMinutes)
-      return 'status-dot--stale';
-
-    return 'status-dot--online';
-  });
-
   const statusTooltip = computed(() => {
     if (hasActiveEstop.value)
       return 'Emergency Stop Active';
@@ -258,28 +238,6 @@
     height: 8px;
     border-radius: 50%;
     flex-shrink: 0;
-  }
-
-  .status-dot--online {
-    background-color: #10b981;
-    animation: pulse 2s ease-in-out infinite;
-  }
-
-  .status-dot--stale {
-    background-color: #f59e0b;
-  }
-
-  .status-dot--unknown {
-    background-color: #9ca3af;
-  }
-
-  .status-dot--alarm {
-    background-color: #ef4444;
-    animation: blink 1s ease-in-out infinite;
-  }
-
-  .status-dot--warning {
-    background-color: #f59e0b;
   }
 
   @keyframes pulse {

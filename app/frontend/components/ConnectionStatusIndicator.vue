@@ -2,7 +2,7 @@
   <div class="status-indicator">
     <CTooltip :content="statusTooltip">
       <template #toggler="{ id, on }">
-        <div v-on="on" :class="['d-inline-block', 'status-dot', statusClass]">
+        <div v-on="on" :class="['d-inline-block', 'status-dot', statusClass, sizeClass]">
         </div>
       </template>
     </CTooltip>
@@ -13,9 +13,12 @@
   import { computed } from 'vue';
   import type { MeasurementPoint } from '@/types/measurementPoint';
 
-  const props = defineProps<{
+  const props = withDefaults(defineProps<{
     measurementPoint: MeasurementPoint;
-  }>();
+    size?: 'sm' | 'md' | 'lg';
+  }>(), {
+    size: 'md'
+  });
 
   const statusClass = computed(() => {
     if (!props.measurementPoint.active)
@@ -25,12 +28,27 @@
       return 'status-unknown';
 
     const lastSeen = new Date(props.measurementPoint.last_value_at);
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
 
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+    if (lastSeen < tenMinutesAgo)
+      return 'status-alarm';
+
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
     if (lastSeen < fiveMinutesAgo)
-      return 'status-stale';
+      return 'status-warning';
 
     return 'status-normal';
+  });
+
+  const sizeClass = computed(() => {
+    switch (props.size) {
+      case 'sm':
+        return 'status-dot-sm';
+      case 'lg':
+        return 'status-dot-lg';
+      default:
+        return 'status-dot-md';
+    }
   });
 
   const statusTooltip = computed(() => {
@@ -41,10 +59,14 @@
       return 'No data received';
 
     const lastSeen = new Date(props.measurementPoint.last_value_at);
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
 
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+    if (lastSeen < tenMinutesAgo)
+      return `Alarm - Last seen: ${lastSeen.toLocaleString()}`;
+
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
     if (lastSeen < fiveMinutesAgo)
-      return `Stale data - Last seen: ${lastSeen.toLocaleString()}`;
+      return `Warning - Last seen: ${lastSeen.toLocaleString()}`;
 
     return `Online - Last updated: ${lastSeen.toLocaleString()}`;
   });
@@ -64,6 +86,21 @@
     position: relative;
   }
 
+  .status-dot-sm {
+    width: 8px;
+    height: 8px;
+  }
+
+  .status-dot-md {
+    width: 10px;
+    height: 10px;
+  }
+
+  .status-dot-lg {
+    width: 12px;
+    height: 12px;
+  }
+
   .status-normal {
     background-color: #10b981;
     box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
@@ -79,11 +116,6 @@
     border-radius: 50%;
     background-color: #10b981;
     animation: pulse 2s infinite;
-  }
-
-  .status-stale {
-    background-color: #f59e0b;
-    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
   }
 
   .status-unknown {

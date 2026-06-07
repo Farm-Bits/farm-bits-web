@@ -5,10 +5,7 @@
     @click="emit('click', measurementPoint)">
     <div class="d-flex align-items-start justify-content-between">
       <div class="d-flex align-items-center gap-2 mb-1">
-        <span
-          class="status-dot"
-          :class="statusDotClass"
-          :title="statusTooltip" />
+        <ConnectionStatusIndicator size="sm" :measurementPoint="measurementPoint" />
         <img
           v-if="measurementPoint.measurement_subtype && measurementPoint.measurement_subtype.icon_key"
           class="w-5 h-5"
@@ -20,9 +17,6 @@
           {{ measurementPoint.name }}
         </span>
       </div>
-      <CBadge v-if="alarmBadge" :color="alarmBadge.color" size="sm">
-        {{ alarmBadge.label }}
-      </CBadge>
     </div>
 
     <!-- <div class="mp-card__meta d-flex align-items-center gap-2">
@@ -49,7 +43,7 @@
 
 <script lang="ts" setup>
   import { computed, toRef } from 'vue';
-  import RelativeTime from '@/components/RelativeTime.vue';
+  import ConnectionStatusIndicator from '@/components/ConnectionStatusIndicator.vue';
   import ValueDisplay from '@/components/ValueDisplay.vue';
   import { useRegisterVisibility } from '@/composables/useRegisterVisibility';
   import { getDisplayValue } from '@/utils/valueConverters';
@@ -108,28 +102,6 @@
   const statusLabels = computed(() => {
     return statusBadges.value.map((s) => s.label).join(', ');
   });
-
-  const statusDotClass = computed(() => {
-    if (!measurementPoint.last_value_at)
-      return 'status-dot--unknown';
-
-    const lastAt = new Date(measurementPoint.last_value_at);
-    const diffMs = Date.now() - lastAt.getTime();
-    const fiveMinutes = 5 * 60 * 1000;
-
-    if (diffMs > fiveMinutes)
-      return 'status-dot--stale';
-
-    return 'status-dot--online';
-  });
-
-  const statusTooltip = computed(() => {
-    return 'Normal';
-  });
-
-  const alarmBadge = computed<{ color: string; label: string } | null>(() => {
-    return null;
-  });
 </script>
 
 <style scoped>
@@ -165,35 +137,6 @@
 
   .mp-card__value {
     margin: 0.25rem 0;
-  }
-
-  .status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .status-dot--online {
-    background-color: #10b981;
-    animation: pulse 2s ease-in-out infinite;
-  }
-
-  .status-dot--stale {
-    background-color: #f59e0b;
-  }
-
-  .status-dot--unknown {
-    background-color: #9ca3af;
-  }
-
-  .status-dot--alarm {
-    background-color: #ef4444;
-    animation: blink 1s ease-in-out infinite;
-  }
-
-  .status-dot--warning {
-    background-color: #f59e0b;
   }
 
   @keyframes pulse {

@@ -3,7 +3,7 @@
     class="align-middle"
     :class="{ 'table-warning': !isConfigured }">
     <CTableDataCell>
-      <!-- <StatusIndicator :measurementPoint="registerMapping.measurement_point" /> -->
+      <ConnectionStatusIndicator :measurementPoint="registerMapping.measurement_point" />
     </CTableDataCell>
     <CTableDataCell>
       <div class="d-flex align-items-center gap-2">
@@ -112,7 +112,7 @@
 <script lang="ts" setup>
   import { computed } from 'vue';
   import axios from 'axios';
-  // import StatusIndicator from '@/components/StatusIndicator.vue';
+  import ConnectionStatusIndicator from '@/components/ConnectionStatusIndicator.vue';
   import RegisterField from '@/components/RegisterField.vue';
   import RelativeTime from '@/components/RelativeTime.vue';
   import usePermissions from '@/composables/usePermissions';

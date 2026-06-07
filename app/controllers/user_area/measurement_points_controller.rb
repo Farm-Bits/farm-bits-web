@@ -158,17 +158,18 @@ class UserArea::MeasurementPointsController < UserArea::ApplicationController
   end
 
   private
-    # For update: the anchor must be a data-category register on an interface.
-    # This ensures we can find sibling config registers on the same interface.
+    # The anchor must be a data-category register. When it sits on an interface
+    # (PLC flow), its visible config siblings can be written alongside the
+    # record update. When it has no interface (a Modbus device's live
+    # register), only the record is updated — sibling_measurement_points
+    # returns none, so the configuration_updates path is a safe no-op.
     def set_measurement_point_for_update
       @measurement_point = policy_scope(MeasurementPoint)
-        .includes(:measurement_subtype, :register_template, :segment, plc: [:gateway])
+        .includes(
+          :measurement_subtype, :register_template, :segment,
+          plc: [:gateway], modbus_device: [:gateway]
+        )
         .find(params[:id])
-
-      if @measurement_point.register_template.interface_register_mappings.empty?
-        render json: { error: 'Measurement point is not associated with an interface' }, status: :unprocessable_entity
-        return
-      end
 
       if !@measurement_point.register_template.category.in?(MeasurementSubtype::DATA_CATEGORIES)
         render json: { error: 'Can not update configuration directly from this measurement point' }, status: :unprocessable_entity
