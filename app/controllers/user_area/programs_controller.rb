@@ -21,6 +21,22 @@ class UserArea::ProgramsController < UserArea::ApplicationController
     render_programs(@modbus_device)
   end
 
+  def refresh_modbus_device
+    modbus_device = policy_scope(ModbusDevice)
+      .includes(:modbus_firmware_version)
+      .find(params[:id])
+    authorize modbus_device, :refresh_values?
+
+    indices = requested_program_indices(modbus_device)
+    if indices.empty?
+      render json: { error: 'No programs to refresh' }, status: :unprocessable_entity
+      return
+    end
+
+    ProgramRefreshJob.perform_async('modbus_device', modbus_device.id, indices)
+    render json: { status: 'refresh_started', program_indices: indices }, status: :accepted
+  end
+
   private
     def set_plc
       @plc = policy_scope(Plc)
@@ -98,5 +114,28 @@ class UserArea::ProgramsController < UserArea::ApplicationController
       when Plc          then 'plc'
       when ModbusDevice then 'modbus_device'
       end
+    end
+
+    def requested_program_indices(source)
+      raw = params[:program_indices]
+      if raw.is_a?(Array) && raw.any?
+        return raw.map(&:to_i).uniq.sort
+      end
+
+      all_program_indices(source)
+    end
+
+    def all_program_indices(source)
+      pattern = ModbusBehaviors.for(source).program_group_pattern
+      if pattern.nil?
+        return []
+      end
+
+      source.measurement_points
+        .joins(:register_template)
+        .pluck('register_templates.group_name')
+        .filter_map { |name| pattern.match(name.to_s)&.captures&.first&.to_i }
+        .uniq
+        .sort
     end
 end

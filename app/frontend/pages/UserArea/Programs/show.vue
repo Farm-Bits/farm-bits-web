@@ -2,7 +2,7 @@
   <CContainer fluid class="py-3">
     <div class="d-flex align-items-center mb-3">
       <Link :href="routePath('programs_index')" class="btn btn-link p-0 me-3">
-        <CIcon name="cilArrowLeft" />
+        <CIcon icon="cilArrowLeft" />
       </Link>
       <h1 class="h3 mb-0">{{ source.name }}</h1>
     </div>
@@ -14,7 +14,9 @@
         </div>
 
         <template v-else>
-          <CButtonGroup role="group" aria-label="Select program" class="mb-3 flex-wrap">
+          <!-- View selector. Picking a program only changes what's shown; it
+               never changes which program the device is running. -->
+          <CButtonGroup role="group" aria-label="Select program to view" class="mb-3 flex-wrap">
             <CButton
               v-for="program in programs"
               :key="program.index"
@@ -49,6 +51,25 @@
             </CButton>
           </div>
 
+          <!-- Sync state + on-demand refresh from the device. -->
+          <div
+            v-if="source.kind === 'modbus_device' && selectedProgram"
+            class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small">
+              <template v-if="selectedSyncedAt">
+                Synced <RelativeTime :datetime="selectedSyncedAt" /> from device
+              </template>
+              <template v-else>
+                Not yet synced from device
+              </template>
+            </span>
+            <CButton color="light" size="sm" :disabled="isRefreshing" @click="refreshProgram">
+              <CSpinner v-if="isRefreshing" component="span" size="sm" class="me-1" />
+              <CIcon v-else icon="cilReload" class="me-1" />
+              Refresh from device
+            </CButton>
+          </div>
+
           <ProgramTab
             v-if="selectedProgram"
             :key="selectedProgram.index"
@@ -62,12 +83,18 @@
 
 <script lang="ts" setup>
   import { ref, computed } from 'vue';
+  import { Link, router } from '@inertiajs/vue3';
   import axios from 'axios';
   import ProgramTab from './ProgramTab.vue';
+  import RelativeTime from '@/components/RelativeTime.vue';
   import useAuth from '@/composables/useAuth';
   import { useApiCall } from '@/composables/useApi';
   import type { RegisterMapping } from '@/types/plc';
   import type { Program, ProgramSource } from './types';
+
+  // The refresh job pulls from the device and reads back asynchronously; this
+  // is how long we wait before partial-reloading to pick up fresh values.
+  const REFRESH_SETTLE_MS = 7000;
 
   const { pageProps, routePath } = useAuth<{
     source: ProgramSource;
@@ -96,10 +123,33 @@
     selectedProgram.value !== null && selectedProgram.value.index === activeProgramIndex.value
   );
 
+  // Latest read time across the selected program's registers — the program's
+  // values come from the host mirror, so this is how fresh they are.
+  const selectedSyncedAt = computed<string | null>(() => {
+    const program = selectedProgram.value;
+    if (program === null)
+      return null;
+
+    const mappings: RegisterMapping[] = [
+      ...(program.meta?.registers ?? []),
+      ...program.phases.flatMap((phase) => phase.registers)
+    ];
+
+    let latest: string | null = null;
+    mappings.forEach((rm) => {
+      const at = rm.measurement_point.last_value_at;
+      if (at && (latest === null || at > latest))
+        latest = at;
+    });
+
+    return latest;
+  });
+
   // Tracks whether the currently shown program has unsaved edits, so switching
   // programs (which remounts ProgramTab and drops its pending state) can warn.
   const activeHasPending = ref(false);
   const isSettingActive = ref(false);
+  const isRefreshing = ref(false);
 
   function selectProgram(index: number) {
     if (index === selectedIndex.value)
@@ -145,6 +195,39 @@
       activeProgramIndex.value = program.index;
 
     isSettingActive.value = false;
+  }
+
+  async function refreshProgram() {
+    const program = selectedProgram.value;
+    if (program === null || source.value.kind !== 'modbus_device' || isRefreshing.value)
+      return;
+
+    isRefreshing.value = true;
+
+    const { success } = await execute(
+      () => axios.post(
+        routePath('modbus_device_programs_refresh', { id: source.value.id }),
+        { program_indices: [program.index] }
+      ),
+      {
+        showSuccessToast: true,
+        successMessage: `Refreshing Program ${program.index + 1} from the device…`,
+        showErrorToast: true,
+        errorTitle: 'Refresh failed'
+      }
+    );
+
+    if (!success) {
+      isRefreshing.value = false;
+      return;
+    }
+
+    window.setTimeout(() => {
+      router.reload({
+        only: ['programs', 'active_selector'],
+        onFinish: () => { isRefreshing.value = false; }
+      });
+    }, REFRESH_SETTLE_MS);
   }
 </script>
 

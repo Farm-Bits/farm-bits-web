@@ -1,5 +1,5 @@
 // Auto-generated file - Do not edit manually
-// Generated at: 2026-05-31 21:37:07 UTC
+// Generated at: 2026-06-08 19:20:46 UTC
 
 import type { Method } from '@inertiajs/core';
 
@@ -133,6 +133,7 @@ export type RoutePermissions = {
     index: boolean;
     show_plc: boolean;
     show_modbus_device: boolean;
+    refresh_modbus_device: boolean;
   };
   dashboard: {
     show: boolean;
@@ -513,6 +514,12 @@ export const ROUTES: Record<string, RouteInfo> = {
     action: 'show_modbus_device',
     path: '/user/sites/:site_id/programs/modbus_device/:id',
     verb: 'get'
+  },
+  programs_refresh_modbus_device: {
+    controller: 'programs',
+    action: 'refresh_modbus_device',
+    path: '/user/sites/:site_id/programs/modbus_device/:id/refresh',
+    verb: 'post'
   },
   dashboard_show: {
     controller: 'dashboard',

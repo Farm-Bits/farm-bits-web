@@ -61,6 +61,15 @@ class ModbusBehaviors::FatekSeedlingV1 < ModbusBehaviors::Base
     single_write!(register, bitmask, source: 'program_refresh')
   end
 
+  def refresh_status_register
+    host_refresh_register
+  end
+
+  def refresh_pending?(program_indices, register_value)
+    requested = program_indices.inject(0) { |mask, index| mask | (1 << index) }
+    (register_value.to_i & requested) != 0
+  end
+
   private
     # The host's per-slot refresh-trigger register lives on the bridging PLC
     # (group 'ext_device_{slot}', role 'refresh_programs'). Returns nil when

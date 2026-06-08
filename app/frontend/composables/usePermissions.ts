@@ -98,7 +98,8 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
     programs: {
       index: true,
       show_plc: true,
-      show_modbus_device: true
+      show_modbus_device: true,
+      refresh_modbus_device: true
     },
     dashboard: {
       show: true
@@ -199,7 +200,8 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
     programs: {
       index: true,
       show_plc: true,
-      show_modbus_device: true
+      show_modbus_device: true,
+      refresh_modbus_device: true
     },
     dashboard: {
       show: true
@@ -300,7 +302,8 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
     programs: {
       index: true,
       show_plc: true,
-      show_modbus_device: true
+      show_modbus_device: true,
+      refresh_modbus_device: true
     },
     dashboard: {
       show: true
@@ -401,7 +404,8 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
     programs: {
       index: true,
       show_plc: true,
-      show_modbus_device: true
+      show_modbus_device: true,
+      refresh_modbus_device: false
     },
     dashboard: {
       show: true

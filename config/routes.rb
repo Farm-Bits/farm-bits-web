@@ -118,6 +118,7 @@ Rails.application.routes.draw do
         get 'programs', to: 'programs#index'
         get 'programs/plc/:id', to: 'programs#show_plc', as: :plc_programs
         get 'programs/modbus_device/:id', to: 'programs#show_modbus_device', as: :modbus_device_programs
+        post 'programs/modbus_device/:id/refresh', to: 'programs#refresh_modbus_device', as: :modbus_device_programs_refresh
       end
 
       get 'dashboard', to: 'dashboard#show'

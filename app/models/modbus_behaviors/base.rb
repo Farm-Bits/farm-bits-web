@@ -107,6 +107,18 @@ class ModbusBehaviors::Base
   def refresh_programs!(program_indices)
   end
 
+  # MP the refresh job re-reads to detect completion (host clears the bit on
+  # success). nil when the firmware exposes no such signal.
+  def refresh_status_register
+    nil
+  end
+
+  # Given that register's current value, are any of the requested (0-based)
+  # programs still pending refresh?
+  def refresh_pending?(program_indices, register_value)
+    false
+  end
+
   # Pre-write transform: called by ModbusWriteService before reverse_scaled encoding.
   # Receives the array of { measurement_point:, value: } hashes.
   # Returns the (possibly mutated) array.
