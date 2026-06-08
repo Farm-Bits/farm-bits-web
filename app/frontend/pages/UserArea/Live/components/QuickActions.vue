@@ -37,34 +37,6 @@
     </CBadge>
   </div> -->
 
-  <!-- Emergency stop -->
-  <!-- <div
-    v-if="emergencyStop"
-    class="quick-actions__estop mt-1">
-    <CButton
-      v-if="!emergencyStop.isActive"
-      color="danger"
-      size="sm"
-      class="w-100"
-      :disabled="sending !== null"
-      @click="handleEmergencyStop(true)"
-      @click.stop>
-      <CSpinner v-if="sending === 'estop'" size="sm" class="me-1" />
-      Emergency Stop
-    </CButton>
-    <CButton
-      v-else
-      color="danger"
-      variant="outline"
-      size="sm"
-      class="w-100"
-      :disabled="sending !== null"
-      @click="handleEmergencyStop(false)">
-      <CSpinner v-if="sending === 'clear_estop'" size="sm" class="me-1" />
-      Clear Emergency Stop
-    </CButton>
-  </div> -->
-
   <!-- Params modal (shared by commands and toggles) -->
   <CommandParamsModal
     :visible="paramsModalVisible"
@@ -109,8 +81,7 @@
 
   const {
     commandGroups,
-    featureToggles,
-    emergencyStop
+    featureToggles
   } = useQuickActions(
     toRef(props, 'mappings'),
     toRef(props, 'groupLabels'),
@@ -213,18 +184,6 @@
     const key = `cmd:${group.commandMapping.measurement_point.id}:${action.enumKey}`;
     sending.value = key;
     emit('write', group.commandMapping.measurement_point.id, action.enumKey);
-    clearSending(key);
-  }
-
-  // ── Emergency stop ──
-
-  function handleEmergencyStop(activate: boolean) {
-    if (!emergencyStop.value)
-      return;
-
-    const key = activate ? 'estop' : 'clear_estop';
-    sending.value = key;
-    emit('write', emergencyStop.value.mapping.measurement_point.id, activate ? 1 : 0);
     clearSending(key);
   }
 

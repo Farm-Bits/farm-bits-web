@@ -34,6 +34,12 @@
             @click="emit('configure', measurementPoint)">
             Configure automation
           </CDropdownItem>
+          <CDropdownItem
+            v-if="emergencyStop"
+            class="text-danger"
+            @click="handleEmergencyStopToggle">
+            {{ emergencyStop.isActive ? 'Clear Emergency Stop' : 'Emergency Stop' }}
+          </CDropdownItem>
         </CDropdownMenu>
       </CDropdown>
     </div>
@@ -79,6 +85,7 @@
   import QuickActions from './QuickActions.vue';
   import usePermissions from '@/composables/usePermissions';
   import { useRegisterVisibility } from '@/composables/useRegisterVisibility';
+  import { useEmergencyStop } from '@/composables/useEmergencyStop';
   import { getDisplayValue } from '@/utils/valueConverters';
   import type { LiveMeasurementPoint } from '@/types/analytics';
   import type { MeasurementPoint } from '@/types/measurementPoint';
@@ -153,13 +160,10 @@
     return statusBadges.value.map((s) => s.label).join(', ');
   });
 
-  // Emergency stop detection from status registers
-  const hasActiveEstop = computed(() =>
-    omStatuses.some(s =>
-      s.register_template.group_role === 'emergency_stop' &&
-      String(s.last_value) === '1'
-    )
-  );
+  // Emergency stop — discovered structurally from the writable e-stop register
+  const { emergencyStop } = useEmergencyStop(toRef(() => registerMappings));
+
+  const hasActiveEstop = computed(() => emergencyStop.value?.isActive ?? false);
 
   // ── Card styling ──
 
@@ -185,6 +189,13 @@
 
   function handleBulkWrite(updates: { measurement_point_id: MeasurementPoint['id']; value: NonNullable<MeasurementPoint['last_value']> }[]) {
     emit('bulk-write', measurementPoint.id, updates);
+  }
+
+  function handleEmergencyStopToggle() {
+    if (!emergencyStop.value)
+      return;
+
+    emit('write', emergencyStop.value.mapping.measurement_point.id, emergencyStop.value.isActive ? 0 : 1);
   }
 </script>
 

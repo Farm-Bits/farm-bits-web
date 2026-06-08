@@ -43,18 +43,6 @@ export type FeatureToggle = {
   paramMappings: RegisterMapping[];
 };
 
-/**
- * A register that acts as an emergency stop toggle.
- * Discovered by: the register template's name or label contains 'emergency'
- * AND value_format === 'boolean' AND !read_only.
- * This is intentionally defensive — if the convention changes, the card
- * simply won't show an e-stop section (fails safe).
- */
-export type EmergencyStopInfo = {
-  mapping: RegisterMapping;
-  isActive: boolean;
-};
-
 // ── Helpers ──────────────────────────────────────────────
 
 /**
@@ -79,16 +67,6 @@ function isEnabledToggle(rm: RegisterMapping) {
   return rt.value_format === 'boolean' &&
     !rt.read_only &&
     rt.group_role === 'enabled';
-}
-
-/**
- * Detect emergency stop: writable boolean whose group_role is 'emergency_stop'.
- */
-function isEmergencyStop(rm: RegisterMapping) {
-  const rt = rm.register_template;
-  return rt.value_format === 'boolean' &&
-    !rt.read_only &&
-    rt.group_role === 'emergency_stop';
 }
 
 // ── Main composable ──────────────────────────────────────
@@ -254,25 +232,6 @@ export function useQuickActions(
     return toggles;
   });
 
-  // ── Emergency stop ──
-  //
-  // Any writable boolean register with group_role 'emergency_stop'.
-
-  const emergencyStop = computed<EmergencyStopInfo | null>(() => {
-    for (const [, groupMappings] of groupedMappings.value) {
-      const estopMapping = groupMappings.find(isEmergencyStop);
-      if (estopMapping) {
-        const currentValue = configValues[estopMapping.measurement_point.id]
-          ?? estopMapping.measurement_point.last_value;
-        return {
-          mapping: estopMapping,
-          isActive: String(currentValue) === '1',
-        };
-      }
-    }
-    return null;
-  });
-
   // ── Status display ──
   //
   // Read-only registers — the card shows these for context.
@@ -293,7 +252,6 @@ export function useQuickActions(
   return {
     commandGroups,
     featureToggles,
-    emergencyStop,
     statusMappings,
     groupedMappings,
     resolveLabel,
