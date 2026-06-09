@@ -18,7 +18,8 @@
 #           {
 #             index: 1,
 #             group_name: 'program_0_phase_1',
-#             registers: [ { register_template:, measurement_point:, position: }, ... ]
+#             registers: [ { register_template:, measurement_point:, position: }, ... ],
+#             measurements: [ { register_template:, measurement_point:, position: }, ... ]
 #           },
 #           ...
 #         ],
@@ -46,7 +47,8 @@ class ProgramsBuilder
     {
       source:          source_summary,
       programs:        build_programs(index_phases(measurement_points), measurement_points),
-      active_selector: build_active_selector(measurement_points)
+      active_selector: build_active_selector(measurement_points),
+      measurements:    build_measurements
     }
   end
 
@@ -171,5 +173,25 @@ class ProgramsBuilder
       when ModbusDevice then 'modbus_device'
       else                   @source.class.name.underscore
       end
+    end
+
+    def build_measurements
+      measurements = @source.measurement_points
+        .joins(:register_template)
+        .where(active: true)
+        .where.not(measurement_subtype_id: nil)
+        .where(register_templates: {
+          category: MeasurementSubtype::DATA_CATEGORIES,
+          user_visibility: 'visible'
+        })
+        .includes(
+          :plc,
+          :modbus_device,
+          measurement_subtype: [:measurement_type, :control_group],
+          register_template: { interface_register_mappings: :interface }
+        )
+        .order('register_templates.position')
+
+      MeasurementPointSerializer.render_as_hash(measurements, view: :with_details_live)
     end
 end
