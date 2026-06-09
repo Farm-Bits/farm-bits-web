@@ -150,6 +150,16 @@ Rails.application.routes.draw do
           get 'live/poll', to: 'live#poll'
           get 'live/poll_weather', to: 'live#poll_weather'
 
+          resources :measurement_points, only: [:update] do
+            member do
+              post :write
+              get :operation_mode_config
+            end
+            collection do
+              post :bulk_write
+            end
+          end
+
           resources :alerts, only: [:index, :show]
         end
       end
