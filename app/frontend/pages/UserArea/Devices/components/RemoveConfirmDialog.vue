@@ -60,6 +60,7 @@
   });
 
   function urlForRow(): string | null {
+    // TO FIX: There IS NOT Gattay DESTROY route
     if (props.row.kind === 'gateway')
       return routePath('gateways_destroy', { id: props.row.id });
 

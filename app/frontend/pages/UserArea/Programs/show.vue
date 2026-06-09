@@ -216,7 +216,7 @@ const { pageProps, routePath } = useAuth<{
 
     const { success } = await execute(
       () => axios.post(
-        routePath('modbus_device_programs_refresh', { id: source.value.id }),
+        routePath('programs_refresh_modbus_device', { id: source.value.id }),
         { program_indices: [program.index] }
       ),
       {
