@@ -86,7 +86,7 @@
   import { getDisplayValue } from '@/utils/valueConverters';
   import type { LiveMeasurementPoint } from '@/types/analytics';
   import type { MeasurementPoint } from '@/types/measurementPoint';
-  import type { MeasurementPointConfigResponse, RegisterMapping } from '@/types/plc';
+  import type { RegisterMapping } from '@/types/plc';
   import type { OmGroupNameOrSlot } from '@/types/operationMode';
   import type { ConfigValues } from '@/composables/useConfigurationValues';
   import { iconMap } from '@/assets/icons/measurement';
@@ -192,15 +192,15 @@
     if (updates.length === 0)
       return;
 
-    const { success, data } = await execute<MeasurementPointConfigResponse>(
-      () => axios.patch(
-        routePath('measurement_points_update', { id: measurementPoint.id }),
+    const { success, data } = await execute<{ measurement_points: MeasurementPoint[] }>(
+      () => axios.post(
+        routePath('measurement_points_bulk_write'),
         { configuration_updates: updates }
       )
     );
 
     if (success)
-      emit('updated', [data.measurement_point, ...data.sibling_measurement_points]);
+      emit('updated', data.measurement_points);
   }
 
   function handleEmergencyStopToggle() {

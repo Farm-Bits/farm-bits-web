@@ -35,7 +35,6 @@
   import type { ConfigValues } from '@/composables/useConfigurationValues';
   import type { LiveMeasurementPoint, OperationModeConfigResponse } from '@/types/analytics';
   import type { MeasurementPoint } from '@/types/measurementPoint';
-  import type { MeasurementPointConfigResponse } from '@/types/plc';
 
   const { visible, measurementPoint } = defineProps<{
     visible: boolean;
@@ -113,9 +112,9 @@
       value: configValues[mpId]
     }));
 
-    const { success, data: response } = await execute<MeasurementPointConfigResponse>(
-      () => axios.patch(
-        routePath('measurement_points_update', { id: measurementPoint.id }),
+    const { success, data: response } = await execute<{ measurement_points: MeasurementPoint[] }>(
+      () => axios.post(
+        routePath('measurement_points_bulk_write'),
         { configuration_updates: updates }
       )
     );
@@ -123,7 +122,7 @@
     saving.value = false;
 
     if (success) {
-      emit('updated', [response.measurement_point, ...response.sibling_measurement_points]);
+      emit('updated', response.measurement_points);
       editedIds.value = new Set();
       emit('close');
     }
