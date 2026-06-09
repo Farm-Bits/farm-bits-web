@@ -58,11 +58,15 @@
                 v-for="mp in segment.sensorMps"
                 :key="mp.id"
                 class="col-sm-6 col-md-4 col-lg-3">
-                <MeasurementPointCard
+                <MeasurementCard
                   :measurement-point="mp"
-                  :interface-statuses="interfaceStatusesForInterface(mp)"
                   :register-mappings="mappingsForInterface(mp)"
-                  @click="handleMpClick" />
+                  :interface-statuses="interfaceStatusesForInterface(mp)"
+                  :om-statuses="omStatusesForInterface(mp)"
+                  :om-group-labels="omGroupLabels"
+                  :enable-control="true"
+                  @analytics="handleMpClick"
+                  @updated="handleUpdated" />
               </div>
             </div>
           </div>
@@ -93,16 +97,15 @@
                   v-for="mp in controlGroup.measurementPoints"
                   :key="mp.id"
                   class="col-sm-6 col-md-4 col-lg-3">
-                  <OutputControlCard
+                  <MeasurementCard
                     :measurement-point="mp"
                     :register-mappings="mappingsForInterface(mp)"
                     :interface-statuses="interfaceStatusesForInterface(mp)"
                     :om-statuses="omStatusesForInterface(mp)"
                     :om-group-labels="omGroupLabels"
+                    :enable-control="true"
                     @analytics="handleMpClick"
-                    @configure="handleConfigureClick"
-                    @write="handleQuickWrite"
-                    @bulk-write="handleBulkWrite" />
+                    @updated="handleUpdated" />
                 </div>
               </div>
             </div>
@@ -123,41 +126,6 @@
       :visible="analyticsModalVisible"
       :measurement-points="analyticsModalMeasurementPoints"
       @close="analyticsModalVisible = false" />
-
-    <!-- Operation Mode Configure Modal -->
-    <CModal
-      :visible="omModalVisible"
-      size="xl"
-      backdrop="static"
-      @close="handleOmModalClose">
-      <CModalHeader>
-        <CModalTitle v-if="omModalMp">
-          Configure — {{ omModalMp.name }}
-        </CModalTitle>
-      </CModalHeader>
-      <CModalBody>
-        <div v-if="omModalLoading" class="text-center py-5">
-          <CSpinner color="primary" />
-          <p class="text-body-secondary mt-2">Loading configuration...</p>
-        </div>
-        <OperationModePanel
-          v-else-if="omModalData"
-          :mappings="omModalData.register_mappings"
-          :config-values="omConfigValues"
-          :group-labels="omModalData.group_labels"
-          :available-sources="omModalData.available_sources"
-          @value-change="handleOmValueChange"
-          @write="handleOmImmediateWrite" />
-      </CModalBody>
-      <CModalFooter v-if="omModalData && omHasChanges">
-        <CButton color="secondary" variant="ghost" @click="handleOmModalClose">
-          Cancel
-        </CButton>
-        <CButton color="primary" :disabled="omSaving" @click="handleOmSave">
-          {{ omSaving ? 'Saving...' : 'Save & Apply' }}
-        </CButton>
-      </CModalFooter>
-    </CModal>
   </CContainer>
 </template>
 
@@ -167,17 +135,14 @@
   import useAuth from '@/composables/useAuth';
   import { useApiCall } from '@/composables/useApi';
   import { useLivePolling } from '@/composables/useLivePolling';
-  import type { ConfigValues } from '@/composables/useConfigurationValues';
   import SegmentFilter from '@/components/SegmentFilter.vue';
   import MeasurementPointAnalyticsModal from '@/components/MeasurementPointAnalyticsModal.vue';
   import RelativeTime from '@/components/RelativeTime.vue';
-  import OperationModePanel from '@/components/OperationMode/OperationModePanel.vue';
-  import MeasurementPointCard from './components/MeasurementPointCard.vue';
-  import OutputControlCard from './components/OutputControlCard.vue';
+  import MeasurementCard from '@/components/MeasurementCard/index.vue';
   import { ROUTES } from '@/types/permissions';
   import type { MeasurementPoint, MeasurementSubtype } from '@/types/measurementPoint';
-  import type { MeasurementPointConfigResponse, RegisterMapping } from '@/types/plc';
-  import type { LiveMeasurementPoint, OperationModeConfigResponse } from '@/types/analytics';
+  import type { RegisterMapping } from '@/types/plc';
+  import type { LiveMeasurementPoint } from '@/types/analytics';
   import { iconMap } from '@/assets/icons/controlGroup';
 
   type ControlGroupView = {
@@ -496,6 +461,16 @@
     }
   }
 
+  // ── Apply card updates to local state ──
+
+  function handleUpdated(measurementPoints: MeasurementPoint[]) {
+    for (const mp of measurementPoints) {
+      applyWriteResult(mp);
+    }
+
+    scheduleDelayedPoll();
+  }
+
   // ── Analytics Modal ─────────────────────────────
 
   const analyticsModalVisible = ref(false);
@@ -509,153 +484,6 @@
   function handleSensorGroupClick(segment: SegmentGroup) {
     analyticsModalMeasurementPoints.value = segment.sensorMps;
     analyticsModalVisible.value = true;
-  }
-
-  // ── Quick Write ─────────────────────────────────
-
-  async function handleQuickWrite(
-    measurementPointId: MeasurementPoint['id'],
-    value: NonNullable<MeasurementPoint['last_value']>
-  ) {
-    const writePath = routePath('measurement_points_write', { id: measurementPointId });
-    const { success, data } = await execute<MeasurementPoint>(
-      () => axios.post(writePath, { value })
-    );
-
-    if (success) {
-      applyWriteResult(data);
-      scheduleDelayedPoll();
-    }
-  }
-
-  // ── Bulk Write ──────────────────────────────────
-
-  async function handleBulkWrite(
-    anchorMpId: MeasurementPoint['id'],
-    updates: { measurement_point_id: MeasurementPoint['id']; value: NonNullable<MeasurementPoint['last_value']> }[]
-  ) {
-    if (updates.length === 0)
-      return;
-
-    const updatePath = routePath('measurement_points_update', { id: anchorMpId });
-
-    const configurationUpdates = updates.map((u) => ({
-      measurement_point_id: u.measurement_point_id,
-      value: u.value,
-    }));
-
-    const { success, data } = await execute<MeasurementPointConfigResponse>(
-      () => axios.patch(updatePath, { configuration_updates: configurationUpdates })
-    );
-
-    if (success) {
-      applyWriteResult(data.measurement_point);
-
-      for (const sibling of data.sibling_measurement_points) {
-        applyWriteResult(sibling);
-      }
-
-      scheduleDelayedPoll();
-    }
-  }
-
-  // ── Operation Mode Configure Modal ──────────────
-
-  const omModalVisible = ref(false);
-  const omModalLoading = ref(false);
-  const omSaving = ref(false);
-  const omModalMp = ref<LiveMeasurementPoint | null>(null);
-  const omModalData = ref<OperationModeConfigResponse | null>(null);
-  const omConfigValues = reactive<ConfigValues>({});
-  const omEditedIds = ref(new Set<MeasurementPoint['id']>());
-
-  const omHasChanges = computed(() => omEditedIds.value.size > 0);
-
-  async function handleConfigureClick(mp: LiveMeasurementPoint) {
-    omModalMp.value = mp;
-    omModalVisible.value = true;
-    omModalLoading.value = true;
-    omEditedIds.value = new Set();
-
-    const configPath = routePath('measurement_points_operation_mode_config', { id: mp.id });
-
-    const { success, data } = await execute<OperationModeConfigResponse>(
-      () => axios.get(configPath)
-    );
-
-    if (!success) {
-      omModalLoading.value = false;
-      return;
-    }
-
-    omModalData.value = data;
-
-    for (const rm of data.register_mappings) {
-      omConfigValues[rm.measurement_point.id] = rm.measurement_point.last_value;
-    }
-
-    omModalLoading.value = false;
-  }
-
-  function handleOmValueChange(
-    measurementPointId: MeasurementPoint['id'],
-    value: MeasurementPoint['last_value']
-  ) {
-    omConfigValues[measurementPointId] = value;
-    omEditedIds.value.add(measurementPointId);
-  }
-
-  async function handleOmImmediateWrite(
-    measurementPointId: MeasurementPoint['id'],
-    value: NonNullable<MeasurementPoint['last_value']>
-  ) {
-    const writePath = routePath('measurement_points_write', { id: measurementPointId });
-    const { success, data } = await execute<MeasurementPoint>(
-      () => axios.post(writePath, { value })
-    );
-
-    if (success) {
-      applyWriteResult(data);
-      omConfigValues[data.id] = data.last_value;
-      scheduleDelayedPoll();
-    }
-  }
-
-  async function handleOmSave() {
-    if (omEditedIds.value.size === 0 || !omModalMp.value)
-      return;
-
-    omSaving.value = true;
-
-    const anchorMpId = omModalMp.value.id;
-    const updatePath = routePath('measurement_points_update', { id: anchorMpId });
-    const configurationUpdates = Array.from(omEditedIds.value).map(mpId => ({
-      measurement_point_id: mpId,
-      value: omConfigValues[mpId],
-    }));
-
-    const { success, data } = await execute<MeasurementPointConfigResponse>(
-      () => axios.patch(updatePath, { configuration_updates: configurationUpdates })
-    );
-
-    omSaving.value = false;
-
-    if (success) {
-      applyWriteResult(data.measurement_point);
-      for (const sibling of data.sibling_measurement_points) {
-        applyWriteResult(sibling);
-      }
-
-      omEditedIds.value = new Set();
-      omModalVisible.value = false;
-      scheduleDelayedPoll();
-    }
-  }
-
-  function handleOmModalClose() {
-    omModalVisible.value = false;
-    omModalData.value = null;
-    omModalMp.value = null;
   }
 
   watch(segmentGroups, (groups) => {
