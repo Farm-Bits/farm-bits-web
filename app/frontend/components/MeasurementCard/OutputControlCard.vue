@@ -89,6 +89,7 @@
   import type { RegisterMapping } from '@/types/plc';
   import type { OmGroupNameOrSlot } from '@/types/operationMode';
   import type { ConfigValues } from '@/composables/useConfigurationValues';
+  import { useNow } from '@/composables/useNow';
   import { iconMap } from '@/assets/icons/measurement';
 
   const { measurementPoint, interfaceStatuses, omStatuses, registerMappings, omGroupLabels } = defineProps<{
@@ -120,6 +121,8 @@
     }, {}))
   );
 
+  const now = useNow();
+
   const omMappings = computed(() =>
     registerMappings.filter((rm) =>
       rm.register_template.category === 'operation_mode_status' ||
@@ -142,12 +145,15 @@
         position: s.position
       });
       if (s.last_value !== null && statusIsVisible) {
+        const isCountdown = s.register_template.value_format === 'countdown_seconds';
         const label = getDisplayValue(
           s.last_value,
           s.register_template.value_format,
           {
             unit: s.effective_unit,
-            enumValues: s.register_template.enum_values
+            enumValues: s.register_template.enum_values,
+            now: isCountdown ? now.value : undefined,
+            anchorAt: isCountdown && s.last_value_at ? Date.parse(s.last_value_at) : null
           }
         );
         if (label)

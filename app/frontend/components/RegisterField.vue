@@ -6,6 +6,7 @@
       :valueFormat="registerMapping.register_template.value_format"
       :unit="registerMapping.measurement_point.effective_unit"
       :enumValues="registerMapping.register_template.enum_values"
+      :anchorAt="registerMapping.measurement_point.last_value_at"
       :showUnit="false"
       :size="size" />
 

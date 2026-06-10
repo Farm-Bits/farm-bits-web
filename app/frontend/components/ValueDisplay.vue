@@ -48,6 +48,7 @@
 <script lang="ts" setup>
   import { computed } from 'vue';
   import { getDisplayValue, valueConverters } from '@/utils/valueConverters';
+  import { useNow } from '@/composables/useNow';
   import type { ValueFormat } from '@/types/plc';
 
   const props = withDefaults(defineProps<{
@@ -59,13 +60,16 @@
     /** Size variant: compact for tables/lists, default for cards, large for hero displays */
     size?: 'compact' | 'default' | 'large';
     showUnit?: boolean;
+    /** Anchor for countdown_seconds — pass measurement_point.last_value_at. */
+    anchorAt?: string | number | null;
   }>(), {
     valueFormat: 'numeric',
     unit: null,
     enumValues: null,
     placeholder: '—',
     size: 'default',
-    showUnit: true
+    showUnit: true,
+    anchorAt: null
   });
 
   const rootClasses = computed(() => {
@@ -84,6 +88,16 @@
     return booleanNumeric.value ? 'success' : 'secondary';
   });
 
+  const isCountdown = computed(() => props.valueFormat === 'countdown_seconds');
+  const now = useNow();
+
+  const anchorMs = computed(() => {
+    if (props.anchorAt === null || props.anchorAt === undefined)
+      return null;
+    const ms = typeof props.anchorAt === 'number' ? props.anchorAt : Date.parse(props.anchorAt);
+    return isNaN(ms) ? null : ms;
+  });
+
   function isBitActive(bit: number) {
     return valueConverters.bitmask.isBitSet(props.value, bit);
   }
@@ -92,7 +106,9 @@
     return getDisplayValue(props.value, props.valueFormat, {
       unit: props.unit,
       enumValues: props.enumValues,
-      showUnit: false
+      showUnit: false,
+      now: isCountdown.value ? now.value : undefined,
+      anchorAt: isCountdown.value ? anchorMs.value : null
     });
   });
 
@@ -101,7 +117,10 @@
       return null;
 
     // Don't show units for non-numeric formats
-    if (props.valueFormat === 'time_of_day' || props.valueFormat === 'ascii_string' || props.valueFormat === 'bitmask')
+    if (props.valueFormat === 'time_of_day' ||
+      props.valueFormat === 'ascii_string' ||
+      props.valueFormat === 'countdown_seconds' ||
+      props.valueFormat === 'bitmask')
       return null;
 
     return props.unit;

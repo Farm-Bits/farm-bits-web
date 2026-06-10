@@ -235,6 +235,30 @@ export const valueConverters = {
   },
 
   /**
+   * COUNTDOWN (raw seconds captured at `anchorAt`, ticks down live).
+   * remaining = stored − wall-clock elapsed since anchorAt. Pass a ticking
+   * `now` (see useNow) to animate it; without an anchor it renders statically.
+   */
+  countdownSeconds: {
+    toDisplay(value: RawValue, now: number, anchorAt: number | null): FormattedValue {
+      if (value === null)
+        return '—';
+
+      const total = typeof value === 'number' ? value : parseInt(String(value), 10);
+      if (isNaN(total))
+        return '—';
+
+      if (anchorAt === null || isNaN(anchorAt))
+        return valueConverters.durationSeconds.toDisplay(total);
+
+      const elapsedSec = Math.max(0, Math.floor((now - anchorAt) / 1000));
+      const remaining = Math.max(0, total - elapsedSec);
+
+      return valueConverters.durationSeconds.toDisplay(remaining);
+    }
+  },
+
+  /**
    * BITMASK (stored as integer, each bit is a boolean flag)
    * enum_values keys are bit positions (as strings), values are labels.
    */
@@ -308,6 +332,8 @@ export function getDisplayValue(
     unit?: string | null;
     enumValues?: Record<string, string> | null;
     showUnit?: boolean;
+    now?: number;
+    anchorAt?: number | null;
   }
 ): FormattedValue {
   switch (valueFormat) {
@@ -323,6 +349,12 @@ export function getDisplayValue(
       return valueConverters.timeOfDay.toDisplay(value);
     case 'duration_seconds':
       return valueConverters.durationSeconds.toDisplay(value);
+    case 'countdown_seconds':
+      return valueConverters.countdownSeconds.toDisplay(
+        value,
+        metadata?.now ?? Date.now(),
+        metadata?.anchorAt ?? null
+      );
     case 'bitmask':
       return valueConverters.bitmask.toDisplay(value, metadata?.enumValues ?? null);
     default:

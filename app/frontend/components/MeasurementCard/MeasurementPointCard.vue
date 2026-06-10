@@ -50,6 +50,7 @@
   import type { LiveMeasurementPoint } from '@/types/analytics';
   import type { RegisterMapping } from '@/types/plc';
   import type { ConfigValues } from '@/composables/useConfigurationValues';
+  import { useNow } from '@/composables/useNow';
   import { iconMap } from '@/assets/icons/measurement';
 
   const { measurementPoint, interfaceStatuses, registerMappings } = defineProps<{
@@ -70,6 +71,8 @@
     }, {}))
   );
 
+  const now = useNow();
+
   const statusBadges = computed<{ label: string; color: string }[]>(() => {
     const badges: { label: string; color: string }[] = [];
 
@@ -83,12 +86,15 @@
         position: s.position
       });
       if (s.last_value !== null && statusIsVisible) {
+        const isCountdown = s.register_template.value_format === 'countdown_seconds';
         const label = getDisplayValue(
           s.last_value,
           s.register_template.value_format,
           {
             unit: s.effective_unit,
-            enumValues: s.register_template.enum_values
+            enumValues: s.register_template.enum_values,
+            now: isCountdown ? now.value : undefined,
+            anchorAt: isCountdown && s.last_value_at ? Date.parse(s.last_value_at) : null
           }
         );
         if (label)

@@ -11,7 +11,16 @@ export function isConfigurationCategory(category: string) {
   return ['interface_configuration'].includes(category);
 }
 
-const VALUE_FORMATS = ['numeric', 'boolean', 'enum', 'ascii_string', 'time_of_day', 'duration_seconds', 'bitmask'] as const;
+const VALUE_FORMATS = [
+  'numeric',
+  'boolean',
+  'enum',
+  'ascii_string',
+  'time_of_day',
+  'duration_seconds',
+  'countdown_seconds',
+  'bitmask'
+] as const;
 export type ValueFormat = typeof VALUE_FORMATS[number];
 
 type DataType =

@@ -32,6 +32,7 @@ class RegisterTemplate < ApplicationRecord
     ascii_string     # Character codes forming ASCII text
     time_of_day      # Time of day in minutes (0-1439)
     duration_seconds # Duration in seconds
+    countdown_seconds # raw seconds; live countdown anchored on last_value_at client-side
     bitmask          # Bitmask value where each bit represents a boolean flag
   ].freeze
   USER_VISIBILITIES = %w[visible hidden].freeze
@@ -118,6 +119,8 @@ class RegisterTemplate < ApplicationRecord
       decode_time_of_day(data)
     when 'duration_seconds'
       decode_duration_seconds(data)
+    when 'countdown_seconds'
+      decode_numeric(data).to_i
     when 'bitmask'
       decode_numeric(data)
     else
@@ -140,6 +143,8 @@ class RegisterTemplate < ApplicationRecord
       encode_time_of_day(value)
     when 'duration_seconds'
       encode_duration_seconds(value)
+    when 'countdown_seconds'
+      encode_numeric(value)
     when 'bitmask'
       encode_numeric(value)
     else
