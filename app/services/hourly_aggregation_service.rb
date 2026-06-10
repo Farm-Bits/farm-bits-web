@@ -133,8 +133,10 @@ class HourlyAggregationService
         (readings_by_mp_hour[key] ||= []) << [scaled_value, sample_time]
       end
 
-      # Identify status MPs and fetch their prior states for the earliest hour
-      status_mp_ids = mp_ids.select do |mp_id|
+      # Identify status MPs that actually have readings this run, and fetch
+      # their prior states for the earliest hour we are about to write.
+      mp_ids_with_readings = readings_by_mp_hour.keys.map { |mp_id, _hour| mp_id }.uniq
+      status_mp_ids = mp_ids_with_readings.select do |mp_id|
         mp_map[mp_id]&.measurement_subtype&.value_type == "status"
       end
 
@@ -188,18 +190,19 @@ class HourlyAggregationService
         return prior_states
       end
 
-      prior_rows = RawValue
-        .where(measurement_point_id: status_mp_ids)
-        .where(sample_time: ...since_time)
-        .where(
-          "sample_time = (SELECT MAX(r2.sample_time) FROM raw_values r2 " \
-          "WHERE r2.measurement_point_id = raw_values.measurement_point_id " \
-          "AND r2.sample_time < ?)", since_time
-        )
-        .pluck(:measurement_point_id, :scaled_value)
+      status_mp_ids.each do |mp_id|
+        value = RawValue
+          .where(measurement_point_id: mp_id)
+          .where(sample_time: ...since_time)
+          .order(sample_time: :desc)
+          .limit(1)
+          .pick(:scaled_value)
 
-      prior_rows.each do |mp_id, val|
-        prior_states[mp_id] = val.to_i
+        if value.nil?
+          next
+        end
+
+        prior_states[mp_id] = value.to_i
       end
 
       prior_states
