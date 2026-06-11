@@ -63,9 +63,10 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed } from 'vue';
+  import { computed, onMounted } from 'vue';
   import ValueDisplay from '@/components/ValueDisplay.vue';
   import ValueEdit from '@/components/ValueEdit.vue';
+  import { valueConverters } from '@/utils/valueConverters';
   import type { RegisterMapping } from '@/types/plc';
   import type { MeasurementPoint } from '@/types/measurementPoint';
 
@@ -87,7 +88,7 @@
     size?: 'compact' | 'default' | 'large';
   }>();
 
-  defineEmits<{
+  const emit = defineEmits<{
     (eventName: 'update:modelValue', value: MeasurementPoint['last_value']): void;
   }>();
 
@@ -102,6 +103,20 @@
       return registerMapping.register_template.address_count * 2;
 
     return null;
+  });
+
+  onMounted(() => {
+    if (registerMapping.register_template.value_format !== 'bitmask')
+      return;
+
+    const enumValues = registerMapping.register_template.enum_values;
+    if (!enumValues)
+      return;
+
+    const numeric = valueConverters.bitmask.toEdit(modelValue);
+    const sanitized = valueConverters.bitmask.sanitize(modelValue, enumValues);
+    if (sanitized !== numeric)
+      emit('update:modelValue', sanitized);
   });
 </script>
 
