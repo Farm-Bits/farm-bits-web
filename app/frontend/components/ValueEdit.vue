@@ -216,8 +216,9 @@
 
   function handleBitmaskToggle(bit: number, event: Event) {
     const checked = (event.target as HTMLInputElement).checked;
-    const newValue = valueConverters.bitmask.toggleBit(editValue.value, bit, checked);
-    emit('update:modelValue', newValue);
+    const toggled = valueConverters.bitmask.toggleBit(editValue.value, bit, checked);
+    const sanitized = valueConverters.bitmask.sanitize(toggled, props.enumValues ?? null);
+    emit('update:modelValue', sanitized);
   }
 
   function handleNumericChange(value: string) {
@@ -258,6 +259,11 @@
   }
 
   watch(() => props.modelValue, (newValue) => {
+    if (props.valueFormat === 'bitmask' && props.enumValues) {
+      editValue.value = valueConverters.bitmask.sanitize(newValue, props.enumValues);
+      return;
+    }
+
     editValue.value = newValue;
   }, { immediate: true });
 </script>

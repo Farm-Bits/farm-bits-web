@@ -318,6 +318,32 @@ export const valueConverters = {
         return intVal | (1 << bit);
       }
       return intVal & ~(1 << bit);
+    },
+
+    /** Bitmask of every bit position declared in enum_values */
+    allowedMask(enumValues: Record<string, string> | null): number {
+      if (!enumValues)
+        return 0;
+
+      let mask = 0;
+      for (const bitStr of Object.keys(enumValues)) {
+        const bit = parseInt(bitStr, 10);
+        if (isNaN(bit))
+          continue;
+
+        mask |= (1 << bit);
+      }
+
+      return mask;
+    },
+
+    /** Strip any bits not declared in enum_values (PLC init junk, reserved high bits) */
+    sanitize(value: RawValue, enumValues: Record<string, string> | null): number {
+      const intVal = valueConverters.bitmask.toEdit(value);
+      if (!enumValues)
+        return intVal;
+
+      return intVal & valueConverters.bitmask.allowedMask(enumValues);
     }
   }
 };
