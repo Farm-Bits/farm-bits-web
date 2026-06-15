@@ -73,7 +73,7 @@
   import DutyCycleConfig from './features/DutyCycleConfig.vue';
   import SafetyConfig from './features/SafetyConfig.vue';
   import TimeWindowConfig from './features/TimeWindowConfig.vue';
-  import ScheduleSlot from './features/ScheduleSlot.vue';
+  import ScheduleTab from './features/ScheduleTab.vue';
   import SensorTriggerConfig from './features/SensorTriggerConfig.vue';
   import { useOperationMode } from '@/composables/useOperationMode';
   import type { ConfigValues } from '@/composables/useConfigurationValues';
@@ -119,8 +119,16 @@
       }
     ],
     schedules: [
-      // One section per schedule slot — dynamic based on discovered groups
-      ...buildScheduleSections()
+      {
+        key: 'schedules',
+        component: markRaw(ScheduleTab),
+        visible: () => om.hasSchedules.value,
+        extraProps: () => ({
+          slotGroupNames: om.scheduleGroups.value,
+          labelFor: om.labelFor,
+          slotNumber: om.slotNumber,
+        })
+      }
     ],
     sensors: [
       {
@@ -150,25 +158,6 @@
     ]
   };
 
-  /**
-   * Build schedule sections dynamically from discovered schedule groups.
-   * Each slot is a separate section so they render independently.
-   */
-  function buildScheduleSections(): SectionDef[] {
-    // This runs once at setup — schedule groups are stable for a given Modbus Firmware Version.
-    // If no schedules exist, the tab won't show (useOperationMode handles that).
-    return om.scheduleGroups.value.map(groupName => ({
-      key: `schedule-${groupName}`,
-      component: markRaw(ScheduleSlot),
-      visible: () => true,
-      extraProps: () => ({
-        groupName,
-        slotNumber: om.slotNumber(groupName),
-        label: om.labelFor(groupName),
-      }),
-    }));
-  }
-
   // ── Active sections for current tab ─────────────
 
   type ResolvedSection = {
@@ -178,22 +167,7 @@
     extraProps: Record<string, unknown>;
   };
 
-  const activeSections = computed<ResolvedSection[]>(() => {
-    const sections = TAB_SECTIONS[activeTab.value];
-    if (!sections)
-      return [];
-
-    return sections
-      .filter((s) => s.visible())
-      .map((s) => ({
-        key: s.key,
-        component: s.component,
-        heading: s.heading?.() ?? null,
-        extraProps: s.extraProps?.() ?? {},
-      }));
-  });
-
-  function sectionsFor(tabId: string): ResolvedSection[] {
+  function resolveSections(tabId: string): ResolvedSection[] {
     const sections = TAB_SECTIONS[tabId];
     if (!sections)
       return [];
@@ -206,6 +180,12 @@
         heading: s.heading?.() ?? null,
         extraProps: s.extraProps?.() ?? {},
       }));
+  }
+
+  const activeSections = computed<ResolvedSection[]>(() => resolveSections(activeTab.value));
+
+  function sectionsFor(tabId: string): ResolvedSection[] {
+    return resolveSections(tabId);
   }
 
   // ── Event handlers ──────────────────────────────

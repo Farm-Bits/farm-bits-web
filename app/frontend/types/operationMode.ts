@@ -43,6 +43,9 @@ export const OM_ROLES = {
   startTime: 'start_time',
   startOffset: 'start_offset',
   days: 'days',
+  onetimeDay: 'onetime_day',
+  onetimeMonth: 'onetime_month',
+  onetimeYear: 'onetime_year',
 
   // Window
   endRef: 'end_ref',

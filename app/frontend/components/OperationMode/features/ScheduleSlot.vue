@@ -2,38 +2,52 @@
   <div
     class="border rounded mb-2"
     :class="isEnabled ? 'border-info-subtle' : ''">
-    <!-- Header: toggle + label + collapse arrow -->
+    <!-- Header -->
     <div
       v-if="enabledMapping"
       class="d-flex align-items-center gap-2 px-3 py-2"
       role="button"
       @click="isOpen = !isOpen">
-      <CFormLabel class="fw-semibold d-flex align-items-center gap-2">
-        {{ enabledMapping.register_template.name }}
-        <CTooltip
-          v-if="enabledMapping.register_template.description"
-          :content="enabledMapping.register_template.description">
-          <template #toggler="{ on }">
-            <CIcon v-on="on" icon="cilInfo" size="sm" class="text-muted" />
+      <template v-if="removable">
+        <span class="flex-grow-1 fw-medium">
+          {{ label }} {{ slotNumber }}
+          <template v-if="!isOpen && summaryText">
+            <small class="text-body-secondary ms-2">{{ summaryText }}</small>
           </template>
-        </CTooltip>
-      </CFormLabel>
-      <CFormSwitch
-        :model-value="isEnabled"
-        @click.stop
-        @update:model-value="handleToggle" />
-      <span
-        class="flex-grow-1 fw-medium"
-        :class="isEnabled ? '' : 'text-body-secondary'">
-        {{ label }} {{ slotNumber }}
-        <template v-if="!isOpen && isEnabled">
-          <small class="text-body-secondary ms-2">{{ summaryText }}</small>
-        </template>
-      </span>
-      <small class="text-body-secondary">{{ isOpen ? '▴' : '▾' }}</small>
+        </span>
+        <CButton color="danger" variant="ghost" size="sm" @click.stop="handleRemove">
+          Remove
+        </CButton>
+        <small class="text-body-secondary">{{ isOpen ? '▴' : '▾' }}</small>
+      </template>
+      <template v-else>
+        <CFormLabel class="fw-semibold d-flex align-items-center gap-2">
+          {{ enabledMapping.register_template.name }}
+          <CTooltip
+            v-if="enabledMapping.register_template.description"
+            :content="enabledMapping.register_template.description">
+            <template #toggler="{ on }">
+              <CIcon v-on="on" icon="cilInfo" size="sm" class="text-muted" />
+            </template>
+          </CTooltip>
+        </CFormLabel>
+        <CFormSwitch
+          :model-value="isEnabled"
+          @click.stop
+          @update:model-value="handleToggle" />
+        <span
+          class="flex-grow-1 fw-medium"
+          :class="isEnabled ? '' : 'text-body-secondary'">
+          {{ label }} {{ slotNumber }}
+          <template v-if="!isOpen && isEnabled">
+            <small class="text-body-secondary ms-2">{{ summaryText }}</small>
+          </template>
+        </span>
+        <small class="text-body-secondary">{{ isOpen ? '▴' : '▾' }}</small>
+      </template>
     </div>
 
-    <!-- Body: all fields rendered generically -->
+    <!-- Body -->
     <div
       v-if="isOpen"
       class="px-3 pb-3">
@@ -75,27 +89,39 @@
         </div>
       </div>
 
-      <!-- Remaining fields: generic rendering with visibility -->
-      <div
-        v-for="rm in visibleRemainingMappings"
-        :key="rm.measurement_point.id"
-        class="mb-2">
-        <CFormLabel class="fw-semibold d-flex align-items-center gap-2">
-          {{ rm.register_template.name }}
-          <CTooltip
-            v-if="rm.register_template.description"
-            :content="rm.register_template.description">
-            <template #toggler="{ on }">
-              <CIcon v-on="on" icon="cilInfo" size="sm" class="text-muted" />
-            </template>
-          </CTooltip>
-        </CFormLabel>
-        <RegisterField
-          :model-value="configValues[rm.measurement_point.id]"
-          :register-mapping="rm"
-          :is-editing="true"
-          @update:model-value="emitChange(rm.measurement_point.id, $event)" />
-      </div>
+      <!-- Remaining fields in defined position, one-time date folded in place. -->
+      <template
+        v-for="item in remainingItems"
+        :key="item.key">
+        <div
+          v-if="item.kind === 'onetimeDate'"
+          class="mb-2">
+          <CFormLabel class="fw-semibold">Date</CFormLabel>
+          <CFormInput
+            type="date"
+            :model-value="onetimeDateValue"
+            @update:model-value="handleOnetimeDateChange" />
+        </div>
+        <div
+          v-else
+          class="mb-2">
+          <CFormLabel class="fw-semibold d-flex align-items-center gap-2">
+            {{ item.mapping.register_template.name }}
+            <CTooltip
+              v-if="item.mapping.register_template.description"
+              :content="item.mapping.register_template.description">
+              <template #toggler="{ on }">
+                <CIcon v-on="on" icon="cilInfo" size="sm" class="text-muted" />
+              </template>
+            </CTooltip>
+          </CFormLabel>
+          <RegisterField
+            :model-value="configValues[item.mapping.measurement_point.id]"
+            :register-mapping="item.mapping"
+            :is-editing="true"
+            @update:model-value="emitChange(item.mapping.measurement_point.id, $event)" />
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -109,12 +135,17 @@
   import type { MeasurementPoint } from '@/types/measurementPoint';
   import { OM_ROLES } from '@/types/operationMode';
 
-  const { mappings, groupName, slotNumber, label, configValues } = defineProps<{
+  type ScheduleItem =
+    | { kind: 'onetimeDate'; key: string }
+    | { kind: 'register'; key: string; mapping: RegisterMapping };
+
+  const { mappings, groupName, slotNumber, label, configValues, removable = false } = defineProps<{
     mappings: RegisterMapping[];
     groupName: string;
     slotNumber: number;
     label: string;
     configValues: ConfigValues;
+    removable?: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -125,7 +156,8 @@
   const groupNameRef = computed(() => groupName);
   const { getValue, mpForRole, mappingForRole, mappingsExcept } = useGroupRegisters(mappingsRef, groupNameRef);
 
-  const isOpen = ref(false);
+  // Managed slots open by default; the toggle-style usage stays collapsed.
+  const isOpen = ref(removable);
 
   // ── State ────────────────────────────────────────
 
@@ -158,7 +190,49 @@
     return mappingForRole(OM_ROLES.startOffset);
   });
 
-  // ── Remaining fields (everything except known layout roles) ──
+  // ── One-time date composite (onetime_day + onetime_month + onetime_year) ──
+
+  const onetimeDayMapping = computed(() => mappingForRole(OM_ROLES.onetimeDay));
+  const onetimeMonthMapping = computed(() => mappingForRole(OM_ROLES.onetimeMonth));
+  const onetimeYearMapping = computed(() => mappingForRole(OM_ROLES.onetimeYear));
+
+  const hasOnetimeDate = computed(() =>
+    !!onetimeDayMapping.value && !!onetimeMonthMapping.value && !!onetimeYearMapping.value
+  );
+
+  const onetimeDateValue = computed(() => {
+    const d = numericValueFor(onetimeDayMapping.value);
+    const m = numericValueFor(onetimeMonthMapping.value);
+    const y = numericValueFor(onetimeYearMapping.value);
+
+    // 0 or unset on any part means no date has been chosen (register default).
+    if (!d || !m || !y)
+      return '';
+
+    return `${y}-${pad(m)}-${pad(d)}`;
+  });
+
+  function handleOnetimeDateChange(value: string) {
+    if (!value)
+      return;
+
+    const [y, m, d] = value.split('-').map(Number);
+
+    const dayMp = onetimeDayMapping.value?.measurement_point;
+    const monthMp = onetimeMonthMapping.value?.measurement_point;
+    const yearMp = onetimeYearMapping.value?.measurement_point;
+
+    if (dayMp)
+      emit('value-change', dayMp.id, d);
+
+    if (monthMp)
+      emit('value-change', monthMp.id, m);
+
+    if (yearMp)
+      emit('value-change', yearMp.id, y);
+  }
+
+  // ── Remaining fields (everything except known layout roles), in position ──
 
   const layoutRoles = [
     OM_ROLES.enabled,
@@ -170,6 +244,26 @@
   const visibleRemainingMappings = computed(() =>
     remainingMappings.value.filter(rm => isVisible(rm))
   );
+
+  const remainingItems = computed<ScheduleItem[]>(() => {
+    const items: ScheduleItem[] = [];
+
+    for (const rm of visibleRemainingMappings.value) {
+      const role = rm.register_template.group_role;
+
+      if (hasOnetimeDate.value && (role === OM_ROLES.onetimeMonth || role === OM_ROLES.onetimeYear))
+        continue;
+
+      if (hasOnetimeDate.value && role === OM_ROLES.onetimeDay) {
+        items.push({ kind: 'onetimeDate', key: 'onetime-date' });
+        continue;
+      }
+
+      items.push({ kind: 'register', key: String(rm.measurement_point.id), mapping: rm });
+    }
+
+    return items;
+  });
 
   // ── Summary for collapsed state ──────────────────
 
@@ -200,6 +294,12 @@
       isOpen.value = true;
   }
 
+  function handleRemove() {
+    const mp = mpForRole(OM_ROLES.enabled);
+    if (mp)
+      emit('value-change', mp.id, 0);
+  }
+
   function emitChange(measurementPointId: MeasurementPoint['id'], value: MeasurementPoint['last_value']) {
     emit('value-change', measurementPointId, value);
   }
@@ -223,6 +323,19 @@
         return false;
     }
     return true;
+  }
+
+  function numericValueFor(mapping: RegisterMapping | undefined) {
+    if (!mapping)
+      return 0;
+
+    const raw = configValues[mapping.measurement_point.id];
+    const n = Number(raw);
+    return Number.isNaN(n) ? 0 : n;
+  }
+
+  function pad(n: number) {
+    return String(n).padStart(2, '0');
   }
 
   function formatDuration(totalSeconds: number) {

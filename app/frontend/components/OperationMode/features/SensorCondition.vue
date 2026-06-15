@@ -8,29 +8,43 @@
       class="d-flex align-items-center gap-2 px-3 py-2"
       role="button"
       @click="isOpen = !isOpen">
-      <CFormLabel class="fw-semibold d-flex align-items-center gap-2">
-        {{ enabledMapping.register_template.name }}
-        <CTooltip
-          v-if="enabledMapping.register_template.description"
-          :content="enabledMapping.register_template.description">
-          <template #toggler="{ on }">
-            <CIcon v-on="on" icon="cilInfo" size="sm" class="text-muted" />
+      <template v-if="removable">
+        <span class="flex-grow-1 fw-medium">
+          {{ label }} {{ conditionNumber }}
+          <template v-if="!isOpen && summaryText">
+            <small class="text-body-secondary ms-2">{{ summaryText }}</small>
           </template>
-        </CTooltip>
-      </CFormLabel>
-      <CFormSwitch
-        :model-value="isEnabled"
-        @click.stop
-        @update:model-value="handleToggle" />
-      <span
-        class="flex-grow-1 fw-medium"
-        :class="isEnabled ? '' : 'text-body-secondary'">
-        {{ label }} {{ conditionNumber }}
-        <template v-if="!isOpen && isEnabled && summaryText">
-          <small class="text-body-secondary ms-2">{{ summaryText }}</small>
-        </template>
-      </span>
-      <small class="text-body-secondary">{{ isOpen ? '▴' : '▾' }}</small>
+        </span>
+        <CButton color="danger" variant="ghost" size="sm" @click.stop="handleRemove">
+          Remove
+        </CButton>
+        <small class="text-body-secondary">{{ isOpen ? '▴' : '▾' }}</small>
+      </template>
+      <template v-else>
+        <CFormLabel class="fw-semibold d-flex align-items-center gap-2">
+          {{ enabledMapping.register_template.name }}
+          <CTooltip
+            v-if="enabledMapping.register_template.description"
+            :content="enabledMapping.register_template.description">
+            <template #toggler="{ on }">
+              <CIcon v-on="on" icon="cilInfo" size="sm" class="text-muted" />
+            </template>
+          </CTooltip>
+        </CFormLabel>
+        <CFormSwitch
+          :model-value="isEnabled"
+          @click.stop
+          @update:model-value="handleToggle" />
+        <span
+          class="flex-grow-1 fw-medium"
+          :class="isEnabled ? '' : 'text-body-secondary'">
+          {{ label }} {{ conditionNumber }}
+          <template v-if="!isOpen && isEnabled && summaryText">
+            <small class="text-body-secondary ms-2">{{ summaryText }}</small>
+          </template>
+        </span>
+        <small class="text-body-secondary">{{ isOpen ? '▴' : '▾' }}</small>
+      </template>
     </div>
 
     <!-- Body -->
@@ -123,13 +137,14 @@
   import type { RegisterMapping, SourceIoInfo } from '@/types/plc';
   import { OM_ROLES } from '@/types/operationMode';
 
-  const { mappings, groupName, conditionNumber, label, configValues, availableSources } = defineProps<{
+  const { mappings, groupName, conditionNumber, label, configValues, availableSources, removable = false } = defineProps<{
     mappings: RegisterMapping[];
     groupName: string;
     conditionNumber: number;
     label: string;
     configValues: ConfigValues;
     availableSources: SourceIoInfo[];
+    removable?: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -140,7 +155,7 @@
   const groupNameRef = computed(() => groupName);
   const { getValue, mpForRole, mappingForRole, mappingsExcept } = useGroupRegisters(mappingsRef, groupNameRef);
 
-  const isOpen = ref(false);
+  const isOpen = ref(removable);
 
   // ── State ────────────────────────────────────────
 
@@ -156,36 +171,30 @@
 
   // ── Source selection (composite: source_type + source_io_number) ──
 
-  /**
-   * Composite key: "1_3" = source_type=1 (AI), io_number=3
-   */
-  const selectedSourceKey = computed(() => {
+  const selectedSourceInfo = computed(() => {
     const typeMpId = mpForRole(OM_ROLES.sourceType)?.id;
     const numberMpId = mpForRole(OM_ROLES.sourceIoNumber)?.id;
     if (!typeMpId || !numberMpId)
-      return '';
-
-    const typeVal = configValues[typeMpId];
-    const numberVal = configValues[numberMpId];
-    if (!typeVal || !numberVal || String(typeVal) === '0')
-      return '';
-
-    return `${typeVal}_${numberVal}`;
-  });
-
-  const selectedSourceInfo = computed(() => {
-    if (!selectedSourceKey.value)
       return null;
 
-    const [typeStr, numberStr] = selectedSourceKey.value.split('_');
+    const typeVal = Number(configValues[typeMpId]);
+    const numberVal = Number(configValues[numberMpId]);
+    if (!typeVal || !numberVal || Number.isNaN(typeVal) || Number.isNaN(numberVal))
+      return null;
+
     return availableSources.find(
-      s => s.source_type === Number(typeStr) && s.io_number === Number(numberStr)
+      s => s.source_type === typeVal && s.io_number === numberVal
     ) ?? null;
   });
 
-  /**
-   * Group available sources by communication type for the optgroup.
-   */
+  const selectedSourceKey = computed(() => {
+    const info = selectedSourceInfo.value;
+    if (!info)
+      return '';
+
+    return `${info.source_type}_${info.io_number}`;
+  });
+
   const sourceGroups = computed(() => {
     const groups = new Map<string, { label: string; sources: { key: string; label: string }[] }>();
 
@@ -227,7 +236,6 @@
   ];
 
   const genericMappings = computed(() => {
-    // operator, threshold, hysteresis — in that order
     const genericRoles = [OM_ROLES.operator, OM_ROLES.threshold, OM_ROLES.hysteresis];
     return genericRoles
       .map((role) => mappingForRole(role))
@@ -271,6 +279,12 @@
 
     if (value)
       isOpen.value = true;
+  }
+
+  function handleRemove() {
+    const mp = mpForRole(OM_ROLES.enabled);
+    if (mp)
+      emit('value-change', mp.id, 0);
   }
 
   function emitChange(measurementPointId: MeasurementPoint['id'], value: MeasurementPoint['last_value']) {

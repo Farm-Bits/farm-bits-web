@@ -70,7 +70,8 @@
     clearConfigValues();
 
     const { success, data: response } = await execute<OperationModeConfigResponse>(
-      () => axios.get(routePath('measurement_points_operation_mode_config', { id: mpId }))
+      () => axios.get(routePath('measurement_points_operation_mode_config', { id: mpId })),
+      { showErrorToast: true, errorTitle: 'Could not load configuration' }
     );
 
     if (success) {
@@ -92,7 +93,8 @@
     value: NonNullable<MeasurementPoint['last_value']>
   ) {
     const { success, data: mp } = await execute<MeasurementPoint>(
-      () => axios.post(routePath('measurement_points_write', { id: mpId }), { value })
+      () => axios.post(routePath('measurement_points_write', { id: mpId }), { value }),
+      { showErrorToast: true, errorTitle: 'Command failed' }
     );
 
     if (success) {
@@ -116,7 +118,8 @@
       () => axios.post(
         routePath('measurement_points_bulk_write'),
         { configuration_updates: updates }
-      )
+      ),
+      { showErrorToast: true, errorTitle: 'Save failed' }
     );
 
     saving.value = false;
