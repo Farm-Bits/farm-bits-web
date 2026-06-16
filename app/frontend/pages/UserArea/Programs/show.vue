@@ -29,7 +29,7 @@
                 :variant="program.index === selectedIndex ? undefined : 'outline'"
                 :aria-pressed="program.index === selectedIndex"
                 @click="selectProgram(program.index)">
-                Program {{ program.index + 1 }}
+                Program {{ program.index }}
                 <CBadge v-if="program.index === activeProgramIndex" color="success" class="ms-1">
                   Active
                 </CBadge>
@@ -178,7 +178,7 @@ const { pageProps, routePath } = useAuth<{
     if (!selector || program === null || program.index === activeProgramIndex.value)
       return;
 
-    const programNumber = program.index + 1;
+    const programNumber = program.index;
     const confirmed = window.confirm(
       `Make Program ${programNumber} the active program on ${source.value.name}? ` +
       'This changes which program the device runs.'
@@ -221,7 +221,7 @@ const { pageProps, routePath } = useAuth<{
       ),
       {
         showSuccessToast: true,
-        successMessage: `Refreshing Program ${program.index + 1} from the device…`,
+        successMessage: `Refreshing Program ${program.index} from the device…`,
         showErrorToast: true,
         errorTitle: 'Refresh failed'
       }

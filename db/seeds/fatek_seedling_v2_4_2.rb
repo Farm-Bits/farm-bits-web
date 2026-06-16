@@ -679,14 +679,14 @@ ActiveRecord::Base.transaction do
   # ════════════════════════════════════════════════════════════════════════
 
   PHASE_FIELDS = [
-    { offset: 0, name: 'Temperature low work limit',   role: 'temp_low_work',    factor: 0.01, data_type: 'int16'  },
-    { offset: 1, name: 'Temperature high work limit',  role: 'temp_high_work',   factor: 0.01, data_type: 'int16'  },
-    { offset: 2, name: 'Temperature low alarm limit',  role: 'temp_low_alarm',   factor: 0.01, data_type: 'int16'  },
-    { offset: 3, name: 'Temperature high alarm limit', role: 'temp_high_alarm',  factor: 0.01, data_type: 'int16'  },
-    { offset: 4, name: 'Humidity work limit',          role: 'humidity_work',    factor: 0.01, data_type: 'int16'  },
-    { offset: 5, name: 'Humidity alarm limit',         role: 'humidity_alarm',   factor: 0.01, data_type: 'int16'  },
-    { offset: 6, name: 'Phase duration',               role: 'duration',         factor: 1.0,  data_type: 'uint16' },
-    { offset: 7, name: 'Last phase mark',              role: 'last_phase_mark',  factor: 1.0,  data_type: 'uint16' }
+    { offset: 0, name: 'Temperature Low Work Limit (°C)',  role: 'temp_low_work',    factor: 0.01, data_type: 'int16', user_visibility: 'visible' },
+    { offset: 1, name: 'Temperature High Work Limit (°C)', role: 'temp_high_work',   factor: 0.01, data_type: 'int16', user_visibility: 'visible'  },
+    { offset: 2, name: 'Temperature Low Alarm Limit',      role: 'temp_low_alarm',   factor: 0.01, data_type: 'int16', user_visibility: 'hidden'  },
+    { offset: 3, name: 'Temperature High Alarm Limit',     role: 'temp_high_alarm',  factor: 0.01, data_type: 'int16', user_visibility: 'hidden'  },
+    { offset: 4, name: 'Humidity Work Limit (%)',          role: 'humidity_work',    factor: 0.01, data_type: 'int16', user_visibility: 'visible'  },
+    { offset: 5, name: 'Humidity Alarm Limit',             role: 'humidity_alarm',   factor: 0.01, data_type: 'int16', user_visibility: 'hidden'  },
+    { offset: 6, name: 'Phase Duration (Hours)',           role: 'duration',         factor: 1.0,  data_type: 'uint16', user_visibility: 'visible' },
+    { offset: 7, name: 'Phase is Last',                    role: 'last_phase_mark',  factor: 1.0,  data_type: 'boolean', user_visibility: 'visible' }
   ].freeze
 
   PROGRAM_BASES = [5000, 5128, 5256, 5384].freeze
@@ -703,7 +703,7 @@ ActiveRecord::Base.transaction do
 
         create_fatek_register.call(
           {
-            name:              "Program #{prog_idx} phase #{phase_idx + 1} #{field[:name].downcase}",
+            name:              field[:name],
             label:             "Program#{prog_idx}Phase#{phase_idx + 1}_#{field[:role].split('_').map(&:capitalize).join}",
             address:           addr,
             register_type:     'holding',
@@ -716,7 +716,8 @@ ActiveRecord::Base.transaction do
             group_role:        field[:role],
             bulk_read_group:   bulk_group,
             bulk_read_address: prog_base,
-            bulk_read_offset:  relative_offset
+            bulk_read_offset:  relative_offset,
+            user_visibility:   field[:user_visibility]
           },
           read_offset:  read_block_base  + relative_offset,
           write_offset: write_block_base + relative_offset

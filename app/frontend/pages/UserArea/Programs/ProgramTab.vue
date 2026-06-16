@@ -21,28 +21,35 @@
       </CRow>
     </div>
 
-    <!-- Phase grid: rows are phases, columns are the per-phase fields -->
+    <!-- Phase grid: rows are the per-phase fields, columns are the phases -->
     <div v-if="program.phases.length > 0" class="table-responsive">
       <CTable bordered small class="align-middle mb-0">
         <CTableHead>
           <CTableRow>
-            <CTableHeaderCell style="width: 48px">#</CTableHeaderCell>
-            <CTableHeaderCell v-for="col in columnDefs" :key="col.register_template.id">
+            <CTableHeaderCell></CTableHeaderCell>
+            <CTableHeaderCell v-for="phaseIndex in visiblePhaseHeaders" :key="phaseIndex" class="text-center">
+              {{ phaseIndex }}
+            </CTableHeaderCell>
+            <CTableHeaderCell v-if="hasHiddenPhases" class="text-center toggle-col">
+              <CButton color="link" size="sm" class="p-0" @click="toggleExpanded">
+                {{ toggleLabel }}
+              </CButton>
+            </CTableHeaderCell>
+          </CTableRow>
+        </CTableHead>
+        <CTableBody>
+          <CTableRow v-for="row in visibleRows" :key="row.register.register_template.id">
+            <CTableHeaderCell scope="row" class="register-name">
               <div class="d-flex align-items-center gap-1">
-                {{ col.register_template.name }}
-                <CTooltip v-if="col.register_template.description" :content="col.register_template.description">
+                {{ row.register.register_template.name }}
+                <CTooltip v-if="row.register.register_template.description" :content="row.register.register_template.description">
                   <template #toggler="{ on }">
                     <CIcon v-on="on" icon="cilInfo" size="sm" class="text-muted" />
                   </template>
                 </CTooltip>
               </div>
             </CTableHeaderCell>
-          </CTableRow>
-        </CTableHead>
-        <CTableBody>
-          <CTableRow v-for="row in phaseRows" :key="row.phaseIndex">
-            <CTableHeaderCell scope="row">{{ row.phaseIndex }}</CTableHeaderCell>
-            <CTableDataCell v-for="(cell, colIndex) in row.cells" :key="colIndex">
+            <CTableDataCell v-for="(cell, phaseIdx) in row.cells" :key="phaseIdx">
               <ProgramCell
                 v-if="cell"
                 :mapping="cell"
@@ -51,6 +58,7 @@
                 @update:value="(value) => setPending(cell.measurement_point, value)" />
               <span v-else class="text-muted">—</span>
             </CTableDataCell>
+            <CTableDataCell v-if="hasHiddenPhases" class="toggle-col"></CTableDataCell>
           </CTableRow>
         </CTableBody>
       </CTable>
@@ -59,7 +67,7 @@
     <div class="d-flex gap-2 mt-3">
       <CButton color="primary" :disabled="!hasPending || isSaving" @click="save">
         <CSpinner v-if="isSaving" component="span" size="sm" class="me-1" />
-        Save Program {{ program.index + 1 }}
+        Save Program {{ program.index }}
       </CButton>
       <CButton color="secondary" variant="outline" :disabled="!hasPending || isSaving" @click="discard">
         Discard
@@ -78,10 +86,13 @@
   import type { MeasurementPoint } from '@/types/measurementPoint';
   import type { Program } from './types';
 
+  // Max phase columns shown before the expand toggle appears.
+  const MAX_VISIBLE_PHASES = 9;
+
   type CellValue = MeasurementPoint['last_value'];
 
-  type PhaseRow = {
-    phaseIndex: number;
+  type RegisterRow = {
+    register: RegisterMapping;
     cells: Array<RegisterMapping | null>;
   };
 
@@ -96,18 +107,20 @@
 
   const metaRegisters = computed<RegisterMapping[]>(() => program.meta?.registers ?? []);
 
-  // Columns are the first phase's registers, ordered by position. Every phase
-  // shares the same group_role set, so this defines the whole grid.
-  const columnDefs = computed<RegisterMapping[]>(() => {
+  // Row order: the first phase's registers by position. Every phase shares the
+  // same group_role set, so this defines every row in the grid.
+  const registerDefs = computed<RegisterMapping[]>(() => {
     if (program.phases.length === 0)
       return [];
 
     return [...program.phases[0].registers].sort((a, b) => a.position - b.position);
   });
 
-  const phaseRows = computed<PhaseRow[]>(() => {
-    const cols = columnDefs.value;
+  // Column headers are the phase indices, in phase order.
+  const phaseHeaders = computed<number[]>(() => program.phases.map((phase) => phase.index));
 
+  // Each phase's registers keyed by group_role for O(1) lookup.
+  const phaseRoleMaps = computed<Array<Record<string, RegisterMapping>>>(() => {
     return program.phases.map((phase) => {
       const byRole: Record<string, RegisterMapping> = {};
       phase.registers.forEach((rm) => {
@@ -116,17 +129,61 @@
           byRole[role] = rm;
       });
 
-      const cells = cols.map((col) => {
-        const role = col.register_template.group_role;
+      return byRole;
+    });
+  });
+
+  const registerRows = computed<RegisterRow[]>(() => {
+    return registerDefs.value.map((register) => {
+      const role = register.register_template.group_role;
+
+      const cells = phaseRoleMaps.value.map((byRole) => {
         if (role === null)
           return null;
 
         return byRole[role] ?? null;
       });
 
-      return { phaseIndex: phase.index, cells };
+      return { register, cells };
     });
   });
+
+  // ── Column expand / collapse ──
+
+  const expanded = ref(false);
+
+  const hasHiddenPhases = computed(() => phaseHeaders.value.length > MAX_VISIBLE_PHASES);
+
+  const visiblePhaseCount = computed(() => {
+    if (expanded.value)
+      return phaseHeaders.value.length;
+
+    return Math.min(MAX_VISIBLE_PHASES, phaseHeaders.value.length);
+  });
+
+  const visiblePhaseHeaders = computed<number[]>(() => {
+    return phaseHeaders.value.slice(0, visiblePhaseCount.value);
+  });
+
+  const visibleRows = computed<RegisterRow[]>(() => {
+    return registerRows.value.map((row) => {
+      return {
+        register: row.register,
+        cells: row.cells.slice(0, visiblePhaseCount.value)
+      };
+    });
+  });
+
+  const toggleLabel = computed(() => {
+    if (expanded.value)
+      return '−';
+
+    return '+';
+  });
+
+  function toggleExpanded() {
+    expanded.value = !expanded.value;
+  }
 
   // ── Pending changes (keyed by measurement_point id) ──
 
@@ -173,7 +230,7 @@
       () => axios.post(routePath('measurement_points_bulk_write'), { configuration_updates: updates }),
       {
         showSuccessToast: true,
-        successMessage: `Program ${program.index + 1} saved`,
+        successMessage: `Program ${program.index} saved`,
         showErrorToast: true,
         errorTitle: 'Save failed'
       }
@@ -210,4 +267,11 @@
 </script>
 
 <style scoped>
+  .register-name {
+    white-space: nowrap;
+  }
+
+  .toggle-col {
+    width: 1%;
+  }
 </style>
