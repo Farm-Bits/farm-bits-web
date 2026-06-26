@@ -7,11 +7,12 @@
 #   Character.create(name: "Luke", movie: movies.first)
 
 ActiveRecord::Base.transaction do
+  seed_admin_password = ENV.fetch('SEED_ADMIN_PASSWORD', 'change_me_now')
   AdminUser.create!(
-    name: 'Jeremy Khalfa',
-    email: 'jeremy@farm-bits.com',
-    password: 'Jeremy123',
-    password_confirmation: 'Jeremy123'
+    name: ENV.fetch('SEED_ADMIN_NAME', 'Admin User'),
+    email: ENV.fetch('SEED_ADMIN_EMAIL', 'admin@example.com'),
+    password: seed_admin_password,
+    password_confirmation: seed_admin_password
   )
 
   climate_control_group = ControlGroup.create!(
