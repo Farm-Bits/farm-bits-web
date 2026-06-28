@@ -414,9 +414,14 @@ const PERMISSION_MATRIX: Record<Role, RoutePermissions> = {
 };
 
 export default function usePermissions() {
-  const { currentRole } = useAuth();
+  const { currentRole, isAdminUser } = useAuth();
 
   const permissions = computed(() => {
+    // Admin users have no company role, but get full access to their own
+    // account management (My Account page, sessions, two-factor auth).
+    if (isAdminUser.value)
+      return PERMISSION_MATRIX.admin;
+
     if (!currentRole.value)
       return null;
 

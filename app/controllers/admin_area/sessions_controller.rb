@@ -9,7 +9,7 @@ class AdminArea::SessionsController < AdminArea::ApplicationController
       return
     end
 
-    redirect_to new_admin_user_my_account_path(tab: 'security'), notice: 'Session revoked.'
+    redirect_to admin_user_my_account_path(tab: 'security'), notice: 'Session revoked.'
   end
 
   def destroy_all
@@ -37,6 +37,6 @@ class AdminArea::SessionsController < AdminArea::ApplicationController
 
   private
     def current_session?(user_session)
-      user_session.id == current_admin_user_session&.id
+      user_session.id == current_user_session&.id
     end
 end

@@ -36,13 +36,17 @@ Rails.application.routes.draw do
     mount Sidekiq::Web => '/sidekiq'
 
     namespace :admin_area, path: 'admin', as: :admin do
-      root 'dashboard#show'
+      get    'my_account' => 'my_account#show'
+      put    'my_account' => 'my_account#update'
+      delete 'my_account' => 'my_account#destroy'
 
       resources :sessions, only: [:destroy] do
         collection do
           delete '', to: 'sessions#destroy_all', as: :destroy_all
         end
       end
+
+      resource :two_factors, only: [:update]
 
       get 'dashboard', to: 'dashboard#show'
     end

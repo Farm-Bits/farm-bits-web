@@ -31,7 +31,7 @@
         class="d-flex align-items-center"
         @click="visit(paths.pages.myAccount)">
         <CIcon icon="cilUser" class="me-2" />
-        Profile
+        My Account
       </CDropdownItem>
 
       <CDropdownItem href="#/admin/system-settings" class="d-flex align-items-center">
