@@ -36,6 +36,15 @@ export default function useAuth<T extends PageProps>() {
     }
   });
 
+  const areaPath = computed(() => {
+    switch (userScope.value) {
+      case 'admin_users':
+        return 'admin';
+      default:
+        return 'user';
+    }
+  });
+
   function fillPath(template: string, params: Record<string, string | number | undefined>): string {
     return template.replace(/:([a-z_]+)/g, (_match, name: string) => {
       const value = params[name];
@@ -77,13 +86,13 @@ export default function useAuth<T extends PageProps>() {
       forgotPassword: `/${userScope.value}/password/new`,
       confirmation: `/${userScope.value}/confirmation/new`,
       unlock: `/${userScope.value}/unlock/new`,
-      newCompany: `/${rootObjectName.value}/company_setup/new`,
+      newCompany: `/${areaPath.value}/company_setup/new`,
       editCompany: currentCompany.value
-        ? `/${rootObjectName.value}/companies/${currentCompany.value.id}/company_setup/edit`
+        ? `/${areaPath.value}/companies/${currentCompany.value.id}/company_setup/edit`
         : '',
       companyEntry: (companyId: Company['id']) => `/?company_id=${companyId}`,
-      myAccount: `/${rootObjectName.value}/my_account`,
-      sessions: `/${rootObjectName.value}/sessions`
+      myAccount: `/${areaPath.value}/my_account`,
+      sessions: `/${areaPath.value}/sessions`
     },
     actions: {
       signIn: `/${userScope.value}/sign_in`,
@@ -92,10 +101,10 @@ export default function useAuth<T extends PageProps>() {
       resetPassword: `/${userScope.value}/password`,
       confirmation: `/${userScope.value}/confirmation`,
       unlock: `/${userScope.value}/unlock`,
-      companySetup: `/${rootObjectName.value}/company_setup`,
-      deleteSession: (sessionId: number) => `/${rootObjectName.value}/sessions/${sessionId}`,
-      deleteAllSessions: `/${rootObjectName.value}/sessions/destroy_all`,
-      twoFactor: `/${rootObjectName.value}/two_factors`,
+      companySetup: `/${areaPath.value}/company_setup`,
+      deleteSession: (sessionId: number) => `/${areaPath.value}/sessions/${sessionId}`,
+      deleteAllSessions: `/${areaPath.value}/sessions`,
+      twoFactor: `/${areaPath.value}/two_factors`,
       verifyOtp: `/${userScope.value}/otp/verify`,
       resendOtp: `/${userScope.value}/otp/resend`
     }
@@ -123,6 +132,7 @@ export default function useAuth<T extends PageProps>() {
     currentAction,
     isAdminUser,
     rootObjectName,
+    areaPath,
     routePath,
     siteSwitchPath,
     paths,

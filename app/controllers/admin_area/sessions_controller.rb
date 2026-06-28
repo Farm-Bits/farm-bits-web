@@ -9,7 +9,7 @@ class AdminArea::SessionsController < AdminArea::ApplicationController
       return
     end
 
-    redirect_to admin_user_my_account_path(tab: 'security'), notice: 'Session revoked.'
+    redirect_to admin_my_account_path(tab: 'security'), notice: 'Session revoked.'
   end
 
   def destroy_all
@@ -26,12 +26,12 @@ class AdminArea::SessionsController < AdminArea::ApplicationController
     end
 
     if revoked_count == 0
-      redirect_to admin_user_my_account_path(tab: 'security'),
+      redirect_to admin_my_account_path(tab: 'security'),
         notice: 'No other sessions to sign out.'
       return
     end
 
-    redirect_to admin_user_my_account_path(tab: 'security'),
+    redirect_to admin_my_account_path(tab: 'security'),
       notice: "Signed out of #{revoked_count} other #{'session'.pluralize(revoked_count)}."
   end
 

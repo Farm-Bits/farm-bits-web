@@ -16,7 +16,7 @@ class AdminArea::MyAccountController < AdminArea::ApplicationController
       else
         if current_admin_user.update(password_params)
           bypass_sign_in(current_admin_user)
-          redirect_to admin_user_my_account_path
+          redirect_to admin_my_account_path
         else
           render inertia: 'MyAccount/index', props: {
             sessions: load_sessions_for_security_tab,
@@ -26,7 +26,7 @@ class AdminArea::MyAccountController < AdminArea::ApplicationController
       end
     else
       if current_admin_user.update(profile_params)
-        redirect_to admin_user_my_account_path
+        redirect_to admin_my_account_path
       else
         render inertia: 'MyAccount/index', props: {
           sessions: load_sessions_for_security_tab,
