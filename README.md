@@ -70,7 +70,7 @@ Install the following before setting up the project:
 * **Foreman** — used by `bin/dev` to run Vite, Rails and Sidekiq side-by-side
   (`gem install foreman`).
 * **MySQL 8.x** — the application uses MySQL with `utf8mb4` encoding. By default it expects
-  a Unix socket at `/tmp/mysql.sock` (see [config/database.exemple.yml](config/database.exemple.yml)).
+  a Unix socket at `/tmp/mysql.sock` (see [config/database.example.yml](config/database.example.yml)).
 * **Redis** — required for Rails caching, Sidekiq queues and the scheduler. The default
   connection string is `redis://localhost:6379/0` (override with `REDIS_URL`).
 * **libvips / ImageMagick** — required by Active Storage if you intend to attach/process images.
@@ -108,10 +108,10 @@ before the app will boot.
 Copy the example and edit credentials:
 
 ```bash
-cp config/database.exemple.yml config/database.yml
+cp config/database.example.yml config/database.yml
 ```
 
-The template (see [config/database.exemple.yml](config/database.exemple.yml)) creates two
+The template (see [config/database.example.yml](config/database.example.yml)) creates two
 local databases — `farm_bits_development` and `farm_bits_test` — connected over the
 `/tmp/mysql.sock` socket. Replace the `AAA`/`BBB`/`CCC`/`DDD` placeholders with real MySQL
 credentials. A `production:` block is not provided in the example; add one only if you intend
@@ -219,7 +219,7 @@ bundle install
 yarn install
 
 # 5. Create the config files described above
-cp config/database.exemple.yml config/database.yml
+cp config/database.example.yml config/database.yml
 cp config/application.example.yml config/application.yml
 cp .env.example .env
 # ...and place credential keys under config/credentials/
@@ -454,7 +454,7 @@ app/
 
 config/
 ├── application.example.yml   # Figaro template
-├── database.exemple.yml      # MySQL template
+├── database.example.yml      # MySQL template
 ├── credentials/              # Per-env encrypted credentials
 ├── deploy/                   # Capistrano stages
 ├── initializers/             # devise, sidekiq, rack_attack, bugsnag, inertia_rails, onesignal, ...
